@@ -1,0 +1,128 @@
+// Table component
+
+.lk-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--lk-text-base);
+  color: var(--lk-text);
+  text-align: left;
+
+  th,
+  td {
+    padding: var(--lk-space-3) var(--lk-space-4);
+    vertical-align: top;
+  }
+
+  thead th {
+    font-weight: var(--lk-weight-semibold);
+    color: var(--lk-text);
+    border-bottom: var(--lk-border-width-md) solid var(--lk-border);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    border-bottom: var(--lk-border-width) solid var(--lk-border);
+  }
+
+  // --- Bordered ---
+
+  &--bordered {
+    border: var(--lk-border-width) solid var(--lk-border);
+
+    th,
+    td {
+      border: var(--lk-border-width) solid var(--lk-border);
+    }
+  }
+
+  // --- Hover rows ---
+
+  &--hover tbody tr {
+    transition: background-color var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover {
+      background: var(--lk-bg-subtle);
+    }
+  }
+
+  // --- Striped odd ---
+
+  &--striped tbody tr:nth-child(odd) {
+    background: var(--lk-bg-subtle);
+  }
+
+  // --- Striped even ---
+
+  &--striped-even tbody tr:nth-child(even) {
+    background: var(--lk-bg-subtle);
+  }
+
+  // --- Compact ---
+
+  &--compact {
+    th,
+    td {
+      padding: var(--lk-space-2) var(--lk-space-3);
+      font-size: var(--lk-text-sm);
+    }
+  }
+
+  // --- Flat (no borders) ---
+
+  &--flat {
+    th,
+    td {
+      border: none;
+    }
+
+    thead th {
+      border-bottom: var(--lk-border-width-md) solid var(--lk-border);
+    }
+  }
+
+  // --- Fixed layout ---
+
+  &--fixed {
+    table-layout: fixed;
+  }
+
+  // --- Row states ---
+
+  tr.lk-table__row--active {
+    background: color-mix(in srgb, var(--lk-primary) 8%, transparent);
+  }
+
+  tr.lk-table__row--positive {
+    background: color-mix(in srgb, var(--lk-positive) 8%, transparent);
+  }
+
+  tr.lk-table__row--warning {
+    background: color-mix(in srgb, var(--lk-warning) 8%, transparent);
+  }
+
+  tr.lk-table__row--negative {
+    background: color-mix(in srgb, var(--lk-negative) 8%, transparent);
+  }
+
+  // --- Dense ---
+
+  &--dense {
+    font-size: var(--lk-text-sm);
+
+    th,
+    td {
+      padding: var(--lk-space-1) var(--lk-space-2);
+    }
+
+    thead th {
+      font-size: var(--lk-text-xs);
+    }
+  }
+
+  // --- Responsive wrapper ---
+
+  &-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

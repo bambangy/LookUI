@@ -1,0 +1,103 @@
+// Carousel component
+
+.lk-carousel {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+
+  &__track {
+    display: flex;
+    transition: transform var(--lk-duration-slow) var(--lk-easing-out);
+    will-change: transform;
+  }
+
+  &__slide {
+    flex: 0 0 100%;
+    min-width: 0;
+    overflow: hidden;
+
+    > img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+  }
+
+  // --- Controls ---
+
+  &__prev,
+  &__next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: var(--lk-z-raised);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+
+    background: rgb(var(--lk-shadow-color) / 0.45);
+    color: #fff;
+    border: none;
+    border-radius: var(--lk-radius-full);
+    cursor: pointer;
+    font-size: var(--lk-text-lg);
+
+    opacity: 0.7;
+    transition: opacity var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover { opacity: 1; }
+  }
+
+  &__prev { left: var(--lk-space-3); }
+  &__next { right: var(--lk-space-3); }
+
+  // --- Indicators ---
+
+  &__indicators {
+    display: flex;
+    justify-content: center;
+    gap: var(--lk-space-2);
+    padding: var(--lk-space-3) 0;
+  }
+
+  &__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--lk-radius-full);
+    background: var(--lk-border);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: background var(--lk-duration-fast) var(--lk-easing-default);
+
+    &--active,
+    &:hover {
+      background: var(--lk-primary);
+    }
+  }
+
+  // --- Dense ---
+
+  &--dense &__prev,
+  &--dense &__next {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: var(--lk-text-sm);
+  }
+
+  &--dense &__indicators {
+    gap: var(--lk-space-1);
+    padding: var(--lk-space-2) 0;
+  }
+
+  &--dense &__dot {
+    width: 0.375rem;
+    height: 0.375rem;
+  }
+}

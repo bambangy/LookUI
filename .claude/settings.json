@@ -6,7 +6,9 @@
       "Bash(/d/git-dev/LookUI/src/scss/tokens/_variables.scss:*)",
       "Bash(/d/git-dev/LookUI/src/scss/main.scss:*)",
       "Bash(/d/git-dev/LookUI/README.md:*)",
-      "Bash(/d/git-dev/LookUI/Calude.md:*)"
+      "Bash(/d/git-dev/LookUI/Calude.md:*)",
+      "Bash(npm run build:css:*)",
+      "Bash(wc:*)"
     ]
   }
 }

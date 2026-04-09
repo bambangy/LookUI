@@ -1,0 +1,87 @@
+// Badge component
+
+.lk-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: var(--lk-space-1) var(--lk-space-2);
+  font-size: var(--lk-text-xs);
+  font-weight: var(--lk-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: middle;
+
+  border-radius: var(--lk-radius-full);
+  background: var(--lk-primary);
+  color: var(--lk-primary-contrast);
+
+  // --- Color variants ---
+
+  &--secondary {
+    background: var(--lk-secondary);
+    color: var(--lk-secondary-contrast);
+  }
+
+  &--accent {
+    background: var(--lk-accent);
+    color: var(--lk-accent-contrast);
+  }
+
+  &--positive {
+    background: var(--lk-positive);
+    color: var(--lk-positive-contrast);
+  }
+
+  &--warning {
+    background: var(--lk-warning);
+    color: var(--lk-warning-contrast);
+  }
+
+  &--negative {
+    background: var(--lk-negative);
+    color: var(--lk-negative-contrast);
+  }
+
+  &--info {
+    background: var(--lk-info);
+    color: var(--lk-info-contrast);
+  }
+
+  // --- Outline variant ---
+
+  &--outline {
+    background: transparent;
+    border: var(--lk-border-width) solid currentColor;
+    color: var(--lk-primary);
+  }
+
+  &--outline#{&}--secondary { color: var(--lk-secondary); }
+  &--outline#{&}--positive  { color: var(--lk-positive); }
+  &--outline#{&}--warning   { color: var(--lk-warning); }
+  &--outline#{&}--negative  { color: var(--lk-negative); }
+  &--outline#{&}--info      { color: var(--lk-info); }
+
+  // --- Dot: minimal indicator with no text ---
+
+  &--dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    padding: 0;
+    border-radius: var(--lk-radius-full);
+    font-size: 0;
+  }
+
+  // --- Square shape ---
+
+  &--square {
+    border-radius: var(--lk-radius-sm);
+  }
+
+  // --- Dense ---
+
+  &--dense {
+    padding: calc(var(--lk-space-1) * 0.5) var(--lk-space-1);
+    font-size: 0.5625rem;
+  }
+}

@@ -1,0 +1,99 @@
+// Tooltip component
+
+.lk-tooltip {
+  position: relative;
+  display: inline-block;
+
+  &__content {
+    position: absolute;
+    z-index: var(--lk-z-tooltip);
+    padding: var(--lk-space-1) var(--lk-space-2);
+    font-size: var(--lk-text-xs);
+    font-weight: var(--lk-weight-medium);
+    line-height: var(--lk-leading-snug);
+    white-space: nowrap;
+    color: var(--lk-text-on-dark);
+    background: var(--lk-secondary-dark);
+    border-radius: var(--lk-radius);
+    pointer-events: none;
+
+    opacity: 0;
+    transition: opacity var(--lk-duration-fast) var(--lk-easing-default);
+
+    // Arrow
+    &::after {
+      content: '';
+      position: absolute;
+      border: 5px solid transparent;
+    }
+  }
+
+  // --- Positions ---
+
+  &__content--top {
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+
+    &::after {
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-top-color: var(--lk-secondary-dark);
+    }
+  }
+
+  &__content--bottom {
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+
+    &::after {
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-bottom-color: var(--lk-secondary-dark);
+    }
+  }
+
+  &__content--left {
+    right: calc(100% + 6px);
+    top: 50%;
+    transform: translateY(-50%);
+
+    &::after {
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left-color: var(--lk-secondary-dark);
+    }
+  }
+
+  &__content--right {
+    left: calc(100% + 6px);
+    top: 50%;
+    transform: translateY(-50%);
+
+    &::after {
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-right-color: var(--lk-secondary-dark);
+    }
+  }
+
+  // --- Show state ---
+
+  &--open &__content,
+  &:hover &__content,
+  &:focus-within &__content {
+    opacity: 1;
+  }
+
+  // --- Dense ---
+
+  &--dense &__content {
+    padding: calc(var(--lk-space-1) * 0.5) var(--lk-space-1);
+    font-size: 0.5625rem;
+  }
+}

@@ -1,0 +1,100 @@
+// Pagination component
+
+.lk-pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  &__item {
+    display: inline-flex;
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: var(--lk-space-1) var(--lk-space-2);
+    font-size: var(--lk-text-sm);
+    font-weight: var(--lk-weight-medium);
+    color: var(--lk-text);
+    background: transparent;
+    border: var(--lk-border-width) solid transparent;
+    border-radius: var(--lk-radius);
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1;
+    transition:
+      background-color var(--lk-duration-fast) var(--lk-easing-default),
+      border-color     var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover {
+      background: var(--lk-bg-subtle);
+      border-color: var(--lk-border);
+    }
+
+    // Active page
+    &--active {
+      background: var(--lk-primary);
+      color: var(--lk-primary-contrast);
+      border-color: var(--lk-primary);
+
+      &:hover {
+        background: var(--lk-primary-dark);
+        border-color: var(--lk-primary-dark);
+      }
+    }
+
+    // Disabled (prev/next at bounds)
+    &--disabled {
+      opacity: 0.4;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+  }
+
+  // Ellipsis separator
+  &__ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    font-size: var(--lk-text-sm);
+    color: var(--lk-text-muted);
+    pointer-events: none;
+  }
+
+  // --- Variants ---
+
+  &--bordered &__link {
+    border-color: var(--lk-border);
+  }
+
+  &--round &__link {
+    border-radius: var(--lk-radius-full);
+  }
+
+  // --- Dense ---
+
+  &--dense {
+    gap: 0;
+  }
+
+  &--dense &__link {
+    min-width: 1.75rem;
+    height: 1.75rem;
+    padding: 0 var(--lk-space-1);
+    font-size: var(--lk-text-xs);
+  }
+
+  &--dense &__ellipsis {
+    min-width: 1.75rem;
+    height: 1.75rem;
+    font-size: var(--lk-text-xs);
+  }
+}

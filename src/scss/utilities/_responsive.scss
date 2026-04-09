@@ -1,0 +1,128 @@
+// Responsive breakpoint utilities
+// Uses the SCSS variables from tokens/_layout.scss
+
+@use '../tokens/layout' as *;
+
+// --- Responsive display utilities ---
+
+// Hide at breakpoint and up
+@media (min-width: $look-bp-sm) {
+  .lk-hidden-sm-up { display: none !important; }
+}
+@media (min-width: $look-bp-md) {
+  .lk-hidden-md-up { display: none !important; }
+}
+@media (min-width: $look-bp-lg) {
+  .lk-hidden-lg-up { display: none !important; }
+}
+@media (min-width: $look-bp-xl) {
+  .lk-hidden-xl-up { display: none !important; }
+}
+@media (min-width: $look-bp-2xl) {
+  .lk-hidden-2xl-up { display: none !important; }
+}
+
+// Hide below breakpoint (max-width)
+@media (max-width: ($look-bp-sm - 1px)) {
+  .lk-hidden-xs-down { display: none !important; }
+}
+@media (max-width: ($look-bp-md - 1px)) {
+  .lk-hidden-sm-down { display: none !important; }
+}
+@media (max-width: ($look-bp-lg - 1px)) {
+  .lk-hidden-md-down { display: none !important; }
+}
+@media (max-width: ($look-bp-xl - 1px)) {
+  .lk-hidden-lg-down { display: none !important; }
+}
+@media (max-width: ($look-bp-2xl - 1px)) {
+  .lk-hidden-xl-down { display: none !important; }
+}
+
+// Show only at specific breakpoint range
+@media (max-width: ($look-bp-sm - 1px)) {
+  .lk-visible-xs-only { display: block !important; }
+}
+@media (min-width: $look-bp-sm) and (max-width: ($look-bp-md - 1px)) {
+  .lk-visible-sm-only { display: block !important; }
+}
+@media (min-width: $look-bp-md) and (max-width: ($look-bp-lg - 1px)) {
+  .lk-visible-md-only { display: block !important; }
+}
+@media (min-width: $look-bp-lg) and (max-width: ($look-bp-xl - 1px)) {
+  .lk-visible-lg-only { display: block !important; }
+}
+@media (min-width: $look-bp-xl) {
+  .lk-visible-xl-only { display: block !important; }
+}
+
+// Responsive grid columns
+@media (min-width: $look-bp-sm) {
+  @for $i from 1 through 12 {
+    .lk-grid--cols-sm-#{$i} { grid-template-columns: repeat(#{$i}, minmax(0, 1fr)); }
+    .lk-col-span-sm-#{$i}   { grid-column: span #{$i} / span #{$i}; }
+  }
+}
+
+@media (min-width: $look-bp-md) {
+  @for $i from 1 through 12 {
+    .lk-grid--cols-md-#{$i} { grid-template-columns: repeat(#{$i}, minmax(0, 1fr)); }
+    .lk-col-span-md-#{$i}   { grid-column: span #{$i} / span #{$i}; }
+  }
+}
+
+@media (min-width: $look-bp-lg) {
+  @for $i from 1 through 12 {
+    .lk-grid--cols-lg-#{$i} { grid-template-columns: repeat(#{$i}, minmax(0, 1fr)); }
+    .lk-col-span-lg-#{$i}   { grid-column: span #{$i} / span #{$i}; }
+  }
+}
+
+@media (min-width: $look-bp-xl) {
+  @for $i from 1 through 12 {
+    .lk-grid--cols-xl-#{$i} { grid-template-columns: repeat(#{$i}, minmax(0, 1fr)); }
+    .lk-col-span-xl-#{$i}   { grid-column: span #{$i} / span #{$i}; }
+  }
+}
+
+// --- Container ---
+
+.lk-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--lk-space-4);
+  padding-right: var(--lk-space-4);
+
+  @media (min-width: $look-bp-sm)  { max-width: var(--lk-container-sm); }
+  @media (min-width: $look-bp-md)  { max-width: var(--lk-container-md); }
+  @media (min-width: $look-bp-lg)  { max-width: var(--lk-container-lg); }
+  @media (min-width: $look-bp-xl)  { max-width: var(--lk-container-xl); }
+  @media (min-width: $look-bp-2xl) { max-width: var(--lk-container-2xl); }
+}
+
+.lk-container--fluid {
+  max-width: var(--lk-container-fluid);
+}
+
+// --- Responsive flex direction ---
+
+@media (max-width: ($look-bp-md - 1px)) {
+  .lk-flex--col-sm { flex-direction: column; }
+}
+
+@media (max-width: ($look-bp-lg - 1px)) {
+  .lk-flex--col-md { flex-direction: column; }
+}
+
+// --- Responsive text alignment ---
+
+@media (max-width: ($look-bp-md - 1px)) {
+  .lk-text-center-sm { text-align: center; }
+}
+
+@media (min-width: $look-bp-md) {
+  .lk-text-center-md { text-align: center; }
+  .lk-text-left-md   { text-align: left; }
+  .lk-text-right-md  { text-align: right; }
+}

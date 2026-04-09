@@ -1,0 +1,74 @@
+// Breadcrumbs component
+
+.lk-breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--lk-space-1);
+  list-style: none;
+  padding: 0;
+  font-size: var(--lk-text-sm);
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lk-space-1);
+    color: var(--lk-text-muted);
+
+    a {
+      color: var(--lk-primary);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+    }
+
+    // Separator — rendered via CSS pseudo-element
+    &:not(:last-child)::after {
+      content: '/';
+      color: var(--lk-text-muted);
+      margin-left: var(--lk-space-1);
+      opacity: 0.6;
+    }
+
+    // Active / current page
+    &--active {
+      color: var(--lk-text);
+      font-weight: var(--lk-weight-medium);
+
+      a {
+        color: var(--lk-text);
+        pointer-events: none;
+        text-decoration: none;
+      }
+    }
+  }
+
+  // --- Separator variants ---
+
+  &--arrow &__item:not(:last-child)::after {
+    content: '\203A'; // ›
+  }
+
+  &--dot &__item:not(:last-child)::after {
+    content: '\00B7'; // ·
+    font-size: var(--lk-text-lg);
+  }
+
+  // --- Dense ---
+
+  &--dense {
+    gap: 0;
+    font-size: var(--lk-text-xs);
+  }
+
+  &--dense &__item {
+    gap: 0;
+
+    &:not(:last-child)::after {
+      margin-left: calc(var(--lk-space-1) * 0.5);
+    }
+  }
+}

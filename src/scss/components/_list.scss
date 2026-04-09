@@ -1,0 +1,118 @@
+// List and list item component
+
+.lk-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  // --- Bordered ---
+
+  &--bordered {
+    border: var(--lk-border-width) solid var(--lk-border);
+    border-radius: var(--lk-radius);
+    overflow: hidden;
+  }
+
+  // --- Separated (divider between items) ---
+
+  &--separated > .lk-list-item + .lk-list-item {
+    border-top: var(--lk-border-width) solid var(--lk-border);
+  }
+
+  // --- Dense ---
+
+  &--dense > .lk-list-item {
+    padding: var(--lk-space-1) var(--lk-space-3);
+    font-size: var(--lk-text-sm);
+    min-height: 2rem;
+    gap: var(--lk-space-2);
+  }
+
+  &--dense > .lk-list-item .lk-list-item__secondary {
+    font-size: var(--lk-text-xs);
+  }
+}
+
+.lk-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-3);
+  padding: var(--lk-space-3) var(--lk-space-4);
+  min-height: 3rem;
+  font-size: var(--lk-text-base);
+  color: var(--lk-text);
+
+  // --- Sections ---
+
+  &__start {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  &__content {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  &__end {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  &__label {
+    font-weight: var(--lk-weight-medium);
+    line-height: var(--lk-leading-tight);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__secondary {
+    font-size: var(--lk-text-sm);
+    color: var(--lk-text-muted);
+    margin-top: var(--lk-space-1);
+    line-height: var(--lk-leading-snug);
+  }
+
+  // --- Clickable ---
+
+  &--clickable {
+    cursor: pointer;
+    transition: background-color var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover {
+      background: var(--lk-bg-subtle);
+    }
+  }
+
+  // --- Active / selected ---
+
+  &--active {
+    background: color-mix(in srgb, var(--lk-primary) 10%, transparent);
+    color: var(--lk-primary);
+
+    .lk-list-item__secondary {
+      color: color-mix(in srgb, var(--lk-primary) 60%, transparent);
+    }
+  }
+
+  // --- Disabled ---
+
+  &--disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+// Header / subheader for grouping
+.lk-list-header {
+  padding: var(--lk-space-2) var(--lk-space-4);
+  font-size: var(--lk-text-xs);
+  font-weight: var(--lk-weight-semibold);
+  color: var(--lk-text-muted);
+  letter-spacing: var(--lk-tracking-wider);
+  text-transform: uppercase;
+}

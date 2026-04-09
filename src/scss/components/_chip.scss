@@ -1,0 +1,136 @@
+// Chip component
+
+.lk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+
+  padding: var(--lk-space-1) var(--lk-space-3);
+  font-size: var(--lk-text-sm);
+  font-weight: var(--lk-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: middle;
+
+  border-radius: var(--lk-radius-full);
+  background: var(--lk-surface);
+  color: var(--lk-text);
+  border: var(--lk-border-width) solid transparent;
+
+  // --- Color variants ---
+
+  &--primary {
+    background: color-mix(in srgb, var(--lk-primary) 15%, transparent);
+    color: var(--lk-primary-dark);
+  }
+
+  &--secondary {
+    background: color-mix(in srgb, var(--lk-secondary) 15%, transparent);
+    color: var(--lk-secondary-dark);
+  }
+
+  &--positive {
+    background: color-mix(in srgb, var(--lk-positive) 15%, transparent);
+    color: var(--lk-positive-dark);
+  }
+
+  &--warning {
+    background: color-mix(in srgb, var(--lk-warning) 15%, transparent);
+    color: var(--lk-warning-dark);
+  }
+
+  &--negative {
+    background: color-mix(in srgb, var(--lk-negative) 15%, transparent);
+    color: var(--lk-negative-dark);
+  }
+
+  &--info {
+    background: color-mix(in srgb, var(--lk-info) 15%, transparent);
+    color: var(--lk-info-dark);
+  }
+
+  // --- Filled (solid) variants ---
+
+  &--filled {
+    background: var(--lk-primary);
+    color: var(--lk-primary-contrast);
+  }
+
+  &--filled#{&}--secondary {
+    background: var(--lk-secondary);
+    color: var(--lk-secondary-contrast);
+  }
+
+  &--filled#{&}--positive {
+    background: var(--lk-positive);
+    color: var(--lk-positive-contrast);
+  }
+
+  &--filled#{&}--negative {
+    background: var(--lk-negative);
+    color: var(--lk-negative-contrast);
+  }
+
+  // --- Outline ---
+
+  &--outline {
+    background: transparent;
+    border-color: var(--lk-border);
+    color: var(--lk-text);
+  }
+
+  // --- Clickable ---
+
+  &--clickable {
+    cursor: pointer;
+    transition: background-color var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover {
+      filter: brightness(0.95);
+    }
+  }
+
+  // --- Close button inside chip ---
+
+  &__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    padding: 0;
+    margin-left: var(--lk-space-1);
+    font-size: 0.625rem;
+    border: none;
+    border-radius: var(--lk-radius-full);
+    background: rgb(var(--lk-shadow-color) / 0.15);
+    color: inherit;
+    cursor: pointer;
+    line-height: 1;
+
+    &:hover {
+      background: rgb(var(--lk-shadow-color) / 0.25);
+    }
+  }
+
+  // --- Square shape ---
+
+  &--square {
+    border-radius: var(--lk-radius);
+  }
+
+  // --- Dense ---
+
+  &--dense {
+    padding: calc(var(--lk-space-1) * 0.5) var(--lk-space-2);
+    font-size: var(--lk-text-xs);
+    gap: calc(var(--lk-space-1) * 0.5);
+  }
+
+  &--dense &__close {
+    width: 0.75rem;
+    height: 0.75rem;
+    font-size: 0.5rem;
+    margin-left: calc(var(--lk-space-1) * 0.5);
+  }
+}

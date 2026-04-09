@@ -28,10 +28,29 @@
 @use 'layout/flex';
 
 // 5. Components
+@use 'components/avatar';
+@use 'components/badge';
+@use 'components/bar';
+@use 'components/breadcrumbs';
 @use 'components/button';
-@use 'components/modal';
+@use 'components/card';
+@use 'components/carousel';
+@use 'components/chip';
 @use 'components/input';
+@use 'components/list';
+@use 'components/modal';
+@use 'components/pagination';
+@use 'components/progress';
+@use 'components/rating';
+@use 'components/slider';
+@use 'components/spinner';
+@use 'components/splitter';
+@use 'components/table';
+@use 'components/timeline';
+@use 'components/toolbar';
+@use 'components/tooltip';
 
 // 6. Utilities
 @use 'utilities/spacing';
 @use 'utilities/display';
+@use 'utilities/responsive';

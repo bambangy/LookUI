@@ -74,6 +74,12 @@
       background: var(--lk-bg-subtle);
       border-radius: var(--lk-radius-xl);
     }
+
+    .demo-sub {
+      font-size: var(--lk-text-sm);
+      color: var(--lk-text-muted);
+      margin-bottom: var(--lk-space-3);
+    }
   </style>
 </head>
 <body>
@@ -188,6 +194,139 @@
 
 
 <!-- ======================================================================
+     AVATAR
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Avatar — .lk-avatar</p>
+
+  <p class="demo-sub">Sizes</p>
+  <div class="demo-row">
+    <div class="lk-avatar lk-avatar--xs">XS</div>
+    <div class="lk-avatar lk-avatar--sm">SM</div>
+    <div class="lk-avatar">DF</div>
+    <div class="lk-avatar lk-avatar--lg">LG</div>
+    <div class="lk-avatar lk-avatar--xl">XL</div>
+  </div>
+
+  <p class="demo-sub">Shapes &amp; colors</p>
+  <div class="demo-row">
+    <div class="lk-avatar lk-avatar--square">SQ</div>
+    <div class="lk-avatar lk-avatar--rounded">RD</div>
+    <div class="lk-avatar lk-avatar--secondary">S</div>
+    <div class="lk-avatar lk-avatar--accent">A</div>
+  </div>
+
+  <p class="demo-sub">Dense</p>
+  <div class="demo-row">
+    <div class="lk-avatar lk-avatar--dense lk-avatar--xs">XS</div>
+    <div class="lk-avatar lk-avatar--dense lk-avatar--sm">SM</div>
+    <div class="lk-avatar lk-avatar--dense">DF</div>
+    <div class="lk-avatar lk-avatar--dense lk-avatar--lg">LG</div>
+  </div>
+
+  <p class="demo-sub">Avatar group (overlapping)</p>
+  <div class="demo-row">
+    <div class="lk-avatar-group">
+      <div class="lk-avatar lk-avatar--accent">A</div>
+      <div class="lk-avatar lk-avatar--secondary">B</div>
+      <div class="lk-avatar">C</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     BADGE
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Badge — .lk-badge</p>
+
+  <div class="demo-row">
+    <span class="lk-badge">Default</span>
+    <span class="lk-badge lk-badge--secondary">Secondary</span>
+    <span class="lk-badge lk-badge--positive">Positive</span>
+    <span class="lk-badge lk-badge--warning">Warning</span>
+    <span class="lk-badge lk-badge--negative">Negative</span>
+    <span class="lk-badge lk-badge--info">Info</span>
+  </div>
+
+  <p class="demo-sub">Outline &amp; dot</p>
+  <div class="demo-row">
+    <span class="lk-badge lk-badge--outline">Outline</span>
+    <span class="lk-badge lk-badge--outline lk-badge--positive">Positive</span>
+    <span class="lk-badge lk-badge--dot"></span>
+    <span class="lk-badge lk-badge--dot lk-badge--positive"></span>
+    <span class="lk-badge lk-badge--dot lk-badge--negative"></span>
+  </div>
+
+  <p class="demo-sub">Dense</p>
+  <div class="demo-row">
+    <span class="lk-badge lk-badge--dense">Dense</span>
+    <span class="lk-badge lk-badge--dense lk-badge--positive">OK</span>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     BAR
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Bar — .lk-bar</p>
+
+  <div style="border: 1px solid var(--lk-border); border-radius: var(--lk-radius-lg); overflow: hidden; margin-bottom: var(--lk-space-5);">
+    <div class="lk-bar lk-bar--primary">
+      <div class="lk-bar__start">
+        <span class="lk-bar__title">App Title</span>
+      </div>
+      <div class="lk-bar__end">
+        <button class="lk-btn lk-btn--ghost" style="color: inherit;">Action</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="demo-sub">Dense</p>
+  <div style="border: 1px solid var(--lk-border); border-radius: var(--lk-radius-lg); overflow: hidden;">
+    <div class="lk-bar lk-bar--dense lk-bar--dark">
+      <div class="lk-bar__start">
+        <span class="lk-bar__title">Dense Bar</span>
+      </div>
+      <div class="lk-bar__end">
+        <span class="lk-badge lk-badge--accent">3</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     BREADCRUMBS
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Breadcrumbs — .lk-breadcrumbs</p>
+
+  <ul class="lk-breadcrumbs" style="margin-bottom: var(--lk-space-4);">
+    <li class="lk-breadcrumbs__item"><a href="#">Home</a></li>
+    <li class="lk-breadcrumbs__item"><a href="#">Products</a></li>
+    <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Detail</li>
+  </ul>
+
+  <p class="demo-sub">Arrow separator</p>
+  <ul class="lk-breadcrumbs lk-breadcrumbs--arrow" style="margin-bottom: var(--lk-space-4);">
+    <li class="lk-breadcrumbs__item"><a href="#">Home</a></li>
+    <li class="lk-breadcrumbs__item"><a href="#">Category</a></li>
+    <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Page</li>
+  </ul>
+
+  <p class="demo-sub">Dense</p>
+  <ul class="lk-breadcrumbs lk-breadcrumbs--dense">
+    <li class="lk-breadcrumbs__item"><a href="#">Home</a></li>
+    <li class="lk-breadcrumbs__item"><a href="#">Section</a></li>
+    <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Current</li>
+  </ul>
+</section>
+
+
+<!-- ======================================================================
      BUTTONS
 ====================================================================== -->
 <section class="demo-section">
@@ -199,17 +338,156 @@
     <button class="lk-btn lk-btn--ghost">Ghost</button>
     <button class="lk-btn lk-btn--positive">Positive</button>
     <button class="lk-btn lk-btn--negative">Negative</button>
+    <button class="lk-btn lk-btn--warning">Warning</button>
+    <button class="lk-btn lk-btn--info">Info</button>
   </div>
 
+  <p class="demo-sub">Sizes</p>
   <div class="demo-row">
     <button class="lk-btn lk-btn--primary lk-btn--sm">Small</button>
     <button class="lk-btn lk-btn--primary">Default</button>
     <button class="lk-btn lk-btn--primary lk-btn--lg">Large</button>
   </div>
 
+  <p class="demo-sub">Dense</p>
+  <div class="demo-row">
+    <button class="lk-btn lk-btn--primary lk-btn--dense lk-btn--sm">Dense SM</button>
+    <button class="lk-btn lk-btn--primary lk-btn--dense">Dense</button>
+    <button class="lk-btn lk-btn--primary lk-btn--dense lk-btn--lg">Dense LG</button>
+  </div>
+
+  <p class="demo-sub">Disabled</p>
   <div class="demo-row">
     <button class="lk-btn lk-btn--primary" disabled>Disabled</button>
     <button class="lk-btn lk-btn--secondary" aria-disabled="true">Aria-disabled</button>
+  </div>
+
+  <p class="demo-sub">Button group</p>
+  <div class="demo-row">
+    <div class="lk-btn-group">
+      <button class="lk-btn lk-btn--secondary">Left</button>
+      <button class="lk-btn lk-btn--secondary">Center</button>
+      <button class="lk-btn lk-btn--secondary">Right</button>
+    </div>
+  </div>
+
+  <p class="demo-sub">Button dropdown</p>
+  <div class="demo-row">
+    <div class="lk-btn-dropdown lk-btn-dropdown--open">
+      <button class="lk-btn lk-btn--primary">
+        Dropdown <span class="lk-btn-dropdown__caret"></span>
+      </button>
+      <div class="lk-btn-dropdown__menu">
+        <button class="lk-btn-dropdown__item">Action one</button>
+        <button class="lk-btn-dropdown__item lk-btn-dropdown__item--active">Active item</button>
+        <hr class="lk-btn-dropdown__divider" />
+        <button class="lk-btn-dropdown__item">Another action</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     CARD
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Card — .lk-card</p>
+
+  <div class="lk-grid lk-grid--cols-3" style="align-items: start;">
+    <div class="lk-card">
+      <div class="lk-card__header">
+        <div>
+          <div class="lk-card__title">Default card</div>
+          <div class="lk-card__subtitle">With border</div>
+        </div>
+      </div>
+      <div class="lk-card__body">
+        Card body content goes here. Standard bordered card.
+      </div>
+      <div class="lk-card__footer">
+        <button class="lk-btn lk-btn--primary lk-btn--sm">Action</button>
+      </div>
+    </div>
+
+    <div class="lk-card lk-card--raised">
+      <div class="lk-card__header">
+        <div>
+          <div class="lk-card__title">Raised card</div>
+          <div class="lk-card__subtitle">With shadow</div>
+        </div>
+      </div>
+      <div class="lk-card__body">
+        This card uses <code>.lk-card--raised</code> for a shadow instead of border.
+      </div>
+    </div>
+
+    <div class="lk-card lk-card--dense">
+      <div class="lk-card__header">
+        <div>
+          <div class="lk-card__title">Dense card</div>
+          <div class="lk-card__subtitle">Compact spacing</div>
+        </div>
+      </div>
+      <div class="lk-card__body">
+        Tighter padding for dense layouts.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     CAROUSEL
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Carousel — .lk-carousel</p>
+
+  <div class="lk-carousel" style="max-width: 500px; border-radius: var(--lk-radius-lg); overflow: hidden; background: var(--lk-surface);">
+    <div class="lk-carousel__track">
+      <div class="lk-carousel__slide" style="display: flex; align-items: center; justify-content: center; height: 200px; background: var(--lk-primary); color: var(--lk-primary-contrast);">
+        <h3>Slide 1</h3>
+      </div>
+    </div>
+    <button class="lk-carousel__prev" aria-label="Previous">&lsaquo;</button>
+    <button class="lk-carousel__next" aria-label="Next">&rsaquo;</button>
+    <div class="lk-carousel__indicators">
+      <button class="lk-carousel__dot lk-carousel__dot--active" aria-label="Slide 1"></button>
+      <button class="lk-carousel__dot" aria-label="Slide 2"></button>
+      <button class="lk-carousel__dot" aria-label="Slide 3"></button>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     CHIP
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Chip — .lk-chip</p>
+
+  <div class="demo-row">
+    <span class="lk-chip">Default</span>
+    <span class="lk-chip lk-chip--primary">Primary</span>
+    <span class="lk-chip lk-chip--positive">Positive</span>
+    <span class="lk-chip lk-chip--warning">Warning</span>
+    <span class="lk-chip lk-chip--negative">Negative</span>
+    <span class="lk-chip lk-chip--info">Info</span>
+  </div>
+
+  <p class="demo-sub">Filled &amp; outline</p>
+  <div class="demo-row">
+    <span class="lk-chip lk-chip--filled">Filled</span>
+    <span class="lk-chip lk-chip--outline">Outline</span>
+    <span class="lk-chip lk-chip--primary">
+      Closable <button class="lk-chip__close" aria-label="Remove">&times;</button>
+    </span>
+  </div>
+
+  <p class="demo-sub">Dense</p>
+  <div class="demo-row">
+    <span class="lk-chip lk-chip--dense lk-chip--primary">Dense</span>
+    <span class="lk-chip lk-chip--dense lk-chip--positive">OK</span>
   </div>
 </section>
 
@@ -238,6 +516,504 @@
       <input id="input-disabled" class="lk-input" type="text" placeholder="Not editable" disabled />
     </div>
 
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     LINEAR PROGRESS
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Linear progress — .lk-progress</p>
+
+  <div style="max-width: 500px; display: flex; flex-direction: column; gap: var(--lk-space-4);">
+    <div class="lk-progress">
+      <div class="lk-progress__bar" style="width: 65%;"></div>
+    </div>
+
+    <p class="demo-sub">Sizes</p>
+    <div class="lk-progress lk-progress--xs">
+      <div class="lk-progress__bar" style="width: 40%;"></div>
+    </div>
+    <div class="lk-progress lk-progress--sm">
+      <div class="lk-progress__bar" style="width: 55%;"></div>
+    </div>
+    <div class="lk-progress lk-progress--lg">
+      <div class="lk-progress__bar" style="width: 70%;"></div>
+    </div>
+
+    <p class="demo-sub">Colors</p>
+    <div class="lk-progress lk-progress--positive">
+      <div class="lk-progress__bar" style="width: 80%;"></div>
+    </div>
+    <div class="lk-progress lk-progress--warning">
+      <div class="lk-progress__bar" style="width: 50%;"></div>
+    </div>
+    <div class="lk-progress lk-progress--negative">
+      <div class="lk-progress__bar" style="width: 30%;"></div>
+    </div>
+
+    <p class="demo-sub">Striped &amp; indeterminate</p>
+    <div class="lk-progress lk-progress--striped lk-progress--animated">
+      <div class="lk-progress__bar" style="width: 60%;"></div>
+    </div>
+    <div class="lk-progress lk-progress--indeterminate">
+      <div class="lk-progress__bar"></div>
+    </div>
+
+    <p class="demo-sub">With label</p>
+    <div class="lk-progress lk-progress--labeled">
+      <div class="lk-progress__bar" style="width: 72%;"></div>
+      <span class="lk-progress__label">72%</span>
+    </div>
+
+    <p class="demo-sub">Dense</p>
+    <div class="lk-progress lk-progress--dense">
+      <div class="lk-progress__bar" style="width: 45%;"></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     LIST
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">List — .lk-list / .lk-list-item</p>
+
+  <div style="max-width: 400px;">
+    <p class="demo-sub">Bordered &amp; separated</p>
+    <ul class="lk-list lk-list--bordered lk-list--separated" style="margin-bottom: var(--lk-space-5);">
+      <li class="lk-list-item lk-list-item--clickable">
+        <div class="lk-list-item__start">
+          <div class="lk-avatar lk-avatar--sm">A</div>
+        </div>
+        <div class="lk-list-item__content">
+          <div class="lk-list-item__label">Alice</div>
+          <div class="lk-list-item__secondary">Online</div>
+        </div>
+        <div class="lk-list-item__end">
+          <span class="lk-badge lk-badge--positive lk-badge--dot"></span>
+        </div>
+      </li>
+      <li class="lk-list-item lk-list-item--clickable lk-list-item--active">
+        <div class="lk-list-item__start">
+          <div class="lk-avatar lk-avatar--sm lk-avatar--secondary">B</div>
+        </div>
+        <div class="lk-list-item__content">
+          <div class="lk-list-item__label">Bob (active)</div>
+          <div class="lk-list-item__secondary">Away</div>
+        </div>
+      </li>
+      <li class="lk-list-item lk-list-item--disabled">
+        <div class="lk-list-item__content">
+          <div class="lk-list-item__label">Disabled item</div>
+        </div>
+      </li>
+    </ul>
+
+    <p class="demo-sub">Dense</p>
+    <ul class="lk-list lk-list--bordered lk-list--separated lk-list--dense">
+      <li class="lk-list-item lk-list-item--clickable">
+        <div class="lk-list-item__content">
+          <div class="lk-list-item__label">Dense item 1</div>
+        </div>
+      </li>
+      <li class="lk-list-item lk-list-item--clickable">
+        <div class="lk-list-item__content">
+          <div class="lk-list-item__label">Dense item 2</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     TABLE
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Table — .lk-table</p>
+
+  <p class="demo-sub">Default</p>
+  <div class="lk-table-wrap" style="margin-bottom: var(--lk-space-5);">
+    <table class="lk-table">
+      <thead>
+        <tr><th>Name</th><th>Role</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Alice</td><td>Admin</td><td>Active</td></tr>
+        <tr><td>Bob</td><td>Editor</td><td>Pending</td></tr>
+        <tr><td>Carol</td><td>Viewer</td><td>Inactive</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="demo-sub">Bordered + striped + hover</p>
+  <div class="lk-table-wrap" style="margin-bottom: var(--lk-space-5);">
+    <table class="lk-table lk-table--bordered lk-table--striped lk-table--hover">
+      <thead>
+        <tr><th>ID</th><th>Product</th><th>Price</th><th>Stock</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Widget</td><td>$9.99</td><td>142</td></tr>
+        <tr><td>2</td><td>Gadget</td><td>$24.50</td><td>38</td></tr>
+        <tr><td>3</td><td>Gizmo</td><td>$7.25</td><td>520</td></tr>
+        <tr><td>4</td><td>Doohickey</td><td>$15.00</td><td>91</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="demo-sub">Striped even</p>
+  <div class="lk-table-wrap" style="margin-bottom: var(--lk-space-5);">
+    <table class="lk-table lk-table--striped-even lk-table--hover">
+      <thead>
+        <tr><th>Name</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Alpha</td><td>100</td></tr>
+        <tr><td>Beta</td><td>200</td></tr>
+        <tr><td>Gamma</td><td>300</td></tr>
+        <tr><td>Delta</td><td>400</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="demo-sub">Row states</p>
+  <div class="lk-table-wrap" style="margin-bottom: var(--lk-space-5);">
+    <table class="lk-table lk-table--bordered">
+      <thead>
+        <tr><th>State</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr class="lk-table__row--active"><td>Active</td><td>Primary tint</td></tr>
+        <tr class="lk-table__row--positive"><td>Positive</td><td>Green tint</td></tr>
+        <tr class="lk-table__row--warning"><td>Warning</td><td>Amber tint</td></tr>
+        <tr class="lk-table__row--negative"><td>Negative</td><td>Red tint</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="demo-sub">Dense</p>
+  <div class="lk-table-wrap">
+    <table class="lk-table lk-table--dense lk-table--bordered lk-table--hover">
+      <thead>
+        <tr><th>Col A</th><th>Col B</th><th>Col C</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>a1</td><td>b1</td><td>c1</td></tr>
+        <tr><td>a2</td><td>b2</td><td>c2</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     PAGINATION
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Pagination — .lk-pagination</p>
+
+  <div style="margin-bottom: var(--lk-space-5);">
+    <ul class="lk-pagination">
+      <li class="lk-pagination__item"><a class="lk-pagination__link lk-pagination__link--disabled" href="#">&laquo;</a></li>
+      <li class="lk-pagination__item"><a class="lk-pagination__link lk-pagination__link--active" href="#">1</a></li>
+      <li class="lk-pagination__item"><a class="lk-pagination__link" href="#">2</a></li>
+      <li class="lk-pagination__item"><a class="lk-pagination__link" href="#">3</a></li>
+      <li class="lk-pagination__item"><span class="lk-pagination__ellipsis">&hellip;</span></li>
+      <li class="lk-pagination__item"><a class="lk-pagination__link" href="#">10</a></li>
+      <li class="lk-pagination__item"><a class="lk-pagination__link" href="#">&raquo;</a></li>
+    </ul>
+  </div>
+
+  <p class="demo-sub">Bordered &amp; round</p>
+  <div style="margin-bottom: var(--lk-space-5);">
+    <ul class="lk-pagination lk-pagination--bordered lk-pagination--round">
+      <li class="lk-pagination__item"><a class="lk-pagination__link" href="#">&laquo;</a></li>
+      <li class="lk-pagination__item"><a class="lk-pagination__link lk-pagination__link--active" href="#">1</a></li>
+      <li class="lk-pagination__item"><a class="lk-pagination__link" href="#">2</a></li>
+      <li class="lk-pagination__item"><a class="lk-pagination__link" href="#">3</a></li>
+      <li class="lk-pagination__item"><a class="lk-pagination__link" href="#">&raquo;</a></li>
+    </ul>
+  </div>
+
+  <p class="demo-sub">Dense</p>
+  <ul class="lk-pagination lk-pagination--dense">
+    <li class="lk-pagination__item"><a class="lk-pagination__link" href="#">&laquo;</a></li>
+    <li class="lk-pagination__item"><a class="lk-pagination__link lk-pagination__link--active" href="#">1</a></li>
+    <li class="lk-pagination__item"><a class="lk-pagination__link" href="#">2</a></li>
+    <li class="lk-pagination__item"><a class="lk-pagination__link" href="#">&raquo;</a></li>
+  </ul>
+</section>
+
+
+<!-- ======================================================================
+     TIMELINE
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Timeline — .lk-timeline</p>
+
+  <div style="max-width: 500px;">
+    <ul class="lk-timeline" style="margin-bottom: var(--lk-space-5);">
+      <li class="lk-timeline__item">
+        <div class="lk-timeline__dot lk-timeline__dot--primary"></div>
+        <div class="lk-timeline__content">
+          <div class="lk-timeline__title">Project started</div>
+          <div class="lk-timeline__time">Jan 2026</div>
+          <div class="lk-timeline__body">Initial commit and project scaffolding.</div>
+        </div>
+      </li>
+      <li class="lk-timeline__item">
+        <div class="lk-timeline__dot lk-timeline__dot--positive"></div>
+        <div class="lk-timeline__content">
+          <div class="lk-timeline__title">v0.1.0 released</div>
+          <div class="lk-timeline__time">Mar 2026</div>
+          <div class="lk-timeline__body">First public release with core components.</div>
+        </div>
+      </li>
+      <li class="lk-timeline__item">
+        <div class="lk-timeline__dot lk-timeline__dot--info"></div>
+        <div class="lk-timeline__content">
+          <div class="lk-timeline__title">Community feedback</div>
+          <div class="lk-timeline__time">Apr 2026</div>
+        </div>
+      </li>
+    </ul>
+
+    <p class="demo-sub">Dense</p>
+    <ul class="lk-timeline lk-timeline--dense">
+      <li class="lk-timeline__item">
+        <div class="lk-timeline__dot lk-timeline__dot--warning"></div>
+        <div class="lk-timeline__content">
+          <div class="lk-timeline__title">Dense event A</div>
+          <div class="lk-timeline__time">9:00 AM</div>
+        </div>
+      </li>
+      <li class="lk-timeline__item">
+        <div class="lk-timeline__dot lk-timeline__dot--negative"></div>
+        <div class="lk-timeline__content">
+          <div class="lk-timeline__title">Dense event B</div>
+          <div class="lk-timeline__time">10:30 AM</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     TOOLTIP
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Tooltip — .lk-tooltip</p>
+
+  <div class="demo-row">
+    <span class="lk-tooltip">
+      <button class="lk-btn lk-btn--secondary">Hover me (top)</button>
+      <span class="lk-tooltip__content lk-tooltip__content--top">Tooltip on top</span>
+    </span>
+
+    <span class="lk-tooltip">
+      <button class="lk-btn lk-btn--secondary">Hover me (bottom)</button>
+      <span class="lk-tooltip__content lk-tooltip__content--bottom">Tooltip on bottom</span>
+    </span>
+
+    <span class="lk-tooltip">
+      <button class="lk-btn lk-btn--secondary">Right</button>
+      <span class="lk-tooltip__content lk-tooltip__content--right">Right tooltip</span>
+    </span>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     TOOLBAR
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Toolbar — .lk-toolbar</p>
+
+  <div style="margin-bottom: var(--lk-space-5);">
+    <div class="lk-toolbar">
+      <div class="lk-toolbar__group">
+        <button class="lk-btn lk-btn--ghost lk-btn--sm">B</button>
+        <button class="lk-btn lk-btn--ghost lk-btn--sm">I</button>
+        <button class="lk-btn lk-btn--ghost lk-btn--sm">U</button>
+      </div>
+      <div class="lk-toolbar__separator"></div>
+      <div class="lk-toolbar__group">
+        <button class="lk-btn lk-btn--ghost lk-btn--sm">L</button>
+        <button class="lk-btn lk-btn--ghost lk-btn--sm">C</button>
+        <button class="lk-btn lk-btn--ghost lk-btn--sm">R</button>
+      </div>
+      <div class="lk-toolbar__spacer"></div>
+      <button class="lk-btn lk-btn--primary lk-btn--sm">Save</button>
+    </div>
+  </div>
+
+  <p class="demo-sub">Dense</p>
+  <div class="lk-toolbar lk-toolbar--dense">
+    <div class="lk-toolbar__group">
+      <button class="lk-btn lk-btn--ghost lk-btn--dense">B</button>
+      <button class="lk-btn lk-btn--ghost lk-btn--dense">I</button>
+    </div>
+    <div class="lk-toolbar__separator"></div>
+    <div class="lk-toolbar__group">
+      <button class="lk-btn lk-btn--ghost lk-btn--dense">L</button>
+      <button class="lk-btn lk-btn--ghost lk-btn--dense">R</button>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     RATING
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Rating — .lk-rating</p>
+
+  <div style="margin-bottom: var(--lk-space-4);">
+    <div class="lk-rating">
+      <button class="lk-rating__item lk-rating__item--active">&#9733;</button>
+      <button class="lk-rating__item lk-rating__item--active">&#9733;</button>
+      <button class="lk-rating__item lk-rating__item--active">&#9733;</button>
+      <button class="lk-rating__item lk-rating__item--active">&#9733;</button>
+      <button class="lk-rating__item">&#9733;</button>
+    </div>
+  </div>
+
+  <p class="demo-sub">Sizes</p>
+  <div class="demo-row">
+    <div class="lk-rating lk-rating--sm">
+      <button class="lk-rating__item lk-rating__item--active">&#9733;</button>
+      <button class="lk-rating__item lk-rating__item--active">&#9733;</button>
+      <button class="lk-rating__item">&#9733;</button>
+    </div>
+    <div class="lk-rating lk-rating--lg">
+      <button class="lk-rating__item lk-rating__item--active">&#9733;</button>
+      <button class="lk-rating__item lk-rating__item--active">&#9733;</button>
+      <button class="lk-rating__item">&#9733;</button>
+    </div>
+  </div>
+
+  <p class="demo-sub">Dense &amp; readonly</p>
+  <div class="demo-row">
+    <div class="lk-rating lk-rating--dense lk-rating--readonly">
+      <span class="lk-rating__item lk-rating__item--active">&#9733;</span>
+      <span class="lk-rating__item lk-rating__item--active">&#9733;</span>
+      <span class="lk-rating__item lk-rating__item--active">&#9733;</span>
+      <span class="lk-rating__item">&#9733;</span>
+      <span class="lk-rating__item">&#9733;</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     SLIDER
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Slider — .lk-slider</p>
+
+  <div style="max-width: 400px; display: flex; flex-direction: column; gap: var(--lk-space-6);">
+    <div class="lk-slider">
+      <div class="lk-slider__track">
+        <div class="lk-slider__fill" style="width: 40%;"></div>
+        <div class="lk-slider__thumb" style="left: 40%;"></div>
+      </div>
+    </div>
+
+    <p class="demo-sub">Color variant</p>
+    <div class="lk-slider lk-slider--positive">
+      <div class="lk-slider__track">
+        <div class="lk-slider__fill" style="width: 70%;"></div>
+        <div class="lk-slider__thumb" style="left: 70%;"></div>
+      </div>
+    </div>
+
+    <p class="demo-sub">Dense</p>
+    <div class="lk-slider lk-slider--dense">
+      <div class="lk-slider__track">
+        <div class="lk-slider__fill" style="width: 55%;"></div>
+        <div class="lk-slider__thumb" style="left: 55%;"></div>
+      </div>
+    </div>
+
+    <p class="demo-sub">Disabled</p>
+    <div class="lk-slider lk-slider--disabled">
+      <div class="lk-slider__track">
+        <div class="lk-slider__fill" style="width: 30%;"></div>
+        <div class="lk-slider__thumb" style="left: 30%;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     SPINNER
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Spinner — .lk-spinner</p>
+
+  <p class="demo-sub">Sizes</p>
+  <div class="demo-row">
+    <div class="lk-spinner lk-spinner--xs"></div>
+    <div class="lk-spinner lk-spinner--sm"></div>
+    <div class="lk-spinner"></div>
+    <div class="lk-spinner lk-spinner--lg"></div>
+    <div class="lk-spinner lk-spinner--xl"></div>
+  </div>
+
+  <p class="demo-sub">Colors</p>
+  <div class="demo-row">
+    <div class="lk-spinner lk-spinner--positive"></div>
+    <div class="lk-spinner lk-spinner--warning"></div>
+    <div class="lk-spinner lk-spinner--negative"></div>
+    <div class="lk-spinner lk-spinner--accent"></div>
+  </div>
+
+  <p class="demo-sub">Dense</p>
+  <div class="demo-row">
+    <div class="lk-spinner lk-spinner--dense lk-spinner--xs"></div>
+    <div class="lk-spinner lk-spinner--dense lk-spinner--sm"></div>
+    <div class="lk-spinner lk-spinner--dense"></div>
+    <div class="lk-spinner lk-spinner--dense lk-spinner--lg"></div>
+  </div>
+
+  <p class="demo-sub">On dark</p>
+  <div class="demo-row" style="background: var(--lk-secondary-dark); padding: var(--lk-space-4); border-radius: var(--lk-radius);">
+    <div class="lk-spinner lk-spinner--on-dark"></div>
+    <div class="lk-spinner lk-spinner--on-dark lk-spinner--lg"></div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     SPLITTER
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Splitter — .lk-splitter</p>
+
+  <div class="lk-splitter lk-splitter--bordered" style="height: 200px; margin-bottom: var(--lk-space-5);">
+    <div class="lk-splitter__pane" style="flex: 1; padding: var(--lk-space-4);">
+      <p>Left pane</p>
+    </div>
+    <div class="lk-splitter__handle"></div>
+    <div class="lk-splitter__pane" style="flex: 1; padding: var(--lk-space-4);">
+      <p>Right pane</p>
+    </div>
+  </div>
+
+  <p class="demo-sub">Vertical</p>
+  <div class="lk-splitter lk-splitter--vertical lk-splitter--bordered" style="height: 200px;">
+    <div class="lk-splitter__pane" style="flex: 1; padding: var(--lk-space-4);">
+      <p>Top pane</p>
+    </div>
+    <div class="lk-splitter__handle"></div>
+    <div class="lk-splitter__pane" style="flex: 1; padding: var(--lk-space-4);">
+      <p>Bottom pane</p>
+    </div>
   </div>
 </section>
 
@@ -299,7 +1075,27 @@
 
 
 <!-- ======================================================================
-     THEMING DEMO — override tokens inline
+     RESPONSIVE CONTAINER
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Responsive — .lk-container / breakpoints</p>
+
+  <div class="lk-container" style="background: var(--lk-bg-subtle); padding: var(--lk-space-4); border-radius: var(--lk-radius); text-align: center;">
+    <code>.lk-container</code> — responsive max-width at each breakpoint
+  </div>
+
+  <div style="margin-top: var(--lk-space-4);">
+    <p class="demo-sub">Resize the browser to see visibility utilities:</p>
+    <div class="demo-row">
+      <span class="lk-badge lk-hidden-md-up">Visible on &lt; md</span>
+      <span class="lk-badge lk-badge--positive lk-hidden-sm-down">Visible on &ge; md</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     THEMING DEMO
 ====================================================================== -->
 <section class="demo-section">
   <p class="demo-section__title">Custom theme override (teal brand)</p>

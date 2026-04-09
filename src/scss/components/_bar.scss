@@ -1,0 +1,90 @@
+// Bar component (app bar / header bar / footer bar)
+
+.lk-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-3);
+
+  padding: var(--lk-space-3) var(--lk-space-4);
+  min-height: 3.5rem;
+
+  background: var(--lk-bg);
+  border-bottom: var(--lk-border-width) solid var(--lk-border);
+
+  // --- Sections ---
+
+  &__start {
+    display: flex;
+    align-items: center;
+    gap: var(--lk-space-2);
+    flex-shrink: 0;
+  }
+
+  &__center {
+    display: flex;
+    align-items: center;
+    gap: var(--lk-space-2);
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  &__end {
+    display: flex;
+    align-items: center;
+    gap: var(--lk-space-2);
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  &__title {
+    font-size: var(--lk-text-md);
+    font-weight: var(--lk-weight-semibold);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // --- Variants ---
+
+  &--primary {
+    background: var(--lk-primary);
+    color: var(--lk-primary-contrast);
+    border-bottom-color: var(--lk-primary-dark);
+  }
+
+  &--dark {
+    background: var(--lk-secondary-dark);
+    color: var(--lk-text-on-dark);
+    border-bottom-color: transparent;
+  }
+
+  &--flat {
+    border-bottom: none;
+    box-shadow: none;
+  }
+
+  &--raised {
+    border-bottom: none;
+    box-shadow: var(--lk-shadow-sm);
+  }
+
+  // --- Sticky ---
+
+  &--sticky {
+    position: sticky;
+    top: 0;
+    z-index: var(--lk-z-sticky);
+  }
+
+  // --- Dense ---
+
+  &--dense {
+    padding: var(--lk-space-2) var(--lk-space-3);
+    min-height: 2.5rem;
+    gap: var(--lk-space-2);
+  }
+
+  &--dense &__title {
+    font-size: var(--lk-text-base);
+  }
+}

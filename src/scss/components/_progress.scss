@@ -1,0 +1,112 @@
+// Linear progress component
+
+.lk-progress {
+  width: 100%;
+  height: 0.5rem;
+  background: var(--lk-surface);
+  border-radius: var(--lk-radius-full);
+  overflow: hidden;
+
+  &__bar {
+    height: 100%;
+    background: var(--lk-primary);
+    border-radius: inherit;
+    transition: width var(--lk-duration-base) var(--lk-easing-default);
+    min-width: 0;
+  }
+
+  // --- Color variants ---
+
+  &--positive &__bar  { background: var(--lk-positive); }
+  &--warning  &__bar  { background: var(--lk-warning); }
+  &--negative &__bar  { background: var(--lk-negative); }
+  &--info     &__bar  { background: var(--lk-info); }
+  &--accent   &__bar  { background: var(--lk-accent); }
+
+  // --- Size variants ---
+
+  &--xs { height: 0.125rem; }
+  &--sm { height: 0.25rem; }
+  &--lg { height: 0.75rem; }
+  &--xl { height: 1rem; }
+
+  // --- Square shape ---
+
+  &--square {
+    border-radius: 0;
+
+    .lk-progress__bar { border-radius: 0; }
+  }
+
+  // --- Striped ---
+
+  &--striped &__bar {
+    background-image: linear-gradient(
+      45deg,
+      rgba(255,255,255,0.15) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255,255,255,0.15) 50%,
+      rgba(255,255,255,0.15) 75%,
+      transparent 75%,
+      transparent
+    );
+    background-size: 1rem 1rem;
+  }
+
+  // --- Animated (moves stripes) ---
+
+  &--animated &__bar {
+    animation: lk-progress-stripes 1s linear infinite;
+  }
+
+  // --- Indeterminate ---
+
+  &--indeterminate &__bar {
+    width: 30% !important;
+    animation: lk-progress-indeterminate 1.5s var(--lk-easing-default) infinite;
+  }
+
+  // --- With label ---
+
+  &--labeled {
+    position: relative;
+    height: 1.25rem;
+  }
+
+  &__label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--lk-text-xs);
+    font-weight: var(--lk-weight-semibold);
+    color: var(--lk-text);
+    pointer-events: none;
+  }
+
+  // --- Dense ---
+
+  &--dense {
+    height: 0.25rem;
+  }
+
+  &--dense#{&}--labeled {
+    height: 0.875rem;
+  }
+
+  &--dense &__label {
+    font-size: 0.5rem;
+  }
+}
+
+@keyframes lk-progress-stripes {
+  from { background-position: 1rem 0; }
+  to   { background-position: 0 0; }
+}
+
+@keyframes lk-progress-indeterminate {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}

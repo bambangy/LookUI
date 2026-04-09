@@ -1,0 +1,65 @@
+// Toolbar component
+
+.lk-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  padding: var(--lk-space-2) var(--lk-space-3);
+  background: var(--lk-bg-subtle);
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius);
+
+  // --- Sections ---
+
+  &__group {
+    display: flex;
+    align-items: center;
+    gap: var(--lk-space-1);
+  }
+
+  // Vertical divider between groups
+  &__separator {
+    width: var(--lk-border-width);
+    height: 1.5rem;
+    background: var(--lk-border);
+    flex-shrink: 0;
+  }
+
+  &__spacer {
+    flex: 1 1 auto;
+  }
+
+  // --- Variants ---
+
+  &--flat {
+    border: none;
+    background: transparent;
+  }
+
+  &--primary {
+    background: var(--lk-primary);
+    border-color: var(--lk-primary-dark);
+    color: var(--lk-primary-contrast);
+  }
+
+  &--dark {
+    background: var(--lk-secondary-dark);
+    border-color: transparent;
+    color: var(--lk-text-on-dark);
+  }
+
+  // --- Dense ---
+
+  &--dense {
+    gap: var(--lk-space-1);
+    padding: var(--lk-space-1) var(--lk-space-2);
+  }
+
+  &--dense &__group {
+    gap: 0;
+  }
+
+  &--dense &__separator {
+    height: 1rem;
+  }
+}

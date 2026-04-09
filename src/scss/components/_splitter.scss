@@ -1,0 +1,92 @@
+// Splitter component (resizable panes)
+
+.lk-splitter {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+
+  // --- Horizontal (side-by-side panes, default) ---
+
+  &__pane {
+    overflow: auto;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  &__handle {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--lk-bg-subtle);
+    border: none;
+    cursor: col-resize;
+    width: 6px;
+    transition: background var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover,
+    &--active {
+      background: var(--lk-primary-light);
+    }
+
+    // Grip dots
+    &::after {
+      content: '';
+      display: block;
+      width: 2px;
+      height: 24px;
+      border-left: 1px solid var(--lk-border-strong);
+      border-right: 1px solid var(--lk-border-strong);
+    }
+  }
+
+  // --- Vertical (stacked panes) ---
+
+  &--vertical {
+    flex-direction: column;
+  }
+
+  &--vertical &__handle {
+    cursor: row-resize;
+    width: auto;
+    height: 6px;
+
+    &::after {
+      width: 24px;
+      height: 2px;
+      border-left: none;
+      border-right: none;
+      border-top: 1px solid var(--lk-border-strong);
+      border-bottom: 1px solid var(--lk-border-strong);
+    }
+  }
+
+  // --- Bordered ---
+
+  &--bordered {
+    border: var(--lk-border-width) solid var(--lk-border);
+    border-radius: var(--lk-radius);
+  }
+
+  // --- Dense ---
+
+  &--dense &__handle {
+    width: 3px;
+
+    &::after {
+      width: 1px;
+      height: 16px;
+    }
+  }
+
+  &--dense#{&}--vertical &__handle {
+    height: 3px;
+    width: auto;
+
+    &::after {
+      width: 16px;
+      height: 1px;
+    }
+  }
+}

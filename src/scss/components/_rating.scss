@@ -1,0 +1,92 @@
+// Rating component
+
+.lk-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: var(--lk-text-lg);
+    color: var(--lk-border);
+    cursor: pointer;
+    transition: color var(--lk-duration-fast) var(--lk-easing-default),
+                transform var(--lk-duration-fast) var(--lk-easing-spring);
+    line-height: 1;
+    padding: 0;
+    background: none;
+    border: none;
+
+    &:hover {
+      transform: scale(1.15);
+    }
+
+    // Filled / active star
+    &--active {
+      color: var(--lk-warning);
+    }
+
+    // Half-filled (use with a clip or overlay technique in JS)
+    &--half {
+      color: var(--lk-warning);
+      opacity: 0.6;
+    }
+  }
+
+  // --- Size variants ---
+
+  &--sm &__item {
+    width: 1rem;
+    height: 1rem;
+    font-size: var(--lk-text-base);
+  }
+
+  &--lg &__item {
+    width: 2rem;
+    height: 2rem;
+    font-size: var(--lk-text-2xl);
+  }
+
+  // --- Color variants ---
+
+  &--primary &__item--active {
+    color: var(--lk-primary);
+  }
+
+  &--negative &__item--active {
+    color: var(--lk-negative);
+  }
+
+  // --- Read-only ---
+
+  &--readonly &__item {
+    cursor: default;
+
+    &:hover {
+      transform: none;
+    }
+  }
+
+  // --- Disabled ---
+
+  &--disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  // --- Dense ---
+
+  &--dense {
+    gap: 0;
+  }
+
+  &--dense &__item {
+    width: 1.125rem;
+    height: 1.125rem;
+    font-size: var(--lk-text-base);
+  }
+}

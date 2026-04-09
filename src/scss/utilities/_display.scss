@@ -34,3 +34,39 @@
 .lk-h-full { height: 100%; }
 .lk-w-auto { width: auto; }
 .lk-h-auto { height: auto; }
+
+// --- Text alignment ---
+.lk-text-left   { text-align: left; }
+.lk-text-center { text-align: center; }
+.lk-text-right  { text-align: right; }
+
+// --- Content alignment (standalone, combine with .lk-flex or .lk-grid) ---
+.lk-items-start   { align-items: flex-start; }
+.lk-items-center  { align-items: center; }
+.lk-items-end     { align-items: flex-end; }
+.lk-items-stretch { align-items: stretch; }
+
+.lk-justify-start   { justify-content: flex-start; }
+.lk-justify-center  { justify-content: center; }
+.lk-justify-end     { justify-content: flex-end; }
+.lk-justify-between { justify-content: space-between; }
+.lk-justify-around  { justify-content: space-around; }
+.lk-justify-evenly  { justify-content: space-evenly; }
+
+.lk-self-start   { align-self: flex-start; }
+.lk-self-center  { align-self: center; }
+.lk-self-end     { align-self: flex-end; }
+.lk-self-stretch { align-self: stretch; }
+
+// Quick center: makes element a flex container with content centered both axes
+.lk-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lk-center-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

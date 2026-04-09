@@ -1,0 +1,126 @@
+// Timeline component
+
+.lk-timeline {
+  position: relative;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  &__item {
+    position: relative;
+    display: flex;
+    gap: var(--lk-space-4);
+    padding-bottom: var(--lk-space-6);
+
+    // Vertical line
+    &::before {
+      content: '';
+      position: absolute;
+      left: calc(0.5rem - 0.5px);
+      top: 1.25rem;
+      bottom: 0;
+      width: var(--lk-border-width);
+      background: var(--lk-border);
+    }
+
+    // Remove line on last item
+    &:last-child::before {
+      display: none;
+    }
+
+    &:last-child {
+      padding-bottom: 0;
+    }
+  }
+
+  &__dot {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    margin-top: var(--lk-space-1);
+    border-radius: var(--lk-radius-full);
+    background: var(--lk-border);
+    border: var(--lk-border-width-md) solid var(--lk-bg);
+    box-shadow: 0 0 0 var(--lk-border-width) var(--lk-border);
+    z-index: 1;
+
+    // Color variants
+    &--primary {
+      background: var(--lk-primary);
+      box-shadow: 0 0 0 var(--lk-border-width) var(--lk-primary);
+    }
+
+    &--positive {
+      background: var(--lk-positive);
+      box-shadow: 0 0 0 var(--lk-border-width) var(--lk-positive);
+    }
+
+    &--warning {
+      background: var(--lk-warning);
+      box-shadow: 0 0 0 var(--lk-border-width) var(--lk-warning);
+    }
+
+    &--negative {
+      background: var(--lk-negative);
+      box-shadow: 0 0 0 var(--lk-border-width) var(--lk-negative);
+    }
+
+    &--info {
+      background: var(--lk-info);
+      box-shadow: 0 0 0 var(--lk-border-width) var(--lk-info);
+    }
+  }
+
+  &__content {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: var(--lk-text-base);
+    font-weight: var(--lk-weight-semibold);
+    line-height: var(--lk-leading-tight);
+  }
+
+  &__time {
+    font-size: var(--lk-text-xs);
+    color: var(--lk-text-muted);
+    margin-top: var(--lk-space-1);
+  }
+
+  &__body {
+    margin-top: var(--lk-space-2);
+    font-size: var(--lk-text-sm);
+    color: var(--lk-text);
+    line-height: var(--lk-line-height);
+  }
+
+  // --- Dense ---
+
+  &--dense &__item {
+    gap: var(--lk-space-3);
+    padding-bottom: var(--lk-space-4);
+  }
+
+  &--dense &__dot {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+
+  &--dense &__item::before {
+    left: calc(0.3125rem - 0.5px);
+    top: 0.875rem;
+  }
+
+  &--dense &__title {
+    font-size: var(--lk-text-sm);
+  }
+
+  &--dense &__body {
+    font-size: var(--lk-text-xs);
+  }
+
+  &--dense &__time {
+    font-size: 0.5625rem;
+  }
+}

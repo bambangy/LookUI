@@ -1,0 +1,106 @@
+// Card component
+
+.lk-card {
+  background: var(--lk-bg);
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius-lg);
+  overflow: hidden;
+
+  // --- Sections ---
+
+  &__media {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+
+    > img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--lk-space-3);
+    padding: var(--lk-space-4) var(--lk-space-5);
+    border-bottom: var(--lk-border-width) solid var(--lk-border);
+  }
+
+  &__title {
+    font-size: var(--lk-text-md);
+    font-weight: var(--lk-weight-semibold);
+    line-height: var(--lk-leading-tight);
+  }
+
+  &__subtitle {
+    font-size: var(--lk-text-sm);
+    color: var(--lk-text-muted);
+    margin-top: var(--lk-space-1);
+  }
+
+  &__body {
+    padding: var(--lk-space-4) var(--lk-space-5);
+    font-size: var(--lk-text-base);
+    line-height: var(--lk-line-height);
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    gap: var(--lk-space-3);
+    padding: var(--lk-space-3) var(--lk-space-5);
+    border-top: var(--lk-border-width) solid var(--lk-border);
+  }
+
+  // --- Variants ---
+
+  &--flat {
+    border: none;
+    box-shadow: none;
+  }
+
+  &--raised {
+    border: none;
+    box-shadow: var(--lk-shadow);
+  }
+
+  &--hover {
+    transition: box-shadow var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover {
+      box-shadow: var(--lk-shadow-md);
+    }
+  }
+
+  &--primary {
+    background: var(--lk-primary);
+    color: var(--lk-primary-contrast);
+    border-color: var(--lk-primary-dark);
+  }
+
+  // --- Dense ---
+
+  &--dense &__header {
+    padding: var(--lk-space-2) var(--lk-space-3);
+  }
+
+  &--dense &__body {
+    padding: var(--lk-space-2) var(--lk-space-3);
+    font-size: var(--lk-text-sm);
+  }
+
+  &--dense &__footer {
+    padding: var(--lk-space-2) var(--lk-space-3);
+  }
+
+  &--dense &__title {
+    font-size: var(--lk-text-base);
+  }
+
+  &--dense &__subtitle {
+    font-size: var(--lk-text-xs);
+  }
+}

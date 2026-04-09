@@ -1,0 +1,136 @@
+// Slider component (range input)
+
+.lk-slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 2rem;
+
+  &__track {
+    position: relative;
+    width: 100%;
+    height: 0.25rem;
+    background: var(--lk-surface);
+    border-radius: var(--lk-radius-full);
+    cursor: pointer;
+  }
+
+  &__fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: var(--lk-primary);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  &__thumb {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 1rem;
+    height: 1rem;
+    background: var(--lk-primary);
+    border: 2px solid var(--lk-bg);
+    border-radius: var(--lk-radius-full);
+    box-shadow: var(--lk-shadow-sm);
+    cursor: grab;
+    z-index: 1;
+    transition: box-shadow var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover {
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--lk-primary) 20%, transparent);
+    }
+
+    &:active {
+      cursor: grabbing;
+      box-shadow: 0 0 0 6px color-mix(in srgb, var(--lk-primary) 25%, transparent);
+    }
+  }
+
+  // --- Label (tooltip-style value above thumb) ---
+
+  &__label {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: var(--lk-space-1) var(--lk-space-2);
+    font-size: var(--lk-text-xs);
+    color: var(--lk-text-on-dark);
+    background: var(--lk-secondary-dark);
+    border-radius: var(--lk-radius);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--lk-duration-fast) var(--lk-easing-default);
+  }
+
+  &__thumb:hover &__label,
+  &__thumb:active &__label {
+    opacity: 1;
+  }
+
+  // --- Tick marks ---
+
+  &__ticks {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  &__tick {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 0.5rem;
+    background: var(--lk-border);
+    border-radius: 1px;
+  }
+
+  // --- Color variants ---
+
+  &--positive &__fill,
+  &--positive &__thumb { background: var(--lk-positive); }
+  &--positive &__thumb:hover {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--lk-positive) 20%, transparent);
+  }
+
+  &--negative &__fill,
+  &--negative &__thumb { background: var(--lk-negative); }
+
+  &--accent &__fill,
+  &--accent &__thumb { background: var(--lk-accent); }
+
+  // --- Disabled ---
+
+  &--disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  &--disabled &__thumb {
+    cursor: not-allowed;
+  }
+
+  // --- Dense ---
+
+  &--dense {
+    min-height: 1.5rem;
+  }
+
+  &--dense &__track {
+    height: 2px;
+  }
+
+  &--dense &__thumb {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+}
