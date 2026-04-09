@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Component Examples</title>
+
+  <!-- LookUI built output -->
+  <link rel="stylesheet" href="../dist/look.css" />
+
+  <style>
+    /* ------------------------------------------------------------------ */
+    /* Demo page chrome — not part of LookUI                               */
+    /* ------------------------------------------------------------------ */
+    .demo-section {
+      padding: var(--lk-space-9) var(--lk-space-4);
+      max-width: var(--lk-container-lg);
+      margin-inline: auto;
+    }
+
+    .demo-section + .demo-section {
+      border-top: var(--lk-border-width) solid var(--lk-border);
+    }
+
+    .demo-section__title {
+      font-size: var(--lk-text-sm);
+      font-weight: var(--lk-weight-semibold);
+      letter-spacing: var(--lk-tracking-wider);
+      text-transform: uppercase;
+      color: var(--lk-text-muted);
+      margin-bottom: var(--lk-space-5);
+    }
+
+    .demo-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--lk-space-3);
+      margin-bottom: var(--lk-space-5);
+    }
+
+    .demo-token-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: var(--lk-space-3);
+    }
+
+    .demo-swatch {
+      border-radius: var(--lk-radius-lg);
+      overflow: hidden;
+      box-shadow: var(--lk-shadow-sm);
+    }
+
+    .demo-swatch__color {
+      height: 56px;
+    }
+
+    .demo-swatch__label {
+      font-size: var(--lk-text-xs);
+      padding: var(--lk-space-2) var(--lk-space-2);
+      background: var(--lk-bg);
+      color: var(--lk-text-muted);
+      font-family: var(--lk-font-mono);
+      border-top: var(--lk-border-width) solid var(--lk-border);
+    }
+
+    /* Theme customization demo — overrides primary to teal */
+    .demo-theme-teal {
+      --lk-primary:          #00897b;
+      --lk-primary-light:    #4db6ac;
+      --lk-primary-dark:     #00695c;
+      --lk-primary-contrast: #ffffff;
+      padding: var(--lk-space-7);
+      background: var(--lk-bg-subtle);
+      border-radius: var(--lk-radius-xl);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ======================================================================
+     HEADER
+====================================================================== -->
+<header style="background: var(--lk-primary); color: var(--lk-primary-contrast); padding: var(--lk-space-7) var(--lk-space-4);">
+  <div style="max-width: var(--lk-container-lg); margin-inline: auto;">
+    <h1 style="font-size: var(--lk-text-3xl); margin-bottom: var(--lk-space-2);">LookUI</h1>
+    <p style="font-size: var(--lk-text-md); opacity: 0.85;">
+      A no-frills JavaScript &amp; CSS library. Imperative, predictable, MVC-friendly.
+    </p>
+  </div>
+</header>
+
+
+<!-- ======================================================================
+     COLOR TOKENS
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Color tokens</p>
+
+  <div class="demo-token-grid">
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-primary);"></div>
+      <div class="demo-swatch__label">--lk-primary</div>
+    </div>
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-primary-light);"></div>
+      <div class="demo-swatch__label">--lk-primary-light</div>
+    </div>
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-primary-dark);"></div>
+      <div class="demo-swatch__label">--lk-primary-dark</div>
+    </div>
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-secondary);"></div>
+      <div class="demo-swatch__label">--lk-secondary</div>
+    </div>
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-accent);"></div>
+      <div class="demo-swatch__label">--lk-accent</div>
+    </div>
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-positive);"></div>
+      <div class="demo-swatch__label">--lk-positive</div>
+    </div>
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-warning);"></div>
+      <div class="demo-swatch__label">--lk-warning</div>
+    </div>
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-negative);"></div>
+      <div class="demo-swatch__label">--lk-negative</div>
+    </div>
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-info);"></div>
+      <div class="demo-swatch__label">--lk-info</div>
+    </div>
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-bg); border: 1px solid var(--lk-border);"></div>
+      <div class="demo-swatch__label">--lk-bg</div>
+    </div>
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-bg-subtle);"></div>
+      <div class="demo-swatch__label">--lk-bg-subtle</div>
+    </div>
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-surface);"></div>
+      <div class="demo-swatch__label">--lk-surface</div>
+    </div>
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-text);"></div>
+      <div class="demo-swatch__label">--lk-text</div>
+    </div>
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-text-muted);"></div>
+      <div class="demo-swatch__label">--lk-text-muted</div>
+    </div>
+    <div class="demo-swatch">
+      <div class="demo-swatch__color" style="background: var(--lk-border);"></div>
+      <div class="demo-swatch__label">--lk-border</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     TYPOGRAPHY
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Typography</p>
+
+  <h1>Heading 1 — var(--lk-text-4xl)</h1>
+  <h2>Heading 2 — var(--lk-text-3xl)</h2>
+  <h3>Heading 3 — var(--lk-text-2xl)</h3>
+  <h4>Heading 4 — var(--lk-text-xl)</h4>
+  <h5>Heading 5 — var(--lk-text-lg)</h5>
+  <h6>Heading 6 — var(--lk-text-md)</h6>
+
+  <p style="margin-top: var(--lk-space-5); max-width: var(--lk-prose-max-width);">
+    Body text at <code>var(--lk-text-base)</code>. LookUI is an imperative, MVC-friendly
+    component library. Each component returns a plain object with a <code>destroy()</code>
+    method — the controller owns the lifecycle. <a href="#">This is a link</a>.
+  </p>
+
+  <p style="margin-top: var(--lk-space-3); font-size: var(--lk-text-sm); color: var(--lk-text-muted);">
+    Small / muted text — labels, captions, secondary information.
+  </p>
+</section>
+
+
+<!-- ======================================================================
+     BUTTONS
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Buttons — .lk-btn</p>
+
+  <div class="demo-row">
+    <button class="lk-btn lk-btn--primary">Primary</button>
+    <button class="lk-btn lk-btn--secondary">Secondary</button>
+    <button class="lk-btn lk-btn--ghost">Ghost</button>
+    <button class="lk-btn lk-btn--positive">Positive</button>
+    <button class="lk-btn lk-btn--negative">Negative</button>
+  </div>
+
+  <div class="demo-row">
+    <button class="lk-btn lk-btn--primary lk-btn--sm">Small</button>
+    <button class="lk-btn lk-btn--primary">Default</button>
+    <button class="lk-btn lk-btn--primary lk-btn--lg">Large</button>
+  </div>
+
+  <div class="demo-row">
+    <button class="lk-btn lk-btn--primary" disabled>Disabled</button>
+    <button class="lk-btn lk-btn--secondary" aria-disabled="true">Aria-disabled</button>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     FORM INPUTS
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Form inputs — .lk-input / .lk-field</p>
+
+  <div style="max-width: 400px; display: flex; flex-direction: column; gap: var(--lk-space-5);">
+
+    <div class="lk-field">
+      <label class="lk-label" for="input-default">Default input</label>
+      <input id="input-default" class="lk-input" type="text" placeholder="Enter value…" />
+    </div>
+
+    <div class="lk-field">
+      <label class="lk-label" for="input-error">Input with error</label>
+      <input id="input-error" class="lk-input lk-input--error" type="text" value="bad@val" aria-invalid="true" />
+      <span class="lk-field-error">This field has an error.</span>
+    </div>
+
+    <div class="lk-field">
+      <label class="lk-label" for="input-disabled">Disabled input</label>
+      <input id="input-disabled" class="lk-input" type="text" placeholder="Not editable" disabled />
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     MODAL
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Modal — Look.lkModal()</p>
+
+  <button id="modal-trigger" class="lk-btn lk-btn--primary" aria-expanded="false">
+    Open modal
+  </button>
+
+  <div id="modal-container" class="lk-modal--open" style="display: none;">
+    <div class="lk-modal-overlay">
+      <div class="lk-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="lk-modal__header">
+          <span class="lk-modal__title" id="modal-title">Modal title</span>
+          <button id="modal-close" class="lk-modal__close" aria-label="Close">&#x2715;</button>
+        </div>
+        <div class="lk-modal__body">
+          <p>This modal is controlled by <code>Look.lkModal()</code>. The component returns
+          <code>{ open, close, destroy }</code> — your controller decides when to call each.</p>
+          <div class="lk-field" style="margin-top: var(--lk-space-4);">
+            <label class="lk-label" for="modal-input">Field inside modal</label>
+            <input id="modal-input" class="lk-input" type="text" placeholder="Focus trapped here…" />
+          </div>
+        </div>
+        <div class="lk-modal__footer">
+          <button id="modal-cancel" class="lk-btn lk-btn--secondary">Cancel</button>
+          <button class="lk-btn lk-btn--primary">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     LAYOUT — GRID
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Layout — grid</p>
+
+  <div class="lk-grid lk-grid--cols-3" style="margin-bottom: var(--lk-space-5);">
+    <div style="background: var(--lk-primary); color: var(--lk-primary-contrast); padding: var(--lk-space-4); border-radius: var(--lk-radius);">col 1</div>
+    <div style="background: var(--lk-primary); color: var(--lk-primary-contrast); padding: var(--lk-space-4); border-radius: var(--lk-radius);">col 2</div>
+    <div style="background: var(--lk-primary); color: var(--lk-primary-contrast); padding: var(--lk-space-4); border-radius: var(--lk-radius);">col 3</div>
+  </div>
+
+  <div class="lk-grid lk-grid--cols-4 lk-grid--gap-sm">
+    <div style="background: var(--lk-accent); padding: var(--lk-space-3); border-radius: var(--lk-radius); font-size: var(--lk-text-sm);">1</div>
+    <div style="background: var(--lk-accent); padding: var(--lk-space-3); border-radius: var(--lk-radius); font-size: var(--lk-text-sm);">2</div>
+    <div style="background: var(--lk-accent); padding: var(--lk-space-3); border-radius: var(--lk-radius); font-size: var(--lk-text-sm);">3</div>
+    <div style="background: var(--lk-accent); padding: var(--lk-space-3); border-radius: var(--lk-radius); font-size: var(--lk-text-sm);">4</div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     THEMING DEMO — override tokens inline
+====================================================================== -->
+<section class="demo-section">
+  <p class="demo-section__title">Custom theme override (teal brand)</p>
+
+  <div class="demo-theme-teal">
+    <p style="font-size: var(--lk-text-sm); color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      The block below sets <code>--lk-primary</code> to a teal palette via inline CSS.
+      No rebuild required — just redefine the tokens on a scoped element.
+    </p>
+    <div class="demo-row">
+      <button class="lk-btn lk-btn--primary">Teal primary</button>
+      <button class="lk-btn lk-btn--ghost">Teal ghost</button>
+      <input class="lk-input" type="text" placeholder="Focus ring uses --lk-primary" style="max-width: 220px;" />
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     LookUI JS
+====================================================================== -->
+<script src="../dist/look.js"></script>
+<script>
+  // --- Buttons (enhance existing elements) ---
+  document.querySelectorAll('button.lk-btn').forEach(el => {
+    Look.lkButton(el);
+  });
+
+  // --- Inputs ---
+  document.querySelectorAll('.lk-input').forEach(el => {
+    Look.lkInput(el);
+  });
+
+  // --- Modal ---
+  const modalContainer = document.getElementById('modal-container');
+  modalContainer.style.display = '';   // reveal hidden container
+
+  const modal = Look.lkModal(
+    document.getElementById('modal-trigger'),
+    modalContainer
+  );
+
+  // Wire close buttons
+  document.getElementById('modal-close').addEventListener('click', () => modal.close());
+  document.getElementById('modal-cancel').addEventListener('click', () => modal.close());
+
+  // Close on overlay click
+  modalContainer.querySelector('.lk-modal-overlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) modal.close();
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,80 @@
+// Button component
+
+.lk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lk-space-2);
+
+  padding: var(--lk-space-2) var(--lk-space-4);
+  font-size: var(--lk-text-base);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+
+  border: var(--lk-border-width) solid transparent;
+  border-radius: var(--lk-radius);
+  cursor: pointer;
+  user-select: none;
+
+  transition:
+    background-color var(--lk-duration-fast) var(--lk-easing-default),
+    border-color     var(--lk-duration-fast) var(--lk-easing-default),
+    box-shadow       var(--lk-duration-fast) var(--lk-easing-default);
+
+  &--primary {
+    background-color: var(--lk-primary);
+    color: var(--lk-primary-contrast);
+
+    &:hover  { background-color: var(--lk-primary-dark); }
+    &:active { filter: brightness(0.95); }
+  }
+
+  &--secondary {
+    background-color: transparent;
+    border-color: var(--lk-border);
+    color: var(--lk-text);
+
+    &:hover { background-color: var(--lk-surface); }
+  }
+
+  &--ghost {
+    background-color: transparent;
+    color: var(--lk-primary);
+
+    &:hover { background-color: var(--lk-bg-subtle); }
+  }
+
+  &--positive {
+    background-color: var(--lk-positive);
+    color: var(--lk-positive-contrast);
+
+    &:hover { background-color: var(--lk-positive-dark); }
+  }
+
+  &--negative {
+    background-color: var(--lk-negative);
+    color: var(--lk-negative-contrast);
+
+    &:hover { background-color: var(--lk-negative-dark); }
+  }
+
+  &--sm {
+    padding: var(--lk-space-1) var(--lk-space-3);
+    font-size: var(--lk-text-sm);
+  }
+
+  &--lg {
+    padding: var(--lk-space-3) var(--lk-space-7);
+    font-size: var(--lk-text-md);
+  }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+
+  &--full-width { width: 100%; }
+}

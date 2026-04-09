@@ -1,0 +1,36 @@
+// Display, visibility, and overflow utilities
+
+.lk-block        { display: block; }
+.lk-inline       { display: inline; }
+.lk-inline-block { display: inline-block; }
+.lk-hidden       { display: none; }
+
+.lk-visible   { visibility: visible; }
+.lk-invisible { visibility: hidden; }
+
+// Visually hidden but accessible to screen readers
+.lk-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.lk-overflow-hidden { overflow: hidden; }
+.lk-overflow-auto   { overflow: auto; }
+.lk-overflow-scroll { overflow: scroll; }
+
+.lk-relative { position: relative; }
+.lk-absolute { position: absolute; }
+.lk-fixed    { position: fixed; }
+.lk-sticky   { position: sticky; }
+
+.lk-w-full { width: 100%; }
+.lk-h-full { height: 100%; }
+.lk-w-auto { width: auto; }
+.lk-h-auto { height: auto; }

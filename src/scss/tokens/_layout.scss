@@ -1,0 +1,108 @@
+// =============================================================================
+// LookUI — Default Layout Tokens
+// =============================================================================
+// Override in tokens/custom/_layout.scss.
+//
+// Spacing: 4px base unit (same as Bootstrap/Quasar concept) but expressed
+// as a T-shirt scale (1–10) rather than numeric multipliers to reduce
+// coupling to a single step value.
+// =============================================================================
+
+:root {
+  // --- Spacing scale (4px root unit) ---
+  --lk-space-1:   0.25rem;    // 4px
+  --lk-space-2:   0.5rem;     // 8px
+  --lk-space-3:   0.75rem;    // 12px
+  --lk-space-4:   1rem;       // 16px
+  --lk-space-5:   1.25rem;    // 20px
+  --lk-space-6:   1.5rem;     // 24px
+  --lk-space-7:   2rem;       // 32px
+  --lk-space-8:   2.5rem;     // 40px
+  --lk-space-9:   3rem;       // 48px
+  --lk-space-10:  4rem;       // 64px
+  --lk-space-12:  6rem;       // 96px
+  --lk-space-16:  8rem;       // 128px
+
+  // --- Border radius ---
+  --lk-radius-none: 0;
+  --lk-radius-sm:   0.125rem;   // 2px
+  --lk-radius:      0.25rem;    // 4px
+  --lk-radius-md:   0.375rem;   // 6px
+  --lk-radius-lg:   0.5rem;     // 8px
+  --lk-radius-xl:   0.75rem;    // 12px
+  --lk-radius-2xl:  1rem;       // 16px
+  --lk-radius-full: 9999px;     // pill
+
+  // --- Border ---
+  --lk-border-width:    1px;
+  --lk-border-width-md: 2px;
+  --lk-border-width-lg: 4px;
+
+  // --- Shadows ---
+  --lk-shadow-xs: 0 1px 2px 0 rgb(var(--lk-shadow-color) / 0.04);
+  --lk-shadow-sm: 0 1px 3px 0 rgb(var(--lk-shadow-color) / 0.08),
+                    0 1px 2px -1px rgb(var(--lk-shadow-color) / 0.06);
+  --lk-shadow:    0 4px 6px -1px rgb(var(--lk-shadow-color) / 0.08),
+                    0 2px 4px -2px rgb(var(--lk-shadow-color) / 0.06);
+  --lk-shadow-md: 0 6px 12px -2px rgb(var(--lk-shadow-color) / 0.1),
+                    0 3px 6px -3px rgb(var(--lk-shadow-color) / 0.07);
+  --lk-shadow-lg: 0 10px 15px -3px rgb(var(--lk-shadow-color) / 0.1),
+                    0 4px 6px -4px rgb(var(--lk-shadow-color) / 0.07);
+  --lk-shadow-xl: 0 20px 25px -5px rgb(var(--lk-shadow-color) / 0.1),
+                    0 8px 10px -6px rgb(var(--lk-shadow-color) / 0.07);
+  --lk-shadow-inner: inset 0 2px 4px 0 rgb(var(--lk-shadow-color) / 0.06);
+  --lk-shadow-none: none;
+
+  // --- Breakpoints (used as CSS env hints; not directly consumable by var())
+  //     Kept as comments so they document the intended grid breakpoints.
+  //     Use them in Sass @media rules with the $look-bp-* SCSS variables below.
+  //
+  //     xs:  0px    (mobile first)
+  //     sm:  480px
+  //     md:  768px
+  //     lg:  1024px
+  //     xl:  1280px
+  //     2xl: 1536px
+  // ---
+
+  // --- Container widths ---
+  --lk-container-sm:  540px;
+  --lk-container-md:  720px;
+  --lk-container-lg:  960px;
+  --lk-container-xl:  1140px;
+  --lk-container-2xl: 1320px;
+  --lk-container-fluid: 100%;
+
+  // --- Grid ---
+  --lk-grid-columns:  12;
+  --lk-grid-gutter:   var(--lk-space-4);   // 16px default gutter
+
+  // --- Transitions ---
+  --lk-duration-instant: 0ms;
+  --lk-duration-fast:    100ms;
+  --lk-duration-base:    200ms;
+  --lk-duration-slow:    350ms;
+  --lk-duration-slower:  500ms;
+  --lk-easing-default:   ease-in-out;
+  --lk-easing-in:        cubic-bezier(0.4, 0, 1, 1);
+  --lk-easing-out:       cubic-bezier(0, 0, 0.2, 1);
+  --lk-easing-spring:    cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  // --- Z-index layers ---
+  --lk-z-below:    -1;
+  --lk-z-base:      0;
+  --lk-z-raised:   10;
+  --lk-z-dropdown: 50;
+  --lk-z-sticky:   60;
+  --lk-z-overlay:  90;
+  --lk-z-modal:   100;
+  --lk-z-toast:   110;
+  --lk-z-tooltip: 120;
+}
+
+// --- SCSS breakpoint aliases (for @media queries inside partials) ---
+$look-bp-sm:  480px;
+$look-bp-md:  768px;
+$look-bp-lg:  1024px;
+$look-bp-xl:  1280px;
+$look-bp-2xl: 1536px;

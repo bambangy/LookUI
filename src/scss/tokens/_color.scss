@@ -1,0 +1,69 @@
+// =============================================================================
+// LookUI — Default Color Tokens
+// =============================================================================
+// Override any of these in tokens/custom/_color.scss by redefining the same
+// CSS custom properties inside :root {}.
+//
+// Palette rationale:
+//   Primary   — Indigo-Violet (distinct from Bootstrap blue, Quasar deep-purple)
+//   Secondary — Cool Slate (neutral accent)
+//   Semantic  — Success/Warning/Danger tuned to accessible contrast on white
+//   Surface   — Near-white tinted slightly warm rather than pure grey
+// =============================================================================
+
+:root {
+  // --- Brand / Action colors ---
+  --lk-primary:          #5c6bc0;   // indigo-violet, not Bootstrap #0d6efd or Quasar #1976D2
+  --lk-primary-light:    #7986cb;
+  --lk-primary-dark:     #3949ab;
+  --lk-primary-contrast: #ffffff;
+
+  --lk-secondary:          #546e7a;   // blue-grey, cooler than Bootstrap grey (#6c757d)
+  --lk-secondary-light:    #78909c;
+  --lk-secondary-dark:     #37474f;
+  --lk-secondary-contrast: #ffffff;
+
+  --lk-accent:          #00bcd4;   // cyan accent — differentiator from both Bootstrap & Quasar
+  --lk-accent-light:    #4dd0e1;
+  --lk-accent-dark:     #0097a7;
+  --lk-accent-contrast: #000000;
+
+  // --- Semantic / state colors ---
+  --lk-positive:          #2e7d32;   // dark green (accessibility: 4.6:1 on white)
+  --lk-positive-light:    #4caf50;
+  --lk-positive-dark:     #1b5e20;
+  --lk-positive-contrast: #ffffff;
+
+  --lk-warning:          #f57f17;   // deep amber (not Bootstrap #ffc107 yellow)
+  --lk-warning-light:    #ffb300;
+  --lk-warning-dark:     #e65100;
+  --lk-warning-contrast: #000000;
+
+  --lk-negative:          #c62828;   // deep crimson (not Bootstrap #dc3545)
+  --lk-negative-light:    #ef5350;
+  --lk-negative-dark:     #b71c1c;
+  --lk-negative-contrast: #ffffff;
+
+  --lk-info:          #0277bd;   // ocean blue
+  --lk-info-light:    #039be5;
+  --lk-info-dark:     #01579b;
+  --lk-info-contrast: #ffffff;
+
+  // --- Surface / background ---
+  --lk-bg:        #ffffff;
+  --lk-bg-subtle: #f5f5f7;         // warm near-white (Apple-ish, not Bootstrap #f8f9fa)
+  --lk-surface:   #efefef;
+  --lk-overlay:   rgb(0 0 0 / 0.45);
+
+  // --- Text ---
+  --lk-text:         #1a1a2e;      // very dark indigo-tinted, not pure #212529
+  --lk-text-muted:   #757575;
+  --lk-text-on-dark: #f5f5f7;
+
+  // --- Border ---
+  --lk-border:        #d0d0d8;
+  --lk-border-strong: #9e9ea8;
+
+  // --- Shadow color (used as rgb triplet in box-shadow) ---
+  --lk-shadow-color: 0 0 0;
+}

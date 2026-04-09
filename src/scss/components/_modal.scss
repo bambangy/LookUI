@@ -1,0 +1,76 @@
+// Modal component
+
+.lk-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--lk-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--lk-z-overlay);
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lk-duration-base) var(--lk-easing-default);
+}
+
+.lk-modal {
+  position: relative;
+  background: var(--lk-bg);
+  border-radius: var(--lk-radius-lg);
+  box-shadow: var(--lk-shadow-lg);
+  padding: var(--lk-space-6);
+  max-width: 32rem;
+  width: calc(100% - var(--lk-space-8));
+  max-height: calc(100vh - var(--lk-space-8));
+  overflow-y: auto;
+  z-index: var(--lk-z-modal);
+
+  transform: translateY(var(--lk-space-4));
+  transition:
+    transform var(--lk-duration-base) var(--lk-easing-default),
+    opacity   var(--lk-duration-base) var(--lk-easing-default);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--lk-space-4);
+  }
+
+  &__title {
+    font-size: var(--lk-text-xl);
+    font-weight: var(--lk-weight-semibold);
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--lk-space-1);
+    color: var(--lk-text-muted);
+  }
+
+  &__body {
+    margin-bottom: var(--lk-space-5);
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--lk-space-3);
+  }
+}
+
+// Open state — toggled by JS via .lk-modal--open
+.lk-modal--open {
+  .lk-modal-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .lk-modal {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

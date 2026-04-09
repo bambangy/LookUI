@@ -1,0 +1,37 @@
+// LookUI — master SCSS entry
+// =============================================================================
+// Load order:
+//   1. Default tokens   — establishes all CSS custom properties
+//   2. Custom tokens    — project-level overrides (uncommit lines in custom/)
+//   3. Base             — reset + typography
+//   4. Layout           — grid + flex
+//   5. Components       — ui components
+//   6. Utilities        — overrides, must come last
+// =============================================================================
+
+// 1. Default tokens
+@use 'tokens/color'      as token-color;
+@use 'tokens/typography' as token-typography;
+@use 'tokens/layout'     as token-layout;
+
+// 2. Custom token overrides (edit tokens/custom/ files to apply your theme)
+@use 'tokens/custom/color'      as custom-color;
+@use 'tokens/custom/typography' as custom-typography;
+@use 'tokens/custom/layout'     as custom-layout;
+
+// 3. Base
+@use 'base/reset';
+@use 'base/typography' as base-typography;
+
+// 4. Layout
+@use 'layout/grid';
+@use 'layout/flex';
+
+// 5. Components
+@use 'components/button';
+@use 'components/modal';
+@use 'components/input';
+
+// 6. Utilities
+@use 'utilities/spacing';
+@use 'utilities/display';

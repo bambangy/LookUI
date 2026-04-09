@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm info:*)",
+      "Bash(npm run build:*)",
+      "Bash(/d/git-dev/LookUI/src/scss/tokens/_variables.scss:*)",
+      "Bash(/d/git-dev/LookUI/src/scss/main.scss:*)",
+      "Bash(/d/git-dev/LookUI/README.md:*)",
+      "Bash(/d/git-dev/LookUI/Calude.md:*)"
+    ]
+  }
+}

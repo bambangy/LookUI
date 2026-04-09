@@ -1,0 +1,59 @@
+// Input component
+
+.lk-input {
+  display: block;
+  width: 100%;
+  padding: var(--lk-space-2) var(--lk-space-3);
+  font-size: var(--lk-text-base);
+  color: var(--lk-text);
+  background: var(--lk-bg);
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius);
+  line-height: var(--lk-line-height);
+  appearance: none;
+
+  transition:
+    border-color var(--lk-duration-fast) var(--lk-easing-default),
+    box-shadow   var(--lk-duration-fast) var(--lk-easing-default);
+
+  &:focus {
+    outline: none;
+    border-color: var(--lk-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-primary) 20%, transparent);
+  }
+
+  &::placeholder {
+    color: var(--lk-text-muted);
+  }
+
+  &--error {
+    border-color: var(--lk-negative);
+
+    &:focus {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-negative) 20%, transparent);
+    }
+  }
+
+  &:disabled {
+    background: var(--lk-surface);
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.lk-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lk-space-1);
+}
+
+.lk-label {
+  font-size: var(--lk-text-sm);
+  font-weight: var(--lk-weight-medium);
+  color: var(--lk-text);
+}
+
+.lk-field-error {
+  font-size: var(--lk-text-sm);
+  color: var(--lk-negative);
+}

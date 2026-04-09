@@ -1,0 +1,60 @@
+// =============================================================================
+// LookUI — Default Typography Tokens
+// =============================================================================
+// Override in tokens/custom/_typography.scss.
+//
+// Scale: Major Third (1.250) — same ratio concept as Bootstrap/Quasar
+// but the actual sizes use rem with a 16px base and differ slightly at the extremes.
+// =============================================================================
+
+:root {
+  // --- Font families ---
+  --lk-font-sans:  system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --lk-font-serif: Georgia, 'Times New Roman', Times, serif;
+  --lk-font-mono:  ui-monospace, 'Cascadia Code', 'Fira Mono', 'Roboto Mono', monospace;
+
+  // Default body font
+  --lk-font-family: var(--lk-font-sans);
+
+  // --- Type scale (Major Third, 1.25×) ---
+  // xs → base → xl: 0.64 → 0.8 → 1 → 1.25 → 1.563 → 1.953 → 2.441rem
+  --lk-text-xs:   0.64rem;     // ~10px  — captions, badges
+  --lk-text-sm:   0.8rem;      // ~13px  — secondary text, labels
+  --lk-text-base: 1rem;        // 16px   — body
+  --lk-text-md:   1.125rem;    // ~18px  — lead / intro
+  --lk-text-lg:   1.25rem;     // 20px   — h5/subheading
+  --lk-text-xl:   1.563rem;    // 25px   — h4
+  --lk-text-2xl:  1.953rem;    // 31px   — h3
+  --lk-text-3xl:  2.441rem;    // 39px   — h2
+  --lk-text-4xl:  3.052rem;    // 49px   — h1 / hero
+
+  // --- Font weights ---
+  --lk-weight-thin:       100;
+  --lk-weight-light:      300;
+  --lk-weight-regular:    400;
+  --lk-weight-medium:     500;
+  --lk-weight-semibold:   600;
+  --lk-weight-bold:       700;
+  --lk-weight-extrabold:  800;
+
+  // --- Line heights ---
+  --lk-leading-none:    1;
+  --lk-leading-tight:   1.25;
+  --lk-leading-snug:    1.375;
+  --lk-leading-normal:  1.5;
+  --lk-leading-relaxed: 1.625;
+  --lk-leading-loose:   2;
+
+  // Default body line-height
+  --lk-line-height: var(--lk-leading-normal);
+
+  // --- Letter spacing ---
+  --lk-tracking-tight:  -0.025em;
+  --lk-tracking-normal:  0em;
+  --lk-tracking-wide:    0.025em;
+  --lk-tracking-wider:   0.05em;
+  --lk-tracking-widest:  0.1em;
+
+  // --- Paragraph / prose ---
+  --lk-prose-max-width: 65ch;
+}

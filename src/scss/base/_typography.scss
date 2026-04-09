@@ -1,0 +1,44 @@
+// Base typography
+
+body {
+  font-family: var(--lk-font-family);
+  font-size:   var(--lk-text-base);
+  color:       var(--lk-text);
+  background:  var(--lk-bg);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: var(--lk-leading-tight);
+  font-weight: var(--lk-weight-semibold);
+}
+
+h1 { font-size: var(--lk-text-4xl); }
+h2 { font-size: var(--lk-text-3xl); }
+h3 { font-size: var(--lk-text-2xl); }
+h4 { font-size: var(--lk-text-xl);  }
+h5 { font-size: var(--lk-text-lg);  }
+h6 { font-size: var(--lk-text-md);  }
+
+p {
+  line-height: var(--lk-line-height);
+}
+
+a {
+  color: var(--lk-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+small {
+  font-size: var(--lk-text-sm);
+}
+
+code,
+pre {
+  font-family: var(--lk-font-mono);
+  font-size: 0.9em;
+}

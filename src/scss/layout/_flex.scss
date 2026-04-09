@@ -1,0 +1,30 @@
+// Flexbox layout utilities
+
+.lk-flex {
+  display: flex;
+}
+
+.lk-flex--inline  { display: inline-flex; }
+.lk-flex--col     { flex-direction: column; }
+.lk-flex--row     { flex-direction: row; }
+.lk-flex--wrap    { flex-wrap: wrap; }
+.lk-flex--nowrap  { flex-wrap: nowrap; }
+
+.lk-flex--justify-start   { justify-content: flex-start; }
+.lk-flex--justify-end     { justify-content: flex-end; }
+.lk-flex--justify-center  { justify-content: center; }
+.lk-flex--justify-between { justify-content: space-between; }
+.lk-flex--justify-around  { justify-content: space-around; }
+
+.lk-flex--align-start   { align-items: flex-start; }
+.lk-flex--align-end     { align-items: flex-end; }
+.lk-flex--align-center  { align-items: center; }
+.lk-flex--align-stretch { align-items: stretch; }
+
+.lk-flex--gap-sm { gap: var(--lk-space-2); }
+.lk-flex--gap-md { gap: var(--lk-space-4); }
+.lk-flex--gap-lg { gap: var(--lk-space-6); }
+
+.lk-flex--grow   { flex: 1 1 auto; }
+.lk-flex--shrink { flex: 0 1 auto; }
+.lk-flex--none   { flex: none; }

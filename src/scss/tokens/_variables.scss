@@ -1,0 +1,11 @@
+// =============================================================================
+// LookUI — Token index (forwards all token groups)
+// =============================================================================
+// Import this file to get the complete default token set.
+// Individual groups: _color.scss, _typography.scss, _layout.scss
+// Custom overrides:  tokens/custom/_color.scss, _typography.scss, _layout.scss
+// =============================================================================
+
+@forward 'color';
+@forward 'typography';
+@forward 'layout';
