@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Progress</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Progress</h1>
+    <p style="opacity: 0.85;">lkProgress(el, opts) — linear progress bar with value control</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <div style="max-width: 500px; display: flex; flex-direction: column; gap: var(--lk-space-5);">
+      <div>
+        <p class="demo-sub">JS-controlled</p>
+        <div id="demo-progress">
+          <div class="lk-progress__bar"></div>
+        </div>
+      </div>
+
+      <p class="demo-sub">CSS-only variants</p>
+      <div class="lk-progress lk-progress--positive">
+        <div class="lk-progress__bar" style="width: 80%;"></div>
+      </div>
+      <div class="lk-progress lk-progress--warning">
+        <div class="lk-progress__bar" style="width: 50%;"></div>
+      </div>
+      <div class="lk-progress lk-progress--striped lk-progress--animated">
+        <div class="lk-progress__bar" style="width: 60%;"></div>
+      </div>
+      <div class="lk-progress lk-progress--labeled">
+        <div class="lk-progress__bar" style="width: 72%;"></div>
+        <span class="lk-progress__label">72%</span>
+      </div>
+    </div>
+
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-inc" class="lk-btn lk-btn--primary lk-btn--sm">+10</button>
+      <button id="btn-dec" class="lk-btn lk-btn--secondary lk-btn--sm">-10</button>
+      <button id="btn-indet" class="lk-btn lk-btn--secondary lk-btn--sm">Toggle Indeterminate</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const loader = Look.lkProgress('#upload', {
+  value: 0, max: 100,
+});
+
+loader.value = 45;
+loader.indeterminate = true;
+loader.destroy();</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const out = document.getElementById('output');
+  const prog = Look.lkProgress('#demo-progress', { value: 30, max: 100 });
+
+  document.getElementById('btn-inc').onclick = () => { prog.value += 10; out.textContent = 'value = ' + prog.value; };
+  document.getElementById('btn-dec').onclick = () => { prog.value -= 10; out.textContent = 'value = ' + prog.value; };
+  document.getElementById('btn-indet').onclick = () => { prog.indeterminate = !prog.indeterminate; out.textContent = 'indeterminate = ' + prog.indeterminate; };
+</script>
+</body>
+</html>

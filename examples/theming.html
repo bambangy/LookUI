@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Theming</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Theming</h1>
+    <p style="opacity: 0.85;">Runtime &amp; build-time token overrides</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Scoped override — Teal brand</p>
+    <div style="--lk-primary:#00897b;--lk-primary-light:#4db6ac;--lk-primary-dark:#00695c;--lk-primary-contrast:#fff;padding:var(--lk-space-7);background:var(--lk-bg-subtle);border-radius:var(--lk-radius-xl);">
+      <p class="demo-sub">This block overrides <code>--lk-primary</code> to teal via inline CSS. No rebuild needed.</p>
+      <div class="demo-row">
+        <button class="lk-btn lk-btn--primary">Teal Primary</button>
+        <button class="lk-btn lk-btn--ghost">Teal Ghost</button>
+        <input class="lk-input" type="text" placeholder="Focus ring uses teal" style="max-width:220px;" />
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Scoped override — Pink brand</p>
+    <div style="--lk-primary:#e91e63;--lk-primary-light:#f06292;--lk-primary-dark:#c2185b;--lk-primary-contrast:#fff;padding:var(--lk-space-7);background:var(--lk-bg-subtle);border-radius:var(--lk-radius-xl);">
+      <div class="demo-row">
+        <button class="lk-btn lk-btn--primary">Pink Primary</button>
+        <span class="lk-badge">Default Badge</span>
+        <span class="lk-chip lk-chip--primary">Pink Chip</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">Method 1 — Runtime override (no rebuild)</p>
+    <pre>&lt;!-- Global --&gt;
+&lt;style&gt;:root { --lk-primary: #00897b; }&lt;/style&gt;
+
+&lt;!-- Scoped --&gt;
+&lt;div style="--lk-primary: #e91e63;"&gt;
+  &lt;button class="lk-btn lk-btn--primary"&gt;Pink&lt;/button&gt;
+&lt;/div&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top:var(--lk-space-4);">Method 2 — Build-time override</p>
+    <pre>/* src/scss/tokens/custom/_color.scss */
+:root {
+  --lk-primary:          #00897b;
+  --lk-primary-dark:     #00695c;
+  --lk-primary-contrast: #ffffff;
+}
+
+/* Then: npm run build:css */</pre>
+  </div>
+
+</main>
+</body>
+</html>

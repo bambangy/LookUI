@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — List</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">List</h1>
+    <p style="opacity: 0.85;">.lk-list — items, clickable, active, dense</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-sub">Bordered &amp; separated</p>
+    <div style="max-width:400px;">
+      <ul class="lk-list lk-list--bordered lk-list--separated" style="margin-bottom:var(--lk-space-5);">
+        <li class="lk-list-item lk-list-item--clickable">
+          <div class="lk-list-item__start"><div class="lk-avatar lk-avatar--sm">A</div></div>
+          <div class="lk-list-item__content">
+            <div class="lk-list-item__label">Alice</div>
+            <div class="lk-list-item__secondary">Online</div>
+          </div>
+          <div class="lk-list-item__end"><span class="lk-badge lk-badge--positive lk-badge--dot"></span></div>
+        </li>
+        <li class="lk-list-item lk-list-item--clickable lk-list-item--active">
+          <div class="lk-list-item__start"><div class="lk-avatar lk-avatar--sm lk-avatar--secondary">B</div></div>
+          <div class="lk-list-item__content">
+            <div class="lk-list-item__label">Bob (active)</div>
+            <div class="lk-list-item__secondary">Away</div>
+          </div>
+        </li>
+        <li class="lk-list-item lk-list-item--disabled">
+          <div class="lk-list-item__content"><div class="lk-list-item__label">Disabled item</div></div>
+        </li>
+      </ul>
+
+      <p class="demo-sub">Dense</p>
+      <ul class="lk-list lk-list--bordered lk-list--separated lk-list--dense">
+        <li class="lk-list-item lk-list-item--clickable"><div class="lk-list-item__content"><div class="lk-list-item__label">Dense item 1</div></div></li>
+        <li class="lk-list-item lk-list-item--clickable"><div class="lk-list-item__content"><div class="lk-list-item__label">Dense item 2</div></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;ul class="lk-list lk-list--bordered lk-list--separated"&gt;
+  &lt;li class="lk-list-item lk-list-item--clickable"&gt;
+    &lt;div class="lk-list-item__start"&gt;…&lt;/div&gt;
+    &lt;div class="lk-list-item__content"&gt;
+      &lt;div class="lk-list-item__label"&gt;Label&lt;/div&gt;
+      &lt;div class="lk-list-item__secondary"&gt;Secondary&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="lk-list-item__end"&gt;…&lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;</pre>
+  </div>
+
+</main>
+</body>
+</html>

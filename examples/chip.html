@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Chip</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Chip</h1>
+    <p style="opacity: 0.85;">lkChip(el, opts) — removable and selectable chips</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <p class="demo-sub">CSS-only variants</p>
+    <div class="demo-row">
+      <span class="lk-chip">Default</span>
+      <span class="lk-chip lk-chip--primary">Primary</span>
+      <span class="lk-chip lk-chip--positive">Positive</span>
+      <span class="lk-chip lk-chip--warning">Warning</span>
+      <span class="lk-chip lk-chip--negative">Negative</span>
+      <span class="lk-chip lk-chip--filled">Filled</span>
+      <span class="lk-chip lk-chip--outline">Outline</span>
+    </div>
+
+    <p class="demo-sub">JS-enhanced (removable + selectable)</p>
+    <div class="demo-row">
+      <span id="chip-js" class="lk-chip lk-chip--primary"></span>
+      <span id="chip-rm" class="lk-chip lk-chip--negative"></span>
+      <span id="chip-sel" class="lk-chip lk-chip--info"></span>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const tag = Look.lkChip('#tag', {
+  label: 'JavaScript',
+  removable: true,
+  onRemove() { console.log('removed'); },
+  onSelect(sel) { console.log('selected:', sel); },
+});
+
+tag.label;              // 'JavaScript'
+tag.selected;           // boolean
+tag.destroy();</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const out = document.getElementById('output');
+
+  Look.lkChip('#chip-js', { label: 'JavaScript' });
+  Look.lkChip('#chip-rm', {
+    label: 'Removable',
+    removable: true,
+    onRemove() { out.textContent = 'Chip removed!'; },
+  });
+  Look.lkChip('#chip-sel', {
+    label: 'Selectable',
+    onSelect(sel) { out.textContent = 'selected = ' + sel; },
+  });
+</script>
+</body>
+</html>

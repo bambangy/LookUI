@@ -1,0 +1,53 @@
+// Radio button component
+
+.lk-radio {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  appearance: none;
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius-full);
+  background: var(--lk-bg);
+  cursor: pointer;
+  vertical-align: middle;
+  flex-shrink: 0;
+  position: relative;
+
+  transition:
+    background-color var(--lk-duration-fast) var(--lk-easing-default),
+    border-color     var(--lk-duration-fast) var(--lk-easing-default),
+    box-shadow       var(--lk-duration-fast) var(--lk-easing-default);
+
+  &:checked {
+    border-color: var(--lk-primary);
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0.5rem;
+      height: 0.5rem;
+      background: var(--lk-primary);
+      border-radius: var(--lk-radius-full);
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-primary) 20%, transparent);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  // When inside .lk-field, use row layout
+  .lk-field:has(&) {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--lk-space-2);
+  }
+}

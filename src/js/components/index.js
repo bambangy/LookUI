@@ -53,36 +53,16 @@ export function lkModal(triggerEl, modalEl) {
   };
 }
 
-// --- Input ---
+// --- Form components ---
+export { lkTextbox, lkDropdown, lkCheckbox, lkRadio, lkSwitch } from './form.js';
 
-/**
- * Enhance an input field with Look styling and validation hooks.
- * @param {Element|string} el
- * @returns {{ el: Element, setError: Function, clearError: Function, destroy: Function }}
- */
-export function lkInput(el) {
-  const node = typeof el === 'string' ? qs(el) : el;
-  if (!node) throw new Error(`Look.lkInput: element not found — "${el}"`);
-
-  node.classList.add('lk-input');
-
-  function setError() {
-    node.classList.add('lk-input--error');
-    node.setAttribute('aria-invalid', 'true');
-  }
-
-  function clearError() {
-    node.classList.remove('lk-input--error');
-    node.removeAttribute('aria-invalid');
-  }
-
-  return {
-    el: node,
-    setError,
-    clearError,
-    destroy() {
-      node.classList.remove('lk-input', 'lk-input--error');
-      node.removeAttribute('aria-invalid');
-    },
-  };
-}
+// --- Interactive components ---
+export { lkCarousel }   from './carousel.js';
+export { lkSlider }     from './slider.js';
+export { lkTooltip }    from './tooltip.js';
+export { lkRating }     from './rating.js';
+export { lkChip }       from './chip.js';
+export { lkPagination } from './pagination.js';
+export { lkProgress }   from './progress.js';
+export { lkSplitter }   from './splitter.js';
+export { lkTable }      from './table.js';

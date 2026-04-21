@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Card</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Card</h1>
+    <p style="opacity: 0.85;">.lk-card — bordered, raised, dense variants</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Variants</p>
+    <div class="lk-grid lk-grid--cols-3" style="align-items:start;">
+      <div class="lk-card">
+        <div class="lk-card__header"><div><div class="lk-card__title">Default</div><div class="lk-card__subtitle">Bordered</div></div></div>
+        <div class="lk-card__body">Standard bordered card.</div>
+        <div class="lk-card__footer"><button class="lk-btn lk-btn--primary lk-btn--sm">Action</button></div>
+      </div>
+      <div class="lk-card lk-card--raised">
+        <div class="lk-card__header"><div><div class="lk-card__title">Raised</div><div class="lk-card__subtitle">Shadow</div></div></div>
+        <div class="lk-card__body">Uses <code>.lk-card--raised</code> for shadow.</div>
+      </div>
+      <div class="lk-card lk-card--dense">
+        <div class="lk-card__header"><div><div class="lk-card__title">Dense</div><div class="lk-card__subtitle">Compact</div></div></div>
+        <div class="lk-card__body">Tighter padding.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;div class="lk-card lk-card--raised"&gt;
+  &lt;div class="lk-card__header"&gt;
+    &lt;div class="lk-card__title"&gt;Title&lt;/div&gt;
+    &lt;div class="lk-card__subtitle"&gt;Subtitle&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="lk-card__body"&gt;Content&lt;/div&gt;
+  &lt;div class="lk-card__footer"&gt;Actions&lt;/div&gt;
+&lt;/div&gt;</pre>
+  </div>
+
+</main>
+</body>
+</html>

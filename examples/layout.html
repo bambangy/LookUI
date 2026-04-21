@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Layout &amp; Utilities</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    .demo-grid-cell { background: var(--lk-primary); color: var(--lk-primary-contrast); padding: var(--lk-space-3); border-radius: var(--lk-radius); text-align: center; font-size: var(--lk-text-sm); }
+  </style>
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Layout &amp; Utilities</h1>
+    <p style="opacity: 0.85;">Grid, flex, spacing, display, responsive</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Grid — .lk-grid</p>
+    <p class="demo-sub">3 columns</p>
+    <div class="lk-grid lk-grid--cols-3" style="margin-bottom:var(--lk-space-5);">
+      <div class="demo-grid-cell">1</div><div class="demo-grid-cell">2</div><div class="demo-grid-cell">3</div>
+    </div>
+    <p class="demo-sub">4 columns, small gap</p>
+    <div class="lk-grid lk-grid--cols-4 lk-grid--gap-sm" style="margin-bottom:var(--lk-space-5);">
+      <div class="demo-grid-cell">1</div><div class="demo-grid-cell">2</div><div class="demo-grid-cell">3</div><div class="demo-grid-cell">4</div>
+    </div>
+    <p class="demo-sub">Column spanning</p>
+    <div class="lk-grid lk-grid--cols-4">
+      <div class="demo-grid-cell lk-col-span-2">span-2</div><div class="demo-grid-cell">3</div><div class="demo-grid-cell">4</div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Flex — .lk-flex</p>
+    <div class="lk-flex lk-flex--justify-between lk-flex--align-center lk-flex--gap-md" style="background:var(--lk-bg-subtle);padding:var(--lk-space-4);border-radius:var(--lk-radius);">
+      <span class="lk-badge">Left</span>
+      <span class="lk-badge lk-badge--positive">Center</span>
+      <span class="lk-badge lk-badge--info">Right</span>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Responsive Container</p>
+    <div class="lk-container" style="background:var(--lk-bg-subtle);padding:var(--lk-space-4);border-radius:var(--lk-radius);text-align:center;">
+      <code>.lk-container</code> — responsive max-width
+    </div>
+    <div style="margin-top:var(--lk-space-4);">
+      <p class="demo-sub">Resize browser to see visibility utilities:</p>
+      <div class="demo-row">
+        <span class="lk-badge lk-hidden-md-up">Visible on &lt; md</span>
+        <span class="lk-badge lk-badge--positive lk-hidden-sm-down">Visible on &ge; md</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">Grid usage</p>
+    <pre>&lt;div class="lk-grid lk-grid--cols-3 lk-grid--gap-lg"&gt;
+  &lt;div&gt;col 1&lt;/div&gt;
+  &lt;div class="lk-col-span-2"&gt;spans 2&lt;/div&gt;
+&lt;/div&gt;</pre>
+    <p class="demo-usage__title" style="margin-top:var(--lk-space-4);">Flex usage</p>
+    <pre>&lt;div class="lk-flex lk-flex--justify-between lk-flex--align-center lk-flex--gap-md"&gt;
+  …
+&lt;/div&gt;</pre>
+  </div>
+
+</main>
+</body>
+</html>

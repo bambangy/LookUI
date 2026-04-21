@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Radio</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Radio</h1>
+    <p style="opacity: 0.85;">lkRadio(el, opts) — wraps &lt;input type="radio"&gt;</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <div style="max-width: 400px; display: flex; flex-direction: column; gap: var(--lk-space-4);">
+      <input type="radio" id="demo-opt-a" name="choice" />
+      <input type="radio" id="demo-opt-b" name="choice" />
+      <input type="radio" id="demo-opt-c" name="choice" />
+    </div>
+
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-val" class="lk-btn lk-btn--primary lk-btn--sm">Get Selected</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;input type="radio" id="opt-a" name="choice" /&gt;
+&lt;input type="radio" id="opt-b" name="choice" /&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>const optA = Look.lkRadio('#opt-a', { label: 'Option A', name: 'choice' });
+const optB = Look.lkRadio('#opt-b', { label: 'Option B', name: 'choice' });
+
+optA.checked;          // boolean
+optA.value;            // same as checked
+optA.destroy();</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const optA = Look.lkRadio('#demo-opt-a', { label: 'Option A', name: 'choice', checked: true });
+  const optB = Look.lkRadio('#demo-opt-b', { label: 'Option B', name: 'choice' });
+  const optC = Look.lkRadio('#demo-opt-c', { label: 'Option C', name: 'choice' });
+  const out = document.getElementById('output');
+
+  document.getElementById('btn-val').onclick = () => {
+    const sel = [optA, optB, optC].find(r => r.checked);
+    out.textContent = sel ? 'Selected: ' + sel.label : 'None selected';
+  };
+</script>
+</body>
+</html>

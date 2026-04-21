@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Table</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Table</h1>
+    <p style="opacity: 0.85;">lkTable(el, opts) — sortable data table</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo — Click headers to sort</p>
+
+    <div class="lk-table-wrap">
+      <table id="demo-table" class="lk-table--bordered lk-table--striped lk-table--hover">
+        <thead>
+          <tr><th>Name</th><th>Price</th><th>Stock</th><th>Rating</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Widget</td><td>9.99</td><td>142</td><td>4.5</td></tr>
+          <tr><td>Gadget</td><td>24.50</td><td>38</td><td>3.8</td></tr>
+          <tr><td>Gizmo</td><td>7.25</td><td>520</td><td>4.2</td></tr>
+          <tr><td>Doohickey</td><td>15.00</td><td>91</td><td>4.7</td></tr>
+          <tr><td>Thingamajig</td><td>3.50</td><td>1200</td><td>3.1</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-sort" class="lk-btn lk-btn--primary lk-btn--sm">Sort by Price</button>
+      <button id="btn-info" class="lk-btn lk-btn--secondary lk-btn--sm">Get Sort Info</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+
+    <p class="demo-sub" style="margin-top: var(--lk-space-6);">CSS-only row states</p>
+    <div class="lk-table-wrap">
+      <table class="lk-table lk-table--bordered">
+        <thead><tr><th>State</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr class="lk-table__row--active"><td>Active</td><td>Primary tint</td></tr>
+          <tr class="lk-table__row--positive"><td>Positive</td><td>Green tint</td></tr>
+          <tr class="lk-table__row--warning"><td>Warning</td><td>Amber tint</td></tr>
+          <tr class="lk-table__row--negative"><td>Negative</td><td>Red tint</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const table = Look.lkTable('#data', {
+  sortable: true,
+  onSort({ column, order }) {
+    console.log(column, order);
+  },
+});
+
+table.sortBy = 2;       // sort by column index
+table.sortOrder;         // 'asc' or 'desc'
+table.destroy();</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const out = document.getElementById('output');
+  const table = Look.lkTable('#demo-table', {
+    sortable: true,
+    onSort({ column, order }) {
+      out.textContent = 'Sorted column ' + column + ' (' + order + ')';
+    },
+  });
+
+  document.getElementById('btn-sort').onclick = () => { table.sortBy = 1; };
+  document.getElementById('btn-info').onclick = () => { out.textContent = 'sortBy=' + table.sortBy + ' sortOrder=' + table.sortOrder; };
+</script>
+</body>
+</html>

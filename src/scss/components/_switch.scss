@@ -1,0 +1,77 @@
+// Switch / Toggle component
+
+.lk-switch {
+  width: 2.5rem;
+  height: 1.375rem;
+  margin: 0;
+  appearance: none;
+  border: none;
+  border-radius: var(--lk-radius-full);
+  background: var(--lk-border-strong);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  vertical-align: middle;
+
+  transition:
+    background-color var(--lk-duration-fast) var(--lk-easing-default);
+
+  // Thumb (knob)
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: calc(1.375rem - 4px);
+    height: calc(1.375rem - 4px);
+    background: var(--lk-bg);
+    border-radius: var(--lk-radius-full);
+    box-shadow: var(--lk-shadow-sm);
+    transition: transform var(--lk-duration-fast) var(--lk-easing-default);
+  }
+
+  &:checked {
+    background: var(--lk-primary);
+
+    &::after {
+      transform: translateX(calc(2.5rem - 1.375rem));
+    }
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-primary) 20%, transparent);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  // Color variants
+  &--positive:checked { background: var(--lk-positive); }
+  &--negative:checked { background: var(--lk-negative); }
+  &--warning:checked  { background: var(--lk-warning); }
+
+  // Dense variant
+  &--dense {
+    width: 2rem;
+    height: 1.125rem;
+
+    &::after {
+      width: calc(1.125rem - 4px);
+      height: calc(1.125rem - 4px);
+    }
+
+    &:checked::after {
+      transform: translateX(calc(2rem - 1.125rem));
+    }
+  }
+
+  // When inside .lk-field, use row layout
+  .lk-field:has(&) {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--lk-space-2);
+  }
+}

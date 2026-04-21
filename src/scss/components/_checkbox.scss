@@ -1,0 +1,54 @@
+// Checkbox component
+
+.lk-checkbox {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  appearance: none;
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius-sm);
+  background: var(--lk-bg);
+  cursor: pointer;
+  vertical-align: middle;
+  flex-shrink: 0;
+  position: relative;
+
+  transition:
+    background-color var(--lk-duration-fast) var(--lk-easing-default),
+    border-color     var(--lk-duration-fast) var(--lk-easing-default),
+    box-shadow       var(--lk-duration-fast) var(--lk-easing-default);
+
+  &:checked {
+    background: var(--lk-primary);
+    border-color: var(--lk-primary);
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0.375rem;
+      height: 0.625rem;
+      border: solid var(--lk-primary-contrast);
+      border-width: 0 2px 2px 0;
+      transform: translate(-50%, -60%) rotate(45deg);
+    }
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-primary) 20%, transparent);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  // When inside .lk-field, use row layout instead of column
+  .lk-field:has(&) {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--lk-space-2);
+  }
+}

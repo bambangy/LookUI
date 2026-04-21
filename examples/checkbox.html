@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Checkbox</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Checkbox</h1>
+    <p style="opacity: 0.85;">lkCheckbox(el, opts) — wraps &lt;input type="checkbox"&gt;</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <div style="max-width: 400px; display: flex; flex-direction: column; gap: var(--lk-space-4);">
+      <input type="checkbox" id="demo-agree" />
+      <input type="checkbox" id="demo-news" />
+      <input type="checkbox" id="demo-disabled" />
+    </div>
+
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-toggle" class="lk-btn lk-btn--primary lk-btn--sm">Toggle First</button>
+      <button id="btn-val" class="lk-btn lk-btn--secondary lk-btn--sm">Get Values</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;input type="checkbox" id="agree" /&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>const agree = Look.lkCheckbox('#agree', {
+  label: 'I agree to terms',
+  name: 'agree',
+  checked: false,
+});
+
+agree.checked;         // false
+agree.toggle();        // flip state
+agree.value;           // same as checked (true)
+agree.setError('You must agree');
+agree.clearError();
+agree.destroy();</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const agree = Look.lkCheckbox('#demo-agree', { label: 'I agree to the terms', name: 'agree' });
+  const news = Look.lkCheckbox('#demo-news', { label: 'Subscribe to newsletter', name: 'news', checked: true });
+  const dis = Look.lkCheckbox('#demo-disabled', { label: 'Disabled option', name: 'dis' });
+  dis.enabled = false;
+  const out = document.getElementById('output');
+
+  document.getElementById('btn-toggle').onclick = () => {
+    agree.toggle();
+    out.textContent = 'agree.checked = ' + agree.checked;
+  };
+  document.getElementById('btn-val').onclick = () => {
+    out.textContent = `agree=${agree.checked} | news=${news.checked}`;
+  };
+</script>
+</body>
+</html>

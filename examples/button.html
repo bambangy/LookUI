@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Button</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Button</h1>
+    <p style="opacity: 0.85;">lkButton(el) — .lk-btn variants, groups, dropdowns</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Variants</p>
+    <div class="demo-row">
+      <button class="lk-btn lk-btn--primary">Primary</button>
+      <button class="lk-btn lk-btn--secondary">Secondary</button>
+      <button class="lk-btn lk-btn--ghost">Ghost</button>
+      <button class="lk-btn lk-btn--positive">Positive</button>
+      <button class="lk-btn lk-btn--negative">Negative</button>
+      <button class="lk-btn lk-btn--warning">Warning</button>
+      <button class="lk-btn lk-btn--info">Info</button>
+    </div>
+
+    <p class="demo-sub">Sizes</p>
+    <div class="demo-row">
+      <button class="lk-btn lk-btn--primary lk-btn--sm">Small</button>
+      <button class="lk-btn lk-btn--primary">Default</button>
+      <button class="lk-btn lk-btn--primary lk-btn--lg">Large</button>
+    </div>
+
+    <p class="demo-sub">Dense</p>
+    <div class="demo-row">
+      <button class="lk-btn lk-btn--primary lk-btn--dense lk-btn--sm">Dense SM</button>
+      <button class="lk-btn lk-btn--primary lk-btn--dense">Dense</button>
+      <button class="lk-btn lk-btn--primary lk-btn--dense lk-btn--lg">Dense LG</button>
+    </div>
+
+    <p class="demo-sub">Disabled</p>
+    <div class="demo-row">
+      <button class="lk-btn lk-btn--primary" disabled>Disabled</button>
+      <button class="lk-btn lk-btn--secondary" aria-disabled="true">Aria-disabled</button>
+    </div>
+
+    <p class="demo-sub">Button group</p>
+    <div class="demo-row">
+      <div class="lk-btn-group">
+        <button class="lk-btn lk-btn--secondary">Left</button>
+        <button class="lk-btn lk-btn--secondary">Center</button>
+        <button class="lk-btn lk-btn--secondary">Right</button>
+      </div>
+    </div>
+
+    <p class="demo-sub">Button dropdown</p>
+    <div class="demo-row">
+      <div class="lk-btn-dropdown lk-btn-dropdown--open">
+        <button class="lk-btn lk-btn--primary">Dropdown <span class="lk-btn-dropdown__caret"></span></button>
+        <div class="lk-btn-dropdown__menu">
+          <button class="lk-btn-dropdown__item">Action one</button>
+          <button class="lk-btn-dropdown__item lk-btn-dropdown__item--active">Active</button>
+          <hr class="lk-btn-dropdown__divider" />
+          <button class="lk-btn-dropdown__item">Another action</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const btn = Look.lkButton('#my-button');
+btn.el;        // DOM element
+btn.destroy(); // removes lk-btn class</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+</body>
+</html>

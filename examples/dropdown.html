@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Dropdown</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Dropdown</h1>
+    <p style="opacity: 0.85;">lkDropdown(el, opts) — wraps &lt;select&gt; elements</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <div style="max-width: 400px; display: flex; flex-direction: column; gap: var(--lk-space-5);">
+      <select id="demo-country"></select>
+      <select id="demo-size">
+        <option value="">Choose size…</option>
+        <option value="s">Small</option>
+        <option value="m">Medium</option>
+        <option value="l">Large</option>
+      </select>
+    </div>
+
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-val" class="lk-btn lk-btn--primary lk-btn--sm">Get Value</button>
+      <button id="btn-error" class="lk-btn lk-btn--negative lk-btn--sm">Set Error</button>
+      <button id="btn-clear" class="lk-btn lk-btn--positive lk-btn--sm">Clear Error</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;select id="country"&gt;&lt;/select&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>const country = Look.lkDropdown('#country', {
+  label: 'Country',
+  name: 'country',
+  required: true,
+  items: [
+    { value: '',   text: 'Select a country…' },
+    { value: 'us', text: 'United States' },
+    { value: 'uk', text: 'United Kingdom' },
+    { value: 'jp', text: 'Japan', disabled: true },
+  ],
+});
+
+country.value;           // 'us'
+country.selectedIndex;   // 1
+country.selectedText;    // 'United States'
+country.setError('Required');
+country.clearError();
+country.destroy();</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const country = Look.lkDropdown('#demo-country', {
+    label: 'Country',
+    name: 'country',
+    items: [
+      { value: '', text: 'Select a country…' },
+      { value: 'us', text: 'United States' },
+      { value: 'uk', text: 'United Kingdom' },
+      { value: 'de', text: 'Germany' },
+      { value: 'jp', text: 'Japan' },
+    ],
+  });
+
+  const size = Look.lkDropdown('#demo-size', { label: 'Size' });
+  const out = document.getElementById('output');
+
+  document.getElementById('btn-val').onclick = () => {
+    out.textContent = `value="${country.value}" | selectedText="${country.selectedText}" | index=${country.selectedIndex}`;
+  };
+  document.getElementById('btn-error').onclick = () => { country.setError('Please select a country'); };
+  document.getElementById('btn-clear').onclick = () => { country.clearError(); };
+</script>
+</body>
+</html>

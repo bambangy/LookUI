@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Breadcrumbs</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Breadcrumbs</h1>
+    <p style="opacity: 0.85;">.lk-breadcrumbs — separators, dense</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-sub">Default (slash separator)</p>
+    <ul class="lk-breadcrumbs" style="margin-bottom:var(--lk-space-4);">
+      <li class="lk-breadcrumbs__item"><a href="#">Home</a></li>
+      <li class="lk-breadcrumbs__item"><a href="#">Products</a></li>
+      <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Detail</li>
+    </ul>
+
+    <p class="demo-sub">Arrow separator</p>
+    <ul class="lk-breadcrumbs lk-breadcrumbs--arrow" style="margin-bottom:var(--lk-space-4);">
+      <li class="lk-breadcrumbs__item"><a href="#">Home</a></li>
+      <li class="lk-breadcrumbs__item"><a href="#">Category</a></li>
+      <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Page</li>
+    </ul>
+
+    <p class="demo-sub">Dense</p>
+    <ul class="lk-breadcrumbs lk-breadcrumbs--dense">
+      <li class="lk-breadcrumbs__item"><a href="#">Home</a></li>
+      <li class="lk-breadcrumbs__item"><a href="#">Section</a></li>
+      <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Current</li>
+    </ul>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;ul class="lk-breadcrumbs lk-breadcrumbs--arrow"&gt;
+  &lt;li class="lk-breadcrumbs__item"&gt;&lt;a href="#"&gt;Home&lt;/a&gt;&lt;/li&gt;
+  &lt;li class="lk-breadcrumbs__item"&gt;&lt;a href="#"&gt;Category&lt;/a&gt;&lt;/li&gt;
+  &lt;li class="lk-breadcrumbs__item lk-breadcrumbs__item--active"&gt;Current&lt;/li&gt;
+&lt;/ul&gt;</pre>
+  </div>
+
+</main>
+</body>
+</html>

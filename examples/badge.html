@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Badge</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Badge</h1>
+    <p style="opacity: 0.85;">.lk-badge — colors, outline, dot</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-sub">Colors</p>
+    <div class="demo-row">
+      <span class="lk-badge">Default</span>
+      <span class="lk-badge lk-badge--secondary">Secondary</span>
+      <span class="lk-badge lk-badge--positive">Positive</span>
+      <span class="lk-badge lk-badge--warning">Warning</span>
+      <span class="lk-badge lk-badge--negative">Negative</span>
+      <span class="lk-badge lk-badge--info">Info</span>
+    </div>
+
+    <p class="demo-sub">Outline &amp; dot</p>
+    <div class="demo-row">
+      <span class="lk-badge lk-badge--outline">Outline</span>
+      <span class="lk-badge lk-badge--outline lk-badge--positive">Positive</span>
+      <span class="lk-badge lk-badge--dot"></span>
+      <span class="lk-badge lk-badge--dot lk-badge--positive"></span>
+      <span class="lk-badge lk-badge--dot lk-badge--negative"></span>
+    </div>
+
+    <p class="demo-sub">Dense</p>
+    <div class="demo-row">
+      <span class="lk-badge lk-badge--dense">Dense</span>
+      <span class="lk-badge lk-badge--dense lk-badge--positive">OK</span>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;span class="lk-badge lk-badge--positive"&gt;Active&lt;/span&gt;
+&lt;span class="lk-badge lk-badge--outline"&gt;Outline&lt;/span&gt;
+&lt;span class="lk-badge lk-badge--dot lk-badge--negative"&gt;&lt;/span&gt;</pre>
+  </div>
+
+</main>
+</body>
+</html>

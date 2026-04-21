@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Tooltip</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Tooltip</h1>
+    <p style="opacity: 0.85;">lkTooltip(el, opts) — positioned tooltips with show/hide control</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <div class="demo-row" style="gap: var(--lk-space-6); padding: var(--lk-space-8) 0;">
+      <span id="demo-tip-top">
+        <button class="lk-btn lk-btn--secondary">Hover (top)</button>
+      </span>
+
+      <span id="demo-tip-bottom">
+        <button class="lk-btn lk-btn--secondary">Hover (bottom)</button>
+      </span>
+
+      <span id="demo-tip-right">
+        <button class="lk-btn lk-btn--secondary">Hover (right)</button>
+      </span>
+
+      <span id="demo-tip-js">
+        <button class="lk-btn lk-btn--primary">JS controlled</button>
+      </span>
+    </div>
+
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-show" class="lk-btn lk-btn--positive lk-btn--sm">Show</button>
+      <button id="btn-hide" class="lk-btn lk-btn--negative lk-btn--sm">Hide</button>
+      <button id="btn-text" class="lk-btn lk-btn--secondary lk-btn--sm">Change Text</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;span id="info-icon"&gt;
+  &lt;button class="lk-btn"&gt;Hover me&lt;/button&gt;
+&lt;/span&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>const tip = Look.lkTooltip('#info-icon', {
+  content: 'More information',
+  position: 'top',  // top | bottom | left | right
+});
+
+tip.content = 'Updated text';
+tip.show();
+tip.hide();
+tip.destroy();</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  Look.lkTooltip('#demo-tip-top', { content: 'Tooltip on top', position: 'top' });
+  Look.lkTooltip('#demo-tip-bottom', { content: 'Tooltip on bottom', position: 'bottom' });
+  Look.lkTooltip('#demo-tip-right', { content: 'Tooltip on right', position: 'right' });
+  const jsTip = Look.lkTooltip('#demo-tip-js', { content: 'Controlled via JS!', position: 'top' });
+  const out = document.getElementById('output');
+
+  document.getElementById('btn-show').onclick = () => { jsTip.show(); out.textContent = 'show() called'; };
+  document.getElementById('btn-hide').onclick = () => { jsTip.hide(); out.textContent = 'hide() called'; };
+  document.getElementById('btn-text').onclick = () => { jsTip.content = 'New tooltip text!'; out.textContent = 'content updated'; };
+</script>
+</body>
+</html>

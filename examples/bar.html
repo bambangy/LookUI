@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Bar</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Bar</h1>
+    <p style="opacity: 0.85;">.lk-bar — app bar, primary, dark, dense</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-sub">Primary bar</p>
+    <div style="border:1px solid var(--lk-border);border-radius:var(--lk-radius-lg);overflow:hidden;margin-bottom:var(--lk-space-5);">
+      <div class="lk-bar lk-bar--primary">
+        <div class="lk-bar__start"><span class="lk-bar__title">App Title</span></div>
+        <div class="lk-bar__end"><button class="lk-btn lk-btn--ghost" style="color:inherit;">Action</button></div>
+      </div>
+    </div>
+
+    <p class="demo-sub">Dense dark bar</p>
+    <div style="border:1px solid var(--lk-border);border-radius:var(--lk-radius-lg);overflow:hidden;">
+      <div class="lk-bar lk-bar--dense lk-bar--dark">
+        <div class="lk-bar__start"><span class="lk-bar__title">Dense Bar</span></div>
+        <div class="lk-bar__end"><span class="lk-badge lk-badge--accent">3</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;div class="lk-bar lk-bar--primary"&gt;
+  &lt;div class="lk-bar__start"&gt;
+    &lt;span class="lk-bar__title"&gt;Title&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class="lk-bar__end"&gt;Actions&lt;/div&gt;
+&lt;/div&gt;</pre>
+  </div>
+
+</main>
+</body>
+</html>

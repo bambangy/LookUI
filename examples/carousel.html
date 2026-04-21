@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Carousel</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Carousel</h1>
+    <p style="opacity: 0.85;">lkCarousel(el, opts) — slide navigation with autoplay</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <div id="demo-carousel" style="max-width: 500px; border-radius: var(--lk-radius-lg); overflow: hidden;">
+      <div class="lk-carousel__track">
+        <div class="lk-carousel__slide" style="display:flex;align-items:center;justify-content:center;height:220px;background:var(--lk-primary);color:var(--lk-primary-contrast);font-size:var(--lk-text-2xl);">Slide 1</div>
+        <div class="lk-carousel__slide" style="display:flex;align-items:center;justify-content:center;height:220px;background:var(--lk-accent);color:#fff;font-size:var(--lk-text-2xl);">Slide 2</div>
+        <div class="lk-carousel__slide" style="display:flex;align-items:center;justify-content:center;height:220px;background:var(--lk-positive);color:#fff;font-size:var(--lk-text-2xl);">Slide 3</div>
+      </div>
+      <button class="lk-carousel__prev">&lsaquo;</button>
+      <button class="lk-carousel__next">&rsaquo;</button>
+      <div class="lk-carousel__indicators">
+        <button class="lk-carousel__dot"></button>
+        <button class="lk-carousel__dot"></button>
+        <button class="lk-carousel__dot"></button>
+      </div>
+    </div>
+
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-prev" class="lk-btn lk-btn--secondary lk-btn--sm">Prev</button>
+      <button id="btn-next" class="lk-btn lk-btn--secondary lk-btn--sm">Next</button>
+      <button id="btn-goto" class="lk-btn lk-btn--primary lk-btn--sm">Go to slide 3</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;div id="my-carousel"&gt;
+  &lt;div class="lk-carousel__track"&gt;
+    &lt;div class="lk-carousel__slide"&gt;Slide 1&lt;/div&gt;
+    &lt;div class="lk-carousel__slide"&gt;Slide 2&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;button class="lk-carousel__prev"&gt;&amp;lsaquo;&lt;/button&gt;
+  &lt;button class="lk-carousel__next"&gt;&amp;rsaquo;&lt;/button&gt;
+  &lt;div class="lk-carousel__indicators"&gt;
+    &lt;button class="lk-carousel__dot"&gt;&lt;/button&gt;
+    &lt;button class="lk-carousel__dot"&gt;&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>const carousel = Look.lkCarousel('#my-carousel', {
+  autoplay: true,
+  interval: 3000,
+  loop: true,
+});
+
+carousel.activeIndex;    // 0
+carousel.next();
+carousel.prev();
+carousel.goTo(2);
+carousel.destroy();</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const carousel = Look.lkCarousel('#demo-carousel', { loop: true });
+  const out = document.getElementById('output');
+
+  document.getElementById('btn-prev').onclick = () => { carousel.prev(); out.textContent = 'activeIndex = ' + carousel.activeIndex; };
+  document.getElementById('btn-next').onclick = () => { carousel.next(); out.textContent = 'activeIndex = ' + carousel.activeIndex; };
+  document.getElementById('btn-goto').onclick = () => { carousel.goTo(2); out.textContent = 'activeIndex = ' + carousel.activeIndex; };
+</script>
+</body>
+</html>

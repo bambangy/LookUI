@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Timeline</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Timeline</h1>
+    <p style="opacity: 0.85;">.lk-timeline — event list, dense</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <div style="max-width:500px;">
+      <ul class="lk-timeline" style="margin-bottom:var(--lk-space-5);">
+        <li class="lk-timeline__item">
+          <div class="lk-timeline__dot lk-timeline__dot--primary"></div>
+          <div class="lk-timeline__content">
+            <div class="lk-timeline__title">Project started</div>
+            <div class="lk-timeline__time">Jan 2026</div>
+            <div class="lk-timeline__body">Initial commit and project scaffolding.</div>
+          </div>
+        </li>
+        <li class="lk-timeline__item">
+          <div class="lk-timeline__dot lk-timeline__dot--positive"></div>
+          <div class="lk-timeline__content">
+            <div class="lk-timeline__title">v0.1.0 released</div>
+            <div class="lk-timeline__time">Mar 2026</div>
+            <div class="lk-timeline__body">First public release with core components.</div>
+          </div>
+        </li>
+        <li class="lk-timeline__item">
+          <div class="lk-timeline__dot lk-timeline__dot--info"></div>
+          <div class="lk-timeline__content">
+            <div class="lk-timeline__title">JS components added</div>
+            <div class="lk-timeline__time">Apr 2026</div>
+          </div>
+        </li>
+      </ul>
+
+      <p class="demo-sub">Dense</p>
+      <ul class="lk-timeline lk-timeline--dense">
+        <li class="lk-timeline__item">
+          <div class="lk-timeline__dot lk-timeline__dot--warning"></div>
+          <div class="lk-timeline__content"><div class="lk-timeline__title">Event A</div><div class="lk-timeline__time">9:00 AM</div></div>
+        </li>
+        <li class="lk-timeline__item">
+          <div class="lk-timeline__dot lk-timeline__dot--negative"></div>
+          <div class="lk-timeline__content"><div class="lk-timeline__title">Event B</div><div class="lk-timeline__time">10:30 AM</div></div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;ul class="lk-timeline"&gt;
+  &lt;li class="lk-timeline__item"&gt;
+    &lt;div class="lk-timeline__dot lk-timeline__dot--primary"&gt;&lt;/div&gt;
+    &lt;div class="lk-timeline__content"&gt;
+      &lt;div class="lk-timeline__title"&gt;Title&lt;/div&gt;
+      &lt;div class="lk-timeline__time"&gt;Date&lt;/div&gt;
+      &lt;div class="lk-timeline__body"&gt;Description&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;</pre>
+  </div>
+
+</main>
+</body>
+</html>

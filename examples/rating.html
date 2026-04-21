@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Rating</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Rating</h1>
+    <p style="opacity: 0.85;">lkRating(el, opts) — click-to-rate star component</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <div style="display: flex; flex-direction: column; gap: var(--lk-space-5);">
+      <div>
+        <p class="demo-sub">Interactive (click stars)</p>
+        <div id="demo-rating"></div>
+      </div>
+
+      <div>
+        <p class="demo-sub">Read-only</p>
+        <div id="demo-rating-ro"></div>
+      </div>
+
+      <div>
+        <p class="demo-sub">Large size</p>
+        <div id="demo-rating-lg" class="lk-rating--lg"></div>
+      </div>
+    </div>
+
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-val" class="lk-btn lk-btn--primary lk-btn--sm">Get Value</button>
+      <button id="btn-set" class="lk-btn lk-btn--secondary lk-btn--sm">Set to 5</button>
+      <button id="btn-ro" class="lk-btn lk-btn--secondary lk-btn--sm">Toggle Readonly</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;div id="stars"&gt;&lt;/div&gt;
+&lt;!-- Stars auto-created if container is empty --&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>const rating = Look.lkRating('#stars', {
+  max: 5,
+  value: 3,
+  symbol: '★',
+  onChange(v) { console.log('Rated:', v); },
+});
+
+rating.value;           // 3
+rating.value = 4;
+rating.readonly = true;
+rating.destroy();</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const rating = Look.lkRating('#demo-rating', {
+    max: 5, value: 3,
+    onChange(v) { out.textContent = 'onChange: value = ' + v; },
+  });
+  Look.lkRating('#demo-rating-ro', { max: 5, value: 4, readonly: true });
+  Look.lkRating('#demo-rating-lg', { max: 5, value: 2 });
+  const out = document.getElementById('output');
+
+  document.getElementById('btn-val').onclick = () => { out.textContent = 'value = ' + rating.value; };
+  document.getElementById('btn-set').onclick = () => { rating.value = 5; out.textContent = 'value = 5'; };
+  document.getElementById('btn-ro').onclick = () => { rating.readonly = !rating.readonly; out.textContent = 'readonly = ' + rating.readonly; };
+</script>
+</body>
+</html>

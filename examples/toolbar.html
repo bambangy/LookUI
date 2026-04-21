@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Toolbar</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Toolbar</h1>
+    <p style="opacity: 0.85;">.lk-toolbar — button groups, separators, dense</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-sub">Default toolbar</p>
+    <div style="margin-bottom:var(--lk-space-5);">
+      <div class="lk-toolbar">
+        <div class="lk-toolbar__group">
+          <button class="lk-btn lk-btn--ghost lk-btn--sm">B</button>
+          <button class="lk-btn lk-btn--ghost lk-btn--sm">I</button>
+          <button class="lk-btn lk-btn--ghost lk-btn--sm">U</button>
+        </div>
+        <div class="lk-toolbar__separator"></div>
+        <div class="lk-toolbar__group">
+          <button class="lk-btn lk-btn--ghost lk-btn--sm">L</button>
+          <button class="lk-btn lk-btn--ghost lk-btn--sm">C</button>
+          <button class="lk-btn lk-btn--ghost lk-btn--sm">R</button>
+        </div>
+        <div class="lk-toolbar__spacer"></div>
+        <button class="lk-btn lk-btn--primary lk-btn--sm">Save</button>
+      </div>
+    </div>
+
+    <p class="demo-sub">Dense</p>
+    <div class="lk-toolbar lk-toolbar--dense">
+      <div class="lk-toolbar__group">
+        <button class="lk-btn lk-btn--ghost lk-btn--dense">B</button>
+        <button class="lk-btn lk-btn--ghost lk-btn--dense">I</button>
+      </div>
+      <div class="lk-toolbar__separator"></div>
+      <div class="lk-toolbar__group">
+        <button class="lk-btn lk-btn--ghost lk-btn--dense">L</button>
+        <button class="lk-btn lk-btn--ghost lk-btn--dense">R</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;div class="lk-toolbar"&gt;
+  &lt;div class="lk-toolbar__group"&gt;
+    &lt;button class="lk-btn lk-btn--ghost lk-btn--sm"&gt;B&lt;/button&gt;
+    &lt;button class="lk-btn lk-btn--ghost lk-btn--sm"&gt;I&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div class="lk-toolbar__separator"&gt;&lt;/div&gt;
+  &lt;div class="lk-toolbar__spacer"&gt;&lt;/div&gt;
+  &lt;button class="lk-btn lk-btn--primary lk-btn--sm"&gt;Save&lt;/button&gt;
+&lt;/div&gt;</pre>
+  </div>
+
+</main>
+</body>
+</html>

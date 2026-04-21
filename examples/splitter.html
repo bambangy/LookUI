@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Splitter</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Splitter</h1>
+    <p style="opacity: 0.85;">lkSplitter(el, opts) — drag-to-resize panes</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo — Horizontal</p>
+
+    <div id="demo-splitter" class="lk-splitter--bordered" style="height: 200px; margin-bottom: var(--lk-space-5);">
+      <div class="lk-splitter__pane" style="padding: var(--lk-space-4);">
+        <strong>Left pane</strong><br>Drag the handle to resize.
+      </div>
+      <div class="lk-splitter__handle"></div>
+      <div class="lk-splitter__pane" style="padding: var(--lk-space-4);">
+        <strong>Right pane</strong><br>Content adjusts.
+      </div>
+    </div>
+
+    <p class="demo-section__title">Vertical</p>
+    <div id="demo-splitter-v" class="lk-splitter--vertical lk-splitter--bordered" style="height: 200px;">
+      <div class="lk-splitter__pane" style="padding: var(--lk-space-4);">Top pane</div>
+      <div class="lk-splitter__handle"></div>
+      <div class="lk-splitter__pane" style="padding: var(--lk-space-4);">Bottom pane</div>
+    </div>
+
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-sizes" class="lk-btn lk-btn--primary lk-btn--sm">Get Sizes</button>
+      <button id="btn-reset" class="lk-btn lk-btn--secondary lk-btn--sm">Reset to 50/50</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const split = Look.lkSplitter('#editor', {
+  sizes: [30, 70],
+  minSize: 100,
+});
+
+split.sizes;              // [30, 70]
+split.sizes = [50, 50];
+split.destroy();</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const out = document.getElementById('output');
+  const split = Look.lkSplitter('#demo-splitter', { sizes: [40, 60] });
+  Look.lkSplitter('#demo-splitter-v', { sizes: [50, 50] });
+
+  document.getElementById('btn-sizes').onclick = () => { out.textContent = 'sizes = [' + split.sizes.join(', ') + ']'; };
+  document.getElementById('btn-reset').onclick = () => { split.sizes = [50, 50]; out.textContent = 'Reset to [50, 50]'; };
+</script>
+</body>
+</html>

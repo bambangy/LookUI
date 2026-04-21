@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Modal</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Modal</h1>
+    <p style="opacity: 0.85;">lkModal(triggerEl, modalEl) — dialog with focus trap</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <button id="modal-trigger" class="lk-btn lk-btn--primary" aria-expanded="false">Open Modal</button>
+
+    <div id="modal-container" style="display: none;">
+      <div class="lk-modal-overlay">
+        <div class="lk-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+          <div class="lk-modal__header">
+            <span class="lk-modal__title" id="modal-title">Modal Title</span>
+            <button id="modal-close" class="lk-modal__close" aria-label="Close">&#x2715;</button>
+          </div>
+          <div class="lk-modal__body">
+            <p>This modal uses <code>Look.lkModal()</code> with focus trapping.</p>
+            <input id="demo-input" type="text" placeholder="Focus trapped here…" />
+          </div>
+          <div class="lk-modal__footer">
+            <button id="modal-cancel" class="lk-btn lk-btn--secondary">Cancel</button>
+            <button class="lk-btn lk-btn--primary">Confirm</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;button id="trigger"&gt;Open&lt;/button&gt;
+&lt;div id="modal-container"&gt;
+  &lt;div class="lk-modal-overlay"&gt;
+    &lt;div class="lk-modal" role="dialog" aria-modal="true"&gt;
+      &lt;div class="lk-modal__header"&gt;…&lt;/div&gt;
+      &lt;div class="lk-modal__body"&gt;…&lt;/div&gt;
+      &lt;div class="lk-modal__footer"&gt;…&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>const modal = Look.lkModal('#trigger', '#modal-container');
+modal.open();
+modal.close();
+modal.destroy();</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const container = document.getElementById('modal-container');
+  container.style.display = '';
+
+  const modal = Look.lkModal('#modal-trigger', container);
+  const input = Look.lkTextbox('#demo-input', { label: 'Field inside modal' });
+
+  document.getElementById('modal-close').onclick = () => modal.close();
+  document.getElementById('modal-cancel').onclick = () => modal.close();
+  container.querySelector('.lk-modal-overlay').onclick = (e) => {
+    if (e.target === e.currentTarget) modal.close();
+  };
+</script>
+</body>
+</html>

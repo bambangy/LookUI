@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Textbox</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Textbox</h1>
+    <p style="opacity: 0.85;">lkTextbox(el, opts) — wraps &lt;input&gt; or &lt;textarea&gt;</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <!-- Live demo -->
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <div style="max-width: 400px; display: flex; flex-direction: column; gap: var(--lk-space-5);">
+      <input id="demo-email" type="email" placeholder="Enter email…" />
+      <textarea id="demo-notes" rows="3" placeholder="Enter notes…"></textarea>
+      <input id="demo-readonly" type="text" value="Read-only field" />
+    </div>
+
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-error" class="lk-btn lk-btn--negative lk-btn--sm">Set Error</button>
+      <button id="btn-clear" class="lk-btn lk-btn--positive lk-btn--sm">Clear Error</button>
+      <button id="btn-toggle" class="lk-btn lk-btn--secondary lk-btn--sm">Toggle Enabled</button>
+      <button id="btn-hide" class="lk-btn lk-btn--secondary lk-btn--sm">Toggle Hidden</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <!-- Usage -->
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;input id="email" type="email" /&gt;
+&lt;textarea id="notes"&gt;&lt;/textarea&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>// Basic — auto-creates .lk-field wrapper with label
+const email = Look.lkTextbox('#email', {
+  label: 'Email address',
+  name: 'email',
+  type: 'email',
+  required: true,
+});
+
+// Get / set value
+email.value;                  // current value
+email.value = 'user@example.com';
+
+// Validation
+email.setError('Invalid email format');
+email.clearError();
+
+// Properties
+email.label = 'Work email';  // update label text
+email.required = true;
+email.readonly = false;
+email.enabled = false;        // disable
+email.hidden = true;          // hide
+
+// Cleanup
+email.destroy();</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const email = Look.lkTextbox('#demo-email', { label: 'Email', name: 'email', type: 'email' });
+  const notes = Look.lkTextbox('#demo-notes', { label: 'Notes', name: 'notes' });
+  const ro = Look.lkTextbox('#demo-readonly', { label: 'Read-only', readonly: true });
+  const out = document.getElementById('output');
+
+  document.getElementById('btn-error').onclick = () => {
+    email.setError('This email is invalid');
+    out.textContent = 'setError("This email is invalid") called';
+  };
+  document.getElementById('btn-clear').onclick = () => {
+    email.clearError();
+    out.textContent = 'clearError() called';
+  };
+  document.getElementById('btn-toggle').onclick = () => {
+    email.enabled = !email.enabled;
+    out.textContent = 'enabled = ' + email.enabled;
+  };
+  document.getElementById('btn-hide').onclick = () => {
+    email.hidden = !email.hidden;
+    out.textContent = 'hidden = ' + email.hidden;
+  };
+</script>
+</body>
+</html>

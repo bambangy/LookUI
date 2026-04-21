@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Color Tokens</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    .demo-token-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--lk-space-3); }
+    .demo-swatch { border-radius: var(--lk-radius-lg); overflow: hidden; box-shadow: var(--lk-shadow-sm); }
+    .demo-swatch__color { height: 56px; }
+    .demo-swatch__label { font-size: var(--lk-text-xs); padding: var(--lk-space-2); background: var(--lk-bg); color: var(--lk-text-muted); font-family: var(--lk-font-mono); border-top: var(--lk-border-width) solid var(--lk-border); }
+  </style>
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Color Tokens</h1>
+    <p style="opacity: 0.85;">Design token color palette</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Brand &amp; Semantic Colors</p>
+    <div class="demo-token-grid">
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-primary)"></div><div class="demo-swatch__label">--lk-primary</div></div>
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-primary-light)"></div><div class="demo-swatch__label">--lk-primary-light</div></div>
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-primary-dark)"></div><div class="demo-swatch__label">--lk-primary-dark</div></div>
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-secondary)"></div><div class="demo-swatch__label">--lk-secondary</div></div>
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-accent)"></div><div class="demo-swatch__label">--lk-accent</div></div>
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-positive)"></div><div class="demo-swatch__label">--lk-positive</div></div>
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-warning)"></div><div class="demo-swatch__label">--lk-warning</div></div>
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-negative)"></div><div class="demo-swatch__label">--lk-negative</div></div>
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-info)"></div><div class="demo-swatch__label">--lk-info</div></div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Surface &amp; Text Colors</p>
+    <div class="demo-token-grid">
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-bg);border:1px solid var(--lk-border)"></div><div class="demo-swatch__label">--lk-bg</div></div>
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-bg-subtle)"></div><div class="demo-swatch__label">--lk-bg-subtle</div></div>
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-surface)"></div><div class="demo-swatch__label">--lk-surface</div></div>
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-text)"></div><div class="demo-swatch__label">--lk-text</div></div>
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-text-muted)"></div><div class="demo-swatch__label">--lk-text-muted</div></div>
+      <div class="demo-swatch"><div class="demo-swatch__color" style="background:var(--lk-border)"></div><div class="demo-swatch__label">--lk-border</div></div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Typography Scale</p>
+    <div style="display:flex;flex-direction:column;gap:var(--lk-space-2);">
+      <p style="font-size:var(--lk-text-4xl)">text-4xl — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-3xl)">text-3xl — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-2xl)">text-2xl — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-xl)">text-xl — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-lg)">text-lg — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-md)">text-md — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-base)">text-base — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-sm)">text-sm — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-xs)">text-xs — The quick brown fox</p>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

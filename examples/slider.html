@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Slider</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Slider</h1>
+    <p style="opacity: 0.85;">lkSlider(el, opts) — drag-to-set-value range control</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <div style="max-width: 400px; display: flex; flex-direction: column; gap: var(--lk-space-6);">
+      <div id="demo-slider">
+        <div class="lk-slider__track">
+          <div class="lk-slider__fill"></div>
+          <div class="lk-slider__thumb">
+            <span class="lk-slider__label"></span>
+          </div>
+        </div>
+      </div>
+
+      <p class="demo-sub">Positive color</p>
+      <div id="demo-slider2" class="lk-slider--positive">
+        <div class="lk-slider__track">
+          <div class="lk-slider__fill"></div>
+          <div class="lk-slider__thumb"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-val" class="lk-btn lk-btn--primary lk-btn--sm">Get Value</button>
+      <button id="btn-set" class="lk-btn lk-btn--secondary lk-btn--sm">Set to 75</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;div id="volume"&gt;
+  &lt;div class="lk-slider__track"&gt;
+    &lt;div class="lk-slider__fill"&gt;&lt;/div&gt;
+    &lt;div class="lk-slider__thumb"&gt;
+      &lt;span class="lk-slider__label"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>const vol = Look.lkSlider('#volume', {
+  min: 0, max: 100, value: 50, step: 5,
+  onChange(v) { console.log(v); },
+});
+
+vol.value;              // 50
+vol.value = 75;
+vol.min; vol.max; vol.step;
+vol.destroy();</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const slider = Look.lkSlider('#demo-slider', {
+    min: 0, max: 100, value: 40, step: 1,
+    onChange(v) { out.textContent = 'value = ' + v; },
+  });
+  const slider2 = Look.lkSlider('#demo-slider2', { min: 0, max: 100, value: 70, step: 10 });
+  const out = document.getElementById('output');
+
+  document.getElementById('btn-val').onclick = () => { out.textContent = 'value = ' + slider.value; };
+  document.getElementById('btn-set').onclick = () => { slider.value = 75; out.textContent = 'value = 75'; };
+</script>
+</body>
+</html>
