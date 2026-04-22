@@ -56,6 +56,9 @@ export function lkModal(triggerEl, modalEl) {
 // --- Form components ---
 export { lkTextbox, lkDropdown, lkCheckbox, lkRadio, lkSwitch } from './form.js';
 
+// --- Icon utility ---
+export { lkIcon }       from './icon.js';
+
 // --- Interactive components ---
 export { lkCarousel }   from './carousel.js';
 export { lkSlider }     from './slider.js';

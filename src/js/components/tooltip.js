@@ -16,15 +16,17 @@ export function lkTooltip(el, opts = {}) {
   node.classList.add('lk-tooltip');
 
   let contentEl = qs('.lk-tooltip__content', node);
+  let autoCreated = false;
 
   // Auto-create content element if it doesn't exist
   if (!contentEl && opts.content) {
     contentEl = document.createElement('span');
     contentEl.className = 'lk-tooltip__content';
     node.appendChild(contentEl);
+    autoCreated = true;
   }
 
-  const position = opts.position || 'top';
+  let position = opts.position || 'top';
   if (contentEl) {
     contentEl.classList.add('lk-tooltip__content--' + position);
     if (opts.content) contentEl.textContent = opts.content;
@@ -41,6 +43,13 @@ export function lkTooltip(el, opts = {}) {
     },
     position: {
       get() { return position; },
+      set(v) {
+        if (contentEl) {
+          contentEl.classList.remove('lk-tooltip__content--' + position);
+          position = v;
+          contentEl.classList.add('lk-tooltip__content--' + position);
+        }
+      },
       enumerable: true,
     },
   });
@@ -50,6 +59,10 @@ export function lkTooltip(el, opts = {}) {
 
   comp.destroy = function () {
     node.classList.remove('lk-tooltip', 'lk-tooltip--open');
+    if (contentEl) {
+      contentEl.classList.remove('lk-tooltip__content--' + position);
+      if (autoCreated) contentEl.remove();
+    }
   };
 
   return comp;

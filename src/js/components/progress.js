@@ -24,20 +24,23 @@ export function lkProgress(el, opts = {}) {
   let indeterminate  = opts.indeterminate ?? false;
 
   function updateView() {
+    node.setAttribute('role', 'progressbar');
+
     if (indeterminate) {
       node.classList.add('lk-progress--indeterminate');
       if (bar) bar.style.width = '';
+      node.removeAttribute('aria-valuenow');
+      node.removeAttribute('aria-valuemin');
+      node.removeAttribute('aria-valuemax');
     } else {
       node.classList.remove('lk-progress--indeterminate');
       const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
       if (bar) bar.style.width = pct + '%';
       if (label) label.textContent = Math.round(pct) + '%';
+      node.setAttribute('aria-valuenow', value);
+      node.setAttribute('aria-valuemin', 0);
+      node.setAttribute('aria-valuemax', max);
     }
-
-    node.setAttribute('role', 'progressbar');
-    node.setAttribute('aria-valuenow', value);
-    node.setAttribute('aria-valuemin', 0);
-    node.setAttribute('aria-valuemax', max);
   }
 
   updateView();

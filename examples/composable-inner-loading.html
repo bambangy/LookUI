@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI - Composable Inner Loading</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Inner Loading</h1>
+    <p style="opacity: 0.85;">Look.lkInnerLoading(target, opts) - scoped loading state</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+    <div class="demo-row">
+      <button id="show-inner-loading" class="lk-btn lk-btn--primary">Show Inner Loading</button>
+      <button id="hide-inner-loading" class="lk-btn lk-btn--secondary">Hide</button>
+    </div>
+
+    <div id="target-card" class="lk-card lk-card--raised" style="max-width: 28rem; min-height: 9rem;">
+      <div class="lk-card__body">
+        <h3 style="margin-bottom: var(--lk-space-2);">Orders Widget</h3>
+        <p style="color: var(--lk-text-muted);">This card simulates partial loading while preserving surrounding UI.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const innerLoading = Look.lkInnerLoading('#target-card', {
+    open: false,
+    text: 'Loading orders...'
+  });
+
+  document.getElementById('show-inner-loading').addEventListener('click', () => {
+    innerLoading.show();
+  });
+
+  document.getElementById('hide-inner-loading').addEventListener('click', () => {
+    innerLoading.hide();
+  });
+</script>
+</body>
+</html>

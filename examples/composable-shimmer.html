@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI - Composable Shimmer</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Shimmer</h1>
+    <p style="opacity: 0.85;">Look.lkShimmer(target, opts) - shimmer loading overlay</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+    <div class="demo-row">
+      <button id="show-shimmer" class="lk-btn lk-btn--primary">Show Shimmer</button>
+      <button id="hide-shimmer" class="lk-btn lk-btn--secondary">Hide Shimmer</button>
+    </div>
+
+    <div id="shimmer-target" class="lk-card" style="max-width: 30rem; min-height: 10rem;">
+      <div class="lk-card__body">
+        <h3>Revenue Report</h3>
+        <p style="color: var(--lk-text-muted);">Q2 trend and conversion summary appears here.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const shimmer = Look.lkShimmer('#shimmer-target', { open: false });
+
+  document.getElementById('show-shimmer').addEventListener('click', () => shimmer.show());
+  document.getElementById('hide-shimmer').addEventListener('click', () => shimmer.hide());
+</script>
+</body>
+</html>

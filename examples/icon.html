@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Icons</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+      gap: var(--lk-space-3);
+    }
+    .icon-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--lk-space-2);
+      padding: var(--lk-space-3);
+      border: 1px solid var(--lk-border);
+      border-radius: var(--lk-radius-md);
+      font-size: var(--lk-text-xs);
+      color: var(--lk-text-muted);
+      text-align: center;
+      transition: border-color 0.15s;
+    }
+    .icon-cell:hover {
+      border-color: var(--lk-primary);
+    }
+    .icon-cell .lk-icon {
+      font-size: 1.5rem;
+      color: var(--lk-text);
+    }
+    .size-row {
+      display: flex;
+      align-items: center;
+      gap: var(--lk-space-4);
+    }
+    .size-row > span {
+      font-size: var(--lk-text-xs);
+      color: var(--lk-text-muted);
+      min-width: 2.5rem;
+    }
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: var(--lk-space-4);
+      font-size: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Icons</h1>
+    <p style="opacity: 0.85;">SVG inline icons via CSS mask-image &mdash; inherits color, scales with font-size</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <!-- Full icon grid -->
+  <section class="demo-section">
+    <p class="demo-section__title">Navigation</p>
+    <div class="icon-grid" id="nav-icons"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Actions</p>
+    <div class="icon-grid" id="action-icons"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">UI</p>
+    <div class="icon-grid" id="ui-icons"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Status</p>
+    <div class="icon-grid" id="status-icons"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Objects</p>
+    <div class="icon-grid" id="object-icons"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Media</p>
+    <div class="icon-grid" id="media-icons"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Misc</p>
+    <div class="icon-grid" id="misc-icons"></div>
+  </section>
+
+  <!-- Sizes -->
+  <section class="demo-section">
+    <p class="demo-section__title">Sizes</p>
+
+    <div style="display: flex; flex-direction: column; gap: var(--lk-space-3);">
+      <div class="size-row"><span>xs</span> <span class="lk-icon lk-icon--star lk-icon--xs"></span></div>
+      <div class="size-row"><span>sm</span> <span class="lk-icon lk-icon--star lk-icon--sm"></span></div>
+      <div class="size-row"><span>1em</span> <span class="lk-icon lk-icon--star"></span></div>
+      <div class="size-row"><span>lg</span> <span class="lk-icon lk-icon--star lk-icon--lg"></span></div>
+      <div class="size-row"><span>xl</span> <span class="lk-icon lk-icon--star lk-icon--xl"></span></div>
+      <div class="size-row"><span>2xl</span> <span class="lk-icon lk-icon--star lk-icon--2xl"></span></div>
+    </div>
+  </section>
+
+  <!-- Colors -->
+  <section class="demo-section">
+    <p class="demo-section__title">Colors</p>
+
+    <div class="color-row">
+      <span class="lk-icon lk-icon--heart lk-icon--primary"></span>
+      <span class="lk-icon lk-icon--heart lk-icon--secondary"></span>
+      <span class="lk-icon lk-icon--heart lk-icon--positive"></span>
+      <span class="lk-icon lk-icon--heart lk-icon--negative"></span>
+      <span class="lk-icon lk-icon--heart lk-icon--warning"></span>
+      <span class="lk-icon lk-icon--heart lk-icon--info"></span>
+      <span class="lk-icon lk-icon--heart lk-icon--muted"></span>
+    </div>
+  </section>
+
+  <!-- Spin -->
+  <section class="demo-section">
+    <p class="demo-section__title">Spin Animation</p>
+    <span class="lk-icon lk-icon--refresh lk-icon--spin" style="font-size: 1.5rem;"></span>
+  </section>
+
+  <!-- JS factory -->
+  <section class="demo-section">
+    <p class="demo-section__title">JS Factory (Look.lkIcon)</p>
+    <div id="js-demo" style="display: flex; gap: var(--lk-space-3); align-items: center; font-size: 1.25rem;"></div>
+  </section>
+
+  <!-- Usage -->
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;span class="lk-icon lk-icon--close" aria-hidden="true"&gt;&lt;/span&gt;
+&lt;span class="lk-icon lk-icon--star lk-icon--lg lk-icon--primary"&gt;&lt;/span&gt;
+&lt;span class="lk-icon lk-icon--refresh lk-icon--spin"&gt;&lt;/span&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>const icon = Look.lkIcon('close');
+const big  = Look.lkIcon('star', { size: 'lg', color: 'primary' });
+const labeled = Look.lkIcon('search', { label: 'Search' });
+document.body.appendChild(icon);</pre>
+  </div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const ICONS = {
+    'nav-icons': ['chevron-left','chevron-right','chevron-up','chevron-down','arrow-left','arrow-right','arrow-up','arrow-down','menu','external-link'],
+    'action-icons': ['close','check','plus','minus','search','edit','delete','copy','save','download','upload','refresh','undo','redo'],
+    'ui-icons': ['star','star-outline','heart','heart-outline','eye','eye-off','bell','settings','filter','sort-asc','sort-desc','more-horizontal'],
+    'status-icons': ['circle-info','alert-triangle','circle-x','circle-check','question'],
+    'object-icons': ['user','users','home','calendar','clock','mail','lock','unlock','image','file'],
+    'media-icons': ['play','pause','stop','skip-forward','skip-back','volume-off'],
+    'misc-icons': ['share','link','pin','chat'],
+  };
+
+  Object.entries(ICONS).forEach(([containerId, names]) => {
+    const container = document.getElementById(containerId);
+    names.forEach(name => {
+      const cell = document.createElement('div');
+      cell.className = 'icon-cell';
+      const icon = Look.lkIcon(name);
+      const label = document.createElement('span');
+      label.textContent = name;
+      cell.appendChild(icon);
+      cell.appendChild(label);
+      container.appendChild(cell);
+    });
+  });
+
+  // JS factory demo
+  const jsDemo = document.getElementById('js-demo');
+  jsDemo.appendChild(Look.lkIcon('home', { size: 'lg', color: 'primary' }));
+  jsDemo.appendChild(Look.lkIcon('bell', { size: 'lg', color: 'warning' }));
+  jsDemo.appendChild(Look.lkIcon('heart', { size: 'lg', color: 'negative' }));
+  jsDemo.appendChild(Look.lkIcon('check', { size: 'lg', color: 'positive' }));
+  jsDemo.appendChild(Look.lkIcon('refresh', { size: 'lg', className: 'lk-icon--spin' }));
+</script>
+</body>
+</html>

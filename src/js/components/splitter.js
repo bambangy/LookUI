@@ -57,10 +57,11 @@ export function lkSplitter(el, opts = {}) {
     const paneB = panes[dragging + 1];
     if (!paneA || !paneB) return;
 
-    const newA = Math.max(minSize, startSizes[dragging] + delta);
-    const newB = Math.max(minSize, startSizes[dragging + 1] - delta);
-
     const total = startSizes[dragging] + startSizes[dragging + 1];
+    let newA = Math.max(minSize, startSizes[dragging] + delta);
+    let newB = total - newA;
+    if (newB < minSize) { newB = minSize; newA = total - newB; }
+
     const containerSize = isVert ? node.clientHeight : node.clientWidth;
 
     paneA.style.flexBasis = (newA / containerSize * 100) + '%';

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI - Composable Storage</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Storage</h1>
+    <p style="opacity: 0.85;">Look.lkStorage(opts) - namespaced storage with optional encryption</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <div class="demo-row">
+      <input id="storage-key" class="lk-input" placeholder="key" value="profile" />
+      <input id="storage-value" class="lk-input" placeholder="JSON value" value='{"name":"Ada","role":"admin"}' style="min-width: 20rem;" />
+    </div>
+
+    <div class="demo-row">
+      <button id="storage-set" class="lk-btn lk-btn--primary">Set</button>
+      <button id="storage-get" class="lk-btn lk-btn--secondary">Get</button>
+      <button id="storage-remove" class="lk-btn lk-btn--warning">Remove</button>
+      <button id="storage-keys" class="lk-btn lk-btn--ghost">List Keys</button>
+    </div>
+
+    <div id="storage-output" class="demo-output">Ready</div>
+  </section>
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const output = document.getElementById('storage-output');
+  const source = Look.lkStorage({
+    namespace: 'demo',
+    encrypted: false,
+  });
+
+  function readForm() {
+    const key = document.getElementById('storage-key').value.trim();
+    const raw = document.getElementById('storage-value').value;
+    return { key, raw };
+  }
+
+  document.getElementById('storage-set').addEventListener('click', async () => {
+    const { key, raw } = readForm();
+    let value;
+
+    try {
+      value = JSON.parse(raw);
+    } catch (err) {
+      value = raw;
+    }
+
+    await source.set(key, value);
+    output.textContent = `Set key: ${key}`;
+  });
+
+  document.getElementById('storage-get').addEventListener('click', async () => {
+    const { key } = readForm();
+    const value = await source.get(key, null);
+    output.textContent = `Value: ${JSON.stringify(value)}`;
+  });
+
+  document.getElementById('storage-remove').addEventListener('click', () => {
+    const { key } = readForm();
+    source.remove(key);
+    output.textContent = `Removed key: ${key}`;
+  });
+
+  document.getElementById('storage-keys').addEventListener('click', () => {
+    output.textContent = `Keys: ${source.keys().join(', ') || '(none)'}`;
+  });
+</script>
+</body>
+</html>

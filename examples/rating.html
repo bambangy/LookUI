@@ -71,13 +71,13 @@ rating.destroy();</pre>
 
 <script src="../dist/look.js"></script>
 <script>
+  const out = document.getElementById('output');
   const rating = Look.lkRating('#demo-rating', {
     max: 5, value: 3,
     onChange(v) { out.textContent = 'onChange: value = ' + v; },
   });
   Look.lkRating('#demo-rating-ro', { max: 5, value: 4, readonly: true });
   Look.lkRating('#demo-rating-lg', { max: 5, value: 2 });
-  const out = document.getElementById('output');
 
   document.getElementById('btn-val').onclick = () => { out.textContent = 'value = ' + rating.value; };
   document.getElementById('btn-set').onclick = () => { rating.value = 5; out.textContent = 'value = 5'; };

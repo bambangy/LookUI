@@ -90,6 +90,13 @@
     }
   }
 
+  // --- Selected ---
+
+  &--selected {
+    border-color: var(--lk-primary);
+    box-shadow: 0 0 0 1px var(--lk-primary);
+  }
+
   // --- Close button inside chip ---
 
   &__close {

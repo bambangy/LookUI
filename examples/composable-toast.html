@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI - Composable Toast</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Toast</h1>
+    <p style="opacity: 0.85;">Look.lkToast(opts) - stacked disposable notifications</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <section class="demo-section">
+    <p class="demo-section__title">Type Variants</p>
+    <div class="demo-row">
+      <button id="toast-positive" class="lk-btn lk-btn--positive">Positive</button>
+      <button id="toast-info"     class="lk-btn lk-btn--info">Info</button>
+      <button id="toast-warning"  class="lk-btn lk-btn--warning">Warning</button>
+      <button id="toast-negative" class="lk-btn lk-btn--negative">Negative</button>
+      <button id="toast-default"  class="lk-btn lk-btn--secondary">Default</button>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Positions &amp; Options</p>
+    <div class="demo-row">
+      <button id="toast-bottom"  class="lk-btn lk-btn--secondary">Bottom Center</button>
+      <button id="toast-action"  class="lk-btn lk-btn--info">With Action</button>
+      <button id="toast-no-icon" class="lk-btn lk-btn--secondary">No Icon</button>
+    </div>
+    <div id="toast-output" class="demo-output">Ready</div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>Look.lkToast({
+  title: 'Success',
+  message: 'Changes saved.',
+  type: 'positive',          // 'positive' | 'negative' | 'warning' | 'info' | 'primary'
+  duration: 3000,            // 0 = no auto-close
+  position: 'top-right',
+  dismissible: true,
+  actionText: 'Undo',
+  onAction: () => {},
+  onClose: (reason) => {},
+});</pre>
+  </div>
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const output = document.getElementById('toast-output');
+
+  document.getElementById('toast-positive').addEventListener('click', () => {
+    Look.lkToast({ title: 'Success', message: 'Changes were saved successfully.', type: 'positive' });
+  });
+
+  document.getElementById('toast-info').addEventListener('click', () => {
+    Look.lkToast({ title: 'Info', message: 'Background sync is in progress.', type: 'info' });
+  });
+
+  document.getElementById('toast-warning').addEventListener('click', () => {
+    Look.lkToast({ title: 'Warning', message: 'This action cannot be undone.', type: 'warning' });
+  });
+
+  document.getElementById('toast-negative').addEventListener('click', () => {
+    Look.lkToast({ title: 'Error', message: 'Something went wrong. Please try again.', type: 'negative' });
+  });
+
+  document.getElementById('toast-default').addEventListener('click', () => {
+    Look.lkToast({ title: 'Notification', message: 'You have a new message.', duration: 2200,
+      onClose: (reason) => { output.textContent = `Closed: ${reason}`; },
+    });
+  });
+
+  document.getElementById('toast-bottom').addEventListener('click', () => {
+    Look.lkToast({ title: 'Sync Running', message: 'Background sync in progress.', type: 'info', position: 'bottom-center', duration: 2600 });
+  });
+
+  document.getElementById('toast-action').addEventListener('click', () => {
+    Look.lkToast({
+      title: 'Draft Available',
+      message: 'Unsaved draft found.',
+      type: 'warning',
+      actionText: 'Restore',
+      duration: 0,
+      onAction: () => { output.textContent = 'Action clicked: Restore'; },
+    });
+  });
+
+  document.getElementById('toast-no-icon').addEventListener('click', () => {
+    Look.lkToast({ title: 'Plain Toast', message: 'No icon, just text.', icon: false });
+  });
+</script>
+</body>
+</html>

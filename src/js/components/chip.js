@@ -1,7 +1,8 @@
 // Chip component factory
 
-import { resolveEl, applyBase } from '../helpers/base.js';
-import { qs, createElement } from '../core/index.js';
+import { resolveEl, applyBase } from "../helpers/base.js";
+import { qs, createElement } from "../core/index.js";
+import { lkIcon } from "./icon.js";
 
 /**
  * Enhance a chip element with removable/selectable behavior.
@@ -15,33 +16,38 @@ import { qs, createElement } from '../core/index.js';
  * @returns {Object}
  */
 export function lkChip(el, opts = {}) {
-  const node = resolveEl(el, 'lkChip');
-  node.classList.add('lk-chip');
+  const node = resolveEl(el, "lkChip");
+  node.classList.add("lk-chip");
 
   let selected = opts.selected ?? false;
-  let closeBtn = qs('.lk-chip__close', node);
+  let closeBtn = qs(".lk-chip__close", node);
 
   if (opts.label) node.textContent = opts.label;
 
   // Auto-create close button if removable
   if (opts.removable && !closeBtn) {
-    closeBtn = createElement('button', {
-      class: 'lk-chip__close',
-      type: 'button',
-      'aria-label': 'Remove',
-    }, '×');
+    closeBtn = createElement(
+      "button",
+      {
+        class: "lk-chip__close",
+        type: "button",
+        "aria-label": "Remove",
+      },
+    );
+    closeBtn.appendChild(lkIcon("close", { size: "xs" }));
     node.appendChild(closeBtn);
   }
 
   function updateView() {
-    node.classList.toggle('lk-chip--clickable', !!opts.onSelect);
-    node.setAttribute('aria-selected', String(selected));
+    node.classList.toggle("lk-chip--clickable", !!opts.onSelect);
+    node.classList.toggle("lk-chip--selected", selected);
+    node.setAttribute("aria-selected", String(selected));
   }
 
   function onClose(e) {
     e.stopPropagation();
     if (opts.onRemove) opts.onRemove();
-    else node.remove();
+    node.remove();
   }
 
   function onClick() {
@@ -51,8 +57,8 @@ export function lkChip(el, opts = {}) {
     opts.onSelect(selected);
   }
 
-  if (closeBtn) closeBtn.addEventListener('click', onClose);
-  if (opts.onSelect) node.addEventListener('click', onClick);
+  if (closeBtn) closeBtn.addEventListener("click", onClose);
+  if (opts.onSelect) node.addEventListener("click", onClick);
 
   updateView();
 
@@ -64,7 +70,7 @@ export function lkChip(el, opts = {}) {
       get() {
         // Get text content excluding close button text
         const clone = node.cloneNode(true);
-        const btn = clone.querySelector('.lk-chip__close');
+        const btn = clone.querySelector(".lk-chip__close");
         if (btn) btn.remove();
         return clone.textContent.trim();
       },
@@ -80,21 +86,28 @@ export function lkChip(el, opts = {}) {
       enumerable: true,
     },
     removable: {
-      get() { return !!closeBtn; },
+      get() {
+        return !!closeBtn;
+      },
       enumerable: true,
     },
     selected: {
-      get() { return selected; },
-      set(v) { selected = !!v; updateView(); },
+      get() {
+        return selected;
+      },
+      set(v) {
+        selected = !!v;
+        updateView();
+      },
       enumerable: true,
     },
   });
 
   comp.destroy = function () {
-    if (closeBtn) closeBtn.removeEventListener('click', onClose);
-    if (opts.onSelect) node.removeEventListener('click', onClick);
-    node.classList.remove('lk-chip', 'lk-chip--clickable');
-    node.removeAttribute('aria-selected');
+    if (closeBtn) closeBtn.removeEventListener("click", onClose);
+    if (opts.onSelect) node.removeEventListener("click", onClick);
+    node.classList.remove("lk-chip", "lk-chip--clickable", "lk-chip--selected");
+    node.removeAttribute("aria-selected");
   };
 
   return comp;

@@ -42,8 +42,8 @@ export function wrapField(node, opts = {}) {
     wrapper = parent;
     labelEl = wrapper.querySelector('.lk-label');
     errorEl = wrapper.querySelector('.lk-field-error');
-  } else if (opts.label) {
-    // Auto-create wrapper
+  } else if (opts.label && node.parentNode) {
+    // Auto-create wrapper (only when node is in the DOM)
     wrapper = createElement('div', { class: 'lk-field' });
     labelEl = createElement('label', { class: 'lk-label', for: node.id }, opts.label);
     errorEl = createElement('span', { class: 'lk-field-error' });
@@ -57,7 +57,9 @@ export function wrapField(node, opts = {}) {
     wasWrapped = true;
   }
 
+  // Error class: use lk-field--error on wrapper when available, lk-input--error on node as fallback
   function setError(msg) {
+    if (wrapper) wrapper.classList.add('lk-field--error');
     node.classList.add('lk-input--error');
     node.setAttribute('aria-invalid', 'true');
     if (errorEl && msg) {
@@ -67,6 +69,7 @@ export function wrapField(node, opts = {}) {
   }
 
   function clearError() {
+    if (wrapper) wrapper.classList.remove('lk-field--error');
     node.classList.remove('lk-input--error');
     node.removeAttribute('aria-invalid');
     if (errorEl) {

@@ -2,6 +2,7 @@
 
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { qsa, createElement } from '../core/index.js';
+import { lkIcon } from './icon.js';
 
 /**
  * Enhance a pagination container with page navigation.
@@ -30,7 +31,8 @@ export function lkPagination(el, opts = {}) {
       class: 'lk-pagination__link' + (page <= 1 ? ' lk-pagination__link--disabled' : ''),
       type: 'button',
       'aria-label': 'Previous page',
-    }, '‹');
+    });
+    prevBtn.appendChild(lkIcon('chevron-left', { size: 'sm' }));
     prevLi.appendChild(prevBtn);
     node.appendChild(prevLi);
 
@@ -64,7 +66,8 @@ export function lkPagination(el, opts = {}) {
       class: 'lk-pagination__link' + (page >= totalPages ? ' lk-pagination__link--disabled' : ''),
       type: 'button',
       'aria-label': 'Next page',
-    }, '›');
+    });
+    nextBtn.appendChild(lkIcon('chevron-right', { size: 'sm' }));
     nextLi.appendChild(nextBtn);
     node.appendChild(nextLi);
   }

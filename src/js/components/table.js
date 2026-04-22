@@ -30,14 +30,14 @@ export function lkTable(el, opts = {}) {
   }
 
   function sortByColumn(colIndex) {
+    if (!tbody) return;
+
     if (sortCol === colIndex) {
       sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
     } else {
       sortCol = colIndex;
       sortOrder = 'asc';
     }
-
-    if (!tbody) return;
     const rows = Array.from(tbody.querySelectorAll('tr'));
 
     rows.sort((a, b) => {

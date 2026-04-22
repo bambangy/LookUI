@@ -22,9 +22,13 @@ export function resolveEl(el, caller) {
  *
  * @param {Object} target — the component object to enhance
  * @param {Element} node  — the underlying DOM element
+ * @param {Object}  [opts] — optional overrides
+ * @param {Element} [opts.hiddenTarget] — element to toggle lk-hidden on (default: node)
  * @returns {Object} target with base properties defined
  */
-export function applyBase(target, node) {
+export function applyBase(target, node, opts) {
+  const hiddenTarget = opts?.hiddenTarget || node;
+
   Object.defineProperties(target, {
     el: { value: node, enumerable: true },
 
@@ -35,10 +39,10 @@ export function applyBase(target, node) {
     },
 
     hidden: {
-      get() { return node.classList.contains('lk-hidden'); },
+      get() { return hiddenTarget.classList.contains('lk-hidden'); },
       set(v) {
-        if (v) node.classList.add('lk-hidden');
-        else node.classList.remove('lk-hidden');
+        if (v) hiddenTarget.classList.add('lk-hidden');
+        else hiddenTarget.classList.remove('lk-hidden');
       },
       enumerable: true,
     },

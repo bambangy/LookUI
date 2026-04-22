@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI - Composable Dialog</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Dialog</h1>
+    <p style="opacity: 0.85;">Look.lkDialog(opts) - create dialog without existing markup</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+    <button id="open-dialog" class="lk-btn lk-btn--primary">Open Dialog</button>
+    <div id="dialog-output" class="demo-output">Ready</div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const dialog = Look.lkDialog({
+  title: 'Delete item?',
+  content: 'This action cannot be undone.',
+  confirmText: 'Delete',
+  cancelText: 'Cancel',
+  onConfirm: () =&gt; console.log('confirmed'),
+});</pre>
+  </div>
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const output = document.getElementById('dialog-output');
+
+  document.getElementById('open-dialog').addEventListener('click', () => {
+    Look.lkDialog({
+      title: 'Publish Article',
+      content: 'Do you want to publish this article now?',
+      confirmText: 'Publish',
+      cancelText: 'Not yet',
+      onConfirm: () => {
+        output.textContent = 'Dialog confirmed';
+      },
+      onClose: (reason) => {
+        if (reason !== 'confirm') output.textContent = `Dialog closed: ${reason}`;
+      },
+      destroyOnClose: true,
+    });
+  });
+</script>
+</body>
+</html>

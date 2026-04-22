@@ -27,7 +27,7 @@ export function lkTextbox(el, opts = {}) {
   const field = wrapField(node, opts);
   const comp = {};
 
-  applyBase(comp, node);
+  applyBase(comp, node, { hiddenTarget: field.wrapper || node });
   applyFieldProps(comp, node, field);
 
   Object.defineProperty(comp, 'type', {
@@ -78,7 +78,7 @@ export function lkDropdown(el, opts = {}) {
   const field = wrapField(node, opts);
   const comp = {};
 
-  applyBase(comp, node);
+  applyBase(comp, node, { hiddenTarget: field.wrapper || node });
   applyFieldProps(comp, node, field);
 
   Object.defineProperties(comp, {
@@ -129,7 +129,7 @@ export function lkCheckbox(el, opts = {}) {
   const field = wrapField(node, opts);
   const comp = {};
 
-  applyBase(comp, node);
+  applyBase(comp, node, { hiddenTarget: field.wrapper || node });
   applyFieldProps(comp, node, field);
 
   Object.defineProperty(comp, 'checked', {
@@ -172,7 +172,7 @@ export function lkRadio(el, opts = {}) {
   const field = wrapField(node, opts);
   const comp = {};
 
-  applyBase(comp, node);
+  applyBase(comp, node, { hiddenTarget: field.wrapper || node });
   applyFieldProps(comp, node, field);
 
   Object.defineProperty(comp, 'checked', {
@@ -221,7 +221,7 @@ export function lkSwitch(el, opts = {}) {
   const field = wrapField(node, opts);
   const comp = {};
 
-  applyBase(comp, node);
+  applyBase(comp, node, { hiddenTarget: field.wrapper || node });
   applyFieldProps(comp, node, field);
 
   Object.defineProperty(comp, 'checked', {

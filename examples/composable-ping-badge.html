@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI - Composable Ping Badge</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Ping Badge</h1>
+    <p style="opacity: 0.85;">Look.lkPingBadge(target, opts) - activity indicator badge</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+    <div class="demo-row">
+      <button id="count-inc" class="lk-btn lk-btn--primary">Increase Count</button>
+      <button id="count-clear" class="lk-btn lk-btn--secondary">Clear Count</button>
+      <button id="badge-toggle" class="lk-btn lk-btn--ghost">Toggle Visibility</button>
+    </div>
+
+    <button id="notification-btn" class="lk-btn lk-btn--secondary" style="position: relative;">Notifications</button>
+  </section>
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  let count = 3;
+  const badge = Look.lkPingBadge('#notification-btn', { count });
+
+  document.getElementById('count-inc').addEventListener('click', () => {
+    count += 1;
+    badge.setCount(count);
+  });
+
+  document.getElementById('count-clear').addEventListener('click', () => {
+    count = null;
+    badge.setCount(count);
+  });
+
+  document.getElementById('badge-toggle').addEventListener('click', () => {
+    if (badge.isVisible) badge.hide();
+    else badge.show();
+  });
+</script>
+</body>
+</html>

@@ -108,6 +108,7 @@ export function lkSlider(el, opts = {}) {
     if (thumb) thumb.removeEventListener('pointerdown', onPointerDown);
     document.removeEventListener('pointermove', onPointerMove);
     document.removeEventListener('pointerup', onPointerUp);
+    node.classList.remove('lk-slider');
     node.removeAttribute('role');
     node.removeAttribute('aria-valuenow');
     node.removeAttribute('aria-valuemin');

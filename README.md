@@ -1,6 +1,6 @@
 # LookUI
 
-A no-frills JavaScript & CSS library for UI components.
+A no-frills JavaScript and CSS library for UI components and composable utilities.
 Imperative, predictable, and MVC-friendly.
 
 ---
@@ -12,7 +12,7 @@ npm install
 npm run build
 ```
 
-Open `examples/index.html` in a browser to see all components.
+Open `examples/index.html` in a browser.
 
 ---
 
@@ -25,457 +25,609 @@ Open `examples/index.html` in a browser to see all components.
 
 ## npm scripts
 
-| Script | What it does |
+| Script | Description |
 |---|---|
-| `npm run build` | Full build — JS then CSS |
-| `npm run build:js` | Rollup bundles `src/js/index.js` → `dist/look.js` (UMD) |
-| `npm run build:css` | Sass compiles `src/scss/main.scss` → PostCSS autoprefixes → `dist/look.css` |
+| `npm run build` | Full build (JS then CSS) |
+| `npm run build:js` | Rollup bundles `src/js/index.js` into `dist/look.js` |
+| `npm run build:css` | Sass + PostCSS builds `dist/look.css` |
 | `npm run dev` | Rollup watch mode (JS only) |
 
 ---
 
-## Using the output files
+## Usage
 
-### In a plain HTML page
+### Browser (UMD)
 
 ```html
 <link rel="stylesheet" href="dist/look.css" />
 <script src="dist/look.js"></script>
+<script>
+  const btn = Look.lkButton('#my-btn');
+</script>
 ```
 
-Everything is available on the `window.Look` global:
+### ESM
 
 ```js
-Look.version        // '0.1.0'
-Look.qs(selector)   // document.querySelector wrapper
-Look.qsa(selector)  // returns Array, not NodeList
-Look.createElement(tag, attrs, text)
-Look.on(event, fn)  // global event bus
-Look.off(event, fn)
-Look.emit(event, data)
-```
-
-### As a module
-
-```js
-import { lkTextbox, lkDropdown, lkCarousel } from './dist/look.js';
+import { lkButton, lkDialog, lkDataSource } from './dist/look.js';
 ```
 
 ---
 
-## Component API
+## Core utilities
 
-All components follow the same pattern: **factory function → plain object with `destroy()`**.
-The caller (controller) owns the lifecycle. No hidden subscriptions remain after `destroy()`.
+### `Look.qs(selector, ctx?)`
 
-### Base properties (all components)
+```js
+const el = Look.qs('#app');
+```
 
-Every component exposes these shared properties:
+### `Look.qsa(selector, ctx?)`
 
-| Property | Type | Description |
-|---|---|---|
-| `el` | Element | The underlying DOM element |
-| `id` | string | get/set element id |
-| `hidden` | boolean | get/set — toggles visibility |
-| `enabled` | boolean | get/set — toggles disabled state |
+```js
+const buttons = Look.qsa('.lk-btn');
+```
+
+### `Look.createElement(tag, attrs?, text?)`
+
+```js
+const badge = Look.createElement('span', { class: 'lk-badge' }, 'New');
+```
+
+### Event bus: `Look.on`, `Look.off`, `Look.emit`
+
+```js
+function onSaved(data) { console.log(data); }
+Look.on('saved', onSaved);
+Look.emit('saved', { id: 1 });
+Look.off('saved', onSaved);
+```
 
 ---
 
-## UI Components
+## Behaviors
 
-### Button
+### `Look.lkToggleable(triggerEl, targetEl, activeClass?)`
 
 ```js
-const btn = Look.lkButton('#my-button');
-// btn.el        — the DOM element
-// btn.destroy() — removes lk-btn class
+const t = Look.lkToggleable('#menu-btn', '#menu', 'is-open');
+t.destroy();
 ```
 
-Variants (CSS): `lk-btn--primary`, `--secondary`, `--ghost`, `--positive`, `--negative`
-Sizes: `lk-btn--sm`, `lk-btn--lg`
-
-### Modal
+### `Look.lkFocusTrap(containerEl)`
 
 ```js
-const modal = Look.lkModal('#open-trigger', '#modal-container');
+const trap = Look.lkFocusTrap('#dialog');
+trap.destroy();
+```
+
+---
+
+## Element-bound Components
+
+All element-bound components return plain objects. Most expose base properties:
+- `el`
+- `id`
+- `hidden`
+- `enabled`
+
+### `Look.lkButton(el)`
+
+```js
+const btn = Look.lkButton('#save-btn');
+btn.destroy();
+```
+
+### `Look.lkModal(triggerEl, modalEl)`
+
+```js
+const modal = Look.lkModal('#open-modal', '#modal-container');
 modal.open();
 modal.close();
 modal.destroy();
 ```
 
-Required HTML:
-```html
-<div id="modal-container">
-  <div class="lk-modal-overlay">
-    <div class="lk-modal" role="dialog" aria-modal="true">
-      <div class="lk-modal__header"> … </div>
-      <div class="lk-modal__body"> … </div>
-      <div class="lk-modal__footer"> … </div>
-    </div>
-  </div>
-</div>
-```
+### `Look.lkTextbox(el, opts?)`
 
----
-
-## Form Components
-
-Form components automatically wrap the element in a `.lk-field` container with label and validation message when the `label` option is provided.
-
-### Shared form properties
-
-| Property | Type | Description |
-|---|---|---|
-| `value` | any | get/set — element value or checked state |
-| `name` | string | get/set — form name attribute |
-| `label` | string | get/set — label text |
-| `required` | boolean | get/set — required attribute |
-| `readonly` | boolean | get/set — readonly attribute |
-| `setError(msg)` | fn | Show validation error message |
-| `clearError()` | fn | Hide validation error |
-
-### Textbox
-
-Wraps `<input>` or `<textarea>` elements.
+Options:
+- `label`, `name`, `required`, `readonly`, `type`
 
 ```js
 const email = Look.lkTextbox('#email', {
-  label: 'Email address',
+  label: 'Email',
   name: 'email',
   type: 'email',
   required: true,
 });
 
-email.value;               // get current value
-email.value = 'test@x.co'; // set value
+email.value = 'a@company.com';
 email.setError('Invalid email');
 email.clearError();
 email.destroy();
 ```
 
-HTML (minimal — wrapper is auto-created):
-```html
-<input id="email" type="email" />
-```
+### `Look.lkDropdown(el, opts?)`
 
-### Dropdown
-
-Wraps `<select>` elements.
+Options:
+- `label`, `name`, `required`, `readonly`
+- `items: [{ value, text, selected?, disabled? }]`
 
 ```js
 const country = Look.lkDropdown('#country', {
   label: 'Country',
-  name: 'country',
   items: [
-    { value: '',   text: 'Select…' },
+    { value: '', text: 'Select' },
+    { value: 'th', text: 'Thailand' },
     { value: 'us', text: 'United States' },
-    { value: 'uk', text: 'United Kingdom' },
   ],
 });
 
-country.value;              // selected value
-country.selectedIndex;      // selected index
-country.selectedText;       // display text of selected option
-country.destroy();
+console.log(country.value, country.selectedIndex, country.selectedText);
 ```
 
-HTML (minimal):
-```html
-<select id="country"></select>
-```
+### `Look.lkCheckbox(el, opts?)`
 
-### Checkbox
-
-Wraps `<input type="checkbox">` elements.
+Options:
+- `label`, `name`, `required`, `readonly`, `checked`
 
 ```js
-const agree = Look.lkCheckbox('#agree', {
-  label: 'I agree to the terms',
-  name: 'agree',
-  checked: false,
-});
-
-agree.checked;              // boolean
-agree.toggle();             // flip state
-agree.value;                // same as checked
-agree.destroy();
+const agree = Look.lkCheckbox('#agree', { label: 'I agree', checked: false });
+agree.toggle();
+console.log(agree.checked, agree.value);
 ```
 
-### Radio
+### `Look.lkRadio(el, opts?)`
 
-Wraps `<input type="radio">` elements.
+Options:
+- `label`, `name`, `required`, `readonly`, `checked`
 
 ```js
-const opt = Look.lkRadio('#option-a', {
-  label: 'Option A',
-  name: 'choice',
-});
-
-opt.checked;                // boolean
-opt.value;                  // same as checked
-opt.destroy();
+const optA = Look.lkRadio('#option-a', { label: 'Option A', name: 'group1' });
+console.log(optA.checked);
 ```
 
-### Switch
+### `Look.lkSwitch(el, opts?)`
 
-Wraps `<input type="checkbox">` as a toggle switch.
+Options:
+- `label`, `name`, `required`, `readonly`, `checked`
 
 ```js
-const darkMode = Look.lkSwitch('#dark-mode', {
-  label: 'Dark mode',
-  name: 'darkMode',
-  checked: false,
-});
-
-darkMode.checked;           // boolean
-darkMode.toggle();          // flip state
-darkMode.destroy();
+const darkMode = Look.lkSwitch('#dark-mode', { label: 'Dark mode' });
+darkMode.toggle();
 ```
 
----
+### `Look.lkCarousel(el, opts?)`
 
-## Interactive Components
-
-### Carousel
+Options:
+- `autoplay` (default `false`)
+- `interval` (default `5000`)
+- `loop` (default `true`)
 
 ```js
-const carousel = Look.lkCarousel('#my-carousel', {
+const carousel = Look.lkCarousel('#hero-carousel', {
   autoplay: true,
   interval: 3000,
   loop: true,
 });
 
-carousel.activeIndex;       // current slide index
-carousel.next();            // go to next slide
-carousel.prev();            // go to previous slide
-carousel.goTo(2);           // go to specific slide
-carousel.destroy();
+carousel.next();
+carousel.prev();
+carousel.goTo(2);
+console.log(carousel.activeIndex);
 ```
 
-Required HTML:
-```html
-<div id="my-carousel" class="lk-carousel">
-  <div class="lk-carousel__track">
-    <div class="lk-carousel__slide">…</div>
-    <div class="lk-carousel__slide">…</div>
-  </div>
-  <button class="lk-carousel__prev">‹</button>
-  <button class="lk-carousel__next">›</button>
-  <div class="lk-carousel__indicators">
-    <button class="lk-carousel__dot"></button>
-    <button class="lk-carousel__dot"></button>
-  </div>
-</div>
-```
+### `Look.lkSlider(el, opts?)`
 
-### Slider
+Options:
+- `min` (default `0`)
+- `max` (default `100`)
+- `value` (default `min`)
+- `step` (default `1`)
+- `onChange(value)`
 
 ```js
-const vol = Look.lkSlider('#volume', {
-  min: 0, max: 100, value: 50, step: 5,
-  onChange(v) { console.log('Volume:', v); },
+const slider = Look.lkSlider('#price-slider', {
+  min: 0,
+  max: 100,
+  step: 5,
+  value: 25,
+  onChange(v) { console.log('value', v); },
 });
 
-vol.value;                  // get current value
-vol.value = 75;             // set value
-vol.min; vol.max; vol.step; // get/set range
-vol.destroy();
+slider.value = 50;
 ```
 
-Required HTML:
-```html
-<div id="volume" class="lk-slider">
-  <div class="lk-slider__track">
-    <div class="lk-slider__fill"></div>
-    <div class="lk-slider__thumb">
-      <span class="lk-slider__label"></span>
-    </div>
-  </div>
-</div>
-```
+### `Look.lkTooltip(el, opts?)`
 
-### Tooltip
+Options:
+- `content`
+- `position`: `top | bottom | left | right` (default `top`)
 
 ```js
-const tip = Look.lkTooltip('#info-icon', {
-  content: 'More information',
-  position: 'top',    // top | bottom | left | right
+const tip = Look.lkTooltip('#help-icon', {
+  content: 'More details',
+  position: 'right',
 });
 
-tip.content = 'Updated text';
 tip.show();
 tip.hide();
-tip.destroy();
+tip.content = 'Updated message';
 ```
 
-### Rating
+### `Look.lkRating(el, opts?)`
+
+Options:
+- `max` (default `5`)
+- `value` (default `0`)
+- `readonly` (default `false`)
+- `symbol` (default `*` visual star)
+- `onChange(value)`
 
 ```js
-const rating = Look.lkRating('#stars', {
+const rating = Look.lkRating('#product-rating', {
   max: 5,
   value: 3,
-  symbol: '★',
-  onChange(v) { console.log('Rated:', v); },
+  onChange(v) { console.log('rated', v); },
 });
 
-rating.value;               // get rating
-rating.value = 4;           // set rating
-rating.readonly = true;     // disable interaction
-rating.destroy();
+rating.value = 4;
+rating.readonly = true;
 ```
 
-HTML (stars auto-created if container is empty):
-```html
-<div id="stars"></div>
-```
+### `Look.lkChip(el, opts?)`
 
-### Chip
+Options:
+- `label`
+- `selected`
+- `removable`
+- `onSelect(selected)`
+- `onRemove()`
 
 ```js
-const tag = Look.lkChip('#tag', {
+const chip = Look.lkChip('#chip-js', {
   label: 'JavaScript',
+  selected: false,
   removable: true,
+  onSelect(sel) { console.log('selected', sel); },
   onRemove() { console.log('removed'); },
-  onSelect(sel) { console.log('selected:', sel); },
 });
 
-tag.label;                  // get text
-tag.selected;               // boolean
-tag.destroy();
+chip.selected = true;
 ```
 
-### Pagination
+### `Look.lkPagination(el, opts?)`
+
+Options:
+- `totalPages` (default `1`)
+- `page` (default `1`)
+- `maxVisible` (default `7`)
+- `onPageChange(page)`
 
 ```js
-const pager = Look.lkPagination('#pages', {
+const pager = Look.lkPagination('#pager', {
   totalPages: 20,
   page: 1,
-  maxVisible: 7,
-  onPageChange(p) { console.log('Page:', p); },
+  onPageChange(p) { console.log('page', p); },
 });
 
-pager.page = 5;             // navigate to page
-pager.totalPages = 30;      // update total
-pager.destroy();
+pager.page = 3;
 ```
 
-HTML (auto-populated):
-```html
-<ul id="pages"></ul>
-```
+### `Look.lkProgress(el, opts?)`
 
-### Progress
+Options:
+- `value` (default `0`)
+- `max` (default `100`)
+- `indeterminate` (default `false`)
 
 ```js
-const loader = Look.lkProgress('#upload', {
-  value: 0, max: 100,
+const progress = Look.lkProgress('#upload-progress', {
+  value: 20,
+  max: 100,
 });
 
-loader.value = 45;           // update progress
-loader.indeterminate = true; // switch to loading animation
-loader.destroy();
+progress.value = 55;
+progress.indeterminate = true;
 ```
 
-Required HTML:
-```html
-<div id="upload" class="lk-progress">
-  <div class="lk-progress__bar"></div>
-</div>
-```
+### `Look.lkSplitter(el, opts?)`
 
-### Splitter
+Options:
+- `sizes` (percent array for panes)
+- `minSize` (px, default `50`)
 
 ```js
-const split = Look.lkSplitter('#editor', {
-  sizes: [30, 70],
+const split = Look.lkSplitter('#editor-split', {
+  sizes: [40, 60],
   minSize: 100,
 });
 
-split.sizes;                // [30, 70] as percentages
-split.sizes = [50, 50];    // resize panes
-split.destroy();
+console.log(split.sizes);
+split.sizes = [50, 50];
 ```
 
-Required HTML:
-```html
-<div id="editor" class="lk-splitter">
-  <div class="lk-splitter__pane">Left</div>
-  <div class="lk-splitter__handle"></div>
-  <div class="lk-splitter__pane">Right</div>
-</div>
-```
+### `Look.lkTable(el, opts?)`
 
-### Table
+Options:
+- `sortable` (default `true`)
+- `onSort({ column, order })`
 
 ```js
-const table = Look.lkTable('#data', {
+const table = Look.lkTable('#user-table', {
   sortable: true,
-  onSort({ column, order }) { console.log(column, order); },
+  onSort(info) { console.log(info); },
 });
 
-table.sortBy = 2;           // sort by column index
-table.sortOrder;             // 'asc' or 'desc'
-table.destroy();
+table.sortBy = 2;
+console.log(table.sortOrder);
 ```
 
 ---
 
-## Theming
+## Composables
 
-### Method 1 — edit custom token files (rebuild required)
+Composables are programmatic APIs. They can create internal DOM and return lifecycle methods.
 
-Edit any of the three override stubs in `src/scss/tokens/custom/`.
+### `Look.lkDialog(opts?)`
 
-```scss
-/* src/scss/tokens/custom/_color.scss */
-:root {
-  --lk-primary:          #00897b;
-  --lk-primary-dark:     #00695c;
-  --lk-primary-contrast: #ffffff;
-}
+Key options:
+- `title`, `content`
+- `confirmText`, `cancelText`
+- `showCancel`, `showClose`
+- `closeOnEscape`, `closeOnOverlay`
+- `destroyOnClose`
+- `className`, `mount`, `open`
+- callbacks: `onOpen`, `onClose(reason)`, `onConfirm`, `onCancel`
+
+```js
+const dialog = Look.lkDialog({
+  title: 'Delete item?',
+  content: 'This action cannot be undone.',
+  confirmText: 'Delete',
+  cancelText: 'Cancel',
+  onConfirm() { console.log('confirmed'); },
+});
+
+dialog.setTitle('Please confirm');
+dialog.setContent('Updated content');
+dialog.close('manual');
+dialog.destroy();
 ```
 
-Then run `npm run build:css`.
+### `Look.lkAlert(opts?)`
 
-### Method 2 — runtime override (no rebuild)
+Wrapper on top of `lkDialog` for one-button alerts.
 
-Redefine any `--lk-*` property after the stylesheet loads:
+Key options:
+- `title`
+- `message` or `content`
+- `okText`
+- `onOk` (alias of `onConfirm`)
 
-```html
-<!-- global -->
-<style>:root { --lk-primary: #00897b; }</style>
+```js
+Look.lkAlert({
+  title: 'Session Expiring',
+  message: 'Please save your work.',
+  okText: 'Understood',
+  onOk() { console.log('acknowledged'); },
+});
+```
 
-<!-- scoped to one section -->
-<div style="--lk-primary: #e91e63; --lk-primary-contrast: #fff;">
-  <button class="lk-btn lk-btn--primary">Pink</button>
-</div>
+### `Look.lkToast(opts?)`
+
+Key options:
+- `title`, `message`
+- `duration` (ms, `0` means sticky)
+- `position`: `top-left | top-center | top-right | bottom-left | bottom-center | bottom-right`
+- `dismissible`
+- `actionText`, `onAction`
+- `onClose(reason)`
+
+```js
+const toast = Look.lkToast({
+  title: 'Saved',
+  message: 'Changes saved successfully.',
+  actionText: 'Undo',
+  onAction() { console.log('undo'); },
+});
+
+toast.update({ message: 'Updated message' });
+toast.close('manual');
+```
+
+### `Look.lkLoading(opts?)`
+
+Fullscreen loading overlay.
+
+Key options:
+- `content`, `text`
+- `spinner`, `spinnerSize`
+- `backdrop`, `closeOnClick`, `lockScroll`
+- `zIndexBase`, `open`
+- `onShow`, `onHide(reason)`
+
+```js
+const loading = Look.lkLoading({
+  open: false,
+  text: 'Loading dashboard...',
+});
+
+loading.show();
+loading.setContent('Almost there...');
+loading.hide();
+loading.destroy();
+```
+
+### `Look.lkInnerLoading(target, opts?)`
+
+Overlay loading inside a specific target element.
+
+Key options:
+- `content`, `text`
+- `spinner`, `spinnerSize`
+- `backdrop`, `lockPointer`, `open`
+
+```js
+const inner = Look.lkInnerLoading('#orders-card', {
+  open: false,
+  text: 'Refreshing orders...',
+});
+
+inner.show();
+inner.hide();
+inner.destroy();
+```
+
+### `Look.lkPingBadge(target, opts?)`
+
+Key options:
+- `position`: `top-right | top-left | bottom-right | bottom-left`
+- `colorClass` (default `lk-badge--negative`)
+- `pulse` (default `true`)
+- `count` (number or `null`)
+- `open`
+
+```js
+const badge = Look.lkPingBadge('#notif-btn', { count: 3 });
+
+badge.setCount(4);
+badge.hide();
+badge.show();
+badge.destroy();
+```
+
+### `Look.lkShimmer(target, opts?)`
+
+Key options:
+- `backdrop` (default `true`)
+- `radius` (default `var(--lk-radius)`)
+- `lockPointer` (default `true`)
+- `open`
+
+```js
+const shimmer = Look.lkShimmer('#report-card', { open: false });
+shimmer.show();
+shimmer.hide();
+shimmer.destroy();
+```
+
+### `Look.lkStorage(opts?)`
+
+Namespaced browser storage helper. `set` and `get` are async.
+
+Key options:
+- `namespace` (default `look`)
+- `secret` (string for encryption key material)
+- `encrypted` (default `true`)
+- `useSession` (default `false`, uses `localStorage` otherwise)
+
+Methods:
+- `set(key, value)`
+- `get(key, fallback?)`
+- `remove(key)`
+- `has(key)`
+- `clear()`
+- `keys()`
+
+```js
+const store = Look.lkStorage({
+  namespace: 'app',
+  encrypted: false,
+});
+
+await store.set('profile', { name: 'Ada' });
+const profile = await store.get('profile', null);
+console.log(profile);
 ```
 
 ---
 
-## Layout utilities
+## Data helper
 
-### Grid
+### `Look.lkDataSource(opts?)`
 
-```html
-<div class="lk-grid lk-grid--cols-3 lk-grid--gap-lg">
-  <div>col 1</div>
-  <div>col 2</div>
-  <div>col 3</div>
-</div>
+Alias: `Look.createDataSource(opts)`
+
+Ref-like state:
+- `value`, `items`, `view`
+- `filter`, `sort`, `page`, `pageSize`
+- `loading`, `error`, `total`, `totalPages`
+
+CRUD and query methods:
+- `set(data)`
+- `load(params?)`
+- `add(record, op?)`
+- `update(target, patch, op?)`
+- `remove(target, op?)`
+- `clear()`
+- `setFilter(filter)`, `clearFilter()`
+- `setSort(sort)`, `clearSort()`
+- `setPage(page)`, `setPageSize(size)`, `setQuery(query)`
+
+Events and subscriptions:
+- `on`, `off`, `once`, `emit`
+- `subscribe(handler, { event, immediate })`
+
+Transport options:
+- `transport.read`
+- `transport.create`
+- `transport.update`
+- `transport.delete`
+
+Transport can be:
+- URL string
+- config object (`{ url, method, headers, credentials }`)
+- function `(payload, source) => Promise<any>`
+
+```js
+const ds = Look.lkDataSource({
+  keyField: 'id',
+  data: [
+    { id: 1, name: 'Ada', active: true, age: 32 },
+    { id: 2, name: 'Bram', active: false, age: 25 },
+    { id: 3, name: 'Clio', active: true, age: 29 },
+  ],
+  pageSize: 2,
+});
+
+ds.subscribe((state, evt) => {
+  console.log('change reason:', evt.reason, state.view);
+});
+
+ds.setFilter({ active: true });
+ds.setSort({ field: 'age', dir: 'desc' });
+ds.setPage(1);
+await ds.add({ id: 4, name: 'Dana', active: true, age: 21 }, { sync: false });
 ```
 
-Column modifiers: `lk-grid--cols-1` … `--cols-12`
-Gap modifiers: `lk-grid--gap-sm`, `--gap-lg`, `--gap-0`
-Span helper: `lk-col-span-1` … `lk-col-span-12`
+Remote sync example:
 
-### Flex
+```js
+const users = Look.lkDataSource({
+  keyField: 'id',
+  pageSize: 10,
+  transport: {
+    read: '/api/users',
+    create: '/api/users',
+    update: { url: '/api/users/{id}', method: 'PUT' },
+    delete: { url: '/api/users/{id}', method: 'DELETE' },
+  },
+  server: {
+    filter: true,
+    sort: true,
+    paging: true,
+  },
+});
 
-```html
-<div class="lk-flex lk-flex--justify-between lk-flex--align-center lk-flex--gap-md">
-  …
-</div>
+await users.load();
 ```
+
+---
+
+## Examples
+
+See `examples/index.html`.
+It includes dedicated pages for components, composables, and `lkDataSource`.
 
 ---
 
@@ -483,38 +635,27 @@ Span helper: `lk-col-span-1` … `lk-col-span-12`
 
 ```
 LookUI/
-├── dist/                       ← build output (gitignored)
-│   ├── look.js                 ← UMD bundle — window.Look global
-│   └── look.css                ← compiled + autoprefixed CSS
-├── examples/
-│   └── index.html              ← open in browser after build
-├── src/
-│   ├── js/
-│   │   ├── index.js            ← Rollup entry, re-exports everything
-│   │   ├── core/index.js       ← qs, qsa, createElement, on/off/emit
-│   │   ├── behaviors/index.js  ← lkToggleable, lkFocusTrap
-│   │   ├── helpers/            ← base.js (shared props), field.js (form wrapper)
-│   │   └── components/         ← form.js + individual component files
-│   └── scss/
-│       ├── main.scss           ← Sass entry, @use import order
-│       ├── tokens/             ← design tokens + custom overrides
-│       ├── base/               ← reset, typography rules
-│       ├── layout/             ← grid, flex
-│       ├── components/         ← 25 component partials
-│       └── utilities/          ← spacing, display, responsive
-├── package.json
-├── rollup.config.js
-└── .postcssrc.cjs
+|-- dist/
+|   |-- look.js
+|   `-- look.css
+|-- examples/
+|-- src/
+|   |-- js/
+|   |   |-- core/
+|   |   |-- behaviors/
+|   |   |-- components/
+|   |   |-- compossables/
+|   |   `-- helpers/
+|   `-- scss/
+|-- package.json
+|-- rollup.config.js
+`-- .postcssrc.cjs
 ```
 
 ---
 
-## Adding a new component
+## Notes
 
-1. Create `src/scss/components/_newcomponent.scss` (BEM, tokens only, support `--dense`)
-2. Add `@use 'components/newcomponent';` to `src/scss/main.scss` (section 5, alphabetical)
-3. Create `src/js/components/newcomponent.js` using `resolveEl` + `applyBase` from helpers
-4. Re-export from `src/js/components/index.js`
-5. Run `npm run build`
-
-The factory must accept `(el, opts = {})` and return at minimum `{ el, destroy() }`.
+- Call `destroy()` for components/composables when you no longer need them.
+- Form components auto-wrap fields when `label` is provided.
+- Composables are implementation-driven and may evolve while the library is pre-1.0.

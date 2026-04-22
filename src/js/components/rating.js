@@ -2,6 +2,7 @@
 
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { qsa, createElement } from '../core/index.js';
+import { lkIcon } from './icon.js';
 
 /**
  * Enhance a rating container with click-to-rate behavior.
@@ -19,7 +20,8 @@ export function lkRating(el, opts = {}) {
   node.classList.add('lk-rating');
 
   const maxVal   = opts.max ?? 5;
-  const symbol   = opts.symbol ?? '★';
+  const useIcon  = !opts.symbol;
+  const symbol   = opts.symbol ?? null;
   let value      = opts.value ?? 0;
   let isReadonly = opts.readonly ?? false;
   let items      = qsa('.lk-rating__item', node);
@@ -32,7 +34,8 @@ export function lkRating(el, opts = {}) {
         type: 'button',
         'data-value': String(i),
         'aria-label': `${i} of ${maxVal}`,
-      }, symbol);
+      }, useIcon ? '' : symbol);
+      if (useIcon) btn.appendChild(lkIcon('star'));
       node.appendChild(btn);
     }
     items = qsa('.lk-rating__item', node);

@@ -1,0 +1,112 @@
+// Toast composable
+// Structure: .lk-toast > .lk-toast__icon + .lk-toast__content + .lk-toast__close
+
+.lk-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-3);
+  padding: var(--lk-space-3) var(--lk-space-4);
+  border-radius: var(--lk-radius-lg);
+  box-shadow: var(--lk-shadow-md);
+  pointer-events: auto;
+  min-width: 14rem;
+  max-width: 100%;
+  background: var(--lk-bg);
+  color: var(--lk-text);
+
+  // --- Icon slot ---
+
+  &__icon {
+    flex-shrink: 0;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+  }
+
+  // --- Content slot ---
+
+  &__content {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  &__title {
+    font-weight: var(--lk-weight-semibold);
+    font-size: var(--lk-text-sm);
+    line-height: var(--lk-leading-tight);
+  }
+
+  &__message {
+    font-size: var(--lk-text-sm);
+    opacity: 0.9;
+    margin-top: var(--lk-space-1);
+    line-height: var(--lk-leading-tight);
+
+    &:empty { display: none; }
+  }
+
+  // --- Close button ---
+
+  &__close {
+    flex-shrink: 0;
+    align-self: flex-start;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+    opacity: 0.7;
+    color: inherit;
+    display: flex;
+    align-items: center;
+
+    &:hover { opacity: 1; }
+  }
+
+  // --- Action link ---
+
+  &__action {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-size: var(--lk-text-sm);
+    font-weight: var(--lk-weight-semibold);
+    color: inherit;
+    text-decoration: underline;
+    opacity: 0.85;
+
+    &:hover { opacity: 1; }
+  }
+
+  // =========================================================================
+  // Type variants — colored background
+  // =========================================================================
+
+  &--positive {
+    background: var(--lk-positive);
+    color: var(--lk-positive-contrast);
+  }
+
+  &--negative {
+    background: var(--lk-negative);
+    color: var(--lk-negative-contrast);
+  }
+
+  &--warning {
+    background: var(--lk-warning);
+    color: var(--lk-warning-contrast);
+  }
+
+  &--info {
+    background: var(--lk-info);
+    color: var(--lk-info-contrast);
+  }
+
+  &--primary {
+    background: var(--lk-primary);
+    color: var(--lk-primary-contrast);
+  }
+}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI - Composable Loading</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Loading</h1>
+    <p style="opacity: 0.85;">Look.lkLoading(opts) - fullscreen loading overlay</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+    <div class="demo-row">
+      <button id="show-loading" class="lk-btn lk-btn--primary">Show Loading</button>
+      <button id="hide-loading" class="lk-btn lk-btn--secondary">Hide Loading</button>
+    </div>
+    <div id="loading-output" class="demo-output">Ready</div>
+  </section>
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const output = document.getElementById('loading-output');
+  const loading = Look.lkLoading({
+    open: false,
+    text: 'Loading dashboard...'
+  });
+
+  document.getElementById('show-loading').addEventListener('click', () => {
+    loading.show();
+    output.textContent = 'Loading opened';
+  });
+
+  document.getElementById('hide-loading').addEventListener('click', () => {
+    loading.hide();
+    output.textContent = 'Loading closed';
+  });
+</script>
+</body>
+</html>

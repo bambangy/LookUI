@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI - Composable Alert</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Alert</h1>
+    <p style="opacity: 0.85;">Look.lkAlert(opts) - one-button dialog helper</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+    <button id="show-alert" class="lk-btn lk-btn--warning">Show Alert</button>
+    <div id="alert-output" class="demo-output">Ready</div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>Look.lkAlert({
+  title: 'Session Expiring',
+  message: 'Please save your work.',
+  onOk: () =&gt; console.log('acknowledged')
+});</pre>
+  </div>
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const output = document.getElementById('alert-output');
+
+  document.getElementById('show-alert').addEventListener('click', () => {
+    Look.lkAlert({
+      title: 'Session Expiring',
+      message: 'Please save your work before continuing.',
+      okText: 'Understood',
+      onOk: () => {
+        output.textContent = 'Alert acknowledged';
+      },
+      onClose: (reason) => {
+        if (reason !== 'confirm') output.textContent = `Alert closed: ${reason}`;
+      },
+    });
+  });
+</script>
+</body>
+</html>
