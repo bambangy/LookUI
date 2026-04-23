@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template — Cart</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <style>body { margin: 0; }</style>
+</head>
+<body class="lk-page">
+
+  <!-- Navbar -->
+  <header class="lk-page__header">
+    <nav class="lk-bar lk-bar--sticky lk-bar--raised">
+      <div class="lk-bar__start">
+        <a href="ecommerce-home.html" class="lk-btn lk-btn--ghost lk-btn--sm">
+          <span class="lk-icon lk-icon--arrow-left" aria-hidden="true"></span> ShopUI
+        </a>
+      </div>
+      <div class="lk-bar__center"><span class="lk-bar__title">Shopping Cart (3)</span></div>
+      <div class="lk-bar__end"></div>
+    </nav>
+  </header>
+
+  <section class="lk-section">
+    <div class="lk-container">
+      <div class="lk-flex lk-flex--gap-lg lk-flex--col-md" style="align-items: flex-start;">
+
+        <!-- Cart items -->
+        <div style="flex: 2; min-width: 0;">
+          <h2 style="margin-bottom: var(--lk-space-4);">Your Cart</h2>
+
+          <div class="lk-cart-item">
+            <div class="lk-cart-item__image"></div>
+            <div class="lk-cart-item__info">
+              <div class="lk-cart-item__name">Classic Cotton Tee</div>
+              <div class="lk-cart-item__meta">Navy / M &middot; Qty: 2</div>
+            </div>
+            <div class="lk-cart-item__price">$59.98</div>
+            <button class="lk-btn lk-btn--ghost lk-btn--sm"><span class="lk-icon lk-icon--close" aria-hidden="true"></span></button>
+          </div>
+
+          <div class="lk-cart-item">
+            <div class="lk-cart-item__image"></div>
+            <div class="lk-cart-item__info">
+              <div class="lk-cart-item__name">Slim Fit Chinos</div>
+              <div class="lk-cart-item__meta">Khaki / 32 &middot; Qty: 1</div>
+            </div>
+            <div class="lk-cart-item__price">$49.99</div>
+            <button class="lk-btn lk-btn--ghost lk-btn--sm"><span class="lk-icon lk-icon--close" aria-hidden="true"></span></button>
+          </div>
+
+          <div class="lk-cart-item">
+            <div class="lk-cart-item__image"></div>
+            <div class="lk-cart-item__info">
+              <div class="lk-cart-item__name">Leather Belt</div>
+              <div class="lk-cart-item__meta">Brown / One Size &middot; Qty: 1</div>
+            </div>
+            <div class="lk-cart-item__price">$24.99</div>
+            <button class="lk-btn lk-btn--ghost lk-btn--sm"><span class="lk-icon lk-icon--close" aria-hidden="true"></span></button>
+          </div>
+
+          <div style="margin-top: var(--lk-space-4);">
+            <a href="ecommerce-home.html" class="lk-btn lk-btn--ghost lk-btn--sm">
+              <span class="lk-icon lk-icon--arrow-left" aria-hidden="true"></span> Continue Shopping
+            </a>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div style="flex: 1; min-width: 16rem;">
+          <div class="lk-order-summary">
+            <h3 style="margin-bottom: var(--lk-space-3);">Order Summary</h3>
+            <div class="lk-order-summary__row"><span>Subtotal (4 items)</span><span>$134.96</span></div>
+            <div class="lk-order-summary__row"><span>Shipping</span><span>$5.99</span></div>
+            <div class="lk-order-summary__row"><span>Tax</span><span>$11.20</span></div>
+            <div class="lk-order-summary__total"><span>Total</span><span>$152.15</span></div>
+
+            <div style="margin-top: var(--lk-space-3);">
+              <div class="lk-flex lk-flex--gap-sm" style="margin-bottom: var(--lk-space-3);">
+                <input id="promo-code" placeholder="Promo code" style="flex: 1;" />
+                <button id="btn-apply-promo" class="lk-btn lk-btn--outline lk-btn--sm">Apply</button>
+              </div>
+              <a href="ecommerce-checkout.html" class="lk-btn lk-btn--primary" style="width: 100%;">Proceed to Checkout</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="lk-page__footer" style="text-align: center;">&copy; 2026 ShopUI. Built with LookUI.</footer>
+
+<script src="../../dist/look.js"></script>
+<script>
+  // lkTextbox for promo code
+  const promo = Look.lkTextbox('#promo-code');
+
+  // Remove item buttons → lkDialog confirm + lkToast
+  document.querySelectorAll('.lk-cart-item .lk-btn').forEach(btn => {
+    const itemName = btn.closest('.lk-cart-item').querySelector('.lk-cart-item__name').textContent;
+    btn.addEventListener('click', () => {
+      Look.lkDialog({
+        title: 'Remove item?',
+        message: `Remove "${itemName}" from your cart?`,
+        confirmLabel: 'Remove',
+        cancelLabel: 'Keep',
+        onConfirm() {
+          btn.closest('.lk-cart-item').remove();
+          Look.lkToast({ title: 'Removed', message: itemName, type: 'negative', duration: 2000 });
+        }
+      });
+    });
+  });
+
+  // Apply promo
+  document.getElementById('btn-apply-promo').addEventListener('click', () => {
+    if (!promo.value.trim()) {
+      promo.setError('Enter a promo code');
+    } else {
+      promo.clearError();
+      Look.lkToast({ title: 'Promo applied!', message: `Code "${promo.value}" applied.`, type: 'positive' });
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template — Dashboard Sales</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <style>
+    body { margin: 0; }
+    .chart-placeholder {
+      height: 16rem; background: var(--lk-surface);
+      border-radius: var(--lk-radius); display: flex;
+      align-items: center; justify-content: center;
+      color: var(--lk-text-muted); font-size: var(--lk-text-sm);
+    }
+  </style>
+</head>
+<body class="lk-page">
+
+  <header class="lk-page__header">
+    <nav class="lk-bar lk-bar--dark lk-bar--sticky">
+      <div class="lk-bar__start"><span class="lk-bar__title">AdminPanel</span></div>
+      <div class="lk-bar__end">
+        <span class="lk-avatar lk-avatar--sm" style="background: var(--lk-primary);">AD</span>
+      </div>
+    </nav>
+  </header>
+
+  <div class="lk-layout">
+    <aside class="lk-layout__sidebar">
+      <ul class="lk-sidebar-nav">
+        <li class="lk-sidebar-nav__heading">Main</li>
+        <a href="dashboard-home.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--home" aria-hidden="true"></span> Dashboard</a>
+        <a href="dashboard-orders.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--file" aria-hidden="true"></span> Orders</a>
+        <a href="dashboard-products.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--shopping-cart" aria-hidden="true"></span> Products</a>
+        <a href="dashboard-sales.html" class="lk-sidebar-nav__item lk-sidebar-nav__item--active"><span class="lk-icon lk-icon--sort-asc" aria-hidden="true"></span> Sales</a>
+        <li class="lk-sidebar-nav__heading">System</li>
+        <a href="dashboard-settings.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--settings" aria-hidden="true"></span> Settings</a>
+      </ul>
+    </aside>
+
+    <main class="lk-layout__content">
+      <div class="lk-page-title">
+        <div class="lk-page-title__text">Sales Report</div>
+        <div class="lk-page-title__actions">
+          <select id="sales-range" style="width: auto;"></select>
+          <button class="lk-btn lk-btn--outline lk-btn--sm"><span class="lk-icon lk-icon--download" aria-hidden="true"></span> Export</button>
+        </div>
+      </div>
+
+      <div style="padding: 0 var(--lk-space-4) var(--lk-space-4);">
+        <!-- KPI row -->
+        <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="margin-bottom: var(--lk-space-4);">
+          <div class="lk-card"><div class="lk-card__body">
+            <div class="lk-stat" style="text-align: left;">
+              <div class="lk-stat__label">Total Sales</div>
+              <div class="lk-stat__value" style="font-size: var(--lk-text-2xl);">$48,250</div>
+              <div class="lk-stat__delta lk-stat__delta--up">+12.5%</div>
+            </div>
+          </div></div>
+          <div class="lk-card"><div class="lk-card__body">
+            <div class="lk-stat" style="text-align: left;">
+              <div class="lk-stat__label">Units Sold</div>
+              <div class="lk-stat__value" style="font-size: var(--lk-text-2xl);">1,847</div>
+              <div class="lk-stat__delta lk-stat__delta--up">+6.3%</div>
+            </div>
+          </div></div>
+          <div class="lk-card"><div class="lk-card__body">
+            <div class="lk-stat" style="text-align: left;">
+              <div class="lk-stat__label">Refunds</div>
+              <div class="lk-stat__value" style="font-size: var(--lk-text-2xl);">$1,250</div>
+              <div class="lk-stat__delta lk-stat__delta--down">+18.2%</div>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- Chart -->
+        <div class="lk-card" style="margin-bottom: var(--lk-space-4);">
+          <div class="lk-card__body">
+            <h3 style="margin-bottom: var(--lk-space-3);">Sales Trend</h3>
+            <div class="chart-placeholder">[Chart placeholder — integrate your charting library here]</div>
+          </div>
+        </div>
+
+        <!-- Top products -->
+        <div class="lk-card">
+          <div class="lk-card__body">
+            <h3 style="margin-bottom: var(--lk-space-3);">Top Selling Products</h3>
+            <table id="top-products" class="lk-table" style="width: 100%;">
+              <thead>
+                <tr><th>Product</th><th style="text-align: right;">Units</th><th style="text-align: right;">Revenue</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Classic Cotton Tee</td><td style="text-align: right;">412</td><td style="text-align: right;">$12,348</td></tr>
+                <tr><td>Slim Fit Chinos</td><td style="text-align: right;">285</td><td style="text-align: right;">$14,243</td></tr>
+                <tr><td>Running Sneakers</td><td style="text-align: right;">198</td><td style="text-align: right;">$23,758</td></tr>
+                <tr><td>Leather Crossbody</td><td style="text-align: right;">156</td><td style="text-align: right;">$14,034</td></tr>
+                <tr><td>Wool Blazer</td><td style="text-align: right;">89</td><td style="text-align: right;">$17,799</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../../dist/look.js"></script>
+<script>
+  // lkDropdown for date range
+  Look.lkDropdown('#sales-range', {
+    items: [
+      { value: '7', text: 'Last 7 days' },
+      { value: '30', text: 'Last 30 days', selected: true },
+      { value: '90', text: 'Last 90 days' },
+      { value: 'year', text: 'This year' },
+    ]
+  });
+
+  // lkTable with sorting on top products
+  Look.lkTable('#top-products', { sortable: true });
+
+  // Export button → lkToast
+  document.querySelector('.lk-page-title__actions .lk-btn').addEventListener('click', () => {
+    Look.lkToast({ title: 'Exported', message: 'Sales report downloaded as CSV.', type: 'positive', duration: 2000 });
+  });
+</script>
+</body>
+</html>

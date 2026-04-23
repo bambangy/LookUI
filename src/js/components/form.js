@@ -22,7 +22,20 @@ export function lkTextbox(el, opts = {}) {
   const node = resolveEl(el, 'lkTextbox');
   node.classList.add('lk-input');
 
-  if (opts.type && node.tagName === 'INPUT') node.type = opts.type;
+  let inputType = node.tagName === 'INPUT' ? node.type : '';
+
+  function applyInputType(nextType) {
+    if (node.tagName !== 'INPUT') return;
+
+    const requested = (nextType == null || nextType === '') ? 'text' : String(nextType).toLowerCase();
+    node.setAttribute('type', requested);
+    // Browser normalizes unsupported types back to text.
+    inputType = node.type;
+  }
+
+  if (node.tagName === 'INPUT') {
+    applyInputType(opts.type ?? node.getAttribute('type') ?? 'text');
+  }
 
   const field = wrapField(node, opts);
   const comp = {};
@@ -31,8 +44,12 @@ export function lkTextbox(el, opts = {}) {
   applyFieldProps(comp, node, field);
 
   Object.defineProperty(comp, 'type', {
-    get() { return node.type; },
-    set(v) { if (node.tagName === 'INPUT') node.type = v; },
+    get() {
+      return node.tagName === 'INPUT' ? inputType : '';
+    },
+    set(v) {
+      applyInputType(v);
+    },
     enumerable: true,
   });
 
@@ -249,3 +266,4 @@ export function lkSwitch(el, opts = {}) {
 
   return comp;
 }
+

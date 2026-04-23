@@ -1,4 +1,7 @@
+import { createPresenceController } from '../helpers/motion.js';
+
 let activeCount = 0;
+const EXIT_MS = 360;
 
 function toElement(content) {
   if (content == null) return null;
@@ -83,6 +86,14 @@ export function lkLoading(opts = {}) {
   let destroyed = false;
   let previousOverflow = '';
 
+  const presence = createPresenceController({
+    element: root,
+    visibleClass: 'lk-loading-overlay--open',
+    closingClass: '',
+    exitMs: EXIT_MS,
+    hideWithHiddenAttr: true,
+  });
+
   function setBodyLock(lock) {
     if (!options.lockScroll) return;
 
@@ -103,7 +114,8 @@ export function lkLoading(opts = {}) {
 
     activeCount += 1;
     root.style.zIndex = String(options.zIndexBase + activeCount);
-    root.hidden = false;
+
+    presence.show();
     visible = true;
     setBodyLock(true);
 
@@ -115,7 +127,7 @@ export function lkLoading(opts = {}) {
   function hide(reason = 'hide') {
     if (destroyed || !visible) return;
 
-    root.hidden = true;
+    presence.hide();
     visible = false;
     setBodyLock(false);
     if (activeCount > 0) activeCount -= 1;
@@ -153,6 +165,7 @@ export function lkLoading(opts = {}) {
 
     hide('destroy');
     destroyed = true;
+    presence.destroy();
     root.removeEventListener('click', onRootClick);
 
     if (root.parentNode) {
@@ -177,4 +190,5 @@ export function lkLoading(opts = {}) {
     },
   };
 }
+
 

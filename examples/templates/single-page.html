@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template — Single Page (Portfolio)</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <style>
+    body { margin: 0; }
+    .portfolio-img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      background: var(--lk-surface);
+      border-radius: var(--lk-radius-lg);
+    }
+    .avatar-lg {
+      width: 6rem; height: 6rem;
+      border-radius: var(--lk-radius-full);
+      object-fit: cover;
+      background: var(--lk-surface);
+    }
+  </style>
+</head>
+<body class="lk-page">
+
+  <!-- Navbar -->
+  <header class="lk-page__header">
+    <nav class="lk-bar lk-bar--sticky">
+      <div class="lk-bar__start">
+        <span class="lk-bar__title">Jane Doe</span>
+      </div>
+      <div class="lk-bar__end">
+        <a href="#about" class="lk-btn lk-btn--ghost lk-btn--sm">About</a>
+        <a href="#work" class="lk-btn lk-btn--ghost lk-btn--sm">Work</a>
+        <a href="#contact" class="lk-btn lk-btn--ghost lk-btn--sm">Contact</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section class="lk-hero lk-section--primary">
+    <h1 class="lk-hero__title">Creative Developer</h1>
+    <p class="lk-hero__subtitle">I build beautiful, fast, and accessible web experiences. Let's create something great together.</p>
+    <div class="lk-hero__actions">
+      <a href="#work" class="lk-btn lk-btn--primary">View My Work</a>
+      <a href="#contact" class="lk-btn lk-btn--outline">Get in Touch</a>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about" class="lk-section">
+    <div class="lk-container">
+      <div class="lk-flex lk-flex--gap-lg lk-flex--align-center lk-flex--col-sm">
+        <div style="flex-shrink: 0; text-align: center;">
+          <div class="avatar-lg"></div>
+        </div>
+        <div style="flex: 1;">
+          <h2 style="margin-bottom: var(--lk-space-3);">About Me</h2>
+          <p style="color: var(--lk-text-muted); line-height: var(--lk-leading-relaxed);">
+            Full-stack developer with 8+ years of experience building web applications.
+            Passionate about clean code, great design, and user experience.
+            Currently focused on JavaScript, TypeScript, and modern CSS.
+          </p>
+          <div class="lk-grid lk-grid--cols-3 lk-grid--gap-sm" style="margin-top: var(--lk-space-4);">
+            <div class="lk-stat">
+              <div class="lk-stat__value">8+</div>
+              <div class="lk-stat__label">Years Exp.</div>
+            </div>
+            <div class="lk-stat">
+              <div class="lk-stat__value">50+</div>
+              <div class="lk-stat__label">Projects</div>
+            </div>
+            <div class="lk-stat">
+              <div class="lk-stat__value">30+</div>
+              <div class="lk-stat__label">Clients</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Work / Portfolio -->
+  <section id="work" class="lk-section lk-section--surface">
+    <div class="lk-container">
+      <h2 style="text-align: center; margin-bottom: var(--lk-space-6);">Selected Work</h2>
+      <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2 lk-grid--cols-lg-3">
+        <div class="lk-card">
+          <div class="portfolio-img"></div>
+          <div class="lk-card__body">
+            <h3>E-Commerce Platform</h3>
+            <p style="color: var(--lk-text-muted); font-size: var(--lk-text-sm);">Full-stack online store with payment integration and admin dashboard.</p>
+            <div style="margin-top: var(--lk-space-2);">
+              <span class="lk-badge lk-badge--primary">JavaScript</span>
+              <span class="lk-badge">CSS</span>
+            </div>
+          </div>
+        </div>
+        <div class="lk-card">
+          <div class="portfolio-img"></div>
+          <div class="lk-card__body">
+            <h3>Analytics Dashboard</h3>
+            <p style="color: var(--lk-text-muted); font-size: var(--lk-text-sm);">Real-time data visualization dashboard for marketing teams.</p>
+            <div style="margin-top: var(--lk-space-2);">
+              <span class="lk-badge lk-badge--primary">TypeScript</span>
+              <span class="lk-badge">D3.js</span>
+            </div>
+          </div>
+        </div>
+        <div class="lk-card">
+          <div class="portfolio-img"></div>
+          <div class="lk-card__body">
+            <h3>Mobile Banking App</h3>
+            <p style="color: var(--lk-text-muted); font-size: var(--lk-text-sm);">Cross-platform banking application with biometric auth.</p>
+            <div style="margin-top: var(--lk-space-2);">
+              <span class="lk-badge lk-badge--primary">React Native</span>
+              <span class="lk-badge">Node.js</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="lk-section">
+    <div class="lk-container" style="max-width: 36rem;">
+      <h2 style="text-align: center; margin-bottom: var(--lk-space-6);">Get in Touch</h2>
+      <form id="contact-form">
+        <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2">
+          <div><input id="contact-name" placeholder="Name" /></div>
+          <div><input id="contact-email" placeholder="Email" type="email" /></div>
+        </div>
+        <div style="margin-top: var(--lk-space-3);">
+          <textarea id="contact-message" rows="5" placeholder="Your message..."></textarea>
+        </div>
+        <div style="margin-top: var(--lk-space-4); text-align: center;">
+          <button type="submit" class="lk-btn lk-btn--primary">Send Message</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="lk-page__footer" style="text-align: center;">
+    &copy; 2026 Jane Doe. Built with LookUI.
+  </footer>
+
+<script src="../../dist/look.js"></script>
+<script>
+  // lkTextbox for contact form fields
+  const nameField = Look.lkTextbox('#contact-name', { label: 'Name', required: true });
+  const emailField = Look.lkTextbox('#contact-email', { label: 'Email', required: true });
+  const msgField = Look.lkTextbox('#contact-message', { label: 'Message', required: true });
+
+  // lkTooltip on nav links
+  document.querySelectorAll('.lk-bar__end .lk-btn').forEach(btn => {
+    Look.lkTooltip(btn, { text: 'Go to ' + btn.textContent.trim(), position: 'bottom' });
+  });
+
+  // Form submit with lkToast feedback
+  document.getElementById('contact-form').addEventListener('submit', e => {
+    e.preventDefault();
+    let valid = true;
+    [nameField, emailField, msgField].forEach(f => {
+      if (!f.value.trim()) { f.setError('Required'); valid = false; } else { f.clearError(); }
+    });
+    if (valid) {
+      Look.lkToast({ title: 'Message sent!', message: 'Thanks for reaching out.', type: 'positive' });
+      nameField.value = ''; emailField.value = ''; msgField.value = '';
+    }
+  });
+</script>
+</body>
+</html>

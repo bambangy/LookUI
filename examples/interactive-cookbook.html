@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI - Interactive Cookbook</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Interactive Cookbook</h1>
+    <p style="opacity: 0.85;">Comprehensive manipulative examples for all JS components and composables</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Form Components</p>
+    <div class="lk-grid lk-grid--cols-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div class="lk-card">
+        <div class="lk-card__body" style="display: grid; gap: var(--lk-space-3);">
+          <input id="cb-textbox" type="text" placeholder="Name" />
+          <select id="cb-dropdown"></select>
+          <label style="display:flex;align-items:center;gap:var(--lk-space-2);"><input id="cb-checkbox" type="checkbox" /> Subscribe</label>
+          <div style="display:flex;gap:var(--lk-space-4);">
+            <label style="display:flex;align-items:center;gap:var(--lk-space-2);"><input id="cb-radio-a" type="radio" name="cb-radio" checked /> A</label>
+            <label style="display:flex;align-items:center;gap:var(--lk-space-2);"><input id="cb-radio-b" type="radio" name="cb-radio" /> B</label>
+          </div>
+          <label style="display:flex;align-items:center;gap:var(--lk-space-2);"><input id="cb-switch" type="checkbox" /> Enable alerts</label>
+        </div>
+      </div>
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <div class="demo-row" style="margin-bottom: 0;">
+            <button id="cb-fill-form" class="lk-btn lk-btn--primary">Fill Random</button>
+            <button id="cb-toggle-readonly" class="lk-btn lk-btn--secondary">Toggle Readonly</button>
+            <button id="cb-read-form" class="lk-btn lk-btn--ghost">Read Values</button>
+          </div>
+          <div id="cb-form-output" class="demo-output">Ready</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Core UI Components</p>
+    <div class="lk-grid lk-grid--cols-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div class="lk-card">
+        <div class="lk-card__body" style="display: flex; gap: var(--lk-space-3); align-items: center; flex-wrap: wrap;">
+          <button id="cb-btn" class="lk-btn lk-btn--primary">Button Component</button>
+          <span id="cb-tooltip"><button class="lk-btn lk-btn--secondary" type="button">Tooltip Target</button></span>
+          <button id="cb-open-modal" class="lk-btn lk-btn--info" type="button" aria-expanded="false">Open Modal</button>
+        </div>
+      </div>
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <div class="demo-row" style="margin-bottom: 0;">
+            <button id="cb-tooltip-show" class="lk-btn lk-btn--secondary">Show Tooltip</button>
+            <button id="cb-tooltip-hide" class="lk-btn lk-btn--secondary">Hide Tooltip</button>
+            <button id="cb-tooltip-pos" class="lk-btn lk-btn--ghost">Cycle Position</button>
+          </div>
+          <div id="cb-ui-output" class="demo-output">Ready</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="cb-modal-root" style="display:none;">
+      <div class="lk-modal-overlay">
+        <div class="lk-modal" role="dialog" aria-modal="true" aria-labelledby="cb-modal-title">
+          <div class="lk-modal__header">
+            <span class="lk-modal__title" id="cb-modal-title">Cookbook Modal</span>
+            <button id="cb-close-modal-x" class="lk-modal__close" type="button" aria-label="Close"><span class="lk-icon lk-icon--close" aria-hidden="true"></span></button>
+          </div>
+          <div class="lk-modal__body">
+            <p>Modal component demo with imperative open/close.</p>
+          </div>
+          <div class="lk-modal__footer">
+            <button id="cb-close-modal" class="lk-btn lk-btn--secondary" type="button">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Interactive Components</p>
+    <div class="lk-grid lk-grid--cols-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div class="lk-card">
+        <div class="lk-card__body" style="display: grid; gap: var(--lk-space-5);">
+          <div>
+            <p class="demo-sub">Carousel</p>
+            <div id="cb-carousel" style="max-width: 420px; border-radius: var(--lk-radius-lg); overflow: hidden;">
+              <div class="lk-carousel__track">
+                <div class="lk-carousel__slide" style="display:flex;align-items:center;justify-content:center;height:140px;background:var(--lk-primary);color:var(--lk-primary-contrast);">Slide A</div>
+                <div class="lk-carousel__slide" style="display:flex;align-items:center;justify-content:center;height:140px;background:var(--lk-positive);color:#fff;">Slide B</div>
+                <div class="lk-carousel__slide" style="display:flex;align-items:center;justify-content:center;height:140px;background:var(--lk-warning);color:#fff;">Slide C</div>
+              </div>
+              <button class="lk-carousel__prev lk-btn lk-btn--ghost" type="button"><span class="lk-icon lk-icon--chevron-left" aria-hidden="true"></span></button>
+              <button class="lk-carousel__next lk-btn lk-btn--ghost" type="button"><span class="lk-icon lk-icon--chevron-right" aria-hidden="true"></span></button>
+              <div class="lk-carousel__indicators">
+                <button class="lk-carousel__dot" type="button"></button>
+                <button class="lk-carousel__dot" type="button"></button>
+                <button class="lk-carousel__dot" type="button"></button>
+              </div>
+            </div>
+            <div class="demo-row" style="margin-top: var(--lk-space-2); margin-bottom: 0;">
+              <button id="cb-carousel-next" class="lk-btn lk-btn--secondary lk-btn--sm">Next</button>
+              <button id="cb-carousel-goto" class="lk-btn lk-btn--ghost lk-btn--sm">Go To #2</button>
+            </div>
+          </div>
+
+          <div>
+            <p class="demo-sub">Slider + Rating + Chip</p>
+            <div id="cb-slider" class="lk-slider">
+              <div class="lk-slider__track">
+                <div class="lk-slider__fill"></div>
+                <div class="lk-slider__thumb"><span class="lk-slider__label"></span></div>
+              </div>
+            </div>
+            <div id="cb-rating" class="lk-rating" style="margin-top: var(--lk-space-3);"></div>
+            <div id="cb-chip-wrap" style="display:flex; gap: var(--lk-space-2); flex-wrap: wrap; margin-top: var(--lk-space-3);">
+              <span id="cb-chip" class="lk-chip">Alpha</span>
+            </div>
+            <div class="demo-row" style="margin-top: var(--lk-space-2); margin-bottom: 0;">
+              <button id="cb-slider-random" class="lk-btn lk-btn--secondary lk-btn--sm">Random Slider</button>
+              <button id="cb-rating-readonly" class="lk-btn lk-btn--secondary lk-btn--sm">Toggle Rating Readonly</button>
+              <button id="cb-chip-add" class="lk-btn lk-btn--ghost lk-btn--sm">Add Chip</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lk-card">
+        <div class="lk-card__body" style="display: grid; gap: var(--lk-space-5);">
+          <div>
+            <p class="demo-sub">Pagination + Progress</p>
+            <ul id="cb-pagination"></ul>
+            <div id="cb-progress" class="lk-progress" style="margin-top: var(--lk-space-3);"><div class="lk-progress__bar"></div></div>
+            <div class="demo-row" style="margin-top: var(--lk-space-2); margin-bottom: 0;">
+              <button id="cb-page-5" class="lk-btn lk-btn--secondary lk-btn--sm">Page 5</button>
+              <button id="cb-pages-30" class="lk-btn lk-btn--secondary lk-btn--sm">30 Pages</button>
+              <button id="cb-progress-step" class="lk-btn lk-btn--ghost lk-btn--sm">+15 Progress</button>
+            </div>
+          </div>
+
+          <div>
+            <p class="demo-sub">Splitter + Table</p>
+            <div id="cb-splitter" class="lk-splitter lk-splitter--bordered" style="height: 120px;">
+              <div class="lk-splitter__pane" style="padding: var(--lk-space-2);">Pane A</div>
+              <div class="lk-splitter__handle"></div>
+              <div class="lk-splitter__pane" style="padding: var(--lk-space-2);">Pane B</div>
+            </div>
+            <div class="lk-table-wrap" style="margin-top: var(--lk-space-3);">
+              <table id="cb-table" class="lk-table lk-table--bordered lk-table--striped lk-table--hover">
+                <thead><tr><th>Name</th><th>Score</th><th>Visits</th></tr></thead>
+                <tbody>
+                  <tr><td>Ana</td><td>91</td><td>12</td></tr>
+                  <tr><td>Bo</td><td>76</td><td>21</td></tr>
+                  <tr><td>Cy</td><td>88</td><td>16</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="demo-row" style="margin-top: var(--lk-space-2); margin-bottom: 0;">
+              <button id="cb-split-reset" class="lk-btn lk-btn--secondary lk-btn--sm">Reset Split</button>
+              <button id="cb-table-add" class="lk-btn lk-btn--secondary lk-btn--sm">Add Row</button>
+              <button id="cb-table-sort" class="lk-btn lk-btn--ghost lk-btn--sm">Sort Score</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="cb-interactive-output" class="demo-output">Ready</div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">List Dynamic Manipulation</p>
+    <div class="lk-grid lk-grid--cols-2" style="gap: var(--lk-space-5); align-items: start;">
+      <aside class="lk-card" style="max-width: 460px;">
+        <div class="lk-card__body" style="padding: 0;">
+          <ul id="cb-list" class="lk-list lk-list--bordered lk-list--separated">
+            <li class="lk-list-header">Dynamic Menu</li>
+            <li class="lk-list-item">
+              <button class="lk-list-item__trigger" type="button" data-lk-submenu-trigger>
+                <div class="lk-list-item__content"><div class="lk-list-item__label">Actions</div></div>
+              </button>
+              <ul id="cb-list-actions" class="lk-list-submenu">
+                <li class="lk-list-item lk-list-item--clickable" data-kind="function" data-action="refresh_dashboard">
+                  <div class="lk-list-item__content"><div class="lk-list-item__label">Refresh Dashboard (function)</div></div>
+                </li>
+                <li class="lk-list-item lk-list-item--clickable" data-kind="link" data-link="#/reports/daily">
+                  <div class="lk-list-item__content"><div class="lk-list-item__label">Daily Report (link)</div></div>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
+            <input id="cb-list-label" class="lk-input" style="max-width: 12rem;" value="New Item" />
+            <select id="cb-list-kind" class="lk-input lk-select" style="max-width: 10rem;">
+              <option value="function">function</option>
+              <option value="link">link</option>
+            </select>
+            <input id="cb-list-value" class="lk-input" style="max-width: 14rem;" value="refresh_sales" />
+          </div>
+
+          <div class="demo-row" style="margin-bottom: 0;">
+            <button id="cb-list-add" class="lk-btn lk-btn--primary">Add Item</button>
+            <button id="cb-list-remove" class="lk-btn lk-btn--secondary">Remove Last</button>
+            <button id="cb-list-branch" class="lk-btn lk-btn--info">Add Nested Branch</button>
+            <button id="cb-list-open" class="lk-btn lk-btn--ghost">Open Actions</button>
+          </div>
+
+          <div id="cb-list-output" class="demo-output">Ready</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Composables</p>
+    <div class="lk-grid lk-grid--cols-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
+            <button id="cb-dialog" class="lk-btn lk-btn--primary">Dialog</button>
+            <button id="cb-toast" class="lk-btn lk-btn--info">Toast</button>
+            <button id="cb-loading-show" class="lk-btn lk-btn--warning">Loading Show</button>
+            <button id="cb-loading-hide" class="lk-btn lk-btn--secondary">Loading Hide</button>
+          </div>
+
+          <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
+            <button id="cb-ping-target" class="lk-btn lk-btn--secondary" type="button">Inbox</button>
+            <button id="cb-ping-inc" class="lk-btn lk-btn--ghost">Ping +1</button>
+            <button id="cb-shimmer-show" class="lk-btn lk-btn--secondary">Shimmer Show</button>
+            <button id="cb-shimmer-hide" class="lk-btn lk-btn--secondary">Shimmer Hide</button>
+          </div>
+
+          <div class="demo-row" style="margin-bottom: 0;">
+            <button id="cb-popup-btn" class="lk-btn lk-btn--primary" type="button">Popup Proxy</button>
+            <button id="cb-popup-text" class="lk-btn lk-btn--secondary">Popup Text</button>
+            <button id="cb-popup-template" class="lk-btn lk-btn--secondary">Popup Template</button>
+          </div>
+
+          <template id="cb-popup-template-content">
+            <div>
+              <strong style="display:block; margin-bottom: var(--lk-space-2);">Popup Template</strong>
+              <div style="display:flex; gap: var(--lk-space-2);">
+                <button class="lk-btn lk-btn--secondary lk-btn--sm" type="button">Action A</button>
+                <button class="lk-btn lk-btn--secondary lk-btn--sm" type="button">Action B</button>
+              </div>
+            </div>
+          </template>
+
+          <div id="cb-compose-output" class="demo-output">Ready</div>
+        </div>
+      </div>
+
+      <div class="lk-card" id="cb-inner-box">
+        <div class="lk-card__body">
+          <p class="demo-sub">Inner loading target + storage playground</p>
+          <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
+            <button id="cb-inner-show" class="lk-btn lk-btn--secondary">Inner Show</button>
+            <button id="cb-inner-hide" class="lk-btn lk-btn--secondary">Inner Hide</button>
+          </div>
+
+          <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
+            <input id="cb-storage-key" class="lk-input" style="max-width: 10rem;" value="cookbook.user" />
+            <input id="cb-storage-value" class="lk-input" style="max-width: 14rem;" value='{"theme":"light"}' />
+          </div>
+
+          <div class="demo-row" style="margin-bottom: 0;">
+            <button id="cb-storage-set" class="lk-btn lk-btn--primary">Storage Set</button>
+            <button id="cb-storage-get" class="lk-btn lk-btn--secondary">Storage Get</button>
+            <button id="cb-storage-clear" class="lk-btn lk-btn--ghost">Storage Clear</button>
+          </div>
+
+          <div id="cb-storage-output" class="demo-output">Ready</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const byId = (id) => document.getElementById(id);
+
+  // Form components
+  const textbox = Look.lkTextbox('#cb-textbox', { label: 'Name', name: 'name' });
+  const dropdown = Look.lkDropdown('#cb-dropdown', {
+    label: 'Plan',
+    items: [
+      { value: 'starter', text: 'Starter' },
+      { value: 'pro', text: 'Pro' },
+      { value: 'enterprise', text: 'Enterprise' },
+    ],
+  });
+  const checkbox = Look.lkCheckbox('#cb-checkbox', { label: 'Subscribe newsletter' });
+  const radioA = Look.lkRadio('#cb-radio-a', { label: 'Option A', name: 'cb-group' });
+  const radioB = Look.lkRadio('#cb-radio-b', { label: 'Option B', name: 'cb-group' });
+  const sw = Look.lkSwitch('#cb-switch', { label: 'Enable alerts' });
+
+  const formOutput = byId('cb-form-output');
+  let readonlyOn = false;
+
+  byId('cb-fill-form').addEventListener('click', () => {
+    const names = ['Ari', 'Bela', 'Cato', 'Dina'];
+    textbox.value = names[Math.floor(Math.random() * names.length)];
+    dropdown.value = ['starter', 'pro', 'enterprise'][Math.floor(Math.random() * 3)];
+    checkbox.checked = Math.random() > 0.5;
+    if (Math.random() > 0.5) radioA.checked = true;
+    else radioB.checked = true;
+    sw.checked = Math.random() > 0.5;
+    formOutput.textContent = 'Random values applied';
+  });
+
+  byId('cb-toggle-readonly').addEventListener('click', () => {
+    readonlyOn = !readonlyOn;
+    textbox.readonly = readonlyOn;
+    dropdown.enabled = !readonlyOn;
+    checkbox.enabled = !readonlyOn;
+    radioA.enabled = !readonlyOn;
+    radioB.enabled = !readonlyOn;
+    sw.enabled = !readonlyOn;
+    formOutput.textContent = 'Readonly/disabled = ' + readonlyOn;
+  });
+
+  byId('cb-read-form').addEventListener('click', () => {
+    formOutput.textContent = JSON.stringify({
+      name: textbox.value,
+      plan: dropdown.value,
+      subscribed: checkbox.checked,
+      radio: radioA.checked ? 'A' : 'B',
+      alerts: sw.checked,
+    });
+  });
+
+  // Core UI components
+  const uiOutput = byId('cb-ui-output');
+  Look.lkButton('#cb-btn');
+  const tooltip = Look.lkTooltip('#cb-tooltip', { content: 'Cookbook tooltip', position: 'top' });
+  const positions = ['top', 'right', 'bottom', 'left'];
+  let posIndex = 0;
+
+  byId('cb-tooltip-show').addEventListener('click', () => { tooltip.show(); uiOutput.textContent = 'tooltip.show()'; });
+  byId('cb-tooltip-hide').addEventListener('click', () => { tooltip.hide(); uiOutput.textContent = 'tooltip.hide()'; });
+  byId('cb-tooltip-pos').addEventListener('click', () => {
+    posIndex = (posIndex + 1) % positions.length;
+    tooltip.position = positions[posIndex];
+    uiOutput.textContent = 'tooltip.position = ' + tooltip.position;
+  });
+
+  byId('cb-modal-root').style.display = '';
+  const modal = Look.lkModal('#cb-open-modal', '#cb-modal-root');
+  byId('cb-close-modal').addEventListener('click', () => modal.close());
+  byId('cb-close-modal-x').addEventListener('click', () => modal.close());
+  byId('cb-modal-root').querySelector('.lk-modal-overlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) modal.close();
+  });
+
+  // Interactive components
+  const interactiveOutput = byId('cb-interactive-output');
+  const carousel = Look.lkCarousel('#cb-carousel', { loop: true });
+  const slider = Look.lkSlider('#cb-slider', {
+    min: 0,
+    max: 100,
+    value: 35,
+    step: 1,
+    onChange(v) { interactiveOutput.textContent = 'slider value = ' + v; },
+  });
+  const rating = Look.lkRating('#cb-rating', {
+    max: 5,
+    value: 3,
+    onChange(v) { interactiveOutput.textContent = 'rating = ' + v; },
+  });
+  const chips = [];
+  chips.push(Look.lkChip('#cb-chip', {
+    selected: false,
+    removable: true,
+    onSelect(sel) { interactiveOutput.textContent = 'chip selected = ' + sel; },
+    onRemove() { interactiveOutput.textContent = 'chip removed'; },
+  }));
+
+  const pager = Look.lkPagination('#cb-pagination', {
+    totalPages: 12,
+    page: 1,
+    onPageChange(p) { interactiveOutput.textContent = 'page = ' + p; },
+  });
+  const progress = Look.lkProgress('#cb-progress', { value: 30, max: 100 });
+  const splitter = Look.lkSplitter('#cb-splitter', { sizes: [50, 50], minSize: 60 });
+  const table = Look.lkTable('#cb-table', {
+    sortable: true,
+    onSort({ column, order }) { interactiveOutput.textContent = 'table sorted col ' + column + ' (' + order + ')'; },
+  });
+
+  let chipCount = 1;
+  byId('cb-carousel-next').addEventListener('click', () => {
+    carousel.next();
+    interactiveOutput.textContent = 'carousel index = ' + carousel.activeIndex;
+  });
+  byId('cb-carousel-goto').addEventListener('click', () => {
+    carousel.goTo(1);
+    interactiveOutput.textContent = 'carousel index = ' + carousel.activeIndex;
+  });
+  byId('cb-slider-random').addEventListener('click', () => {
+    slider.value = Math.floor(Math.random() * 101);
+    interactiveOutput.textContent = 'slider value = ' + slider.value;
+  });
+  byId('cb-rating-readonly').addEventListener('click', () => {
+    rating.readonly = !rating.readonly;
+    interactiveOutput.textContent = 'rating.readonly = ' + rating.readonly;
+  });
+  byId('cb-chip-add').addEventListener('click', () => {
+    chipCount += 1;
+    const el = document.createElement('span');
+    el.className = 'lk-chip';
+    el.textContent = 'Chip ' + chipCount;
+    byId('cb-chip-wrap').appendChild(el);
+    chips.push(Look.lkChip(el, {
+      removable: true,
+      onSelect(sel) { interactiveOutput.textContent = el.textContent + ' selected=' + sel; },
+      onRemove() { interactiveOutput.textContent = 'Removed ' + el.textContent; },
+    }));
+    interactiveOutput.textContent = 'Added chip ' + chipCount;
+  });
+
+  byId('cb-page-5').addEventListener('click', () => { pager.page = 5; });
+  byId('cb-pages-30').addEventListener('click', () => {
+    pager.totalPages = 30;
+    interactiveOutput.textContent = 'pagination.totalPages = 30';
+  });
+  byId('cb-progress-step').addEventListener('click', () => {
+    progress.value = (progress.value + 15) % 115;
+    if (progress.value > 100) progress.value = 0;
+    interactiveOutput.textContent = 'progress = ' + progress.value;
+  });
+  byId('cb-split-reset').addEventListener('click', () => {
+    splitter.sizes = [50, 50];
+    interactiveOutput.textContent = 'splitter.sizes reset to [50, 50]';
+  });
+  byId('cb-table-add').addEventListener('click', () => {
+    const names = ['Dae', 'Ena', 'Fio', 'Geo'];
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + names[Math.floor(Math.random() * names.length)] + '</td><td>' + (60 + Math.floor(Math.random() * 40)) + '</td><td>' + (5 + Math.floor(Math.random() * 40)) + '</td>';
+    byId('cb-table').querySelector('tbody').appendChild(tr);
+    interactiveOutput.textContent = 'Table row appended';
+  });
+  byId('cb-table-sort').addEventListener('click', () => {
+    table.sortBy = 1;
+  });
+
+  // Dynamic list demo
+  const listOutput = byId('cb-list-output');
+  const actionMap = {
+    refresh_dashboard() { listOutput.textContent = 'Function called: refresh_dashboard()'; },
+    refresh_sales() { listOutput.textContent = 'Function called: refresh_sales()'; },
+    export_csv() { listOutput.textContent = 'Function called: export_csv()'; },
+  };
+
+  let listComp = null;
+  let branchCount = 0;
+
+  function mountList() {
+    if (listComp) listComp.destroy();
+    listComp = Look.lkList('#cb-list', {
+      accordion: true,
+      onToggle({ item, open, depth }) {
+        const label = item.querySelector('.lk-list-item__label')?.textContent || 'branch';
+        listOutput.textContent = label + ' -> ' + (open ? 'open' : 'close') + ' (depth ' + depth + ')';
+      },
+    });
+  }
+
+  function createLeaf(label, kind, value) {
+    const li = document.createElement('li');
+    li.className = 'lk-list-item lk-list-item--clickable';
+    li.dataset.kind = kind;
+
+    if (kind === 'link') {
+      li.dataset.link = value;
+    } else {
+      li.dataset.action = value;
+      if (!actionMap[value]) {
+        actionMap[value] = () => {
+          listOutput.textContent = 'Function called: ' + value + '()';
+        };
+      }
+    }
+
+    li.innerHTML = '<div class="lk-list-item__content"><div class="lk-list-item__label">' + label + ' (' + kind + ')</div></div>';
+    return li;
+  }
+
+  byId('cb-list').addEventListener('click', (e) => {
+    const leaf = e.target.closest('.lk-list-item--clickable');
+    if (!leaf || leaf.classList.contains('lk-list-item--branch')) return;
+
+    if (leaf.dataset.kind === 'link') {
+      const link = leaf.dataset.link || '#';
+      window.location.hash = link.replace('#', '');
+      listOutput.textContent = 'Link navigated to: ' + link;
+      return;
+    }
+
+    const fnName = leaf.dataset.action;
+    const fn = actionMap[fnName];
+    if (typeof fn === 'function') fn();
+  });
+
+  byId('cb-list-add').addEventListener('click', () => {
+    const label = byId('cb-list-label').value.trim() || 'Untitled';
+    const kind = byId('cb-list-kind').value;
+    const value = byId('cb-list-value').value.trim() || (kind === 'link' ? '#/new' : 'refresh_dashboard');
+    byId('cb-list-actions').appendChild(createLeaf(label, kind, value));
+    listOutput.textContent = 'Item added: ' + label;
+  });
+
+  byId('cb-list-remove').addEventListener('click', () => {
+    const submenu = byId('cb-list-actions');
+    const items = Array.from(submenu.querySelectorAll(':scope > .lk-list-item--clickable'));
+    const last = items[items.length - 1];
+    if (last) {
+      last.remove();
+      listOutput.textContent = 'Last item removed';
+      return;
+    }
+    listOutput.textContent = 'No item to remove';
+  });
+
+  byId('cb-list-branch').addEventListener('click', () => {
+    branchCount += 1;
+    const li = document.createElement('li');
+    li.className = 'lk-list-item';
+    li.innerHTML = '' +
+      '<button class="lk-list-item__trigger" type="button" data-lk-submenu-trigger>' +
+      '<div class="lk-list-item__content"><div class="lk-list-item__label">Nested ' + branchCount + '</div></div>' +
+      '</button>' +
+      '<ul class="lk-list-submenu">' +
+      '  <li class="lk-list-item lk-list-item--clickable" data-kind="function" data-action="export_csv"><div class="lk-list-item__content"><div class="lk-list-item__label">Export CSV</div></div></li>' +
+      '  <li class="lk-list-item lk-list-item--clickable" data-kind="link" data-link="#/nested/' + branchCount + '"><div class="lk-list-item__content"><div class="lk-list-item__label">Open Nested Link</div></div></li>' +
+      '</ul>';
+
+    byId('cb-list-actions').appendChild(li);
+    mountList();
+    listOutput.textContent = 'Nested branch added and list remounted';
+  });
+
+  byId('cb-list-open').addEventListener('click', () => {
+    const branch = byId('cb-list').querySelector('.lk-list-item--branch');
+    if (branch) listComp.open(branch);
+  });
+
+  mountList();
+
+  // Composables
+  const composeOutput = byId('cb-compose-output');
+  const loading = Look.lkLoading({ open: false, text: 'Loading cookbook...' });
+  const innerLoading = Look.lkInnerLoading('#cb-inner-box', { open: false, text: 'Refreshing panel...' });
+  const shimmer = Look.lkShimmer('#cb-inner-box', { open: false });
+  const ping = Look.lkPingBadge('#cb-ping-target', { count: 2, open: true, position: 'top-right' });
+  const popup = Look.lkPopupProxy('#cb-popup-btn', {
+    content: '#cb-popup-template-content',
+    placement: 'bottom-left',
+    autoPlacement: true,
+    onShow(info) { composeOutput.textContent = 'Popup opened (' + (info.placement || 'bottom-left') + ')'; },
+    onHide(reason) { composeOutput.textContent = 'Popup closed: ' + reason; },
+  });
+
+  byId('cb-dialog').addEventListener('click', () => {
+    Look.lkDialog({
+      title: 'Cookbook Dialog',
+      content: 'This dialog is created from lkDialog composable.',
+      onConfirm() { composeOutput.textContent = 'Dialog confirmed'; },
+      onClose(reason) { composeOutput.textContent = 'Dialog closed: ' + reason; },
+    });
+  });
+
+  byId('cb-toast').addEventListener('click', () => {
+    Look.lkToast({ title: 'Cookbook Toast', message: 'Composable toast fired', type: 'info', duration: 1800 });
+    composeOutput.textContent = 'Toast fired';
+  });
+
+  byId('cb-loading-show').addEventListener('click', () => loading.show());
+  byId('cb-loading-hide').addEventListener('click', () => loading.hide('manual'));
+  byId('cb-inner-show').addEventListener('click', () => innerLoading.show());
+  byId('cb-inner-hide').addEventListener('click', () => innerLoading.hide());
+
+  byId('cb-ping-inc').addEventListener('click', () => {
+    const next = Math.min(99, (parseInt(byId('cb-ping-target').dataset.count || '2', 10) || 0) + 1);
+    byId('cb-ping-target').dataset.count = String(next);
+    ping.setCount(next);
+    composeOutput.textContent = 'Ping count = ' + next;
+  });
+
+  byId('cb-shimmer-show').addEventListener('click', () => shimmer.show());
+  byId('cb-shimmer-hide').addEventListener('click', () => shimmer.hide());
+
+  byId('cb-popup-text').addEventListener('click', () => {
+    popup.setContent('Popup from plain text content');
+    popup.show(byId('cb-popup-btn'));
+  });
+  byId('cb-popup-template').addEventListener('click', () => {
+    popup.setContent('#cb-popup-template-content');
+    popup.show(byId('cb-popup-btn'));
+  });
+
+  // Storage composable
+  const storage = Look.lkStorage({ namespace: 'cookbook', encrypted: false });
+  const storageOutput = byId('cb-storage-output');
+
+  byId('cb-storage-set').addEventListener('click', async () => {
+    const key = byId('cb-storage-key').value.trim();
+    const raw = byId('cb-storage-value').value;
+    let value = raw;
+    try { value = JSON.parse(raw); } catch (_e) {}
+    await storage.set(key, value);
+    storageOutput.textContent = 'Stored key: ' + key;
+  });
+
+  byId('cb-storage-get').addEventListener('click', async () => {
+    const key = byId('cb-storage-key').value.trim();
+    const value = await storage.get(key, null);
+    storageOutput.textContent = 'Value: ' + JSON.stringify(value);
+  });
+
+  byId('cb-storage-clear').addEventListener('click', () => {
+    storage.clear();
+    storageOutput.textContent = 'Storage cleared';
+  });
+</script>
+</body>
+</html>

@@ -62,7 +62,7 @@
 
     <p class="demo-sub">Button dropdown</p>
     <div class="demo-row">
-      <div class="lk-btn-dropdown lk-btn-dropdown--open">
+      <div class="lk-btn-dropdown">
         <button class="lk-btn lk-btn--primary">Dropdown <span class="lk-btn-dropdown__caret"></span></button>
         <div class="lk-btn-dropdown__menu">
           <button class="lk-btn-dropdown__item">Action one</button>
@@ -71,18 +71,67 @@
           <button class="lk-btn-dropdown__item">Another action</button>
         </div>
       </div>
+
+      <div class="lk-btn-dropdown">
+        <button class="lk-btn lk-btn--secondary">Options <span class="lk-btn-dropdown__caret"></span></button>
+        <div class="lk-btn-dropdown__menu">
+          <button class="lk-btn-dropdown__item">Edit</button>
+          <button class="lk-btn-dropdown__item">Duplicate</button>
+          <hr class="lk-btn-dropdown__divider" />
+          <button class="lk-btn-dropdown__item">Delete</button>
+        </div>
+      </div>
     </div>
+    <div id="output" class="demo-output"></div>
   </section>
 
   <div class="demo-usage">
     <p class="demo-usage__title">JavaScript</p>
     <pre>const btn = Look.lkButton('#my-button');
 btn.el;        // DOM element
-btn.destroy(); // removes lk-btn class</pre>
+btn.destroy(); // removes lk-btn class
+
+// Dropdown toggle (add lk-btn-dropdown--open)
+const dd = document.querySelector('.lk-btn-dropdown');
+dd.querySelector('.lk-btn').addEventListener('click', () =&gt; {
+  dd.classList.toggle('lk-btn-dropdown--open');
+});</pre>
   </div>
 
 </main>
 
 <script src="../dist/look.js"></script>
+<script>
+  const out = document.getElementById('output');
+
+  // Wire up all .lk-btn-dropdown: toggle on click, close on outside
+  document.querySelectorAll('.lk-btn-dropdown').forEach(dd => {
+    const trigger = dd.querySelector('.lk-btn');
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Close other open dropdowns first
+      document.querySelectorAll('.lk-btn-dropdown--open').forEach(other => {
+        if (other !== dd) other.classList.remove('lk-btn-dropdown--open');
+      });
+      dd.classList.toggle('lk-btn-dropdown--open');
+    });
+
+    // Item click → close + report
+    dd.querySelectorAll('.lk-btn-dropdown__item').forEach(item => {
+      item.addEventListener('click', () => {
+        out.textContent = 'Clicked: ' + item.textContent;
+        dd.classList.remove('lk-btn-dropdown--open');
+      });
+    });
+  });
+
+  // Close all on outside click
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.lk-btn-dropdown--open').forEach(dd => {
+      dd.classList.remove('lk-btn-dropdown--open');
+    });
+  });
+</script>
 </body>
 </html>

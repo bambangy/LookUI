@@ -79,14 +79,14 @@
 
   // --- Transitions ---
   --lk-duration-instant: 0ms;
-  --lk-duration-fast:    100ms;
-  --lk-duration-base:    200ms;
-  --lk-duration-slow:    350ms;
-  --lk-duration-slower:  500ms;
-  --lk-easing-default:   ease-in-out;
-  --lk-easing-in:        cubic-bezier(0.4, 0, 1, 1);
-  --lk-easing-out:       cubic-bezier(0, 0, 0.2, 1);
-  --lk-easing-spring:    cubic-bezier(0.34, 1.56, 0.64, 1);
+  --lk-duration-fast:    180ms;
+  --lk-duration-base:    280ms;
+  --lk-duration-slow:    420ms;
+  --lk-duration-slower:  620ms;
+  --lk-easing-default:   cubic-bezier(0.22, 1, 0.36, 1);
+  --lk-easing-in:        cubic-bezier(0.55, 0, 0.85, 0.15);
+  --lk-easing-out:       cubic-bezier(0.16, 1, 0.3, 1);
+  --lk-easing-spring:    cubic-bezier(0.22, 1.15, 0.32, 1);
 
   // --- Z-index layers ---
   --lk-z-below:    -1;
@@ -106,3 +106,4 @@ $look-bp-md:  768px;
 $look-bp-lg:  1024px;
 $look-bp-xl:  1280px;
 $look-bp-2xl: 1536px;
+

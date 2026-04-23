@@ -14,6 +14,30 @@
   background: var(--lk-bg);
   color: var(--lk-text);
 
+  opacity: 0;
+  transform: translateY(-0.75rem) scale(0.95);
+  transition:
+    opacity var(--lk-duration-base) var(--lk-easing-out),
+    transform var(--lk-duration-slow) var(--lk-easing-out);
+
+  &--from-bottom {
+    transform: translateY(0.75rem) scale(0.95);
+  }
+
+  &--open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  &--closing {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.95);
+  }
+
+  &--from-bottom.lk-toast--closing {
+    transform: translateY(0.5rem) scale(0.95);
+  }
+
   // --- Icon slot ---
 
   &__icon {
@@ -82,7 +106,7 @@
   }
 
   // =========================================================================
-  // Type variants — colored background
+  // Type variants - colored background
   // =========================================================================
 
   &--positive {
@@ -110,3 +134,5 @@
     color: var(--lk-primary-contrast);
   }
 }
+
+

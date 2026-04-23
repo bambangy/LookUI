@@ -7,6 +7,14 @@
   background-repeat: no-repeat;
   background-position: right var(--lk-space-3) center;
   cursor: pointer;
+  transition:
+    background-position var(--lk-duration-fast) var(--lk-easing-out),
+    filter var(--lk-duration-fast) var(--lk-easing-out);
+
+  &:focus {
+    background-position: right calc(var(--lk-space-3) - 2px) center;
+    filter: saturate(1.05);
+  }
 
   &:disabled {
     cursor: not-allowed;

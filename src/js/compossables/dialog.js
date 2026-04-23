@@ -1,5 +1,8 @@
 import { lkFocusTrap } from '../behaviors/index.js';
 import { lkIcon } from '../components/icon.js';
+import { createPresenceController } from '../helpers/motion.js';
+
+const EXIT_MS = 360;
 
 function appendDialogContent(container, content) {
   if (content == null) return;
@@ -114,9 +117,30 @@ export function lkDialog(opts = {}) {
 
   let isOpen = false;
   let destroyed = false;
+  let shouldDestroyOnHide = false;
   let previousFocus = null;
 
   const trap = lkFocusTrap(modal);
+
+  const presence = createPresenceController({
+    element: root,
+    visibleClass: 'lk-modal--open',
+    closingClass: 'lk-modal--closing',
+    exitMs: EXIT_MS,
+    hideWithHiddenAttr: true,
+    afterShow() {
+      const autoFocusTarget = confirmBtn || closeBtn || modal;
+      if (autoFocusTarget && typeof autoFocusTarget.focus === 'function') {
+        autoFocusTarget.focus();
+      }
+    },
+    afterHide() {
+      if (shouldDestroyOnHide) {
+        shouldDestroyOnHide = false;
+        destroy();
+      }
+    },
+  });
 
   const api = {
     el: root,
@@ -156,13 +180,10 @@ export function lkDialog(opts = {}) {
       options.mount.appendChild(root);
     }
 
+    shouldDestroyOnHide = false;
     previousFocus = document.activeElement;
-    root.hidden = false;
-    root.classList.add('lk-modal--open');
+    presence.show();
     isOpen = true;
-
-    const autoFocusTarget = confirmBtn || closeBtn || modal;
-    requestAnimationFrame(() => autoFocusTarget.focus());
 
     callMaybe(options.onOpen, api);
     return api;
@@ -171,8 +192,8 @@ export function lkDialog(opts = {}) {
   function close(reason = 'close') {
     if (destroyed || !isOpen) return api;
 
-    root.classList.remove('lk-modal--open');
-    root.hidden = true;
+    shouldDestroyOnHide = !!options.destroyOnClose;
+    presence.hide();
     isOpen = false;
 
     if (previousFocus && typeof previousFocus.focus === 'function' && previousFocus.isConnected) {
@@ -180,11 +201,6 @@ export function lkDialog(opts = {}) {
     }
 
     callMaybe(options.onClose, reason, api);
-
-    if (options.destroyOnClose) {
-      destroy();
-    }
-
     return api;
   }
 
@@ -224,6 +240,9 @@ export function lkDialog(opts = {}) {
     if (destroyed) return;
     destroyed = true;
     isOpen = false;
+    shouldDestroyOnHide = false;
+
+    presence.destroy();
 
     overlay.removeEventListener('click', onOverlayClick);
     document.removeEventListener('keydown', onEsc);
@@ -249,3 +268,5 @@ export function lkDialog(opts = {}) {
 
   return api;
 }
+
+

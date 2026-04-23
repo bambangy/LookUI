@@ -1,23 +1,25 @@
 import { lkIcon } from '../components/icon.js';
+import { createPresenceController } from '../helpers/motion.js';
 
 const CONTAINER_PREFIX = 'lk-toast-container';
+const EXIT_MS = 320;
 
 const POSITION_MAP = {
-  'top-left':      { top: 'var(--lk-space-4)', left: 'var(--lk-space-4)' },
-  'top-center':    { top: 'var(--lk-space-4)', left: '50%', transform: 'translateX(-50%)' },
-  'top-right':     { top: 'var(--lk-space-4)', right: 'var(--lk-space-4)' },
-  'bottom-left':   { bottom: 'var(--lk-space-4)', left: 'var(--lk-space-4)' },
+  'top-left': { top: 'var(--lk-space-4)', left: 'var(--lk-space-4)' },
+  'top-center': { top: 'var(--lk-space-4)', left: '50%', transform: 'translateX(-50%)' },
+  'top-right': { top: 'var(--lk-space-4)', right: 'var(--lk-space-4)' },
+  'bottom-left': { bottom: 'var(--lk-space-4)', left: 'var(--lk-space-4)' },
   'bottom-center': { bottom: 'var(--lk-space-4)', left: '50%', transform: 'translateX(-50%)' },
-  'bottom-right':  { bottom: 'var(--lk-space-4)', right: 'var(--lk-space-4)' },
+  'bottom-right': { bottom: 'var(--lk-space-4)', right: 'var(--lk-space-4)' },
 };
 
 // Default icon per type
 const TYPE_ICONS = {
   positive: 'circle-check',
   negative: 'circle-x',
-  warning:  'alert-triangle',
-  info:     'circle-info',
-  primary:  'circle-info',
+  warning: 'alert-triangle',
+  info: 'circle-info',
+  primary: 'circle-info',
 };
 
 function createContainer(position, zIndex) {
@@ -49,17 +51,17 @@ function getContainer(position, zIndex) {
 /**
  * Show a disposable toast notification.
  * @param {Object} [opts={}]
- * @param {string} [opts.title]        — bold heading text
- * @param {string} [opts.message]      — body text
- * @param {string} [opts.type]         — 'positive' | 'negative' | 'warning' | 'info' | 'primary' | '' (default neutral)
- * @param {string} [opts.icon]         — override icon name (defaults per type, pass false to suppress)
- * @param {number} [opts.duration]     — ms before auto-close; 0 = no auto-close (default 3000)
- * @param {string} [opts.position]     — 'top-right' | 'top-left' | 'top-center' | 'bottom-*' (default 'top-right')
- * @param {boolean}[opts.dismissible]  — show close button (default true)
- * @param {number} [opts.zIndex]       — (default 110)
- * @param {string} [opts.actionText]   — text for optional action link
- * @param {Function}[opts.onAction]    — callback when action clicked
- * @param {Function}[opts.onClose]     — callback(reason) on close
+ * @param {string} [opts.title] - bold heading text
+ * @param {string} [opts.message] - body text
+ * @param {string} [opts.type] - 'positive' | 'negative' | 'warning' | 'info' | 'primary' | '' (default neutral)
+ * @param {string} [opts.icon] - override icon name (defaults per type, pass false to suppress)
+ * @param {number} [opts.duration] - ms before auto-close; 0 = no auto-close (default 3000)
+ * @param {string} [opts.position] - 'top-right' | 'top-left' | 'top-center' | 'bottom-*' (default 'top-right')
+ * @param {boolean} [opts.dismissible] - show close button (default true)
+ * @param {number} [opts.zIndex] - (default 110)
+ * @param {string} [opts.actionText] - text for optional action link
+ * @param {Function} [opts.onAction] - callback when action clicked
+ * @param {Function} [opts.onClose] - callback(reason) on close
  * @returns {{ el: Element, close: Function, update: Function, isOpen: boolean }}
  */
 export function lkToast(opts = {}) {
@@ -83,6 +85,9 @@ export function lkToast(opts = {}) {
   // --- Root element ---
   const toast = document.createElement('div');
   toast.className = 'lk-toast' + (options.type ? ` lk-toast--${options.type}` : '');
+  if (options.position.startsWith('bottom')) {
+    toast.classList.add('lk-toast--from-bottom');
+  }
 
   // --- Icon slot ---
   const iconName = options.icon !== false
@@ -137,6 +142,7 @@ export function lkToast(opts = {}) {
   // --- Logic ---
   let timer = null;
   let open = true;
+  let closeReason = 'close';
 
   function cleanupContainerIfEmpty() {
     if (container.childElementCount === 0 && container.parentNode) {
@@ -144,30 +150,46 @@ export function lkToast(opts = {}) {
     }
   }
 
-  function close(reason = 'close') {
-    if (!open) return;
-    open = false;
+  const presence = createPresenceController({
+    element: toast,
+    visibleClass: 'lk-toast--open',
+    closingClass: 'lk-toast--closing',
+    exitMs: EXIT_MS,
+    hideWithHiddenAttr: false,
+    afterHide() {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
 
+      cleanupContainerIfEmpty();
+
+      if (typeof options.onClose === 'function') {
+        options.onClose(closeReason);
+      }
+    },
+  });
+
+  function clearAutoTimer() {
     if (timer) {
       clearTimeout(timer);
       timer = null;
     }
-
-    if (actionBtn) actionBtn.removeEventListener('click', onActionClick);
-    if (closeBtn)  closeBtn.removeEventListener('click', onCloseClick);
-
-    if (toast.parentNode) {
-      toast.parentNode.removeChild(toast);
-    }
-
-    cleanupContainerIfEmpty();
-
-    if (typeof options.onClose === 'function') {
-      options.onClose(reason);
-    }
   }
 
-  function onCloseClick()  { close('dismiss'); }
+  function close(reason = 'close') {
+    if (!open) return;
+    open = false;
+    closeReason = reason;
+
+    clearAutoTimer();
+
+    if (actionBtn) actionBtn.removeEventListener('click', onActionClick);
+    if (closeBtn) closeBtn.removeEventListener('click', onCloseClick);
+
+    presence.hide();
+  }
+
+  function onCloseClick() { close('dismiss'); }
 
   function onActionClick() {
     if (typeof options.onAction === 'function') options.onAction();
@@ -187,9 +209,10 @@ export function lkToast(opts = {}) {
   }
 
   if (actionBtn) actionBtn.addEventListener('click', onActionClick);
-  if (closeBtn)  closeBtn.addEventListener('click', onCloseClick);
+  if (closeBtn) closeBtn.addEventListener('click', onCloseClick);
 
   container.appendChild(toast);
+  presence.show();
 
   if (options.duration > 0) {
     timer = setTimeout(() => close('timeout'), options.duration);
@@ -202,3 +225,5 @@ export function lkToast(opts = {}) {
     get isOpen() { return open; },
   };
 }
+
+

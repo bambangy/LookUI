@@ -17,8 +17,14 @@
     border-radius: var(--lk-radius);
     pointer-events: none;
 
+    --lk-tip-transform-hidden: translateX(-50%) translateY(4px);
+    --lk-tip-transform-shown: translateX(-50%) translateY(0);
+
     opacity: 0;
-    transition: opacity var(--lk-duration-fast) var(--lk-easing-default);
+    transform: var(--lk-tip-transform-hidden);
+    transition:
+      opacity var(--lk-duration-base) var(--lk-easing-out),
+      transform var(--lk-duration-base) var(--lk-easing-out);
 
     // Arrow
     &::after {
@@ -33,7 +39,8 @@
   &__content--top {
     bottom: calc(100% + 6px);
     left: 50%;
-    transform: translateX(-50%);
+    --lk-tip-transform-hidden: translateX(-50%) translateY(4px);
+    --lk-tip-transform-shown: translateX(-50%) translateY(0);
 
     &::after {
       top: 100%;
@@ -46,7 +53,8 @@
   &__content--bottom {
     top: calc(100% + 6px);
     left: 50%;
-    transform: translateX(-50%);
+    --lk-tip-transform-hidden: translateX(-50%) translateY(-4px);
+    --lk-tip-transform-shown: translateX(-50%) translateY(0);
 
     &::after {
       bottom: 100%;
@@ -59,7 +67,8 @@
   &__content--left {
     right: calc(100% + 6px);
     top: 50%;
-    transform: translateY(-50%);
+    --lk-tip-transform-hidden: translateY(-50%) translateX(4px);
+    --lk-tip-transform-shown: translateY(-50%) translateX(0);
 
     &::after {
       left: 100%;
@@ -72,7 +81,8 @@
   &__content--right {
     left: calc(100% + 6px);
     top: 50%;
-    transform: translateY(-50%);
+    --lk-tip-transform-hidden: translateY(-50%) translateX(-4px);
+    --lk-tip-transform-shown: translateY(-50%) translateX(0);
 
     &::after {
       right: 100%;
@@ -88,6 +98,7 @@
   &:hover &__content,
   &:focus-within &__content {
     opacity: 1;
+    transform: var(--lk-tip-transform-shown);
   }
 
   // --- Dense ---
@@ -97,3 +108,5 @@
     font-size: 0.5625rem;
   }
 }
+
+

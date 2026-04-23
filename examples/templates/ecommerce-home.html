@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template — E-Commerce Home</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <style>
+    body { margin: 0; }
+    .promo-banner {
+      background: linear-gradient(135deg, var(--lk-primary), var(--lk-primary-dark));
+      color: var(--lk-primary-contrast);
+      text-align: center;
+      padding: var(--lk-space-2) var(--lk-space-4);
+      font-size: var(--lk-text-sm);
+    }
+    .category-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--lk-space-2);
+      padding: var(--lk-space-4);
+      border-radius: var(--lk-radius-lg);
+      background: var(--lk-surface);
+      text-align: center;
+      cursor: pointer;
+      transition: box-shadow var(--lk-duration-fast) var(--lk-easing-default);
+    }
+    .category-card:hover { box-shadow: var(--lk-shadow-md); }
+    .category-icon {
+      width: 3rem; height: 3rem;
+      border-radius: var(--lk-radius-full);
+      background: color-mix(in srgb, var(--lk-primary) 12%, transparent);
+      display: flex; align-items: center; justify-content: center;
+    }
+  </style>
+</head>
+<body class="lk-page">
+
+  <!-- Promo banner -->
+  <div class="promo-banner">Free shipping on orders over $50 — <strong>Shop Now</strong></div>
+
+  <!-- Navbar -->
+  <header class="lk-page__header">
+    <nav class="lk-bar lk-bar--sticky lk-bar--raised">
+      <div class="lk-bar__start">
+        <span class="lk-bar__title">ShopUI</span>
+      </div>
+      <div class="lk-bar__center lk-hidden-sm-down">
+        <a href="#" class="lk-btn lk-btn--ghost lk-btn--sm">New Arrivals</a>
+        <a href="#" class="lk-btn lk-btn--ghost lk-btn--sm">Men</a>
+        <a href="#" class="lk-btn lk-btn--ghost lk-btn--sm">Women</a>
+        <a href="#" class="lk-btn lk-btn--ghost lk-btn--sm">Sale</a>
+      </div>
+      <div class="lk-bar__end">
+        <button class="lk-btn lk-btn--ghost lk-btn--sm"><span class="lk-icon lk-icon--search" aria-hidden="true"></span></button>
+        <button class="lk-btn lk-btn--ghost lk-btn--sm"><span class="lk-icon lk-icon--user" aria-hidden="true"></span></button>
+        <button class="lk-btn lk-btn--ghost lk-btn--sm" style="position: relative;">
+          <span class="lk-icon lk-icon--shopping-cart" aria-hidden="true"></span>
+          <span class="lk-badge lk-badge--dot lk-badge--negative" style="position: absolute; top: 0.125rem; right: 0.125rem;"></span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section class="lk-hero lk-section--dark" style="min-height: 20rem;">
+    <h1 class="lk-hero__title">Summer Collection 2026</h1>
+    <p class="lk-hero__subtitle">Discover the latest trends in fashion. Up to 40% off selected items.</p>
+    <div class="lk-hero__actions">
+      <a href="ecommerce-product.html" class="lk-btn lk-btn--primary">Shop Now</a>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  <section class="lk-section lk-section--sm">
+    <div class="lk-container">
+      <h2 style="margin-bottom: var(--lk-space-4);">Shop by Category</h2>
+      <div class="lk-grid lk-grid--cols-2 lk-grid--cols-md-4 lk-grid--cols-lg-6">
+        <div class="category-card">
+          <div class="category-icon"><span class="lk-icon lk-icon--lg lk-icon--primary" style="mask-image:none;">T</span></div>
+          <span style="font-size: var(--lk-text-sm); font-weight: 500;">T-Shirts</span>
+        </div>
+        <div class="category-card">
+          <div class="category-icon"><span style="font-weight: 600; color: var(--lk-primary);">P</span></div>
+          <span style="font-size: var(--lk-text-sm); font-weight: 500;">Pants</span>
+        </div>
+        <div class="category-card">
+          <div class="category-icon"><span style="font-weight: 600; color: var(--lk-primary);">S</span></div>
+          <span style="font-size: var(--lk-text-sm); font-weight: 500;">Shoes</span>
+        </div>
+        <div class="category-card">
+          <div class="category-icon"><span style="font-weight: 600; color: var(--lk-primary);">A</span></div>
+          <span style="font-size: var(--lk-text-sm); font-weight: 500;">Accessories</span>
+        </div>
+        <div class="category-card">
+          <div class="category-icon"><span style="font-weight: 600; color: var(--lk-primary);">B</span></div>
+          <span style="font-size: var(--lk-text-sm); font-weight: 500;">Bags</span>
+        </div>
+        <div class="category-card">
+          <div class="category-icon"><span style="font-weight: 600; color: var(--lk-primary);">J</span></div>
+          <span style="font-size: var(--lk-text-sm); font-weight: 500;">Jackets</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Products -->
+  <section class="lk-section">
+    <div class="lk-container">
+      <div class="lk-flex lk-flex--justify-between lk-flex--align-center" style="margin-bottom: var(--lk-space-4);">
+        <h2>Featured Products</h2>
+        <a href="#" class="lk-btn lk-btn--ghost lk-btn--sm">View All</a>
+      </div>
+      <div class="lk-grid lk-grid--cols-2 lk-grid--cols-md-3 lk-grid--cols-lg-4">
+        <div class="lk-product-card">
+          <div class="lk-product-card__image"></div>
+          <div class="lk-product-card__body">
+            <div class="lk-product-card__title">Classic Cotton Tee</div>
+            <div class="lk-product-card__rating">4.5 (128 reviews)</div>
+            <div><span class="lk-product-card__price">$29.99</span></div>
+            <div class="lk-product-card__actions">
+              <button class="lk-btn lk-btn--primary lk-btn--sm" style="width: 100%;">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+        <div class="lk-product-card">
+          <div class="lk-product-card__image"></div>
+          <div class="lk-product-card__body">
+            <div class="lk-product-card__title">Slim Fit Chinos</div>
+            <div class="lk-product-card__rating">4.3 (85 reviews)</div>
+            <div><span class="lk-product-card__price">$49.99</span><span class="lk-product-card__old-price">$69.99</span></div>
+            <div class="lk-product-card__actions">
+              <button class="lk-btn lk-btn--primary lk-btn--sm" style="width: 100%;">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+        <div class="lk-product-card">
+          <div class="lk-product-card__image"></div>
+          <div class="lk-product-card__body">
+            <div class="lk-product-card__title">Leather Crossbody Bag</div>
+            <div class="lk-product-card__rating">4.8 (210 reviews)</div>
+            <div><span class="lk-product-card__price">$89.99</span></div>
+            <div class="lk-product-card__actions">
+              <button class="lk-btn lk-btn--primary lk-btn--sm" style="width: 100%;">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+        <div class="lk-product-card">
+          <div class="lk-product-card__image"></div>
+          <div class="lk-product-card__body">
+            <div class="lk-product-card__title">Running Sneakers</div>
+            <div class="lk-product-card__rating">4.6 (156 reviews)</div>
+            <div><span class="lk-product-card__price">$119.99</span></div>
+            <div class="lk-product-card__actions">
+              <button class="lk-btn lk-btn--primary lk-btn--sm" style="width: 100%;">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="lk-page__footer">
+    <div class="lk-container">
+      <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-4" style="gap: var(--lk-space-6);">
+        <div>
+          <strong>ShopUI</strong>
+          <p style="margin-top: var(--lk-space-2); font-size: var(--lk-text-sm); color: var(--lk-text-muted);">Your one-stop shop for quality fashion and accessories.</p>
+        </div>
+        <div>
+          <strong style="font-size: var(--lk-text-sm);">Shop</strong>
+          <ul class="lk-list" style="margin-top: var(--lk-space-2);">
+            <li class="lk-list__item" style="padding: var(--lk-space-1) 0; font-size: var(--lk-text-sm);">New Arrivals</li>
+            <li class="lk-list__item" style="padding: var(--lk-space-1) 0; font-size: var(--lk-text-sm);">Best Sellers</li>
+            <li class="lk-list__item" style="padding: var(--lk-space-1) 0; font-size: var(--lk-text-sm);">Sale</li>
+          </ul>
+        </div>
+        <div>
+          <strong style="font-size: var(--lk-text-sm);">Support</strong>
+          <ul class="lk-list" style="margin-top: var(--lk-space-2);">
+            <li class="lk-list__item" style="padding: var(--lk-space-1) 0; font-size: var(--lk-text-sm);">Contact Us</li>
+            <li class="lk-list__item" style="padding: var(--lk-space-1) 0; font-size: var(--lk-text-sm);">FAQ</li>
+            <li class="lk-list__item" style="padding: var(--lk-space-1) 0; font-size: var(--lk-text-sm);">Returns</li>
+          </ul>
+        </div>
+        <div>
+          <strong style="font-size: var(--lk-text-sm);">Newsletter</strong>
+          <div class="lk-flex lk-flex--gap-sm" style="margin-top: var(--lk-space-2);">
+            <input id="newsletter-email" placeholder="Email address" style="flex: 1;" />
+            <button id="btn-subscribe" class="lk-btn lk-btn--primary lk-btn--sm">Subscribe</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: var(--lk-space-6); text-align: center; border-top: var(--lk-border-width) solid var(--lk-border); padding-top: var(--lk-space-4);">
+        &copy; 2026 ShopUI. Built with LookUI.
+      </div>
+    </div>
+  </footer>
+
+<script src="../../dist/look.js"></script>
+<script>
+  // lkTextbox for newsletter
+  const newsletter = Look.lkTextbox('#newsletter-email');
+
+  // lkTooltip on cart icon
+  Look.lkTooltip(document.querySelector('.lk-bar__end .lk-btn:last-child'), { text: 'Shopping Cart', position: 'bottom' });
+
+  // Add to cart buttons → lkToast
+  document.querySelectorAll('.lk-product-card__actions .lk-btn').forEach(btn => {
+    const name = btn.closest('.lk-product-card__body').querySelector('.lk-product-card__title').textContent;
+    Look.lkButton(btn);
+    btn.addEventListener('click', () => {
+      Look.lkToast({ title: 'Added to cart', message: name, type: 'positive', duration: 2000 });
+    });
+  });
+
+  // Newsletter subscribe
+  document.getElementById('btn-subscribe').addEventListener('click', () => {
+    if (!newsletter.value.trim()) {
+      newsletter.setError('Enter your email');
+    } else {
+      newsletter.clearError();
+      Look.lkToast({ title: 'Subscribed!', message: 'You\'ll receive our updates.', type: 'info' });
+      newsletter.value = '';
+    }
+  });
+</script>
+</body>
+</html>

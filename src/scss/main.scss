@@ -26,6 +26,7 @@
 // 4. Layout
 @use 'layout/grid';
 @use 'layout/flex';
+@use 'layout/page';
 
 // 5. Components
 @use 'components/avatar';
@@ -37,6 +38,8 @@
 @use 'components/carousel';
 @use 'components/checkbox';
 @use 'components/chip';
+@use 'components/composable';
+@use 'components/date';
 @use 'components/icon';
 @use 'components/input';
 @use 'components/list';
@@ -60,3 +63,4 @@
 @use 'utilities/spacing';
 @use 'utilities/display';
 @use 'utilities/responsive';
+

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LookUI — List</title>
+  <title>LookUI - List</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
 </head>
@@ -13,37 +13,99 @@
   <div class="demo-container">
     <a href="index.html" class="demo-back">&larr; All Components</a>
     <h1 style="font-size: var(--lk-text-2xl);">List</h1>
-    <p style="opacity: 0.85;">.lk-list — items, clickable, active, dense</p>
+    <p style="opacity: 0.85;">Look.lkList(el, opts) - nested submenus with accordion show/hide, ideal for sidebars and menus.</p>
   </div>
 </header>
 
 <main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
 
   <section class="demo-section">
-    <p class="demo-sub">Bordered &amp; separated</p>
-    <div style="max-width:400px;">
-      <ul class="lk-list lk-list--bordered lk-list--separated" style="margin-bottom:var(--lk-space-5);">
-        <li class="lk-list-item lk-list-item--clickable">
-          <div class="lk-list-item__start"><div class="lk-avatar lk-avatar--sm">A</div></div>
-          <div class="lk-list-item__content">
-            <div class="lk-list-item__label">Alice</div>
-            <div class="lk-list-item__secondary">Online</div>
-          </div>
-          <div class="lk-list-item__end"><span class="lk-badge lk-badge--positive lk-badge--dot"></span></div>
-        </li>
-        <li class="lk-list-item lk-list-item--clickable lk-list-item--active">
-          <div class="lk-list-item__start"><div class="lk-avatar lk-avatar--sm lk-avatar--secondary">B</div></div>
-          <div class="lk-list-item__content">
-            <div class="lk-list-item__label">Bob (active)</div>
-            <div class="lk-list-item__secondary">Away</div>
-          </div>
-        </li>
-        <li class="lk-list-item lk-list-item--disabled">
-          <div class="lk-list-item__content"><div class="lk-list-item__label">Disabled item</div></div>
-        </li>
-      </ul>
+    <p class="demo-section__title">Sidebar-style nested accordion</p>
+    <div class="lk-grid lk-grid--cols-2" style="gap: var(--lk-space-5); align-items: start;">
+      <aside class="lk-card" style="max-width: 420px;">
+        <div class="lk-card__body" style="padding: 0;">
+          <ul id="demo-nav" class="lk-list lk-list--bordered lk-list--separated">
+            <li class="lk-list-header">Workspace</li>
 
-      <p class="demo-sub">Dense</p>
+            <li class="lk-list-item lk-list-item--clickable lk-list-item--active" data-route="dashboard">
+              <div class="lk-list-item__start"><span class="lk-icon lk-icon--dashboard" aria-hidden="true"></span></div>
+              <div class="lk-list-item__content">
+                <div class="lk-list-item__label">Dashboard</div>
+                <div class="lk-list-item__secondary">Overview</div>
+              </div>
+            </li>
+
+            <li class="lk-list-item">
+              <button class="lk-list-item__trigger" type="button" data-lk-submenu-trigger>
+                <div class="lk-list-item__start"><span class="lk-icon lk-icon--folder" aria-hidden="true"></span></div>
+                <div class="lk-list-item__content">
+                  <div class="lk-list-item__label">Projects</div>
+                  <div class="lk-list-item__secondary">Manage teams and tasks</div>
+                </div>
+              </button>
+              <ul class="lk-list-submenu">
+                <li class="lk-list-item lk-list-item--clickable" data-route="projects/all">
+                  <div class="lk-list-item__content"><div class="lk-list-item__label">All Projects</div></div>
+                </li>
+                <li class="lk-list-item lk-list-item--clickable" data-route="projects/active">
+                  <div class="lk-list-item__content"><div class="lk-list-item__label">Active</div></div>
+                </li>
+                <li class="lk-list-item">
+                  <button class="lk-list-item__trigger" type="button" data-lk-submenu-trigger>
+                    <div class="lk-list-item__content"><div class="lk-list-item__label">Archived</div></div>
+                  </button>
+                  <ul class="lk-list-submenu">
+                    <li class="lk-list-item lk-list-item--clickable" data-route="projects/archive/2025">
+                      <div class="lk-list-item__content"><div class="lk-list-item__label">2025</div></div>
+                    </li>
+                    <li class="lk-list-item lk-list-item--clickable" data-route="projects/archive/2024">
+                      <div class="lk-list-item__content"><div class="lk-list-item__label">2024</div></div>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+
+            <li class="lk-list-item">
+              <button class="lk-list-item__trigger" type="button" data-lk-submenu-trigger>
+                <div class="lk-list-item__start"><span class="lk-icon lk-icon--settings" aria-hidden="true"></span></div>
+                <div class="lk-list-item__content"><div class="lk-list-item__label">Settings</div></div>
+              </button>
+              <ul class="lk-list-submenu">
+                <li class="lk-list-item lk-list-item--clickable" data-route="settings/profile">
+                  <div class="lk-list-item__content"><div class="lk-list-item__label">Profile</div></div>
+                </li>
+                <li class="lk-list-item lk-list-item--clickable" data-route="settings/billing">
+                  <div class="lk-list-item__content"><div class="lk-list-item__label">Billing</div></div>
+                </li>
+              </ul>
+            </li>
+
+            <li class="lk-list-item lk-list-item--disabled">
+              <div class="lk-list-item__start"><span class="lk-icon lk-icon--lock" aria-hidden="true"></span></div>
+              <div class="lk-list-item__content"><div class="lk-list-item__label">Admin Area (disabled)</div></div>
+            </li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <p class="demo-sub">Interaction log</p>
+          <div id="list-output" class="demo-output">Ready</div>
+
+          <div style="display: flex; gap: var(--lk-space-2); margin-top: var(--lk-space-4); flex-wrap: wrap;">
+            <button id="open-projects" class="lk-btn lk-btn--secondary">Open "Projects"</button>
+            <button id="close-all" class="lk-btn lk-btn--ghost">Close all</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-sub">Dense mode</p>
+    <div style="max-width: 420px;">
       <ul class="lk-list lk-list--bordered lk-list--separated lk-list--dense">
         <li class="lk-list-item lk-list-item--clickable"><div class="lk-list-item__content"><div class="lk-list-item__label">Dense item 1</div></div></li>
         <li class="lk-list-item lk-list-item--clickable"><div class="lk-list-item__content"><div class="lk-list-item__label">Dense item 2</div></div></li>
@@ -52,19 +114,60 @@
   </section>
 
   <div class="demo-usage">
-    <p class="demo-usage__title">HTML</p>
-    <pre>&lt;ul class="lk-list lk-list--bordered lk-list--separated"&gt;
-  &lt;li class="lk-list-item lk-list-item--clickable"&gt;
-    &lt;div class="lk-list-item__start"&gt;…&lt;/div&gt;
-    &lt;div class="lk-list-item__content"&gt;
-      &lt;div class="lk-list-item__label"&gt;Label&lt;/div&gt;
-      &lt;div class="lk-list-item__secondary"&gt;Secondary&lt;/div&gt;
-    &lt;/div&gt;
-    &lt;div class="lk-list-item__end"&gt;…&lt;/div&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;</pre>
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const menu = Look.lkList('#demo-nav', {
+  accordion: true,
+  onToggle({ item, open }) {
+    console.log(item, open);
+  },
+});
+
+menu.open('.lk-list-item--branch');
+menu.closeAll();
+menu.destroy();</pre>
   </div>
 
 </main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const output = document.getElementById('list-output');
+  const nav = document.getElementById('demo-nav');
+
+  const list = Look.lkList('#demo-nav', {
+    accordion: true,
+    onToggle({ item, open, depth, origin }) {
+      const label = item.querySelector('.lk-list-item__label')?.textContent || 'branch';
+      output.textContent = `${label} -> ${open ? 'open' : 'closed'} (depth ${depth}, via ${origin})`;
+    },
+  });
+
+  const projectBranch = Array.from(nav.querySelectorAll('.lk-list-item')).find((item) => {
+    return item.querySelector(':scope > .lk-list-item__trigger .lk-list-item__label')?.textContent === 'Projects';
+  });
+
+  document.getElementById('open-projects').addEventListener('click', () => {
+    if (projectBranch) list.open(projectBranch);
+  });
+
+  document.getElementById('close-all').addEventListener('click', () => {
+    list.closeAll();
+    output.textContent = 'All branches collapsed';
+  });
+
+  nav.addEventListener('click', (e) => {
+    const leaf = e.target.closest('.lk-list-item--clickable');
+    if (!leaf || leaf.classList.contains('lk-list-item--branch')) return;
+
+    nav.querySelectorAll('.lk-list-item--active').forEach((el) => {
+      el.classList.remove('lk-list-item--active');
+    });
+
+    leaf.classList.add('lk-list-item--active');
+    output.textContent = `Selected route: ${leaf.dataset.route || 'n/a'}`;
+  });
+</script>
 </body>
 </html>
+
+

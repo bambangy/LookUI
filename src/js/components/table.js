@@ -3,12 +3,14 @@
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { qsa } from '../core/index.js';
 
+const SORT_ANIM_MS = 260;
+
 /**
  * Enhance a table with sorting behavior.
- * @param {Element|string} el — .lk-table element
+ * @param {Element|string} el - .lk-table element
  * @param {Object} [opts]
- * @param {boolean} [opts.sortable]  — enable column header click-to-sort (default true)
- * @param {Function} [opts.onSort]   — callback({ column, order })
+ * @param {boolean} [opts.sortable] - enable column header click-to-sort (default true)
+ * @param {Function} [opts.onSort] - callback({ column, order })
  * @returns {Object}
  */
 export function lkTable(el, opts = {}) {
@@ -16,17 +18,45 @@ export function lkTable(el, opts = {}) {
   node.classList.add('lk-table');
 
   const sortable = opts.sortable !== false;
-  let sortCol    = null;
-  let sortOrder  = 'asc';
+  let sortCol = null;
+  let sortOrder = 'asc';
+  let sortTimer = null;
 
   const headers = qsa('thead th', node);
-  const tbody   = node.querySelector('tbody');
+  const tbody = node.querySelector('tbody');
 
   function compareValues(a, b) {
     const numA = parseFloat(a);
     const numB = parseFloat(b);
-    if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+    if (!Number.isNaN(numA) && !Number.isNaN(numB)) return numA - numB;
     return String(a).localeCompare(String(b));
+  }
+
+  function clearSortMotion() {
+    if (sortTimer) {
+      clearTimeout(sortTimer);
+      sortTimer = null;
+    }
+
+    node.classList.remove('lk-table--sorting');
+    qsa('tbody tr', node).forEach((row) => {
+      row.classList.remove('lk-table__row--sorted');
+      row.style.removeProperty('--lk-sort-i');
+    });
+  }
+
+  function applySortMotion(rows) {
+    clearSortMotion();
+    node.classList.add('lk-table--sorting');
+
+    rows.forEach((row, idx) => {
+      row.style.setProperty('--lk-sort-i', String(idx));
+      row.classList.add('lk-table__row--sorted');
+    });
+
+    sortTimer = setTimeout(() => {
+      clearSortMotion();
+    }, SORT_ANIM_MS);
   }
 
   function sortByColumn(colIndex) {
@@ -38,6 +68,7 @@ export function lkTable(el, opts = {}) {
       sortCol = colIndex;
       sortOrder = 'asc';
     }
+
     const rows = Array.from(tbody.querySelectorAll('tr'));
 
     rows.sort((a, b) => {
@@ -47,7 +78,7 @@ export function lkTable(el, opts = {}) {
       return sortOrder === 'asc' ? result : -result;
     });
 
-    rows.forEach(row => tbody.appendChild(row));
+    rows.forEach((row) => tbody.appendChild(row));
 
     // Update header indicators
     headers.forEach((th, i) => {
@@ -56,6 +87,8 @@ export function lkTable(el, opts = {}) {
         th.setAttribute('aria-sort', sortOrder === 'asc' ? 'ascending' : 'descending');
       }
     });
+
+    applySortMotion(rows);
 
     if (opts.onSort) opts.onSort({ column: colIndex, order: sortOrder });
   }
@@ -69,7 +102,7 @@ export function lkTable(el, opts = {}) {
   }
 
   if (sortable) {
-    headers.forEach(th => {
+    headers.forEach((th) => {
       th.style.cursor = 'pointer';
       th.setAttribute('role', 'columnheader');
     });
@@ -92,8 +125,9 @@ export function lkTable(el, opts = {}) {
   });
 
   comp.destroy = function () {
+    clearSortMotion();
     node.querySelector('thead')?.removeEventListener('click', onHeaderClick);
-    headers.forEach(th => {
+    headers.forEach((th) => {
       th.style.cursor = '';
       th.removeAttribute('role');
       th.removeAttribute('aria-sort');

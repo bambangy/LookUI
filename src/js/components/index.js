@@ -65,7 +65,9 @@ export { lkSlider }     from './slider.js';
 export { lkTooltip }    from './tooltip.js';
 export { lkRating }     from './rating.js';
 export { lkChip }       from './chip.js';
+export { lkList }       from './list.js';
 export { lkPagination } from './pagination.js';
 export { lkProgress }   from './progress.js';
 export { lkSplitter }   from './splitter.js';
 export { lkTable }      from './table.js';
+

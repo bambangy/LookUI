@@ -11,7 +11,7 @@
 
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--lk-duration-base) var(--lk-easing-default);
+  transition: opacity var(--lk-duration-base) var(--lk-easing-out);
 }
 
 .lk-modal {
@@ -26,10 +26,11 @@
   overflow-y: auto;
   z-index: var(--lk-z-modal);
 
-  transform: translateY(var(--lk-space-4));
+  opacity: 0;
+  transform: translateY(var(--lk-space-6)) scale(0.94);
   transition:
-    transform var(--lk-duration-base) var(--lk-easing-default),
-    opacity   var(--lk-duration-base) var(--lk-easing-default);
+    transform var(--lk-duration-slow) var(--lk-easing-out),
+    opacity var(--lk-duration-base) var(--lk-easing-out);
 
   &__header {
     display: flex;
@@ -62,7 +63,7 @@
   }
 }
 
-// Open state — toggled by JS via .lk-modal--open
+// Open state - toggled by JS via .lk-modal--open
 .lk-modal--open {
   .lk-modal-overlay {
     opacity: 1;
@@ -70,7 +71,16 @@
   }
 
   .lk-modal {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
+
+// Closing state for composables
+.lk-modal--closing {
+  .lk-modal-overlay {
+    pointer-events: none;
+  }
+}
+
+

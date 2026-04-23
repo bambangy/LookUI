@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template — Checkout</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <style>body { margin: 0; }</style>
+</head>
+<body class="lk-page">
+
+  <header class="lk-page__header">
+    <nav class="lk-bar lk-bar--raised">
+      <div class="lk-bar__start">
+        <a href="ecommerce-cart.html" class="lk-btn lk-btn--ghost lk-btn--sm">
+          <span class="lk-icon lk-icon--arrow-left" aria-hidden="true"></span> Back to Cart
+        </a>
+      </div>
+      <div class="lk-bar__center"><span class="lk-bar__title">Checkout</span></div>
+      <div class="lk-bar__end">
+        <span class="lk-icon lk-icon--lock" style="color: var(--lk-text-muted);" aria-hidden="true"></span>
+        <span style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">Secure</span>
+      </div>
+    </nav>
+  </header>
+
+  <section class="lk-section">
+    <div class="lk-container">
+      <div class="lk-flex lk-flex--gap-lg lk-flex--col-md" style="align-items: flex-start;">
+
+        <!-- Form -->
+        <div style="flex: 2; min-width: 0;">
+          <!-- Shipping -->
+          <div class="lk-card" style="margin-bottom: var(--lk-space-4);">
+            <div class="lk-card__body">
+              <h3 style="margin-bottom: var(--lk-space-4);">
+                <span class="lk-icon lk-icon--home" aria-hidden="true"></span> Shipping Address
+              </h3>
+              <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2 lk-grid--gap-sm">
+                <div><input id="ship-first" placeholder="First Name" /></div>
+                <div><input id="ship-last" placeholder="Last Name" /></div>
+              </div>
+              <div style="margin-top: var(--lk-space-3);"><input id="ship-addr1" placeholder="Address Line 1" /></div>
+              <div style="margin-top: var(--lk-space-3);"><input id="ship-addr2" placeholder="Address Line 2 (Optional)" /></div>
+              <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3 lk-grid--gap-sm" style="margin-top: var(--lk-space-3);">
+                <div><input id="ship-city" placeholder="City" /></div>
+                <div><select id="ship-state"></select></div>
+                <div><input id="ship-zip" placeholder="ZIP Code" /></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment -->
+          <div class="lk-card">
+            <div class="lk-card__body">
+              <h3 style="margin-bottom: var(--lk-space-4);">
+                <span class="lk-icon lk-icon--lock" aria-hidden="true"></span> Payment
+              </h3>
+              <div style="margin-bottom: var(--lk-space-3);">
+                <input id="pay-card" placeholder="Card Number" />
+              </div>
+              <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3 lk-grid--gap-sm">
+                <div><input id="pay-expiry" placeholder="MM/YY" /></div>
+                <div><input id="pay-cvv" placeholder="CVV" /></div>
+                <div><input id="pay-zip" placeholder="ZIP" /></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order summary -->
+        <div style="flex: 1; min-width: 16rem;">
+          <div class="lk-order-summary" style="position: sticky; top: 5rem;">
+            <h3 style="margin-bottom: var(--lk-space-3);">Order Summary</h3>
+
+            <div class="lk-cart-item" style="padding: var(--lk-space-2) 0;">
+              <div class="lk-cart-item__image" style="width: 3rem; height: 3rem;"></div>
+              <div class="lk-cart-item__info">
+                <div class="lk-cart-item__name" style="font-size: var(--lk-text-sm);">Cotton Tee x2</div>
+              </div>
+              <div style="font-size: var(--lk-text-sm);">$59.98</div>
+            </div>
+            <div class="lk-cart-item" style="padding: var(--lk-space-2) 0;">
+              <div class="lk-cart-item__image" style="width: 3rem; height: 3rem;"></div>
+              <div class="lk-cart-item__info">
+                <div class="lk-cart-item__name" style="font-size: var(--lk-text-sm);">Chinos x1</div>
+              </div>
+              <div style="font-size: var(--lk-text-sm);">$49.99</div>
+            </div>
+            <div class="lk-cart-item" style="padding: var(--lk-space-2) 0; border-bottom: none;">
+              <div class="lk-cart-item__image" style="width: 3rem; height: 3rem;"></div>
+              <div class="lk-cart-item__info">
+                <div class="lk-cart-item__name" style="font-size: var(--lk-text-sm);">Belt x1</div>
+              </div>
+              <div style="font-size: var(--lk-text-sm);">$24.99</div>
+            </div>
+
+            <div class="lk-order-summary__row"><span>Subtotal</span><span>$134.96</span></div>
+            <div class="lk-order-summary__row"><span>Shipping</span><span>$5.99</span></div>
+            <div class="lk-order-summary__row"><span>Tax</span><span>$11.20</span></div>
+            <div class="lk-order-summary__total"><span>Total</span><span>$152.15</span></div>
+            <button id="btn-place-order" class="lk-btn lk-btn--primary" style="width: 100%; margin-top: var(--lk-space-3);">Place Order</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="lk-page__footer" style="text-align: center;">&copy; 2026 ShopUI. Built with LookUI.</footer>
+
+<script src="../../dist/look.js"></script>
+<script>
+  // lkTextbox for all form fields
+  const fields = {
+    first:  Look.lkTextbox('#ship-first',  { label: 'First Name', required: true }),
+    last:   Look.lkTextbox('#ship-last',   { label: 'Last Name', required: true }),
+    addr1:  Look.lkTextbox('#ship-addr1',  { label: 'Address', required: true }),
+    addr2:  Look.lkTextbox('#ship-addr2',  { label: 'Address 2' }),
+    city:   Look.lkTextbox('#ship-city',   { label: 'City', required: true }),
+    zip:    Look.lkTextbox('#ship-zip',    { label: 'ZIP', required: true }),
+    card:   Look.lkTextbox('#pay-card',    { label: 'Card Number', required: true }),
+    expiry: Look.lkTextbox('#pay-expiry',  { label: 'Expiry', required: true }),
+    cvv:    Look.lkTextbox('#pay-cvv',     { label: 'CVV', required: true }),
+    payZip: Look.lkTextbox('#pay-zip',     { label: 'Billing ZIP', required: true }),
+  };
+
+  // lkDropdown for state
+  const state = Look.lkDropdown('#ship-state', {
+    label: 'State',
+    items: [
+      { value: '', text: 'Select...' },
+      { value: 'CA', text: 'California' },
+      { value: 'NY', text: 'New York' },
+      { value: 'TX', text: 'Texas' },
+      { value: 'FL', text: 'Florida' },
+    ]
+  });
+
+  // Place order with validation + lkLoading + lkDialog
+  document.getElementById('btn-place-order').addEventListener('click', () => {
+    let valid = true;
+    const required = ['first','last','addr1','city','zip','card','expiry','cvv','payZip'];
+    required.forEach(k => {
+      if (!fields[k].value.trim()) { fields[k].setError('Required'); valid = false; }
+      else { fields[k].clearError(); }
+    });
+    if (!valid) return;
+
+    const loader = Look.lkLoading({ message: 'Processing order...' });
+    setTimeout(() => {
+      loader.hide();
+      Look.lkDialog({
+        title: 'Order Placed!',
+        message: 'Your order #1043 has been confirmed. You will receive a confirmation email shortly.',
+        confirmLabel: 'OK',
+      });
+    }, 1500);
+  });
+</script>
+
+</body>
+</html>

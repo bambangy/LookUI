@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template — Dashboard Settings</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <style>body { margin: 0; }</style>
+</head>
+<body class="lk-page">
+
+  <header class="lk-page__header">
+    <nav class="lk-bar lk-bar--dark lk-bar--sticky">
+      <div class="lk-bar__start"><span class="lk-bar__title">AdminPanel</span></div>
+      <div class="lk-bar__end">
+        <span class="lk-avatar lk-avatar--sm" style="background: var(--lk-primary);">AD</span>
+      </div>
+    </nav>
+  </header>
+
+  <div class="lk-layout">
+    <aside class="lk-layout__sidebar">
+      <ul class="lk-sidebar-nav">
+        <li class="lk-sidebar-nav__heading">Main</li>
+        <a href="dashboard-home.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--home" aria-hidden="true"></span> Dashboard</a>
+        <a href="dashboard-orders.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--file" aria-hidden="true"></span> Orders</a>
+        <a href="dashboard-products.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--shopping-cart" aria-hidden="true"></span> Products</a>
+        <a href="dashboard-sales.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--sort-asc" aria-hidden="true"></span> Sales</a>
+        <li class="lk-sidebar-nav__heading">System</li>
+        <a href="dashboard-settings.html" class="lk-sidebar-nav__item lk-sidebar-nav__item--active"><span class="lk-icon lk-icon--settings" aria-hidden="true"></span> Settings</a>
+      </ul>
+    </aside>
+
+    <main class="lk-layout__content">
+      <div class="lk-page-title">
+        <div class="lk-page-title__text">Settings</div>
+      </div>
+
+      <div style="padding: 0 var(--lk-space-4) var(--lk-space-4); max-width: 40rem;">
+
+        <!-- Profile -->
+        <div class="lk-card" style="margin-bottom: var(--lk-space-4);">
+          <div class="lk-card__body">
+            <h3 style="margin-bottom: var(--lk-space-4);"><span class="lk-icon lk-icon--user" aria-hidden="true"></span> Profile</h3>
+            <div class="lk-flex lk-flex--gap-md lk-flex--align-center" style="margin-bottom: var(--lk-space-4);">
+              <span class="lk-avatar lk-avatar--lg" style="background: var(--lk-primary); font-size: var(--lk-text-xl);">AD</span>
+              <div>
+                <div style="font-weight: 600;">Admin User</div>
+                <div style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">admin@example.com</div>
+              </div>
+            </div>
+            <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2 lk-grid--gap-sm">
+              <div><input id="set-first" value="Admin" /></div>
+              <div><input id="set-last" value="User" /></div>
+              <div style="grid-column: 1 / -1;"><input id="set-email" value="admin@example.com" type="email" /></div>
+            </div>
+            <div style="margin-top: var(--lk-space-4);">
+              <button id="btn-save-profile" class="lk-btn lk-btn--primary lk-btn--sm">Save Profile</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="lk-card" style="margin-bottom: var(--lk-space-4);">
+          <div class="lk-card__body">
+            <h3 style="margin-bottom: var(--lk-space-4);"><span class="lk-icon lk-icon--bell" aria-hidden="true"></span> Notifications</h3>
+            <div class="lk-flex lk-flex--justify-between lk-flex--align-center" style="padding: var(--lk-space-2) 0; border-bottom: var(--lk-border-width) solid var(--lk-border);">
+              <div>
+                <div style="font-weight: 500;">Email notifications</div>
+                <div style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">Receive order updates via email</div>
+              </div>
+              <label class="lk-switch"><input id="sw-email" type="checkbox" checked /><span class="lk-switch__track"></span></label>
+            </div>
+            <div class="lk-flex lk-flex--justify-between lk-flex--align-center" style="padding: var(--lk-space-2) 0; border-bottom: var(--lk-border-width) solid var(--lk-border);">
+              <div>
+                <div style="font-weight: 500;">Low stock alerts</div>
+                <div style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">Get notified when products run low</div>
+              </div>
+              <label class="lk-switch"><input id="sw-stock" type="checkbox" checked /><span class="lk-switch__track"></span></label>
+            </div>
+            <div class="lk-flex lk-flex--justify-between lk-flex--align-center" style="padding: var(--lk-space-2) 0;">
+              <div>
+                <div style="font-weight: 500;">Marketing emails</div>
+                <div style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">Receive tips and product updates</div>
+              </div>
+              <label class="lk-switch"><input id="sw-marketing" type="checkbox" /><span class="lk-switch__track"></span></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="lk-card" style="border-color: var(--lk-negative);">
+          <div class="lk-card__body">
+            <h3 style="margin-bottom: var(--lk-space-3); color: var(--lk-negative);">Danger Zone</h3>
+            <div class="lk-flex lk-flex--justify-between lk-flex--align-center">
+              <div>
+                <div style="font-weight: 500;">Delete Account</div>
+                <div style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">Permanently delete your account and all data</div>
+              </div>
+              <button id="btn-delete-account" class="lk-btn lk-btn--negative lk-btn--sm">Delete</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+<script src="../../dist/look.js"></script>
+<script>
+  // lkTextbox for profile fields
+  Look.lkTextbox('#set-first', { label: 'First Name', required: true });
+  Look.lkTextbox('#set-last',  { label: 'Last Name', required: true });
+  Look.lkTextbox('#set-email', { label: 'Email', required: true });
+
+  // lkSwitch for notification toggles
+  const swEmail     = Look.lkSwitch('#sw-email');
+  const swStock     = Look.lkSwitch('#sw-stock');
+  const swMarketing = Look.lkSwitch('#sw-marketing');
+
+  // Save profile → lkToast
+  document.getElementById('btn-save-profile').addEventListener('click', () => {
+    Look.lkToast({ title: 'Profile saved', message: 'Your changes have been saved.', type: 'positive', duration: 2000 });
+  });
+
+  // Switch change feedback → lkToast
+  [swEmail, swStock, swMarketing].forEach(sw => {
+    sw.el.addEventListener('change', () => {
+      const label = sw.el.closest('.lk-flex').querySelector('[style*="font-weight"]').textContent;
+      Look.lkToast({ message: `${label}: ${sw.value ? 'enabled' : 'disabled'}`, duration: 1500 });
+    });
+  });
+
+  // Delete account → lkDialog confirm
+  document.getElementById('btn-delete-account').addEventListener('click', () => {
+    Look.lkDialog({
+      title: 'Delete account?',
+      message: 'This action is permanent and cannot be undone. All your data will be lost.',
+      confirmLabel: 'Delete Forever',
+      cancelLabel: 'Cancel',
+      onConfirm() {
+        Look.lkToast({ title: 'Account deleted', message: 'Goodbye!', type: 'negative' });
+      }
+    });
+  });
+</script>
+</body>
+</html>

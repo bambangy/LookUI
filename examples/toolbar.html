@@ -13,56 +13,123 @@
   <div class="demo-container">
     <a href="index.html" class="demo-back">&larr; All Components</a>
     <h1 style="font-size: var(--lk-text-2xl);">Toolbar</h1>
-    <p style="opacity: 0.85;">.lk-toolbar — button groups, separators, dense</p>
+    <p style="opacity: 0.85;">.lk-toolbar — Office-style toolbar with icon/text buttons and groups</p>
   </div>
 </header>
 
 <main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
 
+  <!-- Text formatting toolbar -->
   <section class="demo-section">
-    <p class="demo-sub">Default toolbar</p>
-    <div style="margin-bottom:var(--lk-space-5);">
-      <div class="lk-toolbar">
-        <div class="lk-toolbar__group">
-          <button class="lk-btn lk-btn--ghost lk-btn--sm">B</button>
-          <button class="lk-btn lk-btn--ghost lk-btn--sm">I</button>
-          <button class="lk-btn lk-btn--ghost lk-btn--sm">U</button>
-        </div>
-        <div class="lk-toolbar__separator"></div>
-        <div class="lk-toolbar__group">
-          <button class="lk-btn lk-btn--ghost lk-btn--sm">L</button>
-          <button class="lk-btn lk-btn--ghost lk-btn--sm">C</button>
-          <button class="lk-btn lk-btn--ghost lk-btn--sm">R</button>
-        </div>
-        <div class="lk-toolbar__spacer"></div>
-        <button class="lk-btn lk-btn--primary lk-btn--sm">Save</button>
-      </div>
-    </div>
-
-    <p class="demo-sub">Dense</p>
-    <div class="lk-toolbar lk-toolbar--dense">
+    <p class="demo-section__title">Text Formatting (icon-only grouped)</p>
+    <div class="lk-toolbar">
       <div class="lk-toolbar__group">
-        <button class="lk-btn lk-btn--ghost lk-btn--dense">B</button>
-        <button class="lk-btn lk-btn--ghost lk-btn--dense">I</button>
+        <button class="lk-toolbar__btn lk-toolbar__btn--icon"><span class="lk-icon lk-icon--undo" aria-hidden="true"></span></button>
+        <button class="lk-toolbar__btn lk-toolbar__btn--icon"><span class="lk-icon lk-icon--redo" aria-hidden="true"></span></button>
       </div>
       <div class="lk-toolbar__separator"></div>
       <div class="lk-toolbar__group">
-        <button class="lk-btn lk-btn--ghost lk-btn--dense">L</button>
-        <button class="lk-btn lk-btn--ghost lk-btn--dense">R</button>
+        <button class="lk-toolbar__btn lk-toolbar__btn--icon lk-toolbar__btn--active"><span class="lk-icon lk-icon--edit" aria-hidden="true"></span></button>
+        <button class="lk-toolbar__btn lk-toolbar__btn--icon"><span class="lk-icon lk-icon--copy" aria-hidden="true"></span></button>
+        <button class="lk-toolbar__btn lk-toolbar__btn--icon"><span class="lk-icon lk-icon--delete" aria-hidden="true"></span></button>
       </div>
+      <div class="lk-toolbar__separator"></div>
+      <div class="lk-toolbar__group">
+        <button class="lk-toolbar__btn lk-toolbar__btn--icon"><span class="lk-icon lk-icon--sort-asc" aria-hidden="true"></span></button>
+        <button class="lk-toolbar__btn lk-toolbar__btn--icon"><span class="lk-icon lk-icon--sort-desc" aria-hidden="true"></span></button>
+        <button class="lk-toolbar__btn lk-toolbar__btn--icon"><span class="lk-icon lk-icon--filter" aria-hidden="true"></span></button>
+      </div>
+      <div class="lk-toolbar__spacer"></div>
+      <button class="lk-toolbar__btn"><span class="lk-icon lk-icon--save" aria-hidden="true"></span> <span class="lk-toolbar__btn-label">Save</span></button>
     </div>
   </section>
 
+  <!-- Mixed: icon+text, text-only, icon-only -->
+  <section class="demo-section">
+    <p class="demo-section__title">Mixed Buttons (icon+text, text-only, icon-only)</p>
+    <div class="lk-toolbar">
+      <button class="lk-toolbar__btn"><span class="lk-icon lk-icon--plus" aria-hidden="true"></span> <span class="lk-toolbar__btn-label">New</span></button>
+      <button class="lk-toolbar__btn"><span class="lk-icon lk-icon--upload" aria-hidden="true"></span> <span class="lk-toolbar__btn-label">Import</span></button>
+      <button class="lk-toolbar__btn"><span class="lk-icon lk-icon--download" aria-hidden="true"></span> <span class="lk-toolbar__btn-label">Export</span></button>
+      <div class="lk-toolbar__separator"></div>
+      <button class="lk-toolbar__btn">Preview</button>
+      <button class="lk-toolbar__btn">Publish</button>
+      <div class="lk-toolbar__separator"></div>
+      <button class="lk-toolbar__btn lk-toolbar__btn--icon"><span class="lk-icon lk-icon--settings" aria-hidden="true"></span></button>
+      <button class="lk-toolbar__btn lk-toolbar__btn--icon"><span class="lk-icon lk-icon--more-horizontal" aria-hidden="true"></span></button>
+    </div>
+  </section>
+
+  <!-- With dropdown caret and disabled -->
+  <section class="demo-section">
+    <p class="demo-section__title">Dropdown Caret &amp; Disabled</p>
+    <div class="lk-toolbar">
+      <button class="lk-toolbar__btn lk-toolbar__btn--has-dropdown">File</button>
+      <button class="lk-toolbar__btn lk-toolbar__btn--has-dropdown">Edit</button>
+      <button class="lk-toolbar__btn lk-toolbar__btn--has-dropdown">View</button>
+      <div class="lk-toolbar__separator"></div>
+      <button class="lk-toolbar__btn" disabled><span class="lk-icon lk-icon--lock" aria-hidden="true"></span> <span class="lk-toolbar__btn-label">Locked</span></button>
+      <button class="lk-toolbar__btn lk-toolbar__btn--icon" disabled><span class="lk-icon lk-icon--delete" aria-hidden="true"></span></button>
+    </div>
+  </section>
+
+  <!-- Dense -->
+  <section class="demo-section">
+    <p class="demo-section__title">Dense</p>
+    <div class="lk-toolbar lk-toolbar--dense">
+      <div class="lk-toolbar__group">
+        <button class="lk-toolbar__btn lk-toolbar__btn--icon"><span class="lk-icon lk-icon--undo" aria-hidden="true"></span></button>
+        <button class="lk-toolbar__btn lk-toolbar__btn--icon"><span class="lk-icon lk-icon--redo" aria-hidden="true"></span></button>
+      </div>
+      <div class="lk-toolbar__separator"></div>
+      <button class="lk-toolbar__btn">Cut</button>
+      <button class="lk-toolbar__btn">Copy</button>
+      <button class="lk-toolbar__btn">Paste</button>
+    </div>
+  </section>
+
+  <!-- Flat variant -->
+  <section class="demo-section">
+    <p class="demo-section__title">Flat (no border/bg)</p>
+    <div class="lk-toolbar lk-toolbar--flat">
+      <button class="lk-toolbar__btn lk-toolbar__btn--icon"><span class="lk-icon lk-icon--chevron-left" aria-hidden="true"></span></button>
+      <button class="lk-toolbar__btn lk-toolbar__btn--icon"><span class="lk-icon lk-icon--chevron-right" aria-hidden="true"></span></button>
+      <div class="lk-toolbar__separator"></div>
+      <button class="lk-toolbar__btn"><span class="lk-icon lk-icon--refresh" aria-hidden="true"></span> <span class="lk-toolbar__btn-label">Refresh</span></button>
+      <div class="lk-toolbar__spacer"></div>
+      <button class="lk-toolbar__btn lk-toolbar__btn--icon"><span class="lk-icon lk-icon--search" aria-hidden="true"></span></button>
+    </div>
+  </section>
+
+  <!-- Usage -->
   <div class="demo-usage">
     <p class="demo-usage__title">HTML</p>
     <pre>&lt;div class="lk-toolbar"&gt;
+  &lt;!-- Grouped icon-only buttons --&gt;
   &lt;div class="lk-toolbar__group"&gt;
-    &lt;button class="lk-btn lk-btn--ghost lk-btn--sm"&gt;B&lt;/button&gt;
-    &lt;button class="lk-btn lk-btn--ghost lk-btn--sm"&gt;I&lt;/button&gt;
+    &lt;button class="lk-toolbar__btn lk-toolbar__btn--icon"&gt;
+      &lt;span class="lk-icon lk-icon--undo"&gt;&lt;/span&gt;
+    &lt;/button&gt;
+    &lt;button class="lk-toolbar__btn lk-toolbar__btn--icon lk-toolbar__btn--active"&gt;
+      &lt;span class="lk-icon lk-icon--redo"&gt;&lt;/span&gt;
+    &lt;/button&gt;
   &lt;/div&gt;
+
   &lt;div class="lk-toolbar__separator"&gt;&lt;/div&gt;
+
+  &lt;!-- Icon + text button --&gt;
+  &lt;button class="lk-toolbar__btn"&gt;
+    &lt;span class="lk-icon lk-icon--save"&gt;&lt;/span&gt;
+    &lt;span class="lk-toolbar__btn-label"&gt;Save&lt;/span&gt;
+  &lt;/button&gt;
+
+  &lt;!-- Text-only button --&gt;
+  &lt;button class="lk-toolbar__btn"&gt;Preview&lt;/button&gt;
+
+  &lt;!-- Dropdown caret --&gt;
+  &lt;button class="lk-toolbar__btn lk-toolbar__btn--has-dropdown"&gt;File&lt;/button&gt;
+
   &lt;div class="lk-toolbar__spacer"&gt;&lt;/div&gt;
-  &lt;button class="lk-btn lk-btn--primary lk-btn--sm"&gt;Save&lt;/button&gt;
 &lt;/div&gt;</pre>
   </div>
 

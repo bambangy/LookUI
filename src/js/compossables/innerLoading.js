@@ -1,3 +1,7 @@
+import { createPresenceController } from '../helpers/motion.js';
+
+const EXIT_MS = 360;
+
 function resolveTarget(target) {
   if (!target) throw new Error('Look.lkInnerLoading: target is required.');
   const node = typeof target === 'string' ? document.querySelector(target) : target;
@@ -88,15 +92,25 @@ export function lkInnerLoading(target, opts = {}) {
 
   node.appendChild(overlay);
 
+  const presence = createPresenceController({
+    element: overlay,
+    visibleClass: 'lk-inner-loading--open',
+    closingClass: '',
+    exitMs: EXIT_MS,
+    hideWithHiddenAttr: true,
+  });
+
   function show() {
     if (destroyed || visible) return;
-    overlay.hidden = false;
+
+    presence.show();
     visible = true;
   }
 
   function hide() {
     if (destroyed || !visible) return;
-    overlay.hidden = true;
+
+    presence.hide();
     visible = false;
   }
 
@@ -120,9 +134,11 @@ export function lkInnerLoading(target, opts = {}) {
 
   function destroy() {
     if (destroyed) return;
-    destroyed = true;
 
     hide();
+    destroyed = true;
+    presence.destroy();
+
     if (overlay.parentNode) {
       overlay.parentNode.removeChild(overlay);
     }
@@ -145,3 +161,5 @@ export function lkInnerLoading(target, opts = {}) {
     },
   };
 }
+
+

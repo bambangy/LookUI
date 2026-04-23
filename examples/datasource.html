@@ -1,128 +1,592 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LookUI - DataSource</title>
-  <link rel="stylesheet" href="../dist/look.css" />
-  <link rel="stylesheet" href="shared.css" />
-</head>
-<body>
-<header class="demo-header">
-  <div class="demo-container">
-    <a href="index.html" class="demo-back">&larr; All Components</a>
-    <h1 style="font-size: var(--lk-text-2xl);">DataSource</h1>
-    <p style="opacity: 0.85;">Look.lkDataSource(opts) - reactive data source with filter, sort, paging, and CRUD</p>
-  </div>
-</header>
-
-<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
-  <section class="demo-section">
-    <p class="demo-section__title">Live Demo</p>
-
-    <div class="demo-row">
-      <button id="ds-add" class="lk-btn lk-btn--primary">Add Record</button>
-      <button id="ds-remove" class="lk-btn lk-btn--warning">Remove First</button>
-      <button id="ds-filter" class="lk-btn lk-btn--secondary">Filter Active</button>
-      <button id="ds-clear-filter" class="lk-btn lk-btn--ghost">Clear Filter</button>
-      <button id="ds-sort" class="lk-btn lk-btn--info">Sort Age Desc</button>
-      <button id="ds-clear-sort" class="lk-btn lk-btn--ghost">Clear Sort</button>
-    </div>
-
-    <div class="demo-row">
-      <button id="ds-prev" class="lk-btn lk-btn--secondary">Prev</button>
-      <button id="ds-next" class="lk-btn lk-btn--secondary">Next</button>
-      <span id="ds-page" style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);"></span>
-    </div>
-
-    <div class="lk-card">
-      <div class="lk-card__body">
-        <table class="lk-table" style="width: 100%;">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Age</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="ds-body"></tbody>
-        </table>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LookUI - DataSource</title>
+    <link rel="stylesheet" href="../dist/look.css" />
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body>
+    <header class="demo-header">
+      <div class="demo-container">
+        <a href="index.html" class="demo-back">&larr; All Components</a>
+        <h1 style="font-size: var(--lk-text-2xl)">DataSource</h1>
+        <p style="opacity: 0.85">
+          Look.lkDataSource(opts) — reactive data with filter, sort, paging
+          &amp; CRUD, integrated with lkTextbox, lkTable and lkPagination
+        </p>
       </div>
-    </div>
+    </header>
 
-    <div id="ds-output" class="demo-output">Ready</div>
-  </section>
+    <main
+      class="demo-container"
+      style="padding: var(--lk-space-9) var(--lk-space-4)"
+    >
+      <!-- ================================================================== -->
+      <!-- Section 1: Full integrated demo                                     -->
+      <!-- ================================================================== -->
+      <section class="demo-section">
+        <p class="demo-section__title">
+          Integrated Demo — Search + Table + Pagination
+        </p>
 
-  <div class="demo-usage">
-    <p class="demo-usage__title">JavaScript</p>
-    <pre>const ds = Look.lkDataSource({
-  keyField: 'id',
-  data: [...],
-  pageSize: 4,
+        <!-- Toolbar: search + add -->
+        <div
+          style="
+            display: flex;
+            gap: var(--lk-space-3);
+            align-items: flex-end;
+            margin-bottom: var(--lk-space-4);
+            flex-wrap: wrap;
+          "
+        >
+          <div style="flex: 1; min-width: 200px">
+            <input
+              id="search-input"
+              type="text"
+              placeholder="Search by name or email..."
+            />
+          </div>
+          <select id="status-filter">
+            <option value="">All statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="pending">Pending</option>
+          </select>
+          <button id="btn-add" class="lk-btn lk-btn--primary">
+            <span class="lk-icon lk-icon--plus" aria-hidden="true"></span> Add
+            Employee
+          </button>
+        </div>
+
+        <!-- Table -->
+        <div class="lk-card">
+          <div class="lk-card__body" style="padding: 0">
+            <table id="ds-table" class="lk-table" style="width: 100%">
+              <thead>
+                <tr>
+                  <th data-field="id" style="width: 60px">ID</th>
+                  <th data-field="name">Name</th>
+                  <th data-field="email">Email</th>
+                  <th data-field="department">Department</th>
+                  <th data-field="salary">Salary</th>
+                  <th data-field="status">Status</th>
+                  <th style="width: 100px">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ds-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pagination + info -->
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--lk-space-3);
+            flex-wrap: wrap;
+            gap: var(--lk-space-2);
+          "
+        >
+          <span
+            id="ds-info"
+            style="font-size: var(--lk-text-sm); color: var(--lk-text-muted)"
+          ></span>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: var(--lk-space-2);
+              white-space: nowrap;
+            "
+          >
+            <span
+              style="font-size: var(--lk-text-sm); color: var(--lk-text-muted)"
+              >Per page</span
+            >
+            <select id="page-size"></select>
+            <ul id="ds-pagination"></ul>
+          </div>
+        </div>
+
+        <div id="ds-output" class="demo-output"></div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- Section 2: API reference                                           -->
+      <!-- ================================================================== -->
+      <section class="demo-section">
+        <p class="demo-section__title">API Quick Reference</p>
+        <div class="demo-usage">
+          <p class="demo-usage__title">Creating a DataSource</p>
+          <pre>
+const ds = Look.lkDataSource({
+  keyField: 'id',             // unique key per record
+  data: [...],                // initial data array
+  pageSize: 5,                // rows per page
+  page: 1,                    // starting page
+  filter: null,               // initial filter (see below)
+  sort: null,                 // initial sort (see below)
+});</pre
+          >
+
+          <p class="demo-usage__title" style="margin-top: var(--lk-space-4)">
+            Filtering
+          </p>
+          <pre>
+// Object filter — field rules
+ds.setFilter({ status: 'active' });
+ds.setFilter({ age: { gte: 18, lt: 65 } });
+ds.setFilter({ name: { contains: 'ada' } });
+ds.setFilter({ role: { in: ['admin', 'editor'] } });
+
+// Function filter — full control
+ds.setFilter((item) => item.salary > 50000);
+
+// Combine multiple field rules
+ds.setFilter({
+  status: 'active',
+  department: { in: ['Engineering', 'Design'] },
+  name: { contains: searchText },
 });
 
-ds.setFilter({ active: true });
-ds.setSort({ field: 'age', dir: 'desc' });
-await ds.add({ id: 8, name: 'Nina' });</pre>
-  </div>
-</main>
+// Clear filter
+ds.clearFilter();</pre
+          >
 
-<script src="../dist/look.js"></script>
-<script>
-  const initial = [
-    { id: 1, name: 'Ada', age: 32, active: true },
-    { id: 2, name: 'Bram', age: 25, active: false },
-    { id: 3, name: 'Clio', age: 29, active: true },
-    { id: 4, name: 'Dax', age: 41, active: true },
-    { id: 5, name: 'Ena', age: 22, active: false },
-    { id: 6, name: 'Faro', age: 35, active: true },
-    { id: 7, name: 'Gia', age: 27, active: false },
-  ];
+          <p class="demo-usage__title" style="margin-top: var(--lk-space-4)">
+            Sorting
+          </p>
+          <pre>
+// Single field sort
+ds.setSort({ field: 'name', dir: 'asc' });
+ds.setSort({ field: 'salary', dir: 'desc' });
 
-  const ds = Look.lkDataSource({
-    keyField: 'id',
-    data: initial,
-    pageSize: 4,
-  });
+// Multi-field sort
+ds.setSort([
+  { field: 'department', dir: 'asc' },
+  { field: 'salary', dir: 'desc' },
+]);
 
-  const body = document.getElementById('ds-body');
-  const output = document.getElementById('ds-output');
-  const pageLabel = document.getElementById('ds-page');
+// Custom comparer
+ds.setSort({ comparer: (a, b) => a.name.localeCompare(b.name) });
 
-  function render(state) {
-    body.innerHTML = '';
+// Clear sort
+ds.clearSort();</pre
+          >
 
-    state.view.forEach((item) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${item.id}</td><td>${item.name}</td><td>${item.age}</td><td>${item.active ? 'Active' : 'Inactive'}</td>`;
-      body.appendChild(tr);
-    });
+          <p class="demo-usage__title" style="margin-top: var(--lk-space-4)">
+            Paging
+          </p>
+          <pre>
+ds.setPage(2);
+ds.setPageSize(25);
+ds.page;          // current page (1-based)
+ds.totalPages;    // computed total pages
+ds.total;         // total filtered count</pre
+          >
 
-    pageLabel.textContent = `Page ${state.page} / ${state.totalPages} (Total ${state.total})`;
-  }
+          <p class="demo-usage__title" style="margin-top: var(--lk-space-4)">
+            CRUD Operations
+          </p>
+          <pre>
+// Add
+await ds.add({ id: 99, name: 'New User' }, { sync: false });
 
-  ds.subscribe((state, evt) => {
-    render(state);
-    if (evt.reason !== 'init') output.textContent = `Changed: ${evt.reason}`;
-  });
+// Update by ID or predicate
+await ds.update(5, { name: 'Updated Name' }, { sync: false });
+await ds.update(item => item.email === 'x@y.com', { status: 'active' });
 
-  document.getElementById('ds-add').addEventListener('click', async () => {
-    const id = Math.max(...ds.items.map((x) => x.id)) + 1;
-    await ds.add({ id, name: `User ${id}`, age: 20 + (id % 20), active: id % 2 === 0 }, { sync: false });
-  });
+// Remove by ID
+await ds.remove(5, { sync: false });
 
-  document.getElementById('ds-remove').addEventListener('click', async () => {
-    if (!ds.items.length) return;
-    await ds.remove(ds.items[0].id, { sync: false });
-  });
+// Replace all data
+ds.set([...newData]);
 
-  document.getElementById('ds-filter').addEventListener('click', () => ds.setFilter({ active: true }));
-  document.getElementById('ds-clear-filter').addEventListener('click', () => ds.clearFilter());
-  document.getElementById('ds-sort').addEventListener('click', () => ds.setSort({ field: 'age', dir: 'desc' }));
-  document.getElementById('ds-clear-sort').addEventListener('click', () => ds.clearSort());
-  document.getElementById('ds-prev').addEventListener('click', () => ds.setPage(Math.max(1, ds.page - 1)));
-  document.getElementById('ds-next').addEventListener('click', () => ds.setPage(Math.min(ds.totalPages, ds.page + 1)));
-</script>
-</body>
+// Clear all
+ds.clear();</pre
+          >
+
+          <p class="demo-usage__title" style="margin-top: var(--lk-space-4)">
+            Subscribing to Changes
+          </p>
+          <pre>
+// Subscribe — fires on every change, immediate by default
+const unsub = ds.subscribe((state, evt) => {
+  console.log(evt.reason);     // 'filter', 'sort', 'page', 'add', 'remove', etc.
+  console.log(state.view);     // current page of visible rows
+  console.log(state.total);    // total filtered count
+  console.log(state.totalPages);
+});
+
+// Granular events
+ds.on('add', ({ record }) => console.log('Added:', record));
+ds.on('remove', ({ record }) => console.log('Removed:', record));
+ds.on('filter', ({ filter }) => console.log('Filter changed'));
+ds.on('sort', ({ sort }) => console.log('Sort changed'));
+
+// Batch multiple changes (single event)
+ds.batch(() => {
+  ds.setFilter({ status: 'active' });
+  ds.setSort({ field: 'name', dir: 'asc' });
+  ds.setPage(1);
+});
+
+// Unsubscribe
+unsub();</pre
+          >
+
+          <p class="demo-usage__title" style="margin-top: var(--lk-space-4)">
+            Remote Transport (optional)
+          </p>
+          <pre>
+const ds = Look.lkDataSource({
+  keyField: 'id',
+  autoLoad: true,
+  transport: {
+    read:   { url: '/api/users', method: 'GET' },
+    create: { url: '/api/users', method: 'POST' },
+    update: { url: '/api/users/{id}', method: 'PUT' },
+    delete: { url: '/api/users/{id}', method: 'DELETE' },
+  },
+  server: {
+    filter: true,    // send filter to server
+    sort: true,      // send sort to server
+    paging: true,    // send page/pageSize to server
+  },
+  request: {
+    headers: { Authorization: 'Bearer token' },
+  },
+  hooks: {
+    onError: ({ error }) => console.error(error),
+  },
+});
+
+// Or use a function transport
+const ds2 = Look.lkDataSource({
+  transport: {
+    read: async (params) => {
+      const res = await fetch(`/api?page=${params.page}`);
+      return res.json(); // { items: [...], total: 100 }
+    },
+  },
+});</pre
+          >
+
+          <p class="demo-usage__title" style="margin-top: var(--lk-space-4)">
+            Lookup Helpers
+          </p>
+          <pre>
+ds.getById(5);                        // find record by key
+ds.find(item => item.name === 'Ada'); // find first match
+ds.items;                             // all raw (unfiltered) items
+ds.view;                              // current page slice
+ds.toJSON();                          // full snapshot</pre
+          >
+        </div>
+      </section>
+    </main>
+
+    <script src="../dist/look.js"></script>
+    <script>
+      // ========================================================================
+      // Sample data
+      // ========================================================================
+      const DEPARTMENTS = [
+        "Engineering",
+        "Design",
+        "Marketing",
+        "Sales",
+        "HR",
+        "Finance",
+      ];
+      const STATUSES = ["active", "inactive", "pending"];
+      const NAMES = [
+        "Ada Lovelace",
+        "Bram Stoker",
+        "Clio Barnard",
+        "Dax Shepard",
+        "Ena Sharples",
+        "Faro Caudana",
+        "Gia Carangi",
+        "Hugo Weaving",
+        "Iris Murdoch",
+        "Jax Teller",
+        "Kira Nerys",
+        "Lena Headey",
+        "Max Planck",
+        "Nia Long",
+        "Omar Sharif",
+        "Pia Wurtzbach",
+        "Quinn Hughes",
+        "Rex Harrison",
+        "Sky Ferreira",
+        "Tao Lin",
+        "Uma Thurman",
+        "Vic Fuentes",
+        "Wes Anderson",
+        "Xia Junsu",
+        "Yara Shahidi",
+      ];
+
+      const employees = NAMES.map((name, i) => ({
+        id: i + 1,
+        name,
+        email: name.toLowerCase().replace(/\s+/g, ".") + "@example.com",
+        department: DEPARTMENTS[i % DEPARTMENTS.length],
+        salary: 40000 + Math.round(Math.random() * 80000),
+        status: STATUSES[i % STATUSES.length],
+      }));
+
+      // ========================================================================
+      // DataSource
+      // ========================================================================
+      const ds = Look.lkDataSource({
+        keyField: "id",
+        data: employees,
+        pageSize: 5,
+      });
+
+      // ========================================================================
+      // Components
+      // ========================================================================
+      const searchBox = Look.lkTextbox("#search-input", { label: "Search" });
+      const statusFilter = Look.lkDropdown("#status-filter", {
+        label: "Status",
+      });
+      const pagination = Look.lkPagination("#ds-pagination", {
+        totalPages: ds.totalPages,
+        page: ds.page,
+        onPageChange(p) {
+          ds.setPage(p);
+        },
+      });
+
+      // ========================================================================
+      // Rendering
+      // ========================================================================
+      const body = document.getElementById("ds-body");
+      const info = document.getElementById("ds-info");
+      const output = document.getElementById("ds-output");
+
+      function statusBadge(status) {
+        const colors = {
+          active: "lk-badge--positive",
+          inactive: "lk-badge--secondary",
+          pending: "lk-badge--warning",
+        };
+        return `<span class="lk-badge ${colors[status] || ""}">${status}</span>`;
+      }
+
+      function renderTable(state) {
+        body.innerHTML = "";
+
+        if (state.view.length === 0) {
+          const tr = document.createElement("tr");
+          tr.innerHTML =
+            '<td colspan="7" style="text-align:center; color:var(--lk-text-muted); padding: var(--lk-space-6);">No records found</td>';
+          body.appendChild(tr);
+          return;
+        }
+
+        state.view.forEach((item) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML =
+            `<td>${item.id}</td>` +
+            `<td><strong>${item.name}</strong></td>` +
+            `<td style="color: var(--lk-text-muted);">${item.email}</td>` +
+            `<td>${item.department}</td>` +
+            `<td>$${item.salary.toLocaleString()}</td>` +
+            `<td>${statusBadge(item.status)}</td>` +
+            `<td>
+          <button class="lk-btn lk-btn--ghost lk-btn--sm act-edit" data-id="${item.id}" title="Edit salary">
+            <span class="lk-icon lk-icon--edit" aria-hidden="true"></span>
+          </button>
+          <button class="lk-btn lk-btn--ghost lk-btn--sm act-del" data-id="${item.id}" title="Delete">
+            <span class="lk-icon lk-icon--delete lk-icon--negative" aria-hidden="true"></span>
+          </button>
+        </td>`;
+          body.appendChild(tr);
+        });
+      }
+
+      function updateInfo(state) {
+        const from =
+          state.total === 0 ? 0 : (state.page - 1) * state.pageSize + 1;
+        const to = Math.min(state.page * state.pageSize, state.total);
+        info.textContent = `Showing ${from}–${to} of ${state.total} records`;
+      }
+
+      // ========================================================================
+      // Subscribe — single render loop
+      // ========================================================================
+      ds.subscribe((state, evt) => {
+        renderTable(state);
+        updateInfo(state);
+        pagination.totalPages = state.totalPages;
+        pagination.page = state.page;
+        if (evt.reason !== "init") {
+          output.textContent = `Event: ${evt.reason}`;
+        }
+      });
+
+      // ========================================================================
+      // Search input — debounced filter
+      // ========================================================================
+      let searchTimer = null;
+      document.getElementById("search-input").addEventListener("input", (e) => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          applyFilters();
+        }, 250);
+      });
+
+      // ========================================================================
+      // Status dropdown filter
+      // ========================================================================
+      document
+        .getElementById("status-filter")
+        .addEventListener("change", () => {
+          applyFilters();
+        });
+
+      function applyFilters() {
+        const text = searchBox.value.trim().toLowerCase();
+        const status = document.getElementById("status-filter").value;
+
+        if (!text && !status) {
+          ds.clearFilter();
+          return;
+        }
+
+        ds.setFilter((item) => {
+          if (text) {
+            const match =
+              item.name.toLowerCase().includes(text) ||
+              item.email.toLowerCase().includes(text);
+            if (!match) return false;
+          }
+          if (status && item.status !== status) return false;
+          return true;
+        });
+      }
+
+      // ========================================================================
+      // Column header sort
+      // ========================================================================
+      document
+        .getElementById("ds-table")
+        .querySelector("thead")
+        .addEventListener("click", (e) => {
+          const th = e.target.closest("th[data-field]");
+          if (!th) return;
+          const field = th.dataset.field;
+
+          // Toggle sort direction
+          const current = ds.sort;
+          const isArray = Array.isArray(current);
+          const desc =
+            !isArray &&
+            current &&
+            current.field === field &&
+            current.dir === "asc";
+
+          ds.setSort({ field, dir: desc ? "desc" : "asc" });
+
+          // Update sort indicators on headers
+          document.querySelectorAll("#ds-table th[data-field]").forEach((h) => {
+            h.style.cursor = "pointer";
+            // Remove old indicators
+            const old = h.querySelector(".sort-arrow");
+            if (old) old.remove();
+          });
+
+          const arrow = document.createElement("span");
+          arrow.className = "sort-arrow";
+          arrow.style.marginLeft = "4px";
+          arrow.style.fontSize = "var(--lk-text-xs)";
+          arrow.textContent = desc ? " \u25BC" : " \u25B2";
+          th.appendChild(arrow);
+        });
+
+      // Make headers look clickable
+      document.querySelectorAll("#ds-table th[data-field]").forEach((h) => {
+        h.style.cursor = "pointer";
+      });
+
+      // ========================================================================
+      // Page size selector
+      // ========================================================================
+      const pageSizeDropdown = Look.lkDropdown("#page-size", {
+        items: [
+          { value: "5", text: "5", selected: true },
+          { value: "10", text: "10" },
+          { value: "25", text: "25" },
+        ],
+      });
+      pageSizeDropdown.el.addEventListener("change", (e) => {
+        ds.setPageSize(Number(e.target.value));
+      });
+
+      // ========================================================================
+      // Add employee
+      // ========================================================================
+      let nextId = employees.length + 1;
+      document.getElementById("btn-add").addEventListener("click", async () => {
+        const id = nextId++;
+        const name = "Employee " + id;
+        await ds.add(
+          {
+            id,
+            name,
+            email: name.toLowerCase().replace(/\s+/g, ".") + "@example.com",
+            department: DEPARTMENTS[id % DEPARTMENTS.length],
+            salary: 40000 + Math.round(Math.random() * 80000),
+            status: STATUSES[id % STATUSES.length],
+          },
+          { sync: false },
+        );
+
+        // Jump to last page to see the new record
+        ds.setPage(ds.totalPages);
+        output.textContent = `Added: ${name}`;
+      });
+
+      // ========================================================================
+      // Row actions — edit / delete (delegated)
+      // ========================================================================
+      body.addEventListener("click", async (e) => {
+        const editBtn = e.target.closest(".act-edit");
+        if (editBtn) {
+          const id = Number(editBtn.dataset.id);
+          const item = ds.getById(id);
+          if (!item) return;
+          const newSalary = prompt(
+            `Edit salary for ${item.name}:`,
+            item.salary,
+          );
+          if (newSalary == null) return;
+          await ds.update(
+            id,
+            { salary: Number(newSalary) || item.salary },
+            { sync: false },
+          );
+          output.textContent = `Updated salary for ${item.name}`;
+          return;
+        }
+
+        const delBtn = e.target.closest(".act-del");
+        if (delBtn) {
+          const id = Number(delBtn.dataset.id);
+          const item = ds.getById(id);
+          if (!item) return;
+          await ds.remove(id, { sync: false });
+          output.textContent = `Removed: ${item.name}`;
+        }
+      });
+    </script>
+  </body>
 </html>

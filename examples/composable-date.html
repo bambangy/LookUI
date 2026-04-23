@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI - Composable Date</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Date</h1>
+    <p style="opacity: 0.85;">Look.lkDate(target, opts) - compact popup date/range/datetime picker</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <section class="demo-section">
+    <p class="demo-section__title">Mode Playground</p>
+
+    <div class="lk-card" style="margin-bottom: var(--lk-space-4);">
+      <div class="lk-card__body">
+        <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
+          <label style="display:inline-flex;align-items:center;gap:var(--lk-space-2);">
+            <input id="cfg-time" type="checkbox" />
+            Time mode
+          </label>
+          <label style="display:inline-flex;align-items:center;gap:var(--lk-space-2);">
+            <input id="cfg-range" type="checkbox" />
+            Range mode
+          </label>
+
+          <label style="display:inline-flex;align-items:center;gap:var(--lk-space-2);">
+            Time format
+            <select id="cfg-format" class="lk-input lk-select" style="min-width: 6rem;">
+              <option value="12">12h</option><option value="24">24h</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
+          <input id="cfg-ok" class="lk-input" style="max-width: 8rem;" value="OK" placeholder="OK label" />
+          <input id="cfg-cancel" class="lk-input" style="max-width: 8rem;" value="Cancel" placeholder="Cancel label" />
+          <button id="cfg-apply" class="lk-btn lk-btn--secondary">Apply Config</button>
+        </div>
+
+        <div class="demo-row" style="margin-bottom: 0;">
+          <button id="date-trigger" class="lk-btn lk-btn--primary">Open Picker</button>
+          <button id="date-set" class="lk-btn lk-btn--ghost">Set Random Value</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="date-output" class="demo-output">Ready</div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const picker = Look.lkDate('#date-trigger', {
+  range: false,
+  time: false,
+  timeFormat: '12',
+  cancelText: 'Cancel',
+  okText: 'OK',
+});
+
+// notes:
+// - time=true => range forced false
+// - range mode: hover previews shadow path before end click
+// - time mode: date view -> time view, commit only on OK</pre>
+  </div>
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const output = document.getElementById('date-output');
+  const timeEl = document.getElementById('cfg-time');
+  const rangeEl = document.getElementById('cfg-range');
+  const formatEl = document.getElementById('cfg-format');
+  const okEl = document.getElementById('cfg-ok');
+  const cancelEl = document.getElementById('cfg-cancel');
+
+  let picker = null;
+
+  function readConfig() {
+    const time = !!timeEl.checked;
+    const range = !!rangeEl.checked && !time;
+
+    return {
+      time,
+      range,
+      timeFormat: formatEl.value,
+      okText: okEl.value.trim() || 'OK',
+      cancelText: cancelEl.value.trim() || 'Cancel',
+    };
+  }
+
+  function mountPicker() {
+    const cfg = readConfig();
+
+    if (picker) {
+      picker.destroy();
+      picker = null;
+    }
+
+    picker = Look.lkDate('#date-trigger', {
+      ...cfg,
+      onChange(value, meta) {
+        output.textContent = `onChange (${meta.source}) -> ${formatValue(value)}`;
+      },
+      onConfirm(value) {
+        output.textContent = `onConfirm -> ${formatValue(value)}`;
+      },
+      onClose(reason) {
+        if (reason !== 'select') {
+          output.textContent = `Closed: ${reason}`;
+        }
+      },
+    });
+
+    if (cfg.time) {
+      rangeEl.checked = false;
+      rangeEl.disabled = true;
+    } else {
+      rangeEl.disabled = false;
+    }
+
+    output.textContent = `Config applied: time=${cfg.time}, range=${cfg.range}, format=${cfg.timeFormat}`;
+  }
+
+  function formatValue(value) {
+    if (Array.isArray(value)) {
+      const [start, end] = value;
+      const s = start ? start.toISOString().slice(0, 10) : '-';
+      const e = end ? end.toISOString().slice(0, 10) : '-';
+      return `${s} -> ${e}`;
+    }
+
+    if (!value) return '(none)';
+    return value.toISOString();
+  }
+
+  document.getElementById('cfg-apply').addEventListener('click', mountPicker);
+
+  document.getElementById('date-set').addEventListener('click', () => {
+    if (!picker) return;
+    const cfg = readConfig();
+
+    if (cfg.range) {
+      const start = new Date();
+      start.setDate(start.getDate() + 2);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 4);
+      picker.setValue([start, end]);
+      output.textContent = `Programmatic range set: ${start.toISOString().slice(0, 10)} -> ${end.toISOString().slice(0, 10)}`;
+      return;
+    }
+
+    const value = new Date();
+    value.setDate(value.getDate() + Math.floor(Math.random() * 15));
+    if (cfg.time) {
+      value.setHours(10, 30, 45, 0);
+    }
+
+    picker.setValue(value);
+    output.textContent = `Programmatic value set: ${value.toISOString()}`;
+  });
+
+  timeEl.addEventListener('change', () => {
+    if (timeEl.checked) {
+      rangeEl.checked = false;
+      rangeEl.disabled = true;
+    } else {
+      rangeEl.disabled = false;
+    }
+  });
+
+  mountPicker();
+</script>
+</body>
+</html>
+
+

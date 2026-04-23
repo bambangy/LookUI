@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template — Dashboard Home</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <style>
+    body { margin: 0; }
+    .mini-chart {
+      height: 4rem; background: var(--lk-surface);
+      border-radius: var(--lk-radius); margin-top: var(--lk-space-3);
+    }
+  </style>
+</head>
+<body class="lk-page">
+
+  <!-- Top bar -->
+  <header class="lk-page__header">
+    <nav class="lk-bar lk-bar--dark lk-bar--sticky">
+      <div class="lk-bar__start">
+        <button class="lk-btn lk-btn--ghost lk-btn--sm lk-hidden-md-up" style="color: inherit;">
+          <span class="lk-icon lk-icon--menu" aria-hidden="true"></span>
+        </button>
+        <span class="lk-bar__title">AdminPanel</span>
+      </div>
+      <div class="lk-bar__end">
+        <button class="lk-btn lk-btn--ghost lk-btn--sm" style="color: inherit;">
+          <span class="lk-icon lk-icon--bell" aria-hidden="true"></span>
+        </button>
+        <span class="lk-avatar lk-avatar--sm" style="background: var(--lk-primary);">AD</span>
+      </div>
+    </nav>
+  </header>
+
+  <div class="lk-layout">
+    <!-- Sidebar -->
+    <aside class="lk-layout__sidebar">
+      <ul class="lk-sidebar-nav">
+        <li class="lk-sidebar-nav__heading">Main</li>
+        <a href="dashboard-home.html" class="lk-sidebar-nav__item lk-sidebar-nav__item--active">
+          <span class="lk-icon lk-icon--home" aria-hidden="true"></span> Dashboard
+        </a>
+        <a href="dashboard-orders.html" class="lk-sidebar-nav__item">
+          <span class="lk-icon lk-icon--file" aria-hidden="true"></span> Orders
+        </a>
+        <a href="dashboard-products.html" class="lk-sidebar-nav__item">
+          <span class="lk-icon lk-icon--shopping-cart" aria-hidden="true"></span> Products
+        </a>
+        <a href="dashboard-sales.html" class="lk-sidebar-nav__item">
+          <span class="lk-icon lk-icon--sort-asc" aria-hidden="true"></span> Sales
+        </a>
+        <li class="lk-sidebar-nav__heading">System</li>
+        <a href="dashboard-settings.html" class="lk-sidebar-nav__item">
+          <span class="lk-icon lk-icon--settings" aria-hidden="true"></span> Settings
+        </a>
+      </ul>
+    </aside>
+
+    <!-- Content -->
+    <main class="lk-layout__content">
+      <div class="lk-page-title">
+        <div class="lk-page-title__text">Dashboard</div>
+        <div class="lk-page-title__actions">
+          <button class="lk-btn lk-btn--sm lk-btn--outline"><span class="lk-icon lk-icon--download" aria-hidden="true"></span> Export</button>
+        </div>
+      </div>
+
+      <div style="padding: 0 var(--lk-space-4) var(--lk-space-4);">
+        <!-- Stats -->
+        <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2 lk-grid--cols-lg-4">
+          <div class="lk-card">
+            <div class="lk-card__body">
+              <div class="lk-stat" style="text-align: left;">
+                <div class="lk-stat__label">Total Revenue</div>
+                <div class="lk-stat__value" style="font-size: var(--lk-text-2xl);">$48,250</div>
+                <div class="lk-stat__delta lk-stat__delta--up">+12.5% from last month</div>
+              </div>
+            </div>
+          </div>
+          <div class="lk-card">
+            <div class="lk-card__body">
+              <div class="lk-stat" style="text-align: left;">
+                <div class="lk-stat__label">Orders</div>
+                <div class="lk-stat__value" style="font-size: var(--lk-text-2xl);">384</div>
+                <div class="lk-stat__delta lk-stat__delta--up">+8.2%</div>
+              </div>
+            </div>
+          </div>
+          <div class="lk-card">
+            <div class="lk-card__body">
+              <div class="lk-stat" style="text-align: left;">
+                <div class="lk-stat__label">Customers</div>
+                <div class="lk-stat__value" style="font-size: var(--lk-text-2xl);">1,205</div>
+                <div class="lk-stat__delta lk-stat__delta--up">+3.1%</div>
+              </div>
+            </div>
+          </div>
+          <div class="lk-card">
+            <div class="lk-card__body">
+              <div class="lk-stat" style="text-align: left;">
+                <div class="lk-stat__label">Avg. Order Value</div>
+                <div class="lk-stat__value" style="font-size: var(--lk-text-2xl);">$125.65</div>
+                <div class="lk-stat__delta lk-stat__delta--down">-2.4%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts row -->
+        <div class="lk-grid lk-grid--cols-1 lk-grid--cols-lg-2" style="margin-top: var(--lk-space-4);">
+          <div class="lk-card">
+            <div class="lk-card__body">
+              <h3 style="margin-bottom: var(--lk-space-2);">Revenue Overview</h3>
+              <div class="mini-chart" style="height: 12rem;"></div>
+            </div>
+          </div>
+          <div class="lk-card">
+            <div class="lk-card__body">
+              <h3 style="margin-bottom: var(--lk-space-2);">Orders by Category</h3>
+              <div class="mini-chart" style="height: 12rem;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent orders -->
+        <div class="lk-card" style="margin-top: var(--lk-space-4);">
+          <div class="lk-card__body">
+            <div class="lk-flex lk-flex--justify-between lk-flex--align-center" style="margin-bottom: var(--lk-space-3);">
+              <h3>Recent Orders</h3>
+              <a href="dashboard-orders.html" class="lk-btn lk-btn--ghost lk-btn--sm">View All</a>
+            </div>
+            <table id="recent-orders" class="lk-table lk-table--striped" style="width: 100%;">
+              <thead>
+                <tr><th>Order</th><th>Customer</th><th>Status</th><th style="text-align: right;">Amount</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>#1042</td><td>John Smith</td><td><span class="lk-badge lk-badge--positive">Delivered</span></td><td style="text-align: right;">$156.00</td></tr>
+                <tr><td>#1041</td><td>Sarah Connor</td><td><span class="lk-badge lk-badge--warning">Shipped</span></td><td style="text-align: right;">$89.50</td></tr>
+                <tr><td>#1040</td><td>Mike Ross</td><td><span class="lk-badge lk-badge--info">Processing</span></td><td style="text-align: right;">$234.00</td></tr>
+                <tr><td>#1039</td><td>Emily Chen</td><td><span class="lk-badge lk-badge--positive">Delivered</span></td><td style="text-align: right;">$67.25</td></tr>
+                <tr><td>#1038</td><td>David Kim</td><td><span class="lk-badge lk-badge--negative">Cancelled</span></td><td style="text-align: right;">$145.00</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../../dist/look.js"></script>
+<script>
+  // lkTable on recent orders
+  Look.lkTable('#recent-orders', { sortable: true });
+
+  // lkPingBadge on notification bell
+  const bellBtn = document.querySelector('.lk-bar__end .lk-btn');
+  const badge = Look.lkPingBadge(bellBtn, { count: 3, position: 'top-right' });
+
+  // lkTooltip on export button
+  Look.lkTooltip(document.querySelector('.lk-page-title__actions .lk-btn'), { text: 'Export as CSV', position: 'bottom' });
+
+  // Clicking bell → dismiss badge + lkToast
+  bellBtn.addEventListener('click', () => {
+    badge.setCount(0);
+    badge.hide();
+    Look.lkToast({ title: 'Notifications', message: 'All caught up!', type: 'info', duration: 2000 });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template — About Page</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <style>body { margin: 0; }</style>
+</head>
+<body class="lk-page">
+
+  <header class="lk-page__header">
+    <nav class="lk-bar lk-bar--sticky lk-bar--raised">
+      <div class="lk-bar__start"><a href="#" class="lk-bar__title" style="text-decoration: none; color: inherit;">Acme Inc.</a></div>
+      <div class="lk-bar__end">
+        <a href="#" class="lk-btn lk-btn--ghost lk-btn--sm">Home</a>
+        <a href="#" class="lk-btn lk-btn--ghost lk-btn--sm">Services</a>
+        <a href="#" class="lk-btn lk-btn--ghost lk-btn--sm lk-btn--primary" style="font-weight: 600;">About</a>
+        <a href="#" class="lk-btn lk-btn--ghost lk-btn--sm">Contact</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section class="lk-hero lk-section--surface" style="min-height: 16rem;">
+    <h1 class="lk-hero__title">About Us</h1>
+    <p class="lk-hero__subtitle">We're a team of passionate developers building tools that make the web better.</p>
+  </section>
+
+  <!-- Mission -->
+  <section class="lk-section">
+    <div class="lk-container">
+      <div class="lk-prose">
+        <h2>Our Mission</h2>
+        <p>
+          At Acme Inc., we believe great software starts with great tools. Our mission is to build lightweight,
+          accessible, and performant UI components that developers actually enjoy using. No bloat, no lock-in,
+          just clean code that works.
+        </p>
+        <p>
+          Founded in 2020, we've grown from a two-person garage operation to a team of 25 engineers, designers,
+          and developer advocates spread across three continents.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="lk-section lk-section--surface lk-section--sm">
+    <div class="lk-container">
+      <div class="lk-grid lk-grid--cols-2 lk-grid--cols-md-4">
+        <div class="lk-stat">
+          <div class="lk-stat__value">25</div>
+          <div class="lk-stat__label">Team Members</div>
+        </div>
+        <div class="lk-stat">
+          <div class="lk-stat__value">10k+</div>
+          <div class="lk-stat__label">GitHub Stars</div>
+        </div>
+        <div class="lk-stat">
+          <div class="lk-stat__value">500+</div>
+          <div class="lk-stat__label">Contributors</div>
+        </div>
+        <div class="lk-stat">
+          <div class="lk-stat__value">1M+</div>
+          <div class="lk-stat__label">Downloads</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team -->
+  <section class="lk-section">
+    <div class="lk-container">
+      <h2 style="text-align: center; margin-bottom: var(--lk-space-6);">Our Team</h2>
+      <div class="lk-grid lk-grid--cols-2 lk-grid--cols-md-3 lk-grid--cols-lg-4">
+        <div class="lk-card" style="text-align: center;">
+          <div class="lk-card__body">
+            <span class="lk-avatar lk-avatar--lg" style="background: var(--lk-primary); font-size: var(--lk-text-xl); margin-bottom: var(--lk-space-2);">AK</span>
+            <div style="font-weight: 600;">Alex Kim</div>
+            <div style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">CEO & Co-founder</div>
+          </div>
+        </div>
+        <div class="lk-card" style="text-align: center;">
+          <div class="lk-card__body">
+            <span class="lk-avatar lk-avatar--lg" style="background: var(--lk-positive); font-size: var(--lk-text-xl); margin-bottom: var(--lk-space-2);">SR</span>
+            <div style="font-weight: 600;">Sara Rodriguez</div>
+            <div style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">CTO & Co-founder</div>
+          </div>
+        </div>
+        <div class="lk-card" style="text-align: center;">
+          <div class="lk-card__body">
+            <span class="lk-avatar lk-avatar--lg" style="background: var(--lk-info); font-size: var(--lk-text-xl); margin-bottom: var(--lk-space-2);">TN</span>
+            <div style="font-weight: 600;">Tom Nguyen</div>
+            <div style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">Lead Engineer</div>
+          </div>
+        </div>
+        <div class="lk-card" style="text-align: center;">
+          <div class="lk-card__body">
+            <span class="lk-avatar lk-avatar--lg" style="background: var(--lk-warning); font-size: var(--lk-text-xl); margin-bottom: var(--lk-space-2);">LP</span>
+            <div style="font-weight: 600;">Lisa Park</div>
+            <div style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">Head of Design</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Values -->
+  <section class="lk-section lk-section--surface">
+    <div class="lk-container">
+      <h2 style="text-align: center; margin-bottom: var(--lk-space-6);">Our Values</h2>
+      <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3">
+        <div class="lk-card">
+          <div class="lk-card__body" style="text-align: center;">
+            <span class="lk-icon lk-icon--xl lk-icon--primary lk-icon--check" aria-hidden="true" style="margin-bottom: var(--lk-space-3);"></span>
+            <h3>Simplicity</h3>
+            <p style="color: var(--lk-text-muted); font-size: var(--lk-text-sm);">
+              We believe the best code is the code you don't have to write. Keep it simple, keep it fast.
+            </p>
+          </div>
+        </div>
+        <div class="lk-card">
+          <div class="lk-card__body" style="text-align: center;">
+            <span class="lk-icon lk-icon--xl lk-icon--primary lk-icon--users" aria-hidden="true" style="margin-bottom: var(--lk-space-3);"></span>
+            <h3>Community</h3>
+            <p style="color: var(--lk-text-muted); font-size: var(--lk-text-sm);">
+              Open source is in our DNA. We build with the community, for the community.
+            </p>
+          </div>
+        </div>
+        <div class="lk-card">
+          <div class="lk-card__body" style="text-align: center;">
+            <span class="lk-icon lk-icon--xl lk-icon--primary lk-icon--eye" aria-hidden="true" style="margin-bottom: var(--lk-space-3);"></span>
+            <h3>Accessibility</h3>
+            <p style="color: var(--lk-text-muted); font-size: var(--lk-text-sm);">
+              The web is for everyone. We design and build with accessibility as a first-class concern.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="lk-section lk-section--primary" style="text-align: center;">
+    <div class="lk-container">
+      <h2 style="margin-bottom: var(--lk-space-3);">Want to join us?</h2>
+      <p style="opacity: 0.85; margin-bottom: var(--lk-space-5);">We're always looking for talented people to join our team.</p>
+      <a href="#" class="lk-btn lk-btn--outline" style="border-color: currentColor; color: inherit;">View Open Positions</a>
+    </div>
+  </section>
+
+  <footer class="lk-page__footer" style="text-align: center;">&copy; 2026 Acme Inc. Built with LookUI.</footer>
+
+<script src="../../dist/look.js"></script>
+<script>
+  // lkTooltip on team member avatars
+  document.querySelectorAll('.lk-card .lk-avatar').forEach(av => {
+    const name = av.closest('.lk-card__body').querySelector('[style*="font-weight: 600"]').textContent;
+    Look.lkTooltip(av, { text: name, position: 'top' });
+  });
+
+  // lkTooltip on nav
+  document.querySelectorAll('.lk-bar__end .lk-btn').forEach(btn => {
+    Look.lkTooltip(btn, { text: btn.textContent.trim(), position: 'bottom' });
+  });
+
+  // CTA button → lkDialog
+  document.querySelector('.lk-section--primary .lk-btn').addEventListener('click', e => {
+    e.preventDefault();
+    Look.lkDialog({
+      title: 'Open Positions',
+      message: 'We currently have openings for:\n• Senior Frontend Engineer\n• UX Designer\n• Developer Advocate',
+      confirmLabel: 'Apply Now',
+      cancelLabel: 'Close',
+      onConfirm() {
+        Look.lkToast({ title: 'Application started', message: 'Redirecting to application form...', type: 'info' });
+      }
+    });
+  });
+</script>
+</body>
+</html>

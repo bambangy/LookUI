@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI - Composable Popup Proxy</title>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Popup Proxy</h1>
+    <p style="opacity: 0.85;">Look.lkPopupProxy(target, opts) - adaptive popup placement with proxy content</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <section class="demo-section">
+    <p class="demo-section__title">Trigger + Placement</p>
+    <div class="demo-row">
+      <button id="popup-trigger" class="lk-btn lk-btn--primary">Open Popup</button>
+      <button id="popup-left" class="lk-btn lk-btn--secondary">Place Left</button>
+      <button id="popup-right" class="lk-btn lk-btn--secondary">Place Right</button>
+      <button id="popup-template" class="lk-btn lk-btn--info">Template Content</button>
+      <button id="popup-text" class="lk-btn lk-btn--warning">Plain Text</button>
+    </div>
+    <div id="popup-output" class="demo-output">Ready</div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Source Content</p>
+    <p style="margin-top: 0;">This source block will be moved into hidden proxy stash and rendered via clone.</p>
+    <div id="popup-source" class="lk-card lk-card--dense" style="max-width: 22rem;">
+      <div class="lk-card__body">
+        <strong style="display: block; margin-bottom: var(--lk-space-2);">Profile Actions</strong>
+        <button class="lk-btn lk-btn--secondary lk-btn--sm" type="button">View Profile</button>
+        <button class="lk-btn lk-btn--secondary lk-btn--sm" type="button">Settings</button>
+      </div>
+    </div>
+
+    <template id="popup-template-content">
+      <div>
+        <strong style="display:block; margin-bottom: var(--lk-space-2);">Template Popup</strong>
+        <p style="margin:0;">Rendered from &lt;template&gt; and positioned automatically.</p>
+      </div>
+    </template>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const popup = Look.lkPopupProxy('#popup-trigger', {
+  content: '#popup-source',
+  placement: 'bottom-left',
+  autoPlacement: true,
+  closeOnOutside: true,
+  closeOnEscape: true,
+});
+
+popup.setContent('#popup-template-content');
+popup.setPlacement('right-top');</pre>
+  </div>
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const output = document.getElementById('popup-output');
+
+  const popup = Look.lkPopupProxy('#popup-trigger', {
+    content: '#popup-source',
+    placement: 'bottom-left',
+    autoPlacement: true,
+    onShow(info) {
+      output.textContent = `Opened (${info.placement || 'bottom-left'})`;
+    },
+    onHide(reason) {
+      output.textContent = `Closed: ${reason}`;
+    },
+  });
+
+  document.getElementById('popup-left').addEventListener('click', () => {
+    popup.setPlacement('left-top');
+    popup.show(document.getElementById('popup-trigger'));
+  });
+
+  document.getElementById('popup-right').addEventListener('click', () => {
+    popup.setPlacement('right-top');
+    popup.show(document.getElementById('popup-trigger'));
+  });
+
+  document.getElementById('popup-template').addEventListener('click', () => {
+    popup.setContent('#popup-template-content');
+    popup.setPlacement('bottom-left');
+    popup.show(document.getElementById('popup-trigger'));
+  });
+
+  document.getElementById('popup-text').addEventListener('click', () => {
+    popup.setContent('Quick text popup content from string.');
+    popup.setPlacement('bottom-left');
+    popup.show(document.getElementById('popup-trigger'));
+  });
+</script>
+</body>
+</html>

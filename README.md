@@ -295,6 +295,28 @@ const chip = Look.lkChip('#chip-js', {
 chip.selected = true;
 ```
 
+### `Look.lkList(el, opts?)`
+
+Options:
+- `accordion` (default `true`)
+- `collapseSiblings` (default `true`)
+- `onToggle({ item, open, depth, origin })`
+
+Methods:
+- `open(target)`
+- `close(target)`
+- `toggle(target)`
+- `closeAll()`
+
+```js
+const nav = Look.lkList('#sidebar-menu', {
+  accordion: true,
+  onToggle(evt) { console.log(evt.open, evt.depth); },
+});
+
+nav.open('.lk-list-item--branch');
+```
+
 ### `Look.lkPagination(el, opts?)`
 
 Options:
@@ -368,6 +390,44 @@ console.log(table.sortOrder);
 
 Composables are programmatic APIs. They can create internal DOM and return lifecycle methods.
 
+### `Look.lkDate(target, opts?)`
+
+Compact popup picker attached to a trigger element.
+
+Modes:
+- Single date (default)
+- Range date (`range: true`)
+- Date + time (`time: true`, and range is automatically disabled)
+
+Key options:
+- `value`, `min`, `max`
+- `range` (default `false`)
+- `time` (default `false`)
+- `timeFormat`: `12 | 24`
+- `cancelText`, `okText` (for time-step actions)
+- `placement`, `autoPlacement`
+- `closeOnOutside`, `closeOnEscape`, `toggleOnTrigger`
+- callbacks: `onOpen`, `onClose(reason)`, `onChange(value, meta)`, `onConfirm(value)`
+
+```js
+const single = Look.lkDate('#date-btn');
+
+const range = Look.lkDate('#range-btn', {
+  range: true,
+});
+
+const dateTime = Look.lkDate('#datetime-btn', {
+  time: true,
+  timeFormat: '12',
+  cancelText: 'Back',
+  okText: 'Apply',
+});
+```
+
+Behavior notes:
+- Single date: auto-close on date pick.
+- Range: auto-close when end date is picked.
+- Time mode: after date pick, UI moves to time picker; value is committed only after `OK`.
 ### `Look.lkDialog(opts?)`
 
 Key options:
@@ -496,6 +556,30 @@ badge.show();
 badge.destroy();
 ```
 
+
+### `Look.lkPopupProxy(target, opts?)`
+
+Adaptive popup displayer attached to a trigger element.
+
+Key options:
+- `content` (string, HTML string, Node, `<template>`, or selector like `#id`)
+- `placement`: `bottom-left | bottom-right | top-left | top-right | left-top | left-bottom | right-top | right-bottom` (default `bottom-left`)
+- `autoPlacement` (default `true`)
+- `closeOnOutside`, `closeOnEscape`
+- `zIndex` (default `95`)
+
+```js
+const popup = Look.lkPopupProxy('#menu-btn', {
+  content: '#menu-template',
+  placement: 'bottom-left',
+  autoPlacement: true,
+});
+
+popup.setContent('<strong>Quick popup</strong>');
+popup.show();
+popup.hide();
+popup.destroy();
+```
 ### `Look.lkShimmer(target, opts?)`
 
 Key options:
@@ -659,3 +743,9 @@ LookUI/
 - Call `destroy()` for components/composables when you no longer need them.
 - Form components auto-wrap fields when `label` is provided.
 - Composables are implementation-driven and may evolve while the library is pre-1.0.
+
+
+
+
+
+

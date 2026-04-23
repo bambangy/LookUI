@@ -1,35 +1,156 @@
-// Toolbar component
+// Toolbar component — MS Office-style toolbar
+// Toolbar-specific buttons: .lk-toolbar__btn  (do NOT use .lk-btn inside toolbar)
+// Variants: icon-only | text-only | icon+text (icon before label)
+// Grouping: .lk-toolbar__group joins buttons with shared border
+
+// Shared button token
+$_btn-height: 1.875rem; // 30px — compact like Office ribbon
+$_btn-color:  var(--lk-text-muted);
 
 .lk-toolbar {
   display: flex;
   align-items: center;
-  gap: var(--lk-space-2);
-  padding: var(--lk-space-2) var(--lk-space-3);
+  gap: var(--lk-space-1);
+  padding: var(--lk-space-1) var(--lk-space-2);
   background: var(--lk-bg-subtle);
-  border: var(--lk-border-width) solid var(--lk-border);
-  border-radius: var(--lk-radius);
+  border-bottom: var(--lk-border-width) solid var(--lk-border);
+  width: 100%;
+  box-sizing: border-box;
+  min-height: calc(#{$_btn-height} + var(--lk-space-2));
 
-  // --- Sections ---
+  // =========================================================================
+  // Toolbar button  (toolbar-specific, does not affect .lk-btn)
+  // =========================================================================
 
-  &__group {
-    display: flex;
+  &__btn {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: var(--lk-space-1);
+    height: $_btn-height;
+    padding: 0 var(--lk-space-2);
+    border: var(--lk-border-width) solid transparent;
+    border-radius: var(--lk-radius);
+    background: transparent;
+    color: $_btn-color;
+    font-size: var(--lk-text-sm);
+    font-family: inherit;
+    line-height: 1;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition:
+      background var(--lk-duration-fast) var(--lk-easing-default),
+      border-color var(--lk-duration-fast) var(--lk-easing-default),
+      color var(--lk-duration-fast) var(--lk-easing-default);
+
+    // Icon inside button
+    .lk-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+      color: inherit;
+    }
+
+    // Label text (optional — only present in text or icon+text buttons)
+    &-label {
+      font-size: var(--lk-text-sm);
+      line-height: 1;
+    }
+
+    // --- States ---
+
+    &:hover:not(:disabled) {
+      background: var(--lk-border);
+      border-color: var(--lk-border);
+      color: var(--lk-text);
+    }
+
+    &:active:not(:disabled),
+    &.is-pressed {
+      background: rgba(0, 0, 0, 0.12);
+      border-color: var(--lk-border);
+    }
+
+    &--active {
+      background: rgba(var(--lk-primary-rgb, 92 107 192), 0.12);
+      border-color: rgba(var(--lk-primary-rgb, 92 107 192), 0.3);
+      color: var(--lk-primary);
+
+      &:hover:not(:disabled) {
+        background: rgba(var(--lk-primary-rgb, 92 107 192), 0.2);
+      }
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    // --- Icon-only: square ---
+    &--icon {
+      width: $_btn-height;
+      padding: 0;
+    }
+
+    // --- Dropdown arrow (optional caret) ---
+    &--has-dropdown::after {
+      content: '';
+      display: inline-block;
+      width: 0.3em;
+      height: 0.3em;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      transform: rotate(45deg) translateY(-0.1em);
+      margin-left: var(--lk-space-1);
+      opacity: 0.6;
+    }
   }
 
-  // Vertical divider between groups
+  // =========================================================================
+  // Group  — buttons share borders, middle buttons have square corners
+  // =========================================================================
+
+  &__group {
+    display: inline-flex;
+    align-items: center;
+    border: var(--lk-border-width) solid var(--lk-border);
+    border-radius: var(--lk-radius);
+    overflow: hidden; // clips children to group's rounded corners
+
+    .lk-toolbar__btn {
+      border-radius: 0;
+      border: none;
+      border-right: var(--lk-border-width) solid var(--lk-border);
+
+      &:last-child {
+        border-right: none;
+      }
+
+      &:hover:not(:disabled) {
+        border-color: transparent; // contained inside group, no border shimmer
+      }
+    }
+  }
+
+  // =========================================================================
+  // Separator and spacer
+  // =========================================================================
+
   &__separator {
     width: var(--lk-border-width);
-    height: 1.5rem;
+    height: 1.375rem;
     background: var(--lk-border);
     flex-shrink: 0;
+    margin: 0 var(--lk-space-1);
   }
 
   &__spacer {
     flex: 1 1 auto;
   }
 
-  // --- Variants ---
+  // =========================================================================
+  // Variants
+  // =========================================================================
 
   &--flat {
     border: none;
@@ -39,27 +160,93 @@
   &--primary {
     background: var(--lk-primary);
     border-color: var(--lk-primary-dark);
-    color: var(--lk-primary-contrast);
+
+    .lk-toolbar__btn {
+      color: rgba(255, 255, 255, 0.85);
+
+      &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: transparent;
+        color: #fff;
+      }
+
+      &--active {
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.5);
+        color: #fff;
+      }
+    }
+
+    .lk-toolbar__group {
+      border-color: rgba(255, 255, 255, 0.3);
+
+      .lk-toolbar__btn {
+        border-right-color: rgba(255, 255, 255, 0.25);
+      }
+    }
+
+    .lk-toolbar__separator {
+      background: rgba(255, 255, 255, 0.3);
+    }
   }
 
   &--dark {
     background: var(--lk-secondary-dark);
     border-color: transparent;
-    color: var(--lk-text-on-dark);
+
+    .lk-toolbar__btn {
+      color: rgba(255, 255, 255, 0.75);
+
+      &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: transparent;
+        color: #fff;
+      }
+
+      &--active {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.4);
+        color: #fff;
+      }
+    }
+
+    .lk-toolbar__group {
+      border-color: rgba(255, 255, 255, 0.2);
+
+      .lk-toolbar__btn {
+        border-right-color: rgba(255, 255, 255, 0.15);
+      }
+    }
+
+    .lk-toolbar__separator {
+      background: rgba(255, 255, 255, 0.2);
+    }
   }
 
-  // --- Dense ---
+  // =========================================================================
+  // Dense
+  // =========================================================================
 
   &--dense {
-    gap: var(--lk-space-1);
-    padding: var(--lk-space-1) var(--lk-space-2);
-  }
-
-  &--dense &__group {
     gap: 0;
-  }
+    padding: 0 var(--lk-space-1);
 
-  &--dense &__separator {
-    height: 1rem;
+    .lk-toolbar__btn {
+      height: 1.5rem;
+      font-size: var(--lk-text-xs);
+
+      &--icon {
+        width: 1.5rem;
+      }
+
+      .lk-icon {
+        font-size: 0.875rem;
+      }
+    }
+
+    .lk-toolbar__separator {
+      height: 1rem;
+      margin: 0 2px;
+    }
   }
 }

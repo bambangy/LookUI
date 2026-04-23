@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template — Dashboard Orders</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <style>body { margin: 0; }</style>
+</head>
+<body class="lk-page">
+
+  <header class="lk-page__header">
+    <nav class="lk-bar lk-bar--dark lk-bar--sticky">
+      <div class="lk-bar__start"><span class="lk-bar__title">AdminPanel</span></div>
+      <div class="lk-bar__end">
+        <button class="lk-btn lk-btn--ghost lk-btn--sm" style="color: inherit;"><span class="lk-icon lk-icon--bell" aria-hidden="true"></span></button>
+        <span class="lk-avatar lk-avatar--sm" style="background: var(--lk-primary);">AD</span>
+      </div>
+    </nav>
+  </header>
+
+  <div class="lk-layout">
+    <aside class="lk-layout__sidebar">
+      <ul class="lk-sidebar-nav">
+        <li class="lk-sidebar-nav__heading">Main</li>
+        <a href="dashboard-home.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--home" aria-hidden="true"></span> Dashboard</a>
+        <a href="dashboard-orders.html" class="lk-sidebar-nav__item lk-sidebar-nav__item--active"><span class="lk-icon lk-icon--file" aria-hidden="true"></span> Orders</a>
+        <a href="dashboard-products.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--shopping-cart" aria-hidden="true"></span> Products</a>
+        <a href="dashboard-sales.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--sort-asc" aria-hidden="true"></span> Sales</a>
+        <li class="lk-sidebar-nav__heading">System</li>
+        <a href="dashboard-settings.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--settings" aria-hidden="true"></span> Settings</a>
+      </ul>
+    </aside>
+
+    <main class="lk-layout__content">
+      <div class="lk-page-title">
+        <div class="lk-page-title__text">Orders</div>
+        <div class="lk-page-title__actions">
+          <input id="order-search" placeholder="Search orders..." style="width: 14rem;" />
+          <select id="order-status" style="width: auto;"></select>
+        </div>
+      </div>
+
+      <div style="padding: 0 var(--lk-space-4) var(--lk-space-4);">
+        <div class="lk-card">
+          <div class="lk-card__body" style="padding: 0; overflow-x: auto;">
+            <table id="orders-table" class="lk-table lk-table--hover" style="width: 100%;">
+              <thead>
+                <tr>
+                  <th>Order ID</th><th>Date</th><th>Customer</th><th>Items</th><th>Status</th><th style="text-align: right;">Total</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>#1042</td><td>Apr 23, 2026</td><td>John Smith</td><td>3</td><td><span class="lk-badge lk-badge--positive">Delivered</span></td><td style="text-align: right;">$156.00</td><td><button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--eye" aria-hidden="true"></span></button></td></tr>
+                <tr><td>#1041</td><td>Apr 22, 2026</td><td>Sarah Connor</td><td>1</td><td><span class="lk-badge lk-badge--warning">Shipped</span></td><td style="text-align: right;">$89.50</td><td><button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--eye" aria-hidden="true"></span></button></td></tr>
+                <tr><td>#1040</td><td>Apr 22, 2026</td><td>Mike Ross</td><td>5</td><td><span class="lk-badge lk-badge--info">Processing</span></td><td style="text-align: right;">$234.00</td><td><button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--eye" aria-hidden="true"></span></button></td></tr>
+                <tr><td>#1039</td><td>Apr 21, 2026</td><td>Emily Chen</td><td>2</td><td><span class="lk-badge lk-badge--positive">Delivered</span></td><td style="text-align: right;">$67.25</td><td><button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--eye" aria-hidden="true"></span></button></td></tr>
+                <tr><td>#1038</td><td>Apr 21, 2026</td><td>David Kim</td><td>1</td><td><span class="lk-badge lk-badge--negative">Cancelled</span></td><td style="text-align: right;">$145.00</td><td><button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--eye" aria-hidden="true"></span></button></td></tr>
+                <tr><td>#1037</td><td>Apr 20, 2026</td><td>Lisa Park</td><td>4</td><td><span class="lk-badge lk-badge--positive">Delivered</span></td><td style="text-align: right;">$312.00</td><td><button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--eye" aria-hidden="true"></span></button></td></tr>
+                <tr><td>#1036</td><td>Apr 20, 2026</td><td>James Lee</td><td>2</td><td><span class="lk-badge lk-badge--warning">Shipped</span></td><td style="text-align: right;">$78.90</td><td><button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--eye" aria-hidden="true"></span></button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="lk-flex lk-flex--justify-between lk-flex--align-center" style="margin-top: var(--lk-space-3);">
+          <span style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">Showing 1-7 of 42</span>
+          <ul class="lk-pagination" id="orders-pager"></ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../../dist/look.js"></script>
+<script>
+  // lkTextbox for search
+  Look.lkTextbox('#order-search');
+
+  // lkDropdown for status filter
+  Look.lkDropdown('#order-status', {
+    items: [
+      { value: '', text: 'All statuses', selected: true },
+      { value: 'processing', text: 'Processing' },
+      { value: 'shipped', text: 'Shipped' },
+      { value: 'delivered', text: 'Delivered' },
+      { value: 'cancelled', text: 'Cancelled' },
+    ]
+  });
+
+  // lkTable with sorting
+  Look.lkTable('#orders-table', { sortable: true });
+
+  // lkPagination
+  Look.lkPagination('#orders-pager', { total: 42, pageSize: 7 });
+
+  // View buttons → lkDialog detail
+  document.querySelectorAll('#orders-table .lk-btn').forEach(btn => {
+    const row = btn.closest('tr');
+    const cells = row.querySelectorAll('td');
+    btn.addEventListener('click', () => {
+      Look.lkDialog({
+        title: 'Order ' + cells[0].textContent,
+        message: `Customer: ${cells[2].textContent}\nItems: ${cells[3].textContent}\nTotal: ${cells[5].textContent}`,
+        confirmLabel: 'Close',
+      });
+    });
+  });
+</script>
+</body>
+</html>

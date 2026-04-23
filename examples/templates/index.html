@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Page Templates</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <link rel="stylesheet" href="../shared.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="../index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Page Templates</h1>
+    <p style="opacity: 0.85;">Ready-to-use layout templates built with LookUI classes</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <!-- Single Page -->
+  <p class="demo-section__title">Single Page</p>
+  <div class="lk-grid lk-grid--cols-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
+    <a href="single-page.html" class="demo-nav-card">
+      <strong>Portfolio / Profile</strong>
+      <span>Hero, about, work grid, contact form</span>
+    </a>
+  </div>
+
+  <!-- E-Commerce -->
+  <p class="demo-section__title">E-Commerce</p>
+  <div class="lk-grid lk-grid--cols-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
+    <a href="ecommerce-home.html" class="demo-nav-card">
+      <strong>Home Page</strong>
+      <span>Hero, categories, product grid, footer</span>
+    </a>
+    <a href="ecommerce-product.html" class="demo-nav-card">
+      <strong>Product Page</strong>
+      <span>Gallery, details, size/color, related</span>
+    </a>
+    <a href="ecommerce-cart.html" class="demo-nav-card">
+      <strong>Cart Page</strong>
+      <span>Line items, promo code, order summary</span>
+    </a>
+    <a href="ecommerce-checkout.html" class="demo-nav-card">
+      <strong>Checkout Page</strong>
+      <span>Shipping, payment, sticky summary</span>
+    </a>
+  </div>
+
+  <!-- Dashboard -->
+  <p class="demo-section__title">Dashboard</p>
+  <div class="lk-grid lk-grid--cols-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
+    <a href="dashboard-home.html" class="demo-nav-card">
+      <strong>Dashboard Home</strong>
+      <span>Stats, charts, recent orders table</span>
+    </a>
+    <a href="dashboard-orders.html" class="demo-nav-card">
+      <strong>Orders</strong>
+      <span>Filterable order table with pagination</span>
+    </a>
+    <a href="dashboard-products.html" class="demo-nav-card">
+      <strong>Products</strong>
+      <span>Product table with CRUD actions</span>
+    </a>
+    <a href="dashboard-sales.html" class="demo-nav-card">
+      <strong>Sales Report</strong>
+      <span>KPIs, charts, top products table</span>
+    </a>
+    <a href="dashboard-settings.html" class="demo-nav-card">
+      <strong>Settings</strong>
+      <span>Profile, notifications, danger zone</span>
+    </a>
+  </div>
+
+  <!-- Typical Pages -->
+  <p class="demo-section__title">Typical Pages</p>
+  <div class="lk-grid lk-grid--cols-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
+    <a href="article.html" class="demo-nav-card">
+      <strong>Article Post</strong>
+      <span>Prose content, author card, tags</span>
+    </a>
+    <a href="about.html" class="demo-nav-card">
+      <strong>About Page</strong>
+      <span>Mission, stats, team, values, CTA</span>
+    </a>
+  </div>
+
+  <!-- Reusable classes reference -->
+  <h2 style="margin-bottom: var(--lk-space-4);">Reusable Layout Classes</h2>
+  <div class="lk-card" style="margin-bottom: var(--lk-space-4);">
+    <div class="lk-card__body" style="overflow-x: auto;">
+      <table class="lk-table" style="width: 100%;">
+        <thead><tr><th>Class</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>.lk-page</code></td><td>Full-height flex column shell (min-height: 100vh)</td></tr>
+          <tr><td><code>.lk-page__header</code></td><td>Fixed-height header strip</td></tr>
+          <tr><td><code>.lk-page__footer</code></td><td>Pushed-to-bottom footer with border-top</td></tr>
+          <tr><td><code>.lk-page__body</code></td><td>Flex-grow main content wrapper</td></tr>
+          <tr><td><code>.lk-layout</code></td><td>Sidebar + content flex container</td></tr>
+          <tr><td><code>.lk-layout__sidebar</code></td><td>16rem sidebar (hidden on mobile). Modifiers: <code>--narrow</code>, <code>--wide</code>, <code>--right</code></td></tr>
+          <tr><td><code>.lk-layout__content</code></td><td>Scrollable main content area</td></tr>
+          <tr><td><code>.lk-section</code></td><td>Vertical section with spacing. Modifiers: <code>--sm</code>, <code>--lg</code>, <code>--surface</code>, <code>--primary</code>, <code>--dark</code></td></tr>
+          <tr><td><code>.lk-hero</code></td><td>Centered hero section with min-height</td></tr>
+          <tr><td><code>.lk-hero__title / __subtitle / __actions</code></td><td>Hero sub-elements</td></tr>
+          <tr><td><code>.lk-prose</code></td><td>Readable text container (max-width 48rem, spaced headings, styled blockquote/code)</td></tr>
+          <tr><td><code>.lk-stat</code></td><td>Metric display. Sub-elements: <code>__value</code>, <code>__label</code>, <code>__delta</code> (<code>--up</code>, <code>--down</code>)</td></tr>
+          <tr><td><code>.lk-sidebar-nav</code></td><td>Dashboard sidebar nav list. Items: <code>__item</code> (<code>--active</code>), <code>__heading</code></td></tr>
+          <tr><td><code>.lk-page-title</code></td><td>Page header with title + actions row</td></tr>
+          <tr><td><code>.lk-product-card</code></td><td>E-commerce product card with image, body, price, actions</td></tr>
+          <tr><td><code>.lk-cart-item</code></td><td>Cart line item row (image, info, price)</td></tr>
+          <tr><td><code>.lk-order-summary</code></td><td>Checkout order summary box with row/total</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+</body>
+</html>

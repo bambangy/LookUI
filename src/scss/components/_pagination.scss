@@ -10,6 +10,9 @@
 
   &__item {
     display: inline-flex;
+    transition:
+      transform var(--lk-duration-fast) var(--lk-easing-out),
+      opacity var(--lk-duration-fast) var(--lk-easing-out);
   }
 
   &__link {
@@ -28,13 +31,25 @@
     cursor: pointer;
     text-decoration: none;
     line-height: 1;
+    transform: translateZ(0);
     transition:
       background-color var(--lk-duration-fast) var(--lk-easing-default),
-      border-color     var(--lk-duration-fast) var(--lk-easing-default);
+      border-color var(--lk-duration-fast) var(--lk-easing-default),
+      transform var(--lk-duration-fast) var(--lk-easing-out),
+      box-shadow var(--lk-duration-fast) var(--lk-easing-out);
 
     &:hover {
       background: var(--lk-bg-subtle);
       border-color: var(--lk-border);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0) scale(0.97);
+    }
+
+    &--press {
+      transform: scale(0.94);
     }
 
     // Active page
@@ -42,11 +57,16 @@
       background: var(--lk-primary);
       color: var(--lk-primary-contrast);
       border-color: var(--lk-primary);
+      box-shadow: 0 6px 14px -10px color-mix(in srgb, var(--lk-primary) 55%, transparent);
 
       &:hover {
         background: var(--lk-primary-dark);
         border-color: var(--lk-primary-dark);
       }
+    }
+
+    &--pop {
+      animation: lk-pagination-pop var(--lk-duration-base) var(--lk-easing-spring);
     }
 
     // Disabled (prev/next at bounds)
@@ -67,6 +87,16 @@
     font-size: var(--lk-text-sm);
     color: var(--lk-text-muted);
     pointer-events: none;
+  }
+
+  // Non-intrusive list change motion.
+  &--changing &__item {
+    animation: lk-pagination-item-in var(--lk-duration-base) var(--lk-easing-out);
+    animation-delay: calc(var(--lk-page-i, 0) * 10ms);
+  }
+
+  &--prev &__item {
+    animation-name: lk-pagination-item-prev;
   }
 
   // --- Variants ---
@@ -98,3 +128,42 @@
     font-size: var(--lk-text-xs);
   }
 }
+
+@keyframes lk-pagination-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+@keyframes lk-pagination-item-in {
+  0% {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lk-pagination-item-prev {
+  0% {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-pagination__link--pop,
+  .lk-pagination--changing .lk-pagination__item {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}
+
+

@@ -1,3 +1,7 @@
+import { createPresenceController } from '../helpers/motion.js';
+
+const EXIT_MS = 280;
+
 function resolveTarget(target) {
   if (!target) throw new Error('Look.lkShimmer: target is required.');
   const node = typeof target === 'string' ? document.querySelector(target) : target;
@@ -63,7 +67,7 @@ export function lkShimmer(target, opts = {}) {
         { backgroundPosition: '-50% 0' },
       ],
       {
-        duration: 1250,
+        duration: 1450,
         iterations: Infinity,
         easing: 'linear',
       },
@@ -76,25 +80,39 @@ export function lkShimmer(target, opts = {}) {
     animation = null;
   }
 
+  const presence = createPresenceController({
+    element: overlay,
+    visibleClass: 'lk-shimmer-overlay--open',
+    closingClass: '',
+    exitMs: EXIT_MS,
+    hideWithHiddenAttr: true,
+    afterHide() {
+      stopWave();
+    },
+  });
+
   function show() {
     if (destroyed || visible) return;
-    overlay.hidden = false;
-    visible = true;
+
     startWave();
+    presence.show();
+    visible = true;
   }
 
   function hide() {
     if (destroyed || !visible) return;
-    overlay.hidden = true;
+
+    presence.hide();
     visible = false;
-    stopWave();
   }
 
   function destroy() {
     if (destroyed) return;
-    destroyed = true;
 
     hide();
+    destroyed = true;
+    presence.destroy();
+    stopWave();
 
     if (overlay.parentNode) {
       overlay.parentNode.removeChild(overlay);
@@ -117,3 +135,6 @@ export function lkShimmer(target, opts = {}) {
     },
   };
 }
+
+
+

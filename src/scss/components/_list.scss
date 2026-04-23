@@ -1,10 +1,13 @@
-// List and list item component
+// List and nested menu component
 
-.lk-list {
+.lk-list,
+.lk-list-submenu {
   list-style: none;
   padding: 0;
   margin: 0;
+}
 
+.lk-list {
   // --- Bordered ---
 
   &--bordered {
@@ -13,7 +16,7 @@
     overflow: hidden;
   }
 
-  // --- Separated (divider between items) ---
+  // --- Separated (divider between top-level items) ---
 
   &--separated > .lk-list-item + .lk-list-item {
     border-top: var(--lk-border-width) solid var(--lk-border);
@@ -21,26 +24,57 @@
 
   // --- Dense ---
 
-  &--dense > .lk-list-item {
-    padding: var(--lk-space-1) var(--lk-space-3);
-    font-size: var(--lk-text-sm);
-    min-height: 2rem;
-    gap: var(--lk-space-2);
-  }
+  &--dense {
+    .lk-list-item__row,
+    .lk-list-item__trigger,
+    > .lk-list-item {
+      padding: var(--lk-space-2) var(--lk-space-3);
+      min-height: 2.25rem;
+      gap: var(--lk-space-2);
+      font-size: var(--lk-text-sm);
+    }
 
-  &--dense > .lk-list-item .lk-list-item__secondary {
-    font-size: var(--lk-text-xs);
+    .lk-list-item__secondary {
+      font-size: var(--lk-text-xs);
+    }
   }
 }
 
 .lk-list-item {
-  display: flex;
-  align-items: center;
-  gap: var(--lk-space-3);
-  padding: var(--lk-space-3) var(--lk-space-4);
-  min-height: 3rem;
-  font-size: var(--lk-text-base);
   color: var(--lk-text);
+
+  // --- Legacy leaf support (direct sections in item) ---
+
+  &:not(.lk-list-item--branch) {
+    display: flex;
+    align-items: center;
+    gap: var(--lk-space-3);
+    padding: var(--lk-space-3) var(--lk-space-4);
+    min-height: 3rem;
+    font-size: var(--lk-text-base);
+  }
+
+  // --- Branch item ---
+
+  &--branch {
+    display: block;
+    padding: 0;
+  }
+
+  &__row,
+  &__trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--lk-space-3);
+    padding: var(--lk-space-3) var(--lk-space-4);
+    min-height: 3rem;
+    font-size: var(--lk-text-base);
+    color: inherit;
+    background: transparent;
+    border: 0;
+    text-align: left;
+  }
 
   // --- Sections ---
 
@@ -77,14 +111,35 @@
     line-height: var(--lk-leading-snug);
   }
 
+  // --- Caret for branch toggles ---
+
+  &__caret {
+    margin-left: auto;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform var(--lk-duration-fast) var(--lk-easing-default);
+    opacity: 0.75;
+  }
+
+  &--open > .lk-list-item__trigger .lk-list-item__caret {
+    transform: rotate(45deg);
+  }
+
   // --- Clickable ---
 
-  &--clickable {
+  &--clickable,
+  &__trigger {
     cursor: pointer;
-    transition: background-color var(--lk-duration-fast) var(--lk-easing-default);
+    transition:
+      background-color var(--lk-duration-fast) var(--lk-easing-default),
+      transform var(--lk-duration-fast) var(--lk-easing-out);
 
     &:hover {
       background: var(--lk-bg-subtle);
+      transform: translateX(1px);
     }
   }
 
@@ -107,6 +162,37 @@
   }
 }
 
+.lk-list-submenu {
+  --lk-submenu-h: 0px;
+  padding-left: var(--lk-space-3);
+  max-height: var(--lk-submenu-h);
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition:
+    max-height var(--lk-duration-slow) var(--lk-easing-out),
+    opacity var(--lk-duration-base) var(--lk-easing-out),
+    transform var(--lk-duration-slow) var(--lk-easing-out),
+    visibility 0s linear var(--lk-duration-slow);
+
+  .lk-list-item {
+    border-top: 0;
+  }
+}
+
+.lk-list-item--open > .lk-list-submenu,
+.lk-list-submenu--open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition:
+    max-height var(--lk-duration-slow) var(--lk-easing-out),
+    opacity var(--lk-duration-base) var(--lk-easing-out),
+    transform var(--lk-duration-slow) var(--lk-easing-out),
+    visibility 0s;
+}
+
 // Header / subheader for grouping
 .lk-list-header {
   padding: var(--lk-space-2) var(--lk-space-4);
@@ -116,3 +202,13 @@
   letter-spacing: var(--lk-tracking-wider);
   text-transform: uppercase;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-list-submenu,
+  .lk-list-item__trigger,
+  .lk-list-item__caret {
+    transition-duration: 1ms !important;
+  }
+}
+
+

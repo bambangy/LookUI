@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template — Dashboard Products</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <style>
+    body { margin: 0; }
+    .product-thumb { width: 2.5rem; height: 2.5rem; background: var(--lk-surface); border-radius: var(--lk-radius); }
+  </style>
+</head>
+<body class="lk-page">
+
+  <header class="lk-page__header">
+    <nav class="lk-bar lk-bar--dark lk-bar--sticky">
+      <div class="lk-bar__start"><span class="lk-bar__title">AdminPanel</span></div>
+      <div class="lk-bar__end">
+        <span class="lk-avatar lk-avatar--sm" style="background: var(--lk-primary);">AD</span>
+      </div>
+    </nav>
+  </header>
+
+  <div class="lk-layout">
+    <aside class="lk-layout__sidebar">
+      <ul class="lk-sidebar-nav">
+        <li class="lk-sidebar-nav__heading">Main</li>
+        <a href="dashboard-home.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--home" aria-hidden="true"></span> Dashboard</a>
+        <a href="dashboard-orders.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--file" aria-hidden="true"></span> Orders</a>
+        <a href="dashboard-products.html" class="lk-sidebar-nav__item lk-sidebar-nav__item--active"><span class="lk-icon lk-icon--shopping-cart" aria-hidden="true"></span> Products</a>
+        <a href="dashboard-sales.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--sort-asc" aria-hidden="true"></span> Sales</a>
+        <li class="lk-sidebar-nav__heading">System</li>
+        <a href="dashboard-settings.html" class="lk-sidebar-nav__item"><span class="lk-icon lk-icon--settings" aria-hidden="true"></span> Settings</a>
+      </ul>
+    </aside>
+
+    <main class="lk-layout__content">
+      <div class="lk-page-title">
+        <div class="lk-page-title__text">Products</div>
+        <div class="lk-page-title__actions">
+          <input id="prod-search" placeholder="Search products..." style="width: 14rem;" />
+          <button id="btn-add-product" class="lk-btn lk-btn--primary lk-btn--sm"><span class="lk-icon lk-icon--plus" aria-hidden="true"></span> Add Product</button>
+        </div>
+      </div>
+
+      <div style="padding: 0 var(--lk-space-4) var(--lk-space-4);">
+        <div class="lk-card">
+          <div class="lk-card__body" style="padding: 0; overflow-x: auto;">
+            <table id="products-table" class="lk-table lk-table--hover" style="width: 100%;">
+              <thead>
+                <tr><th></th><th>Product</th><th>SKU</th><th>Category</th><th>Stock</th><th style="text-align: right;">Price</th><th></th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><div class="product-thumb"></div></td>
+                  <td><strong>Classic Cotton Tee</strong></td><td>TEE-001</td><td>T-Shirts</td>
+                  <td><span class="lk-badge lk-badge--positive">In Stock</span></td>
+                  <td style="text-align: right;">$29.99</td>
+                  <td>
+                    <button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--edit" aria-hidden="true"></span></button>
+                    <button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--delete" aria-hidden="true"></span></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><div class="product-thumb"></div></td>
+                  <td><strong>Slim Fit Chinos</strong></td><td>CHI-002</td><td>Pants</td>
+                  <td><span class="lk-badge lk-badge--warning">Low Stock</span></td>
+                  <td style="text-align: right;">$49.99</td>
+                  <td>
+                    <button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--edit" aria-hidden="true"></span></button>
+                    <button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--delete" aria-hidden="true"></span></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><div class="product-thumb"></div></td>
+                  <td><strong>Leather Crossbody</strong></td><td>BAG-003</td><td>Bags</td>
+                  <td><span class="lk-badge lk-badge--positive">In Stock</span></td>
+                  <td style="text-align: right;">$89.99</td>
+                  <td>
+                    <button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--edit" aria-hidden="true"></span></button>
+                    <button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--delete" aria-hidden="true"></span></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><div class="product-thumb"></div></td>
+                  <td><strong>Running Sneakers</strong></td><td>SHO-004</td><td>Shoes</td>
+                  <td><span class="lk-badge lk-badge--negative">Out of Stock</span></td>
+                  <td style="text-align: right;">$119.99</td>
+                  <td>
+                    <button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--edit" aria-hidden="true"></span></button>
+                    <button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--delete" aria-hidden="true"></span></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><div class="product-thumb"></div></td>
+                  <td><strong>Wool Blazer</strong></td><td>BLZ-005</td><td>Jackets</td>
+                  <td><span class="lk-badge lk-badge--positive">In Stock</span></td>
+                  <td style="text-align: right;">$199.99</td>
+                  <td>
+                    <button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--edit" aria-hidden="true"></span></button>
+                    <button class="lk-btn lk-btn--ghost lk-btn--dense"><span class="lk-icon lk-icon--delete" aria-hidden="true"></span></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../../dist/look.js"></script>
+<script>
+  // lkTextbox for product search
+  Look.lkTextbox('#prod-search');
+
+  // lkTable with sorting
+  Look.lkTable('#products-table', { sortable: true });
+
+  // Tooltips on action buttons
+  document.querySelectorAll('.lk-icon--edit').forEach(icon => {
+    Look.lkTooltip(icon.parentElement, { text: 'Edit', position: 'top' });
+  });
+  document.querySelectorAll('.lk-icon--delete').forEach(icon => {
+    Look.lkTooltip(icon.parentElement, { text: 'Delete', position: 'top' });
+  });
+
+  // Delete buttons → lkDialog confirm
+  document.querySelectorAll('.lk-icon--delete').forEach(icon => {
+    const btn = icon.parentElement;
+    const row = btn.closest('tr');
+    const name = row.querySelector('strong').textContent;
+    btn.addEventListener('click', () => {
+      Look.lkDialog({
+        title: 'Delete product?',
+        message: `Are you sure you want to delete "${name}"?`,
+        confirmLabel: 'Delete',
+        cancelLabel: 'Cancel',
+        onConfirm() {
+          row.remove();
+          Look.lkToast({ title: 'Deleted', message: name, type: 'negative', duration: 2000 });
+        }
+      });
+    });
+  });
+
+  // Add product button → lkDialog
+  document.getElementById('btn-add-product').addEventListener('click', () => {
+    Look.lkDialog({
+      title: 'Add Product',
+      message: 'Product creation form would go here.',
+      confirmLabel: 'OK',
+    });
+  });
+</script>
+</body>
+</html>

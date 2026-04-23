@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template — Article Post</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <style>
+    body { margin: 0; }
+    .article-cover {
+      width: 100%; height: 20rem; object-fit: cover;
+      background: var(--lk-surface); border-radius: var(--lk-radius-lg);
+    }
+  </style>
+</head>
+<body class="lk-page">
+
+  <header class="lk-page__header">
+    <nav class="lk-bar lk-bar--sticky lk-bar--raised">
+      <div class="lk-bar__start"><a href="#" class="lk-bar__title" style="text-decoration: none; color: inherit;">BlogUI</a></div>
+      <div class="lk-bar__end">
+        <a href="#" class="lk-btn lk-btn--ghost lk-btn--sm">Articles</a>
+        <a href="about.html" class="lk-btn lk-btn--ghost lk-btn--sm">About</a>
+      </div>
+    </nav>
+  </header>
+
+  <article class="lk-section">
+    <div class="lk-container">
+      <div class="lk-prose">
+        <!-- Article header -->
+        <div style="margin-bottom: var(--lk-space-6);">
+          <div style="margin-bottom: var(--lk-space-3);">
+            <span class="lk-badge lk-badge--primary">Technology</span>
+            <span class="lk-badge lk-badge--outline">Tutorial</span>
+          </div>
+          <h1 style="margin-top: 0;">Building Modern Web Applications with Vanilla JavaScript</h1>
+          <div class="lk-flex lk-flex--align-center lk-flex--gap-sm" style="color: var(--lk-text-muted); font-size: var(--lk-text-sm);">
+            <span class="lk-avatar lk-avatar--sm" style="background: var(--lk-primary);">JD</span>
+            <span>Jane Doe</span>
+            <span>&middot;</span>
+            <span>Apr 23, 2026</span>
+            <span>&middot;</span>
+            <span>8 min read</span>
+          </div>
+        </div>
+
+        <div class="article-cover"></div>
+
+        <p>
+          In an era dominated by frameworks, there's a quiet renaissance happening in the world of vanilla JavaScript.
+          Developers are rediscovering the power of working directly with the platform, leveraging modern browser APIs
+          that make many framework abstractions unnecessary.
+        </p>
+
+        <h2>Why Vanilla?</h2>
+        <p>
+          The modern web platform offers an incredibly rich set of APIs. Custom Elements, the Intersection Observer,
+          CSS Custom Properties, and ES Modules have fundamentally changed what's possible without external dependencies.
+        </p>
+
+        <blockquote>
+          "The best framework is the one you don't need." — A wise developer, probably.
+        </blockquote>
+
+        <h2>Getting Started</h2>
+        <p>
+          Let's look at a practical example. Here's how you might create a reusable component system using nothing but
+          standard JavaScript:
+        </p>
+
+        <pre><code>export function createComponent(el, opts = {}) {
+  const node = document.querySelector(el);
+  // Your component logic here
+  return {
+    el: node,
+    destroy() { /* cleanup */ }
+  };
+}</code></pre>
+
+        <h3>Key Principles</h3>
+        <p>When building vanilla JS components, keep these principles in mind:</p>
+        <ul>
+          <li>Always clean up event listeners and DOM nodes</li>
+          <li>Accept both selectors and element references</li>
+          <li>Return a public API object with a <code>destroy()</code> method</li>
+          <li>Use CSS custom properties for theming</li>
+        </ul>
+
+        <h2>Performance Benefits</h2>
+        <p>
+          Without a virtual DOM diffing algorithm or reactive proxy system, vanilla JavaScript can be remarkably fast.
+          Direct DOM manipulation, when done thoughtfully, eliminates the overhead of abstraction layers.
+        </p>
+
+        <h2>Conclusion</h2>
+        <p>
+          Vanilla JavaScript isn't about rejecting tools — it's about understanding when you need them and when you don't.
+          For many projects, especially UI component libraries and content-driven sites, the platform provides everything
+          you need out of the box.
+        </p>
+
+        <!-- Tags -->
+        <div style="margin-top: var(--lk-space-8); padding-top: var(--lk-space-4); border-top: var(--lk-border-width) solid var(--lk-border);">
+          <span class="lk-chip">JavaScript</span>
+          <span class="lk-chip">Web Development</span>
+          <span class="lk-chip">Tutorial</span>
+          <span class="lk-chip">Vanilla JS</span>
+        </div>
+
+        <!-- Author card -->
+        <div class="lk-card" style="margin-top: var(--lk-space-6);">
+          <div class="lk-card__body">
+            <div class="lk-flex lk-flex--gap-md lk-flex--align-center">
+              <span class="lk-avatar lk-avatar--lg" style="background: var(--lk-primary); font-size: var(--lk-text-xl);">JD</span>
+              <div>
+                <div style="font-weight: 600;">Jane Doe</div>
+                <p style="font-size: var(--lk-text-sm); color: var(--lk-text-muted); margin: var(--lk-space-1) 0 0;">
+                  Full-stack developer and technical writer. Passionate about web standards and developer experience.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <footer class="lk-page__footer" style="text-align: center;">&copy; 2026 BlogUI. Built with LookUI.</footer>
+
+<script src="../../dist/look.js"></script>
+<script>
+  // lkChip on tags (selectable)
+  document.querySelectorAll('.lk-chip').forEach(el => {
+    Look.lkChip(el, { selectable: true });
+  });
+
+  // lkTooltip on author avatar
+  Look.lkTooltip(document.querySelector('.lk-card .lk-avatar'), { text: 'View author profile', position: 'top' });
+
+  // lkTooltip on nav links
+  document.querySelectorAll('.lk-bar__end .lk-btn').forEach(btn => {
+    Look.lkTooltip(btn, { text: btn.textContent.trim(), position: 'bottom' });
+  });
+</script>
+</body>
+</html>
