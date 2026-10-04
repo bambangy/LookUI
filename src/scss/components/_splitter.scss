@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Splitter component (resizable panes)
 
 .lk-splitter {
@@ -8,14 +10,18 @@
 
   // --- Horizontal (side-by-side panes, default) ---
 
+  // Panes share the space evenly by default; JS sizes override flex-basis.
+  // flex-shrink stays 1 so percentage sizes + handle widths never overflow.
   &__pane {
+    flex: 1 1 0;
     overflow: auto;
     min-width: 0;
     min-height: 0;
   }
 
   &__handle {
-    flex-shrink: 0;
+    position: relative;
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -23,6 +29,8 @@
     border: none;
     cursor: col-resize;
     width: 6px;
+    touch-action: none;
+    user-select: none;
     transition: background var(--lk-duration-fast) var(--lk-easing-default);
 
     &:hover,
@@ -30,21 +38,42 @@
       background: var(--lk-primary-light);
     }
 
-    // Grip dots
+    &:hover::after,
+    &--active::after {
+      border-color: var(--lk-primary-contrast);
+    }
+
+    // Grip: two parallel 1px lines
     &::after {
       content: '';
       display: block;
-      width: 2px;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      width: 4px;
       height: 24px;
       border-left: 1px solid var(--lk-border-strong);
       border-right: 1px solid var(--lk-border-strong);
     }
   }
 
+  // Dragging: keep the resize cursor everywhere and stop text selection
+  &--dragging {
+    cursor: col-resize;
+    user-select: none;
+  }
+
+  &--dragging &__pane {
+    pointer-events: none;
+  }
+
   // --- Vertical (stacked panes) ---
 
   &--vertical {
     flex-direction: column;
+  }
+
+  &--vertical#{&}--dragging {
+    cursor: row-resize;
   }
 
   &--vertical &__handle {
@@ -54,7 +83,7 @@
 
     &::after {
       width: 24px;
-      height: 2px;
+      height: 4px;
       border-left: none;
       border-right: none;
       border-top: 1px solid var(--lk-border-strong);
@@ -77,6 +106,7 @@
     &::after {
       width: 1px;
       height: 16px;
+      border-left: none;
     }
   }
 
@@ -87,6 +117,7 @@
     &::after {
       width: 16px;
       height: 1px;
+      border-top: none;
     }
   }
 }

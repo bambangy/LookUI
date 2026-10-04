@@ -1,4 +1,8 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Composable motion helpers
+
+// --- Loading / inner-loading / shimmer ---
 
 .lk-loading-overlay,
 .lk-inner-loading,
@@ -7,19 +11,25 @@
   transition: opacity var(--lk-duration-base) var(--lk-easing-out);
 }
 
+.lk-inner-loading,
+.lk-shimmer-overlay {
+  border-radius: inherit;
+}
+
 .lk-loading-overlay--open,
 .lk-inner-loading--open,
 .lk-shimmer-overlay--open {
   opacity: 1;
 }
 
+// Card inside loading overlay: pops in with spring from below
 .lk-loading-overlay .lk-card,
 .lk-inner-loading .lk-card {
-  opacity: 0.96;
-  transform: translateY(var(--lk-space-4)) scale(0.94);
+  opacity: 0;
+  transform: translateY(1.25rem) scale(0.88);
   transition:
-    opacity var(--lk-duration-base) var(--lk-easing-out),
-    transform var(--lk-duration-slow) var(--lk-easing-out);
+    opacity var(--lk-duration-fast) var(--lk-easing-out),
+    transform var(--lk-duration-slow) var(--lk-easing-spring);
 }
 
 .lk-loading-overlay--open .lk-card,
@@ -32,25 +42,40 @@
   transition-duration: var(--lk-duration-base);
 }
 
+// --- Ping badge: big bounce pop ---
+
+@keyframes lk-ping-badge-in {
+  0%   { opacity: 0; transform: scale(0.4); }
+  50%  { opacity: 1; transform: scale(1.3); }
+  75%  { transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
 .lk-ping-badge {
   opacity: 0;
-  transform: scale(0.65);
+  transform: scale(0.4);
   transition:
-    opacity var(--lk-duration-base) var(--lk-easing-out),
-    transform var(--lk-duration-base) var(--lk-easing-spring);
+    opacity var(--lk-duration-fast) var(--lk-easing-out),
+    transform var(--lk-duration-base) var(--lk-easing-bounce);
 }
 
 .lk-ping-badge--open {
   opacity: 1;
   transform: scale(1);
+  animation: lk-ping-badge-in var(--lk-duration-slow) var(--lk-easing-bounce) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .lk-btn,
   .lk-modal-overlay,
   .lk-modal,
+  .lk-modal--closing .lk-modal,
+  .lk-modal--closing .lk-modal-overlay,
   .lk-toast,
   .lk-tooltip__content,
   .lk-list-submenu,
+  .lk-list-item__trigger,
+  .lk-list-item__caret,
   .lk-loading-overlay,
   .lk-inner-loading,
   .lk-shimmer-overlay,
@@ -58,9 +83,20 @@
   .lk-inner-loading .lk-card,
   .lk-ping-badge,
   .lk-popup-proxy,
-  .lk-popup-proxy__panel {
+  .lk-popup-proxy__panel,
+  .lk-popup-proxy--closing .lk-popup-proxy__panel,
+  .lk-btn-dropdown__menu,
+  .lk-btn-dropdown__caret {
     transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
     animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+
+  // Overlay visibility must flip instantly on open (opacity, visibility) so the
+  // dialog is focusable right away; a 1ms visibility transition would block focus.
+  .lk-modal--open .lk-modal-overlay {
+    transition-duration: 1ms, 0s !important;
   }
 }
 
@@ -75,32 +111,28 @@
   max-height: min(70vh, calc(100vh - var(--lk-space-4)));
   overflow: auto;
   padding: var(--lk-space-3);
-  border: var(--lk-border-width) solid var(--lk-border-color);
+  border: var(--lk-border-width) solid var(--lk-border);
   border-radius: var(--lk-radius-lg);
   background: var(--lk-surface);
   box-shadow: var(--lk-shadow-lg);
   color: var(--lk-text);
   opacity: 0;
-  transform: translateY(-0.35rem) scale(0.96);
-  transform-origin: top left;
+  transform: translateY(-0.6rem) scale(0.92);
   transition:
-    opacity var(--lk-duration-base) var(--lk-easing-out),
-    transform var(--lk-duration-slow) var(--lk-easing-spring);
+    opacity var(--lk-duration-fast) var(--lk-easing-out),
+    transform var(--lk-duration-base) var(--lk-easing-snap);
 }
 
 .lk-popup-proxy__panel[data-side='top'] {
-  transform: translateY(0.35rem) scale(0.96);
-  transform-origin: bottom left;
+  transform: translateY(0.6rem) scale(0.92);
 }
 
 .lk-popup-proxy__panel[data-side='left'] {
-  transform: translateX(0.35rem) scale(0.96);
-  transform-origin: center right;
+  transform: translateX(0.6rem) scale(0.92);
 }
 
 .lk-popup-proxy__panel[data-side='right'] {
-  transform: translateX(-0.35rem) scale(0.96);
-  transform-origin: center left;
+  transform: translateX(-0.6rem) scale(0.92);
 }
 
 .lk-popup-proxy--open {
@@ -110,6 +142,27 @@
 .lk-popup-proxy--open .lk-popup-proxy__panel {
   opacity: 1;
   transform: translate(0, 0) scale(1);
+}
+
+// Closing: quick collapse back toward anchor
+.lk-popup-proxy--closing .lk-popup-proxy__panel {
+  opacity: 0;
+  transform: translateY(-0.3rem) scale(0.96);
+  transition:
+    opacity var(--lk-duration-fast) var(--lk-easing-in),
+    transform var(--lk-duration-fast) var(--lk-easing-in);
+}
+
+.lk-popup-proxy--closing .lk-popup-proxy__panel[data-side='top'] {
+  transform: translateY(0.3rem) scale(0.96);
+}
+
+.lk-popup-proxy--closing .lk-popup-proxy__panel[data-side='left'] {
+  transform: translateX(0.3rem) scale(0.96);
+}
+
+.lk-popup-proxy--closing .lk-popup-proxy__panel[data-side='right'] {
+  transform: translateX(-0.3rem) scale(0.96);
 }
 
 

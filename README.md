@@ -1,11 +1,44 @@
 # LookUI
 
+[![CI](https://github.com/bambangy/LookUI/actions/workflows/ci.yml/badge.svg)](https://github.com/bambangy/LookUI/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/bambangy/LookUI/actions/workflows/codeql.yml/badge.svg)](https://github.com/bambangy/LookUI/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/bambangy/LookUI/badge)](https://scorecard.dev/viewer/?uri=github.com/bambangy/LookUI)
+[![npm](https://img.shields.io/npm/v/@bambangy_/look-ui)](https://www.npmjs.com/package/@bambangy_/look-ui)
+[![dependencies](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](package.json)
+[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 A no-frills JavaScript and CSS library for UI components and composable utilities.
-Imperative, predictable, and MVC-friendly.
+Imperative, predictable, and MVC-friendly. Zero runtime dependencies.
+
+## Install
+
+**CDN** (no build step):
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@bambangy_/look-ui@0.1.0/dist/look.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/@bambangy_/look-ui@0.1.0/dist/look.min.js"></script>
+<script>
+  const btn = Look.lkButton("#my-btn");
+</script>
+```
+
+**npm:**
+
+```bash
+npm install @bambangy_/look-ui
+```
+
+```js
+import { lkButton, lkDialog, lkDataSource } from "@bambangy_/look-ui";
+import "@bambangy_/look-ui/look.css";
+```
+
+Pin an exact version in CDN URLs. Official releases are published only as
+`@bambangy_/look-ui` from https://github.com/bambangy/LookUI.
 
 ---
 
-## Quick start
+## Develop
 
 ```bash
 npm install
@@ -18,7 +51,7 @@ Open `examples/index.html` in a browser.
 
 ## Prerequisites
 
-- Node.js 18+
+- Node.js 22+
 - npm 9+
 
 ---
@@ -28,15 +61,27 @@ Open `examples/index.html` in a browser.
 | Script | Description |
 |---|---|
 | `npm run build` | Full build (JS then CSS) |
-| `npm run build:js` | Rollup bundles `src/js/index.js` into `dist/look.js` |
-| `npm run build:css` | Sass + PostCSS builds `dist/look.css` |
+| `npm run build:js` | Rollup bundles `src/js/index.js` into `dist/look.js` (UMD), `look.min.js`, `look.esm.js`, `look.cjs` |
+| `npm run build:css` | Sass + PostCSS builds `dist/look.css` and `dist/look.min.css` |
 | `npm run dev` | Rollup watch mode (JS only) |
+| `npm run test:smoke` | Loads the built package via `import`, `require` and `<script>`, checks the API and copyright banners |
 
 ---
 
+## Important updates (2026-04)
+
+- `lkList` added as a nested list/menu/sidebar component with accordion controls.
+- `lkPopupProxy` added as the shared anchored popup engine used by popup-style composables.
+- Show/hide + sliding interactions were aligned to shared motion tokens for more consistent UX.
+- `lkDate` is popup-based and follows strict mode flow:
+  - `time: false` -> date UI only
+  - `time: true` -> date step first, then time step
+  - `timeFormat: '12'` default (AM/PM shown), `timeFormat: '24'` hides AM/PM
+
+---
 ## Usage
 
-### Browser (UMD)
+### Browser (UMD, local build)
 
 ```html
 <link rel="stylesheet" href="dist/look.css" />
@@ -49,7 +94,7 @@ Open `examples/index.html` in a browser.
 ### ESM
 
 ```js
-import { lkButton, lkDialog, lkDataSource } from './dist/look.js';
+import { lkButton, lkDialog, lkDataSource } from './dist/look.esm.js';
 ```
 
 ---
@@ -403,7 +448,7 @@ Key options:
 - `value`, `min`, `max`
 - `range` (default `false`)
 - `time` (default `false`)
-- `timeFormat`: `12 | 24`
+- `timeFormat`: `12 | 24` (default `12`)
 - `cancelText`, `okText` (for time-step actions)
 - `placement`, `autoPlacement`
 - `closeOnOutside`, `closeOnEscape`, `toggleOnTrigger`
@@ -427,7 +472,10 @@ const dateTime = Look.lkDate('#datetime-btn', {
 Behavior notes:
 - Single date: auto-close on date pick.
 - Range: auto-close when end date is picked.
-- Time mode: after date pick, UI moves to time picker; value is committed only after `OK`.
+- Range hover: after start pick, hover shows live shadow preview until end pick.
+- Time mode: date step and time step are split views (not shown together).
+- Time mode: after date pick, UI moves to time picker; value is committed only after `OK`, while `Cancel` returns to date step.
+- Time defaults: when opening a fresh time selection, default is `00:00:00`; after a datetime is confirmed, reopening reuses the last picked time.
 ### `Look.lkDialog(opts?)`
 
 Key options:
@@ -452,25 +500,6 @@ dialog.setTitle('Please confirm');
 dialog.setContent('Updated content');
 dialog.close('manual');
 dialog.destroy();
-```
-
-### `Look.lkAlert(opts?)`
-
-Wrapper on top of `lkDialog` for one-button alerts.
-
-Key options:
-- `title`
-- `message` or `content`
-- `okText`
-- `onOk` (alias of `onConfirm`)
-
-```js
-Look.lkAlert({
-  title: 'Session Expiring',
-  message: 'Please save your work.',
-  okText: 'Understood',
-  onOk() { console.log('acknowledged'); },
-});
 ```
 
 ### `Look.lkToast(opts?)`
@@ -566,7 +595,7 @@ Key options:
 - `placement`: `bottom-left | bottom-right | top-left | top-right | left-top | left-bottom | right-top | right-bottom` (default `bottom-left`)
 - `autoPlacement` (default `true`)
 - `closeOnOutside`, `closeOnEscape`
-- `zIndex` (default `95`)
+- `zIndex` (default `95`, intentionally below modal/loading stacks)
 
 ```js
 const popup = Look.lkPopupProxy('#menu-btn', {
@@ -744,8 +773,24 @@ LookUI/
 - Form components auto-wrap fields when `label` is provided.
 - Composables are implementation-driven and may evolve while the library is pre-1.0.
 
+---
 
+## License & trademark
 
+LookUI is released under the [MIT License](LICENSE).
+Copyright (c) 2026 Bambang Yudhotomo.
 
+You may use, modify, and redistribute LookUI, including commercially, as long as
+the copyright and license notice are kept in every copy, including the
+`/*! LookUI ... */` banners at the top of `dist/look.js` and `dist/look.css`.
+See [NOTICE](NOTICE).
 
+The MIT License covers the code, not the name. "LookUI", "Look UI", and
+"Look Icons" are trademarks of Bambang Yudhotomo:
 
+- Forks and modified versions must use a different name and must not imply
+  they are the official LookUI or endorsed by its author.
+- You may say your project is "based on LookUI" or "compatible with LookUI".
+- Unmodified redistributions may keep the LookUI name.
+
+Official releases are published only from https://github.com/bambangy/LookUI.

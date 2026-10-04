@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // =============================================================================
 // LookUI — Default Typography Tokens
 // =============================================================================
@@ -26,7 +28,8 @@
   --lk-text-xl:   1.563rem;    // 25px   — h4
   --lk-text-2xl:  1.953rem;    // 31px   — h3
   --lk-text-3xl:  2.441rem;    // 39px   — h2
-  --lk-text-4xl:  3.052rem;    // 49px   — h1 / hero
+  --lk-text-4xl:  3.052rem;    // 49px   — h1
+  --lk-text-5xl:  3.815rem;    // 61px   — hero display (md+)
 
   // --- Font weights ---
   --lk-weight-thin:       100;

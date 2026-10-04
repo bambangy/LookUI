@@ -37,7 +37,7 @@
         <div class="lk-page-title__text">Orders</div>
         <div class="lk-page-title__actions">
           <input id="order-search" placeholder="Search orders..." style="width: 14rem;" />
-          <select id="order-status" style="width: auto;"></select>
+          <select id="order-status" style="width: 11rem;"></select>
         </div>
       </div>
 
@@ -77,12 +77,13 @@
 
   // lkDropdown for status filter
   Look.lkDropdown('#order-status', {
+    value: 'all',
     items: [
-      { value: '', text: 'All statuses', selected: true },
-      { value: 'processing', text: 'Processing' },
-      { value: 'shipped', text: 'Shipped' },
-      { value: 'delivered', text: 'Delivered' },
-      { value: 'cancelled', text: 'Cancelled' },
+      { value: 'all', label: 'All statuses' },
+      { value: 'processing', label: 'Processing' },
+      { value: 'shipped', label: 'Shipped' },
+      { value: 'delivered', label: 'Delivered' },
+      { value: 'cancelled', label: 'Cancelled' },
     ]
   });
 
@@ -90,7 +91,7 @@
   Look.lkTable('#orders-table', { sortable: true });
 
   // lkPagination
-  Look.lkPagination('#orders-pager', { total: 42, pageSize: 7 });
+  Look.lkPagination('#orders-pager', { totalPages: 6, page: 1 });
 
   // View buttons → lkDialog detail
   document.querySelectorAll('#orders-table .lk-btn').forEach(btn => {

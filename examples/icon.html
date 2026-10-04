@@ -6,47 +6,111 @@
   <title>LookUI — Icons</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
   <style>
+    .icon-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--lk-space-3);
+      margin-bottom: var(--lk-space-5);
+    }
+    .icon-toolbar .lk-input-affix {
+      flex: 1 1 16rem;
+      max-width: 24rem;
+    }
+    .icon-count {
+      margin-left: auto;
+      font-size: var(--lk-text-sm);
+      color: var(--lk-text-muted);
+    }
+    .icon-group + .icon-group {
+      margin-top: var(--lk-space-6);
+    }
+    .icon-group__title {
+      font-size: var(--lk-text-xs);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--lk-text-muted);
+      margin-bottom: var(--lk-space-3);
+    }
     .icon-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
       gap: var(--lk-space-3);
     }
     .icon-cell {
+      position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: var(--lk-space-2);
-      padding: var(--lk-space-3);
+      padding: var(--lk-space-4) var(--lk-space-2) var(--lk-space-3);
       border: 1px solid var(--lk-border);
       border-radius: var(--lk-radius-md);
+      background: var(--lk-bg);
+      font: inherit;
       font-size: var(--lk-text-xs);
       color: var(--lk-text-muted);
       text-align: center;
-      transition: border-color 0.15s;
+      cursor: pointer;
+      transition: border-color 0.15s, background-color 0.15s, color 0.15s;
     }
-    .icon-cell:hover {
+    .icon-cell:hover,
+    .icon-cell:focus-visible {
       border-color: var(--lk-primary);
+      color: var(--lk-text);
+      outline: none;
     }
     .icon-cell .lk-icon {
       font-size: 1.5rem;
       color: var(--lk-text);
     }
+    .icon-cell__name {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .icon-cell--fill {
+      background: var(--lk-surface);
+    }
+    .icon-cell.is-copied {
+      border-color: var(--lk-positive);
+      color: var(--lk-positive);
+    }
+    .icon-empty {
+      padding: var(--lk-space-6);
+      text-align: center;
+      color: var(--lk-text-muted);
+    }
     .size-row {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: var(--lk-space-4);
+      margin-bottom: var(--lk-space-3);
     }
-    .size-row > span {
+    .size-row__label {
       font-size: var(--lk-text-xs);
       color: var(--lk-text-muted);
-      min-width: 2.5rem;
+      min-width: 3rem;
     }
     .color-row {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: var(--lk-space-4);
-      font-size: 1.25rem;
+      font-size: 1.5rem;
+      margin-bottom: var(--lk-space-3);
+    }
+    .custom-demo {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--lk-space-4);
+      font-size: 1.5rem;
     }
   </style>
 </head>
@@ -56,75 +120,53 @@
   <div class="demo-container">
     <a href="index.html" class="demo-back">&larr; All Components</a>
     <h1 style="font-size: var(--lk-text-2xl);">Icons</h1>
-    <p style="opacity: 0.85;">SVG inline icons via CSS mask-image &mdash; inherits color, scales with font-size</p>
+    <p style="opacity: 0.85;">Look Icons &mdash; outline glyphs with <code>-fill</code> variants, drawn as CSS masks: they inherit color and scale with font-size</p>
   </div>
 </header>
 
 <main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
 
-  <!-- Full icon grid -->
+  <!-- Gallery -->
   <section class="demo-section">
-    <p class="demo-section__title">Navigation</p>
-    <div class="icon-grid" id="nav-icons"></div>
-  </section>
+    <p class="demo-section__title">Gallery</p>
+    <p class="demo-sub">Click an icon to copy its name. <code>name</code> is the outline glyph, <code>name-fill</code> the filled one.</p>
 
-  <section class="demo-section">
-    <p class="demo-section__title">Actions</p>
-    <div class="icon-grid" id="action-icons"></div>
-  </section>
+    <div class="icon-toolbar">
+      <div class="lk-input-affix">
+        <span class="lk-input-affix__prepend"><span class="lk-icon lk-icon--search" aria-hidden="true"></span></span>
+        <input id="icon-search" class="lk-input lk-input--affixed" type="search" placeholder="Search icons…" aria-label="Search icons" />
+      </div>
+      <div class="lk-btn-group" role="group" aria-label="Style" id="icon-mode">
+        <button type="button" class="lk-btn lk-btn--sm lk-btn--primary" data-mode="all" aria-pressed="true">All</button>
+        <button type="button" class="lk-btn lk-btn--sm lk-btn--secondary" data-mode="outline" aria-pressed="false">Outline</button>
+        <button type="button" class="lk-btn lk-btn--sm lk-btn--secondary" data-mode="fill" aria-pressed="false">Fill</button>
+      </div>
+      <span class="icon-count" id="icon-count"></span>
+    </div>
 
-  <section class="demo-section">
-    <p class="demo-section__title">UI</p>
-    <div class="icon-grid" id="ui-icons"></div>
-  </section>
-
-  <section class="demo-section">
-    <p class="demo-section__title">Status</p>
-    <div class="icon-grid" id="status-icons"></div>
-  </section>
-
-  <section class="demo-section">
-    <p class="demo-section__title">Objects</p>
-    <div class="icon-grid" id="object-icons"></div>
-  </section>
-
-  <section class="demo-section">
-    <p class="demo-section__title">Media</p>
-    <div class="icon-grid" id="media-icons"></div>
-  </section>
-
-  <section class="demo-section">
-    <p class="demo-section__title">Misc</p>
-    <div class="icon-grid" id="misc-icons"></div>
+    <div id="icon-gallery"></div>
   </section>
 
   <!-- Sizes -->
   <section class="demo-section">
     <p class="demo-section__title">Sizes</p>
-
-    <div style="display: flex; flex-direction: column; gap: var(--lk-space-3);">
-      <div class="size-row"><span>xs</span> <span class="lk-icon lk-icon--star lk-icon--xs"></span></div>
-      <div class="size-row"><span>sm</span> <span class="lk-icon lk-icon--star lk-icon--sm"></span></div>
-      <div class="size-row"><span>1em</span> <span class="lk-icon lk-icon--star"></span></div>
-      <div class="size-row"><span>lg</span> <span class="lk-icon lk-icon--star lk-icon--lg"></span></div>
-      <div class="size-row"><span>xl</span> <span class="lk-icon lk-icon--star lk-icon--xl"></span></div>
-      <div class="size-row"><span>2xl</span> <span class="lk-icon lk-icon--star lk-icon--2xl"></span></div>
+    <div id="size-rows"></div>
+    <p class="demo-sub" style="margin-top: var(--lk-space-4);">Modifiers scale relative to the font-size: <code>xs</code> <code>sm</code> <code>lg</code> <code>xl</code> <code>2xl</code></p>
+    <div class="size-row" style="font-size: 1rem;">
+      <span class="lk-icon lk-icon--star-fill lk-icon--xs"></span>
+      <span class="lk-icon lk-icon--star-fill lk-icon--sm"></span>
+      <span class="lk-icon lk-icon--star-fill"></span>
+      <span class="lk-icon lk-icon--star-fill lk-icon--lg"></span>
+      <span class="lk-icon lk-icon--star-fill lk-icon--xl"></span>
+      <span class="lk-icon lk-icon--star-fill lk-icon--2xl"></span>
     </div>
   </section>
 
   <!-- Colors -->
   <section class="demo-section">
     <p class="demo-section__title">Colors</p>
-
-    <div class="color-row">
-      <span class="lk-icon lk-icon--heart lk-icon--primary"></span>
-      <span class="lk-icon lk-icon--heart lk-icon--secondary"></span>
-      <span class="lk-icon lk-icon--heart lk-icon--positive"></span>
-      <span class="lk-icon lk-icon--heart lk-icon--negative"></span>
-      <span class="lk-icon lk-icon--heart lk-icon--warning"></span>
-      <span class="lk-icon lk-icon--heart lk-icon--info"></span>
-      <span class="lk-icon lk-icon--heart lk-icon--muted"></span>
-    </div>
+    <div class="color-row" id="color-outline"></div>
+    <div class="color-row" id="color-fill"></div>
   </section>
 
   <!-- Spin -->
@@ -139,55 +181,534 @@
     <div id="js-demo" style="display: flex; gap: var(--lk-space-3); align-items: center; font-size: 1.25rem;"></div>
   </section>
 
+  <!-- Custom icons -->
+  <section class="demo-section">
+    <p class="demo-section__title">Custom icons</p>
+    <p class="demo-sub">
+      <code>Look.icons.register(name, svg)</code> adds (or overrides) a glyph at runtime &mdash; both <code>lkIcon(name)</code>
+      and plain <code>lk-icon--name</code> markup pick it up. Only the shape matters: the SVG is used as a mask and painted in <code>currentColor</code>.
+    </p>
+    <div class="custom-demo" id="custom-demo">
+      <span class="lk-icon lk-icon--rocket"></span>
+      <span class="lk-icon lk-icon--rocket lk-icon--primary"></span>
+      <span class="lk-icon lk-icon--rocket lk-icon--negative lk-icon--lg"></span>
+    </div>
+    <div class="demo-row" style="margin-top: var(--lk-space-4);">
+      <button type="button" class="lk-btn lk-btn--sm lk-btn--secondary" id="btn-unregister">Unregister rocket</button>
+      <button type="button" class="lk-btn lk-btn--sm lk-btn--secondary" id="btn-override">Override "heart"</button>
+      <button type="button" class="lk-btn lk-btn--sm lk-btn--ghost" id="btn-reset">Reset</button>
+    </div>
+    <div class="demo-output" id="custom-output"></div>
+
+    <div class="demo-usage">
+      <p class="demo-usage__title">Register</p>
+      <pre>Look.icons.register('rocket', `&lt;svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.75"
+  stroke-linecap="round" stroke-linejoin="round"&gt;…&lt;/svg&gt;`);
+Look.icons.register('logo', '/img/logo-mask.svg');   // URL works too
+
+// &lt;span class="lk-icon lk-icon--rocket"&gt;&lt;/span&gt;  or  Look.lkIcon('rocket')
+
+Look.icons.has('rocket');        // true
+Look.icons.names();              // ['rocket']  ({ all: true } → every name)
+Look.icons.unregister('rocket');
+Look.icons.reset();</pre>
+
+      <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">Use a whole set</p>
+      <pre>// { name: svg } or a Map — names are prefixed, existing defaults can be overridden
+Look.icons.use({ cloud: '&lt;svg…&gt;', bolt: '&lt;svg…&gt;' }, { prefix: 'brand-' });
+// → lk-icon--brand-cloud, lk-icon--brand-bolt</pre>
+
+      <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">One-off inline glyph</p>
+      <pre>const el = Look.lkIcon('sparkle', { svg: '&lt;svg viewBox="0 0 24 24"&gt;…&lt;/svg&gt;', color: 'warning' });</pre>
+    </div>
+  </section>
+
   <!-- Usage -->
   <div class="demo-usage">
     <p class="demo-usage__title">HTML</p>
     <pre>&lt;span class="lk-icon lk-icon--close" aria-hidden="true"&gt;&lt;/span&gt;
-&lt;span class="lk-icon lk-icon--star lk-icon--lg lk-icon--primary"&gt;&lt;/span&gt;
+&lt;span class="lk-icon lk-icon--star-fill lk-icon--lg lk-icon--warning"&gt;&lt;/span&gt;
 &lt;span class="lk-icon lk-icon--refresh lk-icon--spin"&gt;&lt;/span&gt;</pre>
 
     <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
     <pre>const icon = Look.lkIcon('close');
-const big  = Look.lkIcon('star', { size: 'lg', color: 'primary' });
+const fav  = Look.lkIcon('heart-fill', { size: 'lg', color: 'negative' });
 const labeled = Look.lkIcon('search', { label: 'Search' });
-document.body.appendChild(icon);</pre>
+document.body.appendChild(icon);
+
+// star-outline / heart-outline still work (aliases of star / heart)</pre>
   </div>
+
+  <div id="api"></div>
 
 </main>
 
 <script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
 <script>
-  const ICONS = {
-    'nav-icons': ['chevron-left','chevron-right','chevron-up','chevron-down','arrow-left','arrow-right','arrow-up','arrow-down','menu','external-link'],
-    'action-icons': ['close','check','plus','minus','search','edit','delete','copy','save','download','upload','refresh','undo','redo'],
-    'ui-icons': ['star','star-outline','heart','heart-outline','eye','eye-off','bell','settings','filter','sort-asc','sort-desc','more-horizontal'],
-    'status-icons': ['circle-info','alert-triangle','circle-x','circle-check','question'],
-    'object-icons': ['user','users','home','calendar','clock','mail','lock','unlock','image','file'],
-    'media-icons': ['play','pause','stop','skip-forward','skip-back','volume-off'],
-    'misc-icons': ['share','link','pin','chat'],
-  };
+LookDocs.render('#api', {
+  name: 'lkIcon / Look.icons',
+  kind: 'Helper',
+  signature: [
+    'const el = Look.lkIcon(name, options);   // → <span class="lk-icon lk-icon--{name}">',
+    'Look.icons.register(name, svg);          // runtime icon registry',
+  ],
+  description: [
+    'Icons are CSS masks: `.lk-icon` paints `currentColor` through the image in `--lk-icon-src`, so an icon inherits the text color and scales with `font-size` (1em × 1em). The default set — **Look Icons**, 100 names including the two aliases — ships in `look.css` as one `.lk-icon--{name}` rule per glyph.',
+    '`Look.lkIcon()` is a small factory that builds the `<span>` for you. `Look.icons` is a runtime registry that adds or overrides glyphs by injecting `.lk-icon.lk-icon--{name} { --lk-icon-src: … }` rules into a `<style id="lk-icon-registry">`, so both `lkIcon()` and hand-written markup pick them up. See [Methods](#api-section-methods).',
+    'Naming convention: `name` is the outline glyph, `name-fill` the filled one. `star-outline` and `heart-outline` are aliases of `star` and `heart`.',
+  ],
+  params: [
+    { name: 'name', type: 'string', description: 'Icon name, e.g. `\'close\'`, `\'chevron-left\'`, `\'star-fill\'` or any name registered with `Look.icons`. Falsy → a bare `.lk-icon` (useful with `options.svg`).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Size, color, extra classes, label, one-off glyph — see [Configuration](#api-section-options).' },
+  ],
+  returns: { type: 'HTMLSpanElement', description: 'A detached `<span>`; append it yourself. There is no instance object and nothing to destroy.' },
+  notes: [
+    '**Accessibility:** without `label` the span gets `aria-hidden="true"` (decorative). With `label` it gets `role="img"` and `aria-label`.',
+    'Reserved modifier names that can never be glyph names: `xs`, `sm`, `lg`, `xl`, `2xl`, `primary`, `secondary`, `positive`, `negative`, `warning`, `info`, `muted`, `spin`. `Look.icons.register()` throws for them.',
+  ],
 
-  Object.entries(ICONS).forEach(([containerId, names]) => {
-    const container = document.getElementById(containerId);
-    names.forEach(name => {
-      const cell = document.createElement('div');
-      cell.className = 'icon-cell';
-      const icon = Look.lkIcon(name);
-      const label = document.createElement('span');
-      label.textContent = name;
-      cell.appendChild(icon);
-      cell.appendChild(label);
-      container.appendChild(cell);
+  options: [
+    {
+      name: 'size', type: 'string', default: '— (1em)',
+      description: 'Adds `lk-icon--{size}`. Sizes are relative to the surrounding `font-size`, so you can also size an icon by setting `font-size` on it or its parent.',
+      values: [['xs', '0.75em'], ['sm', '0.875em'], ['(none)', '1em — default'], ['lg', '1.5em'], ['xl', '2em'], ['2xl', '3em']],
+      examples: [
+        { title: 'Every size', run: true, code: `
+          [undefined, 'xs', 'sm', 'lg', 'xl', '2xl'].forEach((size) => {
+            const icon = Look.lkIcon('star-fill', { size, color: 'warning' });
+            icon.style.marginRight = '12px';
+            container.appendChild(icon);
+          });
+          log('sizes: default, xs, sm, lg, xl, 2xl');` },
+        { title: 'Size by font-size instead', run: true, code: `
+          [14, 20, 28, 40].forEach((px) => {
+            const wrap = document.createElement('span');
+            wrap.style.cssText = 'font-size:' + px + 'px;margin-right:12px';
+            wrap.appendChild(Look.lkIcon('settings'));
+            container.appendChild(wrap);
+          });` },
+      ],
+    },
+    {
+      name: 'color', type: 'string', default: '— (currentColor)',
+      description: 'Adds `lk-icon--{color}`, which paints the icon with the matching token. Without it the icon uses the text color (`currentColor`).',
+      values: [['primary', '`--lk-primary`'], ['secondary', '`--lk-secondary`'], ['positive', '`--lk-positive`'], ['negative', '`--lk-negative`'], ['warning', '`--lk-warning`'], ['info', '`--lk-info`'], ['muted', '`--lk-text-muted`']],
+      examples: [
+        { title: 'Every color', run: true, code: `
+          ['primary', 'secondary', 'positive', 'negative', 'warning', 'info', 'muted'].forEach((color) => {
+            const icon = Look.lkIcon('heart-fill', { color, size: 'lg', label: 'heart ' + color });
+            icon.style.marginRight = '10px';
+            container.appendChild(icon);
+          });` },
+        { title: 'Inherit currentColor', run: true, code: `
+          const p = document.createElement('p');
+          p.style.color = '#8e24aa';
+          p.append(Look.lkIcon('circle-info'), ' The icon follows the paragraph color.');
+          container.appendChild(p);` },
+      ],
+    },
+    {
+      name: 'className', type: 'string', default: '—',
+      description: 'Extra class names, space separated. Use it for `lk-icon--spin` or your own classes.',
+      examples: [
+        { title: 'Spinning refresh', run: true, code: `
+          container.appendChild(Look.lkIcon('refresh', { size: 'lg', color: 'primary', className: 'lk-icon--spin' }));` },
+        { title: 'Several classes', run: true, code: `
+          const icon = Look.lkIcon('bell', { className: 'lk-icon--xl lk-icon--warning my-bell' });
+          container.appendChild(icon);
+          log(icon.className);` },
+      ],
+    },
+    {
+      name: 'label', type: 'string', default: '— (decorative)',
+      description: 'Accessible name. Sets `role="img"` + `aria-label`; without it the icon is `aria-hidden="true"`.',
+      examples: [
+        { title: 'Decorative vs. labelled', run: true, code: `
+          const a = Look.lkIcon('search');
+          const b = Look.lkIcon('search', { label: 'Search' });
+          container.append(a, ' ', b);
+          log(a.outerHTML);
+          log(b.outerHTML);` },
+      ],
+    },
+    {
+      name: 'svg', type: 'string', default: '—',
+      description: 'One-off glyph without registering it: SVG markup, a URL / path (`/img/x.svg`, `data:…`) or a ready `url(…)` value. It is set as an inline `--lk-icon-src` on that element only.',
+      values: [['\'<svg …>…</svg>\'', 'Markup — encoded to a `data:image/svg+xml` URL (an `xmlns` is added when missing)'], ['\'/img/logo.svg\'', 'Any other string is wrapped as `url("…")`'], ['\'url(…)\'', 'Used as-is']],
+      examples: [
+        { title: 'Inline SVG markup', run: true, code: `
+          const bolt = '<svg viewBox="0 0 24 24"><path d="M13.5 2.5 5 13.5h6l-1 8 8.5-11h-6z" fill="#000"/></svg>';
+          container.appendChild(Look.lkIcon('bolt', { svg: bolt, size: 'xl', color: 'warning', label: 'Bolt' }));
+          log('registered names:', Look.icons.names());` },
+        { title: 'Bare icon (no name) with a URL', code: `
+          const logo = Look.lkIcon(null, { svg: '/img/brand-mask.svg', size: 'lg' });` },
+      ],
+    },
+  ],
+
+  methods: [
+    {
+      name: 'icons.register', signature: 'Look.icons.register(name, svg) → Look.icons',
+      description: 'Adds a glyph, or overrides a default one with the same name. The name must match `/^[a-z0-9][a-z0-9_-]*$/i` and must not be a reserved modifier, otherwise it throws. Returns the registry, so calls chain.',
+      params: [
+        { name: 'name', type: 'string', description: 'Icon name; usable as `lk-icon--{name}`.' },
+        { name: 'svg', type: 'string', description: 'SVG markup, a URL/path, or a `url(…)` value (same rules as the `svg` option). `null`/`undefined` throws.' },
+      ],
+      returns: { type: 'Object', description: '`Look.icons` (chainable).' },
+      examples: [
+        { title: 'Register, use, then clean up', run: true, code: `
+          const bolt = '<svg viewBox="0 0 24 24"><path d="M13.5 2.5 5 13.5h6l-1 8 8.5-11h-6z" fill="#000"/></svg>';
+          let on = false;
+          const icon = Look.lkIcon('doc-bolt', { size: 'xl', color: 'primary' });
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          btn.style.marginLeft = '12px';
+          btn.textContent = 'register("doc-bolt")';
+          btn.onclick = () => {
+            on = !on;
+            if (on) Look.icons.register('doc-bolt', bolt); else Look.icons.unregister('doc-bolt');
+            btn.textContent = on ? 'unregister("doc-bolt")' : 'register("doc-bolt")';
+            log('has:', Look.icons.has('doc-bolt'), '| names():', Look.icons.names());
+          };
+          container.append(icon, btn);
+          log('The span exists but stays blank until the name is registered.');` },
+        { title: 'Plain markup picks it up too', code: `
+          Look.icons.register('rocket', '<svg viewBox="0 0 24 24">…</svg>');
+          // <span class="lk-icon lk-icon--rocket lk-icon--lg"></span>` },
+        { title: 'Reserved and invalid names throw', run: true, code: `
+          ['primary', 'spin', '2xl', 'bad name', '-dash'].forEach((n) => {
+            try { Look.icons.register(n, '<svg/>'); Look.icons.unregister(n); log(n, '→ ok'); }
+            catch (e) { log(n, '→', e.message); }
+          });` },
+        { title: 'Register a URL', code: `
+          Look.icons.register('logo', '/img/logo-mask.svg');           // → url("/img/logo-mask.svg")
+          Look.icons.register('cdn', 'url(https://cdn.example.com/x.svg)');` },
+      ],
+    },
+    {
+      name: 'icons.use', signature: 'Look.icons.use(set, { prefix }) → Look.icons',
+      description: 'Registers a whole set at once — an object `{ name: svg }` or a `Map`. `prefix` is prepended to every name (namespacing). Names in the set override defaults with the same name.',
+      params: [
+        { name: 'set', type: 'Object | Map', description: 'Name → SVG markup/URL.' },
+        { name: 'options.prefix', type: 'string', optional: true, default: "''", description: 'Prefix added to each name.' },
+      ],
+      returns: { type: 'Object', description: '`Look.icons` (chainable).' },
+      examples: [
+        { title: 'A prefixed set', run: true, code: `
+          const set = {
+            ring: '<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.75"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>',
+            diamond: '<svg viewBox="0 0 24 24"><path d="M12 3l8 9-8 9-8-9z" fill="#000"/></svg>',
+          };
+          Look.icons.use(set, { prefix: 'doc-' });
+          log('names():', Look.icons.names());
+          // Freeze the glyphs inline so the demo survives the cleanup below
+          ['doc-ring', 'doc-diamond'].forEach((n) => {
+            const icon = Look.lkIcon(n, { size: 'xl', color: 'info' });
+            icon.style.setProperty('--lk-icon-src', Look.icons.get(n));
+            icon.style.marginRight = '12px';
+            container.appendChild(icon);
+          });
+          Object.keys(set).forEach((n) => Look.icons.unregister('doc-' + n));
+          log('after cleanup:', Look.icons.names());` },
+        { title: 'Replace the whole default look', code: `
+          // e.g. a third-party set exported as { name: '<svg…>' }
+          Look.icons.use(myIconSet);           // same names → overrides Look Icons
+          Look.icons.use(brandSet, { prefix: 'brand-' });` },
+      ],
+    },
+    {
+      name: 'icons.unregister', signature: 'Look.icons.unregister(name) → Look.icons',
+      description: 'Removes one registered glyph. If it overrode a default, the default glyph shows again. Unknown names are ignored.',
+      returns: { type: 'Object', description: '`Look.icons` (chainable).' },
+      examples: [
+        { title: 'Override a default, then restore it', run: true, code: `
+          const before = Look.lkIcon('heart', { size: 'xl', color: 'negative' });
+          Look.icons.register('heart', '<svg viewBox="0 0 24 24"><path d="M12 3l8 9-8 9-8-9z" fill="#000"/></svg>');
+          const overridden = Look.lkIcon('heart', { size: 'xl', color: 'negative' });
+          overridden.style.setProperty('--lk-icon-src', Look.icons.get('heart'));
+          Look.icons.unregister('heart');            // default heart is back
+          const after = Look.lkIcon('heart', { size: 'xl', color: 'negative' });
+          container.append(before, ' → ', overridden, ' → ', after);
+          log('get("heart") after unregister:', Look.icons.get('heart'));` },
+      ],
+    },
+    {
+      name: 'icons.reset', signature: 'Look.icons.reset() → Look.icons',
+      description: 'Removes every registered glyph and the injected `<style id="lk-icon-registry">`. Defaults are untouched.',
+      returns: { type: 'Object', description: '`Look.icons` (chainable).' },
+      examples: [
+        { title: 'Usage', code: `
+          Look.icons.register('a', svgA).register('b', svgB);
+          Look.icons.reset();
+          Look.icons.names();   // → []` },
+      ],
+    },
+    {
+      name: 'icons.has', signature: 'Look.icons.has(name) → boolean',
+      description: '`true` when the name is registered at runtime or is part of the default set (aliases included).',
+      returns: { type: 'boolean' },
+      examples: [
+        { title: 'Checks', run: true, code: `
+          ['close', 'star-fill', 'heart-outline', 'rocket-ship', 'primary'].forEach((n) => log(n, '→', Look.icons.has(n)));` },
+      ],
+    },
+    {
+      name: 'icons.names', signature: 'Look.icons.names({ all }) → string[]',
+      description: 'Runtime-registered names only, or every available name (defaults + registered, de-duplicated) with `{ all: true }`.',
+      params: [{ name: 'options.all', type: 'boolean', optional: true, default: 'false', description: 'Include the default set.' }],
+      returns: { type: 'string[]' },
+      examples: [
+        { title: 'Every icon, rendered', run: true, code: `
+          const all = Look.icons.names({ all: true });
+          log(all.length + ' names; registered now:', Look.icons.names());
+          const grid = document.createElement('div');
+          grid.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px;font-size:20px';
+          all.forEach((n) => { const i = Look.lkIcon(n); i.title = n; grid.appendChild(i); });
+          container.appendChild(grid);` },
+      ],
+    },
+    {
+      name: 'icons.get', signature: 'Look.icons.get(name) → string | null',
+      description: 'The CSS `<image>` value a **registered** name resolves to (e.g. `url("data:image/svg+xml,…")`). Returns `null` for default glyphs and unknown names — defaults live in the stylesheet, not the registry.',
+      returns: { type: 'string | null' },
+      examples: [
+        { title: 'Registered vs. default', run: true, code: `
+          Look.icons.register('doc-tmp', '/img/tmp.svg');
+          log('doc-tmp →', Look.icons.get('doc-tmp'));
+          log('close   →', Look.icons.get('close'));
+          Look.icons.unregister('doc-tmp');` },
+      ],
+    },
+  ],
+
+  classes: [
+    {
+      name: '.lk-icon', description: 'Base: `inline-block`, 1em × 1em, `vertical-align: -0.125em`, painted with `currentColor` through `mask-image: var(--lk-icon-src)`. Needs a glyph class (or an inline `--lk-icon-src`) to show anything.',
+      examples: [{ title: 'Markup', code: `<span class="lk-icon lk-icon--close" aria-hidden="true"></span>` }],
+    },
+    {
+      name: '.lk-icon--{name}', description: 'Glyph: sets `--lk-icon-src`. Any default name or registered name. Outline `name`, filled `name-fill`.',
+      examples: [{ title: 'Outline vs. fill', run: true, code: `
+        container.innerHTML = ['star', 'star-fill', 'bell', 'bell-fill', 'folder', 'folder-fill', 'user', 'user-fill']
+          .map((n) => '<span class="lk-icon lk-icon--' + n + ' lk-icon--lg" title="' + n + '" style="margin-right:8px"></span>').join('');` }],
+    },
+    {
+      name: '.lk-icon--xs / --sm / --lg / --xl / --2xl', description: 'Size: 0.75em / 0.875em / 1.5em / 2em / 3em.',
+      examples: [{ title: 'Markup sizes', run: true, code: `
+        container.innerHTML = ['xs', 'sm', 'lg', 'xl', '2xl']
+          .map((s) => '<span class="lk-icon lk-icon--clock lk-icon--' + s + '" style="margin-right:8px"></span>').join('');` }],
+    },
+    {
+      name: '.lk-icon--primary / --secondary / --positive / --negative / --warning / --info / --muted', description: 'Color: `background-color` from the matching token (`--muted` → `--lk-text-muted`).',
+      examples: [{ title: 'Status row', run: true, code: `
+        container.innerHTML =
+          '<span class="lk-icon lk-icon--circle-check-fill lk-icon--lg lk-icon--positive"></span> ' +
+          '<span class="lk-icon lk-icon--alert-triangle-fill lk-icon--lg lk-icon--warning"></span> ' +
+          '<span class="lk-icon lk-icon--circle-x-fill lk-icon--lg lk-icon--negative"></span> ' +
+          '<span class="lk-icon lk-icon--circle-info-fill lk-icon--lg lk-icon--info"></span>';` }],
+    },
+    {
+      name: '.lk-icon--spin', description: 'Continuous rotation (`lk-icon-spin`, 1s linear infinite).',
+      examples: [{ title: 'Loading indicator', run: true, code: `
+        container.innerHTML = '<span class="lk-icon lk-icon--refresh lk-icon--spin lk-icon--lg lk-icon--primary"></span> Syncing…';` }],
+    },
+    {
+      name: '.lk-icon--star-outline / --heart-outline', description: 'Aliases kept for compatibility; they share the `star` / `heart` rule.',
+    },
+  ],
+
+  tokens: [
+    { name: '--lk-icon-src', default: 'per .lk-icon--{name}', description: 'The mask image (a CSS `<image>`, usually `url("data:image/svg+xml,…")`). Set it inline for one-off glyphs: `style="--lk-icon-src: url(/img/x.svg)"`. Inline values win over glyph classes and registry rules.' },
+    { name: '--lk-primary … --lk-info, --lk-text-muted', default: 'theme tokens', description: 'Read by the color modifiers; re-theme them and colored icons follow.' },
+  ],
+});
+</script>
+<script>
+  // ---- Gallery -------------------------------------------------------------
+  const GROUPS = [
+    ['Navigation', ['chevron-left', 'chevron-right', 'chevron-up', 'chevron-down', 'arrow-left', 'arrow-right', 'arrow-up', 'arrow-down', 'menu', 'external-link']],
+    ['Actions', ['close', 'check', 'plus', 'minus', 'search', 'edit', 'delete', 'copy', 'save', 'download', 'upload', 'refresh', 'undo', 'redo', 'share', 'link']],
+    ['Interface', ['star', 'heart', 'eye', 'eye-off', 'bell', 'settings', 'filter', 'sort-asc', 'sort-desc', 'more-horizontal', 'more-vertical']],
+    ['Status', ['circle-info', 'circle-check', 'circle-x', 'alert-triangle', 'question']],
+    ['Objects', ['user', 'users', 'home', 'dashboard', 'calendar', 'clock', 'mail', 'chat', 'lock', 'unlock', 'image', 'file', 'folder', 'shopping-cart', 'pin']],
+    ['Media', ['play', 'pause', 'stop', 'skip-back', 'skip-forward', 'volume-off']],
+  ];
+
+  const known = new Set(Look.icons.names({ all: true }));
+  const gallery = document.getElementById('icon-gallery');
+  const search = document.getElementById('icon-search');
+  const countEl = document.getElementById('icon-count');
+  let mode = 'all';
+
+  function cellFor(name) {
+    const cell = document.createElement('button');
+    cell.type = 'button';
+    cell.className = 'icon-cell' + (name.endsWith('-fill') ? ' icon-cell--fill' : '');
+    cell.dataset.name = name;
+    cell.title = `Copy "${name}"`;
+    const label = document.createElement('span');
+    label.className = 'icon-cell__name';
+    label.textContent = name;
+    cell.append(Look.lkIcon(name), label);
+    return cell;
+  }
+
+  function render() {
+    const q = search.value.trim().toLowerCase();
+    gallery.textContent = '';
+    let total = 0;
+    GROUPS.forEach(([title, bases]) => {
+      const names = [];
+      bases.forEach((base) => {
+        const fill = `${base}-fill`;
+        if (mode !== 'fill') names.push(base);
+        if (mode !== 'outline' && known.has(fill)) names.push(fill);
+      });
+      const shown = names.filter((n) => !q || n.includes(q));
+      if (!shown.length) return;
+      total += shown.length;
+      const group = document.createElement('div');
+      group.className = 'icon-group';
+      const heading = document.createElement('p');
+      heading.className = 'icon-group__title';
+      heading.textContent = title;
+      const grid = document.createElement('div');
+      grid.className = 'icon-grid';
+      shown.forEach((n) => grid.appendChild(cellFor(n)));
+      group.append(heading, grid);
+      gallery.appendChild(group);
+    });
+    if (!total) {
+      const empty = document.createElement('p');
+      empty.className = 'icon-empty';
+      empty.textContent = `No icons match "${search.value}".`;
+      gallery.appendChild(empty);
+    }
+    countEl.textContent = `${total} icon${total === 1 ? '' : 's'}`;
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+    }
+    fallbackCopy(text);
+    return Promise.resolve();
+  }
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (_) { /* ignore */ }
+    ta.remove();
+  }
+
+  gallery.addEventListener('click', (e) => {
+    const cell = e.target.closest('.icon-cell');
+    if (!cell) return;
+    const name = cell.dataset.name;
+    copyText(name).then(() => {
+      const label = cell.querySelector('.icon-cell__name');
+      cell.classList.add('is-copied');
+      label.textContent = 'Copied!';
+      clearTimeout(cell._t);
+      cell._t = setTimeout(() => {
+        cell.classList.remove('is-copied');
+        label.textContent = name;
+      }, 1200);
     });
   });
 
-  // JS factory demo
+  search.addEventListener('input', render);
+
+  document.getElementById('icon-mode').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-mode]');
+    if (!btn) return;
+    mode = btn.dataset.mode;
+    btn.parentElement.querySelectorAll('[data-mode]').forEach((b) => {
+      const on = b === btn;
+      b.classList.toggle('lk-btn--primary', on);
+      b.classList.toggle('lk-btn--secondary', !on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    render();
+  });
+
+  render();
+
+  // ---- Sizes ---------------------------------------------------------------
+  const SAMPLE = ['heart', 'heart-fill', 'star', 'star-fill', 'settings', 'bell-fill', 'circle-check-fill', 'alert-triangle', 'chevron-right', 'folder-fill'];
+  const sizeRows = document.getElementById('size-rows');
+  [16, 20, 24, 32].forEach((px) => {
+    const row = document.createElement('div');
+    row.className = 'size-row';
+    row.style.fontSize = px + 'px';
+    const label = document.createElement('span');
+    label.className = 'size-row__label';
+    label.textContent = px + 'px';
+    row.appendChild(label);
+    SAMPLE.forEach((n) => row.appendChild(Look.lkIcon(n)));
+    sizeRows.appendChild(row);
+  });
+
+  // ---- Colors --------------------------------------------------------------
+  const COLORS = ['primary', 'secondary', 'positive', 'negative', 'warning', 'info', 'muted'];
+  COLORS.forEach((c) => {
+    document.getElementById('color-outline').appendChild(Look.lkIcon('heart', { color: c, label: `heart ${c}` }));
+    document.getElementById('color-fill').appendChild(Look.lkIcon('heart-fill', { color: c, label: `heart-fill ${c}` }));
+  });
+
+  // ---- JS factory ----------------------------------------------------------
   const jsDemo = document.getElementById('js-demo');
-  jsDemo.appendChild(Look.lkIcon('home', { size: 'lg', color: 'primary' }));
+  jsDemo.appendChild(Look.lkIcon('home-fill', { size: 'lg', color: 'primary' }));
   jsDemo.appendChild(Look.lkIcon('bell', { size: 'lg', color: 'warning' }));
-  jsDemo.appendChild(Look.lkIcon('heart', { size: 'lg', color: 'negative' }));
-  jsDemo.appendChild(Look.lkIcon('check', { size: 'lg', color: 'positive' }));
+  jsDemo.appendChild(Look.lkIcon('heart-fill', { size: 'lg', color: 'negative' }));
+  jsDemo.appendChild(Look.lkIcon('circle-check-fill', { size: 'lg', color: 'positive' }));
   jsDemo.appendChild(Look.lkIcon('refresh', { size: 'lg', className: 'lk-icon--spin' }));
+
+  // ---- Custom icons --------------------------------------------------------
+  const ROCKET = `<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3c2.9 2 4.25 5.1 4.25 8.75V16h-8.5v-4.25C7.75 8.1 9.1 5 12 3z"/>
+    <circle cx="12" cy="10" r="1.75"/>
+    <path d="M7.75 12.5 5 15.25V19l2.75-1.75M16.25 12.5 19 15.25V19l-2.75-1.75M10.5 19l1.5 2 1.5-2"/>
+  </svg>`;
+  const SPARKLE = '<svg viewBox="0 0 24 24"><path d="M12 2.5c.7 4.8 2.7 6.8 7.5 7.5-4.8.7-6.8 2.7-7.5 7.5-.7-4.8-2.7-6.8-7.5-7.5 4.8-.7 6.8-2.7 7.5-7.5z" fill="#000"/><circle cx="18.5" cy="18.5" r="2" fill="#000"/></svg>';
+  const HEART_ALT = '<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.75" stroke-linejoin="round"><path d="M12 20 4 12a4.6 4.6 0 0 1 8-5 4.6 4.6 0 0 1 8 5z"/></svg>';
+
+  const customOut = document.getElementById('custom-output');
+  const customDemo = document.getElementById('custom-demo');
+  customDemo.appendChild(Look.lkIcon('sparkle', { svg: SPARKLE, color: 'warning', size: 'lg', label: 'Inline sparkle' }));
+
+  function report() {
+    customOut.textContent = `Look.icons.names() → ${JSON.stringify(Look.icons.names())}`;
+  }
+
+  Look.icons.register('rocket', ROCKET);
+  report();
+
+  const btnUnreg = document.getElementById('btn-unregister');
+  btnUnreg.addEventListener('click', () => {
+    if (Look.icons.get('rocket')) {
+      Look.icons.unregister('rocket');
+      btnUnreg.textContent = 'Register rocket';
+    } else {
+      Look.icons.register('rocket', ROCKET);
+      btnUnreg.textContent = 'Unregister rocket';
+    }
+    report();
+  });
+  document.getElementById('btn-override').addEventListener('click', () => {
+    Look.icons.register('heart', HEART_ALT);
+    report();
+  });
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    Look.icons.reset();
+    btnUnreg.textContent = 'Register rocket';
+    report();
+  });
 </script>
 </body>
 </html>

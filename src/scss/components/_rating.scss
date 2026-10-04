@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Rating component
 
 .lk-rating {
@@ -73,7 +75,8 @@
 
   // --- Disabled ---
 
-  &--disabled {
+  &--disabled,
+  &.lk-disabled {
     opacity: 0.5;
     pointer-events: none;
   }

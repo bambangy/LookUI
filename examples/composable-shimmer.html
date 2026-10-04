@@ -6,6 +6,7 @@
   <title>LookUI - Composable Shimmer</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
 </head>
 <body>
 <header class="demo-header">
@@ -31,14 +32,154 @@
       </div>
     </div>
   </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Skeleton list while data loads</p>
+    <button id="reload-list" class="lk-btn lk-btn--primary" style="margin-bottom: var(--lk-space-3);">Reload users</button>
+    <div style="display:grid;gap:var(--lk-space-2);max-width:30rem;">
+      <div class="lk-card" data-row><div class="lk-card__body">Ada Lovelace — admin</div></div>
+      <div class="lk-card" data-row><div class="lk-card__body">Alan Turing — editor</div></div>
+      <div class="lk-card" data-row><div class="lk-card__body">Grace Hopper — viewer</div></div>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const shimmer = Look.lkShimmer('#report-card', { open: false });
+
+shimmer.show();
+await loadReport();
+shimmer.hide();
+
+shimmer.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
 </main>
 
 <script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkShimmer',
+  kind: 'Composable',
+  signature: 'const shimmer = Look.lkShimmer(target, options);',
+  description: [
+    'Lays an animated "skeleton" shimmer over an existing element: a translucent veil (`.lk-shimmer-overlay`) with a diagonal light wave sweeping across it. Use it for content that is being refreshed in place, where a spinner would be too loud.',
+    'The overlay (`position: absolute; inset: 0; overflow: hidden`) is appended to the target immediately (hidden). A `position: static` target becomes `relative`; `destroy()` restores the original inline position.',
+  ],
+  params: [
+    { name: 'target', type: 'Element | string', description: 'Element or selector to cover. Throws `Look.lkShimmer: target is required.` / `target not found` otherwise.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: '`{ el, show, hide, destroy, isVisible }`.' },
+  notes: [
+    '**Motion.** The overlay fades in/out over `--lk-duration-base`; `hidden` is set 280 ms after `hide()`. The wave is a Web Animations loop (background-position 200% → -50%, 1450 ms, linear, infinite) started on `show()` and cancelled once the overlay is fully hidden.',
+  ],
+
+  options: [
+    {
+      name: 'backdrop', type: 'boolean', default: 'true',
+      description: 'Veil `color-mix(in srgb, var(--lk-bg) 85%, transparent)` that mostly hides the content. `false` leaves the content visible with only the wave sweeping over it.',
+      examples: [{ title: 'With and without backdrop', run: true, code: `
+        container.style.display = 'grid';
+        container.style.gridTemplateColumns = '1fr 1fr';
+        container.style.gap = '8px';
+        [true, false].forEach((backdrop) => {
+          const card = document.createElement('div');
+          card.className = 'lk-card';
+          card.style.minHeight = '6rem';
+          card.innerHTML = '<div class="lk-card__body"><strong>backdrop: ' + backdrop + '</strong><p>Underlying content</p></div>';
+          container.appendChild(card);
+          Look.lkShimmer(card, { backdrop });
+        });` }],
+    },
+    {
+      name: 'radius', type: 'string', default: "'inherit'",
+      description: 'CSS `border-radius` of the overlay. `\'inherit\'` follows the target\'s corners; pass any length for targets without their own radius.',
+      examples: [{ title: 'inherit vs 0 vs 999px', run: true, code: `
+        container.style.display = 'flex';
+        container.style.gap = '12px';
+        ['inherit', '0', '999px'].forEach((radius) => {
+          const box = document.createElement('div');
+          box.style.cssText = 'width: 8rem; height: 3rem; border-radius: 12px; background: var(--lk-bg-subtle); display: grid; place-items: center;';
+          box.textContent = radius;
+          container.appendChild(box);
+          Look.lkShimmer(box, { radius, backdrop: false });
+        });` }],
+    },
+    {
+      name: 'lockPointer', type: 'boolean', default: 'true',
+      description: 'Block clicks on the target while the shimmer is visible. `false` lets clicks through.',
+      examples: [{ run: true, code: `
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--secondary';
+        btn.textContent = 'Still clickable (lockPointer: false)';
+        btn.onclick = () => log('clicked');
+        container.appendChild(btn);
+        Look.lkShimmer(btn, { lockPointer: false, backdrop: false });` }],
+    },
+    {
+      name: 'open', type: 'boolean', default: 'true',
+      description: 'Show immediately. Pass `false` to attach the overlay hidden and call `show()` later.',
+    },
+  ],
+
+  properties: [
+    { name: 'el', type: 'Element', readonly: true, description: 'The `.lk-shimmer-overlay` element.' },
+    { name: 'isVisible', type: 'boolean', readonly: true, description: '`true` between `show()` and `hide()`.' },
+  ],
+
+  methods: [
+    {
+      name: 'show', signature: 'show()', description: 'Starts the wave and fades the overlay in. No-op when visible or destroyed.',
+      examples: [{ title: 'Simulated refresh', run: true, code: `
+        const card = document.createElement('div');
+        card.className = 'lk-card';
+        card.innerHTML = '<div class="lk-card__body"><strong>Weather</strong><p data-v>21 °C</p></div>';
+        const shimmer = Look.lkShimmer(card, { open: false });
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--primary';
+        b.style.marginBottom = '8px';
+        b.textContent = 'Refresh';
+        b.onclick = () => {
+          shimmer.show();
+          setTimeout(() => { card.querySelector('[data-v]').textContent = (15 + Math.round(Math.random() * 15)) + ' °C'; shimmer.hide(); log('refreshed'); }, 1500);
+        };
+        container.append(b, card);` }],
+    },
+    { name: 'hide', signature: 'hide()', description: 'Fades the overlay out; the wave stops once it is hidden. No-op when hidden.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Stops the wave, removes the overlay immediately and restores the target\'s inline `position`.' },
+  ],
+
+  events: [],
+
+  classes: [
+    { name: '.lk-shimmer-overlay', description: 'Absolute veil over the target (`border-radius: inherit` by default).' },
+    { name: '.lk-shimmer-overlay--open', description: 'Visible state.' },
+    { name: '.lk-shimmer-wave', description: 'The moving gradient layer inside the overlay.' },
+  ],
+
+  tokens: [
+    { name: '--lk-bg', default: 'theme background', description: 'Mixed at 85% for the veil.' },
+    { name: '--lk-surface', default: 'theme surface', description: 'Mixed at 65% for the wave highlight.' },
+    { name: '--lk-duration-base', default: '260ms', description: 'Fade in/out.' },
+  ],
+});
+</script>
 <script>
   const shimmer = Look.lkShimmer('#shimmer-target', { open: false });
 
   document.getElementById('show-shimmer').addEventListener('click', () => shimmer.show());
   document.getElementById('hide-shimmer').addEventListener('click', () => shimmer.hide());
+
+  const rows = [...document.querySelectorAll('[data-row]')].map((el) => Look.lkShimmer(el, { open: false }));
+  document.getElementById('reload-list').addEventListener('click', () => {
+    rows.forEach((s, i) => {
+      s.show();
+      setTimeout(() => s.hide(), 900 + i * 400);
+    });
+  });
 </script>
 </body>
 </html>

@@ -1,7 +1,12 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Spinner component
 
 .lk-spinner {
   display: inline-block;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  vertical-align: middle;
   width: 2rem;
   height: 2rem;
   border: 3px solid var(--lk-border);
@@ -86,4 +91,11 @@
 
 @keyframes lk-spin {
   to { transform: rotate(360deg); }
+}
+
+// Still communicates "busy", just calmer
+@media (prefers-reduced-motion: reduce) {
+  .lk-spinner {
+    animation-duration: 1.5s;
+  }
 }

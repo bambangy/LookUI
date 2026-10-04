@@ -5,16 +5,24 @@
 .demo-header {
   background: var(--lk-primary);
   color: var(--lk-primary-contrast);
-  padding: var(--lk-space-7) var(--lk-space-4);
+  padding: var(--lk-space-7) 0;
 }
 
+/* Inline padding lives on the container so header text and <main> content
+   share the same left edge at every width. */
 .demo-container {
   max-width: var(--lk-container-lg);
   margin-inline: auto;
+  padding-inline: var(--lk-space-4);
 }
 
 .demo-section {
   padding: var(--lk-space-9) 0;
+}
+
+/* <main> already has top padding — avoid a double gap under the header. */
+.demo-section:first-child {
+  padding-top: 0;
 }
 
 .demo-section + .demo-section {
@@ -36,6 +44,10 @@
   align-items: center;
   gap: var(--lk-space-3);
   margin-bottom: var(--lk-space-5);
+}
+
+.demo-row:last-child {
+  margin-bottom: 0;
 }
 
 .demo-sub {
@@ -130,4 +142,9 @@
   font-size: var(--lk-text-sm);
   color: var(--lk-text-muted);
   min-height: 1.5em;
+}
+
+/* Output bars are filled by script; hide them until there is something to show. */
+.demo-output:empty {
+  display: none;
 }

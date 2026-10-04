@@ -6,6 +6,7 @@
   <title>LookUI - Composable Storage</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
 </head>
 <body>
 <header class="demo-header">
@@ -34,9 +35,193 @@
 
     <div id="storage-output" class="demo-output">Ready</div>
   </section>
+
+  <div id="api"></div>
 </main>
 
 <script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkStorage',
+  kind: 'Composable',
+  signature: 'const store = Look.lkStorage(options);',
+  description: [
+    'A small async wrapper around `localStorage` (or `sessionStorage`) that namespaces keys, serializes values as JSON and can encrypt them with **AES-GCM** (256-bit key derived from a secret with PBKDF2-SHA-256, 100 000 iterations, random salt and IV per write).',
+    'Every key is stored as `"{namespace}:{key}"`. Values go through `JSON.stringify`, so objects, arrays, numbers, booleans and strings round-trip; `Date` becomes an ISO string and functions/`undefined` are not preserved. There is no built-in expiry/TTL.',
+    'Payload format: without encryption `plain:{base64(JSON)}` (Base64 is encoding, not protection); with encryption `enc:{salt}:{iv}:{ciphertext}` (all Base64).',
+    'It creates no DOM and holds no listeners or timers, so there is nothing to destroy. Encryption needs `crypto.subtle` (secure context: `https://` or `localhost`); when it is unavailable values are silently stored as `plain:`.',
+  ],
+  params: [
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'An object with `set`, `get`, `remove`, `has`, `clear` and `keys`. `set` and `get` return Promises.' },
+
+  options: [
+    {
+      name: 'namespace', type: 'string', default: "'look'",
+      description: 'Prefix for every key (`namespace + ":" + key`). `keys()` and `clear()` only see keys with this prefix, so separate stores never collide.',
+      values: [["'look'", 'Default prefix'], ["'app'", 'App-wide store'], ["'user:42'", 'Per-user store']],
+      examples: [
+        { title: 'Two isolated namespaces', run: true, code: `(async () => {
+          const a = Look.lkStorage({ namespace: 'docs-a' });
+          const b = Look.lkStorage({ namespace: 'docs-b' });
+          await a.set('theme', 'dark');
+          await b.set('theme', 'light');
+          log('a.theme =', await a.get('theme'), '| b.theme =', await b.get('theme'));
+          log('raw keys:', Object.keys(localStorage).filter((k) => /^docs-[ab]:/.test(k)).sort().join(', '));
+          a.clear(); b.clear();
+          log('cleaned up, a.keys() =', JSON.stringify(a.keys()));
+        })();` },
+      ],
+    },
+    {
+      name: 'secret', type: 'string', default: "''",
+      description: 'Passphrase used to derive the encryption key. Encryption is active only when `secret` is non-empty **and** `encrypted` is `true` **and** `crypto.subtle` exists. A store without the right secret cannot read encrypted values: `get` returns the fallback.',
+      examples: [
+        { title: 'Encrypted value and the raw payload', run: true, code: `(async () => {
+          const store = Look.lkStorage({ namespace: 'docs-enc', secret: 'correct horse' });
+          await store.set('token', { access: 'abc123', exp: 3600 });
+          log('raw:', localStorage.getItem('docs-enc:token').slice(0, 48) + '...');
+          log('get:', JSON.stringify(await store.get('token')));
+          store.remove('token');
+        })();` },
+        { title: 'Wrong secret returns the fallback', run: true, code: `(async () => {
+          const writer = Look.lkStorage({ namespace: 'docs-enc2', secret: 'right' });
+          const reader = Look.lkStorage({ namespace: 'docs-enc2', secret: 'wrong' });
+          const noKey = Look.lkStorage({ namespace: 'docs-enc2' });
+          await writer.set('pin', 1234);
+          log('wrong secret:', await reader.get('pin', 'n/a'));
+          log('no secret:', await noKey.get('pin', 'n/a'));
+          log('right secret:', await writer.get('pin'));
+          writer.clear();
+        })();` },
+      ],
+    },
+    {
+      name: 'encrypted', type: 'boolean', default: 'true',
+      description: 'Set `false` to store values as `plain:` Base64 even when a `secret` is given. With the default `true` but no `secret`, values are also stored as `plain:`.',
+      values: [['true', 'Encrypt when a secret is set and Web Crypto is available'], ['false', 'Always store plain (Base64 JSON)']],
+      examples: [
+        { title: 'Plain vs encrypted payloads', run: true, code: `(async () => {
+          const plain = Look.lkStorage({ namespace: 'docs-p', secret: 's3cret', encrypted: false });
+          const enc = Look.lkStorage({ namespace: 'docs-e', secret: 's3cret' });
+          await plain.set('x', 'hello');
+          await enc.set('x', 'hello');
+          log('encrypted:false →', localStorage.getItem('docs-p:x'));
+          log('encrypted:true  →', localStorage.getItem('docs-e:x').split(':')[0] + ':...');
+          plain.remove('x'); enc.remove('x');
+        })();` },
+      ],
+    },
+    {
+      name: 'useSession', type: 'boolean', default: 'false',
+      description: 'Use `sessionStorage` (cleared when the tab closes) instead of `localStorage`. Fixed at creation time.',
+      values: [['false', 'window.localStorage'], ['true', 'window.sessionStorage']],
+      examples: [
+        { title: 'Session-scoped store', run: true, code: `(async () => {
+          const session = Look.lkStorage({ namespace: 'docs-s', useSession: true });
+          await session.set('step', 2);
+          log('in sessionStorage:', sessionStorage.getItem('docs-s:step') != null);
+          log('in localStorage:', localStorage.getItem('docs-s:step') != null);
+          session.remove('step');
+        })();` },
+      ],
+    },
+  ],
+
+  methods: [
+    {
+      name: 'set', signature: 'set(key, value) → Promise<any>',
+      description: 'Serializes (and encrypts, if enabled) `value` and writes it under `namespace:key`. Overwrites any existing value. Await it before calling `has`/`keys`, because the write happens after encoding finishes.',
+      params: [
+        { name: 'key', type: 'string', description: 'Key within the namespace.' },
+        { name: 'value', type: 'any', description: 'Any JSON-serializable value.' },
+      ],
+      returns: { type: 'Promise<any>', description: 'Resolves with the original `value`.' },
+      examples: [
+        { title: 'Different value types', run: true, code: `(async () => {
+          const store = Look.lkStorage({ namespace: 'docs-types' });
+          const samples = { str: 'Ada', num: 42, bool: true, arr: [1, 2, 3], obj: { role: 'admin' }, date: new Date(0) };
+          for (const [k, v] of Object.entries(samples)) await store.set(k, v);
+          for (const k of Object.keys(samples)) log(k, '→', JSON.stringify(await store.get(k)));
+          store.clear();
+        })();` },
+        { title: 'await matters', run: true, code: `(async () => {
+          const store = Look.lkStorage({ namespace: 'docs-await' });
+          const p = store.set('k', 1);
+          log('has before await:', store.has('k'));
+          await p;
+          log('has after await:', store.has('k'));
+          store.remove('k');
+        })();` },
+      ],
+    },
+    {
+      name: 'get', signature: 'get(key, fallback = null) → Promise<any>',
+      description: 'Reads and decodes a value. Resolves with `fallback` when the key is missing, the stored value is `null`, the payload is malformed, or it cannot be decrypted (wrong/missing secret). Never rejects.',
+      params: [
+        { name: 'key', type: 'string', description: 'Key within the namespace.' },
+        { name: 'fallback', type: 'any', optional: true, description: 'Value returned when nothing usable is stored. Default `null`.' },
+      ],
+      returns: { type: 'Promise<any>', description: 'The stored value or `fallback`.' },
+      examples: [
+        { title: 'Fallbacks', run: true, code: `(async () => {
+          const store = Look.lkStorage({ namespace: 'docs-get' });
+          log('missing:', await store.get('nope'));
+          log('missing with fallback:', await store.get('nope', { theme: 'light' }));
+          localStorage.setItem('docs-get:bad', 'garbage');
+          log('malformed payload:', await store.get('bad', 'fallback'));
+          store.clear();
+        })();` },
+      ],
+    },
+    {
+      name: 'remove', signature: 'remove(key)',
+      description: 'Deletes one key from the namespace. Synchronous; no error if it does not exist.',
+      params: [{ name: 'key', type: 'string', description: 'Key within the namespace.' }],
+    },
+    {
+      name: 'has', signature: 'has(key) → boolean',
+      description: 'Synchronously checks whether a raw entry exists for the key. It does not decode it, so an entry that cannot be decrypted still counts.',
+      params: [{ name: 'key', type: 'string', description: 'Key within the namespace.' }],
+      examples: [
+        { title: 'has / remove', run: true, code: `(async () => {
+          const store = Look.lkStorage({ namespace: 'docs-has' });
+          await store.set('flag', false);
+          log('has(flag):', store.has('flag'), '| value:', await store.get('flag'));
+          store.remove('flag');
+          log('after remove:', store.has('flag'));
+        })();` },
+      ],
+    },
+    {
+      name: 'keys', signature: 'keys() → string[]',
+      description: 'Returns the keys of this namespace, without the `namespace:` prefix.',
+      returns: { type: 'string[]', description: 'Unprefixed keys (order follows the browser storage order).' },
+    },
+    {
+      name: 'clear', signature: 'clear()',
+      description: 'Removes every key that starts with `namespace + ":"`. Other namespaces and unrelated storage entries are untouched.',
+      examples: [
+        { title: 'keys / clear', run: true, code: `(async () => {
+          const store = Look.lkStorage({ namespace: 'docs-clear' });
+          await store.set('a', 1); await store.set('b', 2); await store.set('c', 3);
+          localStorage.setItem('docs-other', 'untouched');
+          log('keys():', store.keys().sort().join(', '));
+          store.clear();
+          log('after clear():', JSON.stringify(store.keys()), '| other key kept:', localStorage.getItem('docs-other') === 'untouched');
+          localStorage.removeItem('docs-other');
+        })();` },
+      ],
+    },
+  ],
+
+  events: [],
+  classes: [],
+  tokens: [],
+});
+</script>
 <script>
   const output = document.getElementById('storage-output');
   const source = Look.lkStorage({

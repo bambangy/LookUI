@@ -6,6 +6,7 @@
   <title>LookUI — Rating</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
 </head>
 <body>
 
@@ -25,7 +26,7 @@
     <div style="display: flex; flex-direction: column; gap: var(--lk-space-5);">
       <div>
         <p class="demo-sub">Interactive (click stars)</p>
-        <div id="demo-rating"></div>
+        <div id="demo-rating" aria-label="Your rating"></div>
       </div>
 
       <div>
@@ -37,9 +38,19 @@
         <p class="demo-sub">Large size</p>
         <div id="demo-rating-lg" class="lk-rating--lg"></div>
       </div>
+
+      <div>
+        <p class="demo-sub">Custom symbol, 10 items, primary color</p>
+        <div id="demo-rating-sym" class="lk-rating--primary"></div>
+      </div>
+
+      <div>
+        <p class="demo-sub">Small, negative color</p>
+        <div id="demo-rating-sm" class="lk-rating--sm lk-rating--negative"></div>
+      </div>
     </div>
 
-    <div style="margin-top: var(--lk-space-4);">
+    <div class="demo-row" style="margin-top: var(--lk-space-4);">
       <button id="btn-val" class="lk-btn lk-btn--primary lk-btn--sm">Get Value</button>
       <button id="btn-set" class="lk-btn lk-btn--secondary lk-btn--sm">Set to 5</button>
       <button id="btn-ro" class="lk-btn lk-btn--secondary lk-btn--sm">Toggle Readonly</button>
@@ -57,7 +68,7 @@
     <pre>const rating = Look.lkRating('#stars', {
   max: 5,
   value: 3,
-  symbol: '★',
+  symbol: '★',          // omit for the star-fill icon
   onChange(v) { console.log('Rated:', v); },
 });
 
@@ -67,9 +78,200 @@ rating.readonly = true;
 rating.destroy();</pre>
   </div>
 
+  <div id="api"></div>
+
 </main>
 
 <script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+  function demoButton(container, text, onClick) {
+    const b = document.createElement('button');
+    b.className = 'lk-btn lk-btn--secondary lk-btn--sm';
+    b.style.margin = '8px 6px 0 0';
+    b.textContent = text;
+    b.onclick = onClick;
+    container.appendChild(b);
+    return b;
+  }
+
+LookDocs.render('#api', {
+  name: 'lkRating',
+  kind: 'Component',
+  signature: 'const rating = Look.lkRating(element, options);',
+  description: [
+    'Click-to-rate control. If the container is empty, lkRating creates `max` `<button class="lk-rating__item">` elements (with a `star-fill` [lkIcon](icon.html) or your `symbol`). If it already contains `.lk-rating__item` elements they are used as-is. Clicking the n-th item sets the value to n and highlights items 1 … n with `.lk-rating__item--active`.',
+    'The root gets `.lk-rating`, `aria-valuenow` and `aria-valuemax`. Sizes and colors are CSS modifiers — see [CSS classes](#api-section-classes).',
+  ],
+  params: [
+    { name: 'element', type: 'Element | string', description: 'The rating container or a CSS selector. Usually empty.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The rating instance with the properties and methods below.' },
+
+  options: [
+    {
+      name: 'max', type: 'number', default: '5',
+      description: 'Number of items to create and the upper bound of `value`. Each generated item gets `aria-label="{i} of {max}"` and `data-value="{i}"`.',
+      examples: [
+        { title: 'max: 3', run: true, code: `
+          const el = document.createElement('div');
+          container.appendChild(el);
+          Look.lkRating(el, { max: 3, value: 2 });` },
+        { title: 'max: 10', run: true, code: `
+          const el = document.createElement('div');
+          container.appendChild(el);
+          Look.lkRating(el, { max: 10, value: 7, onChange: (v) => log(v + '/10') });` },
+      ],
+    },
+    {
+      name: 'value', type: 'number', default: '0',
+      description: 'Initial rating, clamped to `0 … max`; non-numeric values become `0`. Items with index < value are active, so a fractional value such as `3.5` lights **4** items (there is no half-star rendering).',
+      examples: [
+        { title: 'Various values', run: true, code: `
+          [0, 2, 5, 3.5, 99].forEach((v) => {
+            const el = document.createElement('div');
+            el.style.marginRight = '16px';
+            container.appendChild(el);
+            const r = Look.lkRating(el, { value: v });
+            log('value', v, '→', r.value);
+          });` },
+      ],
+    },
+    {
+      name: 'readonly', type: 'boolean', default: 'false',
+      description: 'Display only: clicks are ignored, `.lk-rating--readonly` removes the hover effect and `aria-readonly="true"` is set. The items stay focusable buttons.',
+      values: [['false', 'Interactive (default).'], ['true', 'Display only.']],
+      examples: [
+        { title: 'Read-only product score', run: true, code: `
+          const el = document.createElement('div');
+          container.appendChild(el);
+          Look.lkRating(el, { value: 4, readonly: true, onChange: () => log('never fires') });
+          log('Click — nothing changes');` },
+      ],
+    },
+    {
+      name: 'symbol', type: 'string', default: '— (star-fill icon)',
+      description: 'Text used for each generated item instead of the SVG icon. Any character or emoji works. Ignored when the container already has `.lk-rating__item` children.',
+      values: [['(omitted)', '`lkIcon(\'star-fill\')` inside each item.'], ["'★'", 'Unicode star.'], ["'♥'", 'Heart (combine with `.lk-rating--negative`).'], ["'●'", 'Dots / pills.']],
+      examples: [
+        { title: 'Different symbols', run: true, code: `
+          [['★', ''], ['♥', 'lk-rating--negative'], ['●', 'lk-rating--primary']].forEach(([symbol, cls]) => {
+            const el = document.createElement('div');
+            el.style.marginRight = '16px';
+            if (cls) el.className = cls;
+            container.appendChild(el);
+            Look.lkRating(el, { symbol, value: 3 });
+          });` },
+      ],
+    },
+  ],
+
+  properties: [
+    {
+      name: 'value', type: 'number',
+      description: 'Get or set the rating. Setting clamps to `0 … max` and updates the view; it does **not** fire `onChange`. Set `0` to clear.',
+      examples: [{ run: true, code: `
+        const el = document.createElement('div');
+        container.appendChild(el);
+        const r = Look.lkRating(el, { value: 2, onChange: (v) => log('onChange', v) });
+        demoButton(container, 'value = 5', () => { r.value = 5; log('value', r.value); });
+        demoButton(container, 'value = 0', () => { r.value = 0; log('value', r.value); });` }],
+    },
+    { name: 'max', type: 'number', readonly: true, description: 'The `max` option (number of items when they were generated).' },
+    {
+      name: 'readonly', type: 'boolean',
+      description: 'Get or set read-only mode at runtime.',
+      examples: [{ run: true, code: `
+        const el = document.createElement('div');
+        container.appendChild(el);
+        const r = Look.lkRating(el, { value: 3 });
+        demoButton(container, 'toggle readonly', () => { r.readonly = !r.readonly; log('readonly', r.readonly); });` }],
+    },
+    { name: 'enabled', type: 'boolean', description: 'Enable/disable (`.lk-disabled` dims the control and blocks pointer events; `aria-disabled` is set).' },
+    { name: 'hidden', type: 'boolean', description: 'Show/hide (`.lk-hidden`).' },
+    { name: 'el', type: 'Element', readonly: true, description: 'The rating container.' },
+    { name: 'id', type: 'string', description: 'Get or set the container id.' },
+  ],
+
+  methods: [
+    {
+      name: 'destroy', signature: 'destroy() → void',
+      description: 'Removes the click listener, the classes and ARIA attributes lkRating added, and the generated items. Items that were already in the markup are kept (only their active class is removed).',
+      examples: [{ run: true, code: `
+        const el = document.createElement('div');
+        container.appendChild(el);
+        const r = Look.lkRating(el, { value: 3 });
+        demoButton(container, 'destroy()', () => { r.destroy(); log('children left:', el.children.length); });` }],
+    },
+  ],
+
+  events: [
+    {
+      name: 'onChange', signature: 'onChange(value)',
+      description: 'Called when the user clicks (or activates with Enter/Space) an item — even if it is the current value. Not called in read-only mode or when `value` is set from code.',
+      args: [{ name: 'value', type: 'number', description: 'The new rating (1 … max).' }],
+      examples: [{ title: 'Label per score', run: true, code: `
+        const labels = ['', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'];
+        const el = document.createElement('div');
+        container.appendChild(el);
+        Look.lkRating(el, { onChange: (v) => log(v, '—', labels[v]) });` }],
+    },
+  ],
+
+  classes: [
+    {
+      name: '.lk-rating', description: 'Inline-flex row of items. Added by lkRating.',
+      examples: [{ title: 'Markup (optional — empty container also works)', code: `
+        <div class="lk-rating" aria-label="Rating">
+          <button type="button" class="lk-rating__item" aria-label="1 of 3">★</button>
+          <button type="button" class="lk-rating__item" aria-label="2 of 3">★</button>
+          <button type="button" class="lk-rating__item" aria-label="3 of 3">★</button>
+        </div>
+        <script>Look.lkRating('.lk-rating', { max: 3, value: 2 });</` + `script>` }],
+    },
+    { name: '.lk-rating__item', description: 'One star (1.5 rem button, `--lk-border` color, scales on hover).' },
+    { name: '.lk-rating__item--active', description: 'Filled item (warning color by default). Set by JS.' },
+    { name: '.lk-rating__item--half', description: 'CSS-only half-tone item (60% opacity). lkRating never sets it — apply it yourself for display-only half stars.' },
+    {
+      name: '.lk-rating--sm / --lg', description: 'Size variants (1 rem / 2 rem items).',
+      examples: [{ title: 'Sizes', run: true, code: `
+        ['lk-rating--sm', '', 'lk-rating--lg'].forEach((cls) => {
+          const el = document.createElement('div');
+          el.style.marginRight = '16px';
+          if (cls) el.className = cls;
+          container.appendChild(el);
+          Look.lkRating(el, { value: 3 });
+        });` }],
+    },
+    {
+      name: '.lk-rating--primary / --negative', description: 'Active color variants (default is warning / amber).',
+      examples: [{ title: 'Colors', run: true, code: `
+        ['', 'lk-rating--primary', 'lk-rating--negative'].forEach((cls) => {
+          const el = document.createElement('div');
+          el.style.marginRight = '16px';
+          if (cls) el.className = cls;
+          container.appendChild(el);
+          Look.lkRating(el, { value: 4 });
+        });` }],
+    },
+    { name: '.lk-rating--readonly', description: 'Default cursor, no hover scale. Toggled by JS from `readonly`.' },
+    { name: '.lk-rating--disabled', description: 'Dimmed, no pointer events (also `.lk-disabled`).' },
+    { name: '.lk-rating--dense', description: 'No gap and smaller (1.125 rem) items.', examples: [{ run: true, code: `
+      const el = document.createElement('div');
+      el.className = 'lk-rating--dense';
+      container.appendChild(el);
+      Look.lkRating(el, { value: 2 });` }] },
+  ],
+
+  notes: [
+    '**Keyboard:** generated items are native buttons, so **Tab** moves between them and **Enter / Space** rates. There is no arrow-key handling.',
+    '**Existing items:** when the container already has `.lk-rating__item` children, `max` is still taken from the option (default 5), not from the number of items — pass `max` matching your markup.',
+    '**No clear-on-click:** clicking the current value keeps it. Set `rating.value = 0` to clear.',
+    '**Accessibility:** the root gets `aria-valuenow`/`aria-valuemax` but no role; add `role="group"` and an `aria-label` describing what is being rated.',
+  ],
+});
+</script>
 <script>
   const out = document.getElementById('output');
   const rating = Look.lkRating('#demo-rating', {
@@ -78,6 +280,9 @@ rating.destroy();</pre>
   });
   Look.lkRating('#demo-rating-ro', { max: 5, value: 4, readonly: true });
   Look.lkRating('#demo-rating-lg', { max: 5, value: 2 });
+  Look.lkRating('#demo-rating-sym', { max: 10, value: 6, symbol: '●' });
+  Look.lkRating('#demo-rating-sm', { max: 5, value: 5, symbol: '♥' });
+  out.textContent = 'value = ' + rating.value;
 
   document.getElementById('btn-val').onclick = () => { out.textContent = 'value = ' + rating.value; };
   document.getElementById('btn-set').onclick = () => { rating.value = 5; out.textContent = 'value = 5'; };

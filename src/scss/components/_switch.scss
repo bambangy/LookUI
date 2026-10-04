@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Switch / Toggle component
 
 .lk-switch {
@@ -68,10 +70,29 @@
     }
   }
 
-  // When inside .lk-field, use row layout
-  .lk-field:has(&) {
-    flex-direction: row;
-    align-items: center;
-    gap: var(--lk-space-2);
+}
+
+// Inline field layout: label, then control; error message wraps below.
+.lk-field:has(> .lk-switch) {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lk-space-2);
+
+  > .lk-switch { order: 0; }
+
+  > .lk-label {
+    cursor: pointer;
+    font-weight: var(--lk-weight-regular);
   }
+
+  > .lk-field-error {
+    flex-basis: 100%;
+    order: 1;
+  }
+}
+
+.lk-field:has(> .lk-switch:disabled) > .lk-label {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

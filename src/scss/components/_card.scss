@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Card component
 
 .lk-card {
@@ -27,6 +29,14 @@
     gap: var(--lk-space-3);
     padding: var(--lk-space-4) var(--lk-space-5);
     border-bottom: var(--lk-border-width) solid var(--lk-border);
+
+    // Title + subtitle placed directly in the header (no wrapper div) must stack,
+    // not sit side by side as flex items.
+    &:has(> .lk-card__subtitle) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+    }
   }
 
   &__title {
@@ -79,6 +89,17 @@
     background: var(--lk-primary);
     color: var(--lk-primary-contrast);
     border-color: var(--lk-primary-dark);
+
+    // Grey dividers / muted grey text look dirty on the primary fill
+    .lk-card__header,
+    .lk-card__footer {
+      border-color: color-mix(in srgb, currentColor 25%, transparent);
+    }
+
+    .lk-card__subtitle {
+      color: inherit;
+      opacity: 0.8;
+    }
   }
 
   // --- Dense ---

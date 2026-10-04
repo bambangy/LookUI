@@ -6,6 +6,7 @@
   <title>LookUI - Composable Dialog</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
 </head>
 <body>
 
@@ -24,6 +25,37 @@
     <div id="dialog-output" class="demo-output">Ready</div>
   </section>
 
+  <section class="demo-section">
+    <p class="demo-section__title">Status dialogs (SweetAlert-style)</p>
+    <p class="demo-sub">
+      With a <code>type</code> the dialog shows a large animated icon (drawn in on open) and centers its content.
+      Every dialog pops in SweetAlert2-style and slides down on close; <code>animation: 'calm'</code> switches to a plain rise/fade.
+    </p>
+    <div class="demo-row" style="display:flex;flex-wrap:wrap;gap:var(--lk-space-2);">
+      <button class="lk-btn lk-btn--positive" data-type="success">Success</button>
+      <button class="lk-btn lk-btn--negative" data-type="error">Error</button>
+      <button class="lk-btn lk-btn--warning" data-type="warning">Warning</button>
+      <button class="lk-btn lk-btn--info" data-type="info">Info</button>
+      <button class="lk-btn lk-btn--secondary" data-type="question">Question</button>
+      <button class="lk-btn lk-btn--ghost" id="open-calm-typed">Success, calm motion</button>
+    </div>
+    <div id="status-output" class="demo-output">Pick a type</div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Reusable dialog, async confirm &amp; live updates</p>
+    <p class="demo-sub">
+      One instance created with <code>open: false</code> and reopened. <code>onConfirm</code> returns <code>false</code>
+      while a fake request runs, then updates the dialog through <code>setTitle()</code> / <code>setContent()</code>.
+    </p>
+    <div class="demo-row" style="display:flex;flex-wrap:wrap;gap:var(--lk-space-2);">
+      <button id="open-reusable" class="lk-btn lk-btn--primary">Open reusable dialog</button>
+      <button id="open-locked" class="lk-btn lk-btn--secondary">Locked (no Esc / overlay / close button)</button>
+      <button id="open-node" class="lk-btn lk-btn--ghost">Content from a DOM node</button>
+    </div>
+    <div id="reuse-output" class="demo-output">Ready</div>
+  </section>
+
   <div class="demo-usage">
     <p class="demo-usage__title">JavaScript</p>
     <pre>const dialog = Look.lkDialog({
@@ -32,11 +64,419 @@
   confirmText: 'Delete',
   cancelText: 'Cancel',
   onConfirm: () =&gt; console.log('confirmed'),
-});</pre>
+});
+
+// Status presets (pop + animated icon)
+Look.lkDialog({ type: 'success', title: 'Saved!', content: 'Your changes are live.' });
+Look.lkDialog({ type: 'warning', title: 'Delete file?', confirmText: 'Delete', onConfirm: remove });
+
+// Shorthands — destroyOnClose is on by default
+Look.lkDialog.success('Saved!', 'Your changes are live.');
+Look.lkDialog.error('Upload failed', 'The server rejected the file.');
+Look.lkDialog.question('Discard draft?', 'You have unsaved changes.', { confirmText: 'Discard' });
+
+// Options
+//   type: 'success' | 'error' | 'warning' | 'info' | 'question'
+//   animation: 'sweet' | 'calm'   (default: 'sweet' for every dialog)
+//   icon: false                   (keep the layout, hide the icon)
+//   confirmColor: 'negative'      (error uses negative by default)
+//   showCancel                    (with a type: only question / warning show Cancel)</pre>
   </div>
+
+  <div id="api"></div>
 </main>
 
 <script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkDialog',
+  kind: 'Composable',
+  signature: 'const dialog = Look.lkDialog(options);',
+  description: [
+    'Builds a complete modal dialog (overlay, panel, header, body, footer buttons) from options — no markup needed. The dialog is appended to `mount` (default `document.body`) and opens immediately unless `open: false`.',
+    'Each dialog gets a focus trap, closes on **Escape** (only the topmost open dialog reacts), on overlay click and via the close button. Confirm and Cancel callbacks can veto closing by returning `false`. Set `type` for SweetAlert-style status alerts with a large animated icon, or use the [shorthands](#api-methods-lkDialog.success) such as `Look.lkDialog.success(title, content)`.',
+    'All live examples below render a button — click it to open the dialog.',
+  ],
+  params: [
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below. Every option is optional.' },
+  ],
+  returns: { type: 'Object', description: 'The dialog instance with the properties and methods below. Calls to `open`/`close` return the instance, so they chain.' },
+  notes: [
+    '**Motion contract.** On show the panel plays a SweetAlert2-style pop (`lk-modal-pop`: scale 0.7 → 1.05 → 0.95 → 1, 320 ms) while the overlay fades in over `--lk-modal-enter-duration`. On hide the root gets `.lk-modal--closing` and the panel slides down 3rem while fading (`lk-modal-slide-out`) for `--lk-modal-exit-duration` (220 ms). The JS waits that duration (read from CSS at close time, + 20 ms) before setting `hidden` on the root, so overriding the variable keeps JS and CSS in sync.',
+    '`animation: \'calm\'` adds `.lk-modal--calm` to the panel: it then uses the plain transitions (rise 0.75rem + scale 0.96 on enter, drop 0.5rem + fade on exit) and the status icon is shown static (no draw-in). `prefers-reduced-motion: reduce` shortens all of these to 1 ms.',
+    '**Status icon motion** (sweet only): the ring and the mark stroke draw in (`lk-status-draw`), dots pop in, the error icon pops with a spring, warning/info/question pulse once.',
+    '**Stacking.** Dialogs opened later sit on top (later DOM order). Escape closes only the most recently opened dialog that is still open. Focus returns to the element that was focused before `open()` when the dialog closes.',
+  ],
+
+  options: [
+    {
+      name: 'title', type: 'string', default: "''",
+      description: 'Header text (set as text, not HTML). When non-empty the panel gets `aria-labelledby` pointing at the title.',
+      examples: [{ title: 'Title only', run: true, code: `
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--primary';
+        btn.textContent = 'Open';
+        btn.onclick = () => Look.lkDialog({ title: 'Session expired', content: 'Please sign in again.', showCancel: false, destroyOnClose: true });
+        container.appendChild(btn);` }],
+    },
+    {
+      name: 'content', type: 'string | Node | Function', default: "''",
+      description: 'Body content. A string is inserted as **plain text** (`textContent`); a DOM `Node` is appended as-is (use this for HTML/forms); a function is called once and its return value (string or Node) is used.',
+      examples: [
+        { title: 'String vs Node vs function', run: true, code: `
+          const make = (label, content) => {
+            const b = document.createElement('button');
+            b.className = 'lk-btn lk-btn--secondary lk-btn--sm';
+            b.style.marginRight = '6px';
+            b.textContent = label;
+            b.onclick = () => Look.lkDialog({ title: label, content, destroyOnClose: true });
+            container.appendChild(b);
+          };
+          make('String', '<b>Tags are shown literally</b>');
+          const p = document.createElement('p');
+          p.innerHTML = 'A <strong>DOM node</strong> keeps its markup.';
+          make('Node', p);
+          make('Function', () => 'Built at ' + new Date().toLocaleTimeString());` },
+      ],
+    },
+    {
+      name: 'type', type: 'string', default: 'null',
+      description: 'Status preset. Adds `.lk-modal--status .lk-modal--status-{type}`, a large animated status icon above the title, centered layout and a larger title. Unknown values are ignored (plain dialog). It also changes the defaults of `showCancel` and `confirmColor`.',
+      values: [
+        ['success', 'Green check mark. No Cancel button by default.'],
+        ['error', 'Red cross; confirm button defaults to `negative`. No Cancel by default.'],
+        ['warning', 'Orange exclamation. Shows Cancel by default (confirm-style).'],
+        ['info', 'Blue "i". No Cancel by default.'],
+        ['question', 'Blue-grey question mark. Shows Cancel by default (confirm-style).'],
+      ],
+      examples: [{ title: 'Every type', run: true, code: `
+        ['success', 'error', 'warning', 'info', 'question'].forEach((type) => {
+          const b = document.createElement('button');
+          b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          b.style.margin = '0 6px 6px 0';
+          b.textContent = type;
+          b.onclick = () => Look.lkDialog({
+            type, title: type[0].toUpperCase() + type.slice(1), content: 'type: \\'' + type + '\\'',
+            destroyOnClose: true, onClose: (reason) => log(type, 'closed:', reason),
+          });
+          container.appendChild(b);
+        });` }],
+    },
+    {
+      name: 'animation', type: 'string', default: "'sweet'",
+      description: 'Motion style. Any value other than `\'calm\'` means `\'sweet\'`. See the motion contract in the notes above.',
+      values: [
+        ['sweet', 'SweetAlert2-style pop on show, slide-down on hide; status icons draw in.'],
+        ['calm', 'Plain rise/fade transitions; status icons appear without animation. Adds `.lk-modal--calm`.'],
+      ],
+      examples: [{ title: 'Sweet vs calm', run: true, code: `
+        ['sweet', 'calm'].forEach((animation) => {
+          const b = document.createElement('button');
+          b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          b.style.marginRight = '6px';
+          b.textContent = "animation: '" + animation + "'";
+          b.onclick = () => Look.lkDialog({ type: 'success', animation, title: 'Saved', content: 'Compare the open and close motion.', destroyOnClose: true });
+          container.appendChild(b);
+        });` }],
+    },
+    {
+      name: 'icon', type: 'boolean', default: 'true',
+      description: 'Show the status icon when `type` is set. `false` keeps the centered status layout and colors but omits the icon. Has no effect without `type`.',
+      examples: [{ run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        b.textContent = 'Warning without icon';
+        b.onclick = () => Look.lkDialog({ type: 'warning', icon: false, title: 'Leave page?', content: 'Your edits will be lost.', destroyOnClose: true });
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'confirmText', type: 'string', default: "'OK'",
+      description: 'Confirm button label.',
+    },
+    {
+      name: 'cancelText', type: 'string', default: "'Cancel'",
+      description: 'Cancel button label.',
+      examples: [{ title: 'Custom labels', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--primary';
+        b.textContent = 'Publish?';
+        b.onclick = () => Look.lkDialog({
+          title: 'Publish article', content: 'Readers will see it right away.',
+          confirmText: 'Publish now', cancelText: 'Not yet', destroyOnClose: true,
+          onClose: (reason) => log('reason:', reason),
+        });
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'confirmColor', type: 'string', default: "'primary' ('negative' for type error)",
+      description: 'Button variant for the confirm button — rendered as `lk-btn lk-btn--{confirmColor}`. Any [button](button.html) color works.',
+      values: [['primary', 'Default'], ['secondary', 'Neutral'], ['positive', 'Green'], ['negative', 'Red — destructive actions'], ['warning', 'Orange'], ['info', 'Blue']],
+      examples: [{ title: 'Destructive confirm', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--negative';
+        b.textContent = 'Delete…';
+        b.onclick = () => Look.lkDialog({
+          type: 'warning', title: 'Delete 3 files?', content: 'This cannot be undone.',
+          confirmText: 'Delete', confirmColor: 'negative', destroyOnClose: true,
+          onConfirm: () => log('deleted'),
+        });
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'showCancel', type: 'boolean', default: "true (with a type: true only for 'question' / 'warning')",
+      description: 'Render the Cancel button. Only an explicitly passed value overrides the type-based default.',
+      examples: [{ title: 'Acknowledge-only dialog', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        b.textContent = 'showCancel: false';
+        b.onclick = () => Look.lkDialog({ title: 'Terms updated', content: 'Read the changes in Settings.', confirmText: 'Got it', showCancel: false, destroyOnClose: true });
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'showClose', type: 'boolean', default: 'true',
+      description: 'Render the × button in the header (closes with reason `\'close-button\'`). For status dialogs it is positioned in the panel\'s top-right corner.',
+    },
+    {
+      name: 'closeOnEscape', type: 'boolean', default: 'true',
+      description: 'Close with reason `\'escape\'` when **Escape** is pressed and this dialog is the topmost open one.',
+    },
+    {
+      name: 'closeOnOverlay', type: 'boolean', default: 'true',
+      description: 'Close with reason `\'overlay\'` when the dimmed overlay (outside the panel) is clicked.',
+      examples: [{ title: 'Force an explicit choice', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        b.textContent = 'Locked dialog';
+        b.onclick = () => Look.lkDialog({
+          title: 'Choose one', content: 'Escape, overlay click and × are disabled.',
+          showClose: false, closeOnEscape: false, closeOnOverlay: false,
+          confirmText: 'Accept', cancelText: 'Decline', destroyOnClose: true,
+          onClose: (reason) => log('closed via', reason),
+        });
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'destroyOnClose', type: 'boolean', default: 'false (true for shorthands)',
+      description: 'Call `destroy()` automatically after the exit animation finishes. Use for one-off dialogs; leave `false` to keep the instance and reopen it with `open()`.',
+    },
+    {
+      name: 'open', type: 'boolean', default: 'true',
+      description: 'Open immediately on creation. Pass `false` to build the dialog now and call `open()` later (the DOM is only mounted on first open).',
+      examples: [{ title: 'Create once, open many times', run: true, code: `
+        const dialog = Look.lkDialog({ open: false, title: 'Reusable', content: 'Same instance every time.',
+          onOpen: () => log('opened'), onClose: (r) => log('closed:', r) });
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--primary';
+        b.textContent = 'dialog.open()';
+        b.onclick = () => dialog.open();
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'mount', type: 'Element', default: 'document.body',
+      description: 'Parent the root element is appended to on first `open()`. The overlay is `position: fixed`, so it still covers the viewport.',
+    },
+    {
+      name: 'className', type: 'string', default: "''",
+      description: 'Extra class(es) added to the `.lk-modal` panel, e.g. `\'lk-modal--dense\'` or your own width modifier.',
+      examples: [{ title: 'Dense panel', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        b.textContent = "className: 'lk-modal--dense'";
+        b.onclick = () => Look.lkDialog({ title: 'Dense', content: 'Tighter padding and spacing.', className: 'lk-modal--dense', destroyOnClose: true });
+        container.appendChild(b);` }],
+    },
+  ],
+
+  properties: [
+    { name: 'el', type: 'Element', readonly: true, description: 'Root `.lk-composable-dialog` wrapper (receives `hidden`, `.lk-modal--open` and `.lk-modal--closing`).' },
+    { name: 'overlayEl', type: 'Element', readonly: true, description: 'The `.lk-modal-overlay` element.' },
+    { name: 'dialogEl', type: 'Element', readonly: true, description: 'The `.lk-modal` panel (`role="dialog"`, `aria-modal="true"`). Query buttons here, e.g. `dialog.dialogEl.querySelector(\'.lk-modal__footer\')`.' },
+    { name: 'isOpen', type: 'boolean', readonly: true, description: '`true` from `open()` until `close()`/`destroy()` (becomes `false` immediately, before the exit animation ends).' },
+  ],
+
+  methods: [
+    {
+      name: 'open', signature: 'open() → dialog',
+      description: 'Mounts the dialog (first time), shows it, moves focus to the confirm button and fires `onOpen`. No-op if already open or destroyed.',
+      returns: { type: 'Object', description: 'The dialog instance.' },
+    },
+    {
+      name: 'close', signature: 'close(reason = \'close\') → dialog',
+      description: 'Plays the exit animation, restores focus and fires `onClose(reason, dialog)`. Does **not** call `onConfirm`/`onCancel`. With `destroyOnClose` the instance is destroyed once the exit animation ends.',
+      params: [{ name: 'reason', type: 'string', optional: true, default: "'close'", description: 'Passed through to `onClose`. Any string works — use your own for programmatic closes (e.g. `\'timeout\'`).' }],
+      returns: { type: 'Object', description: 'The dialog instance.' },
+      examples: [{ title: 'Auto-close after 2 s', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        b.textContent = 'Open (closes itself)';
+        b.onclick = () => {
+          const d = Look.lkDialog({ type: 'info', title: 'Heads up', content: 'Closing in 2 seconds…', destroyOnClose: true,
+            onClose: (reason) => log('reason:', reason) });
+          setTimeout(() => d.close('timeout'), 2000);
+        };
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'setTitle', signature: 'setTitle(title)',
+      description: 'Replaces the header text (`null`/`undefined` → empty) and adds/removes `aria-labelledby` accordingly. Works while open.',
+      params: [{ name: 'title', type: 'string', description: 'New title.' }],
+    },
+    {
+      name: 'setContent', signature: 'setContent(content)',
+      description: 'Clears the body and inserts new content with the same rules as the `content` option (string → text, Node → appended, function → called).',
+      params: [{ name: 'content', type: 'string | Node | Function', description: 'New body content.' }],
+      examples: [{ title: 'Progress inside the dialog', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--primary';
+        b.textContent = 'Start upload';
+        b.onclick = () => {
+          const d = Look.lkDialog({ title: 'Uploading…', content: '0%', showCancel: false, destroyOnClose: true });
+          let pct = 0;
+          const t = setInterval(() => {
+            pct += 25;
+            d.setContent(pct + '%');
+            if (pct >= 100) { clearInterval(t); d.setTitle('Upload complete'); log('done'); }
+          }, 400);
+        };
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'destroy', signature: 'destroy()',
+      description: 'Immediately removes the dialog from the DOM (no exit animation), removes all listeners and the focus trap, and restores focus if it was open. `onClose` is **not** called. Further calls to any method are no-ops.',
+    },
+    {
+      name: 'lkDialog.success', signature: 'Look.lkDialog.success(title, content = \'\', options = {}) → dialog',
+      description: 'Static shorthand for `lkDialog({ destroyOnClose: true, ...options, type: \'success\', title, content })`. `type`, `title` and `content` always win over `options`; `destroyOnClose` can be overridden.',
+      params: [
+        { name: 'title', type: 'string', description: 'Dialog title.' },
+        { name: 'content', type: 'string | Node | Function', optional: true, default: "''", description: 'Body content.' },
+        { name: 'options', type: 'Object', optional: true, description: 'Any other lkDialog options (callbacks, button texts…).' },
+      ],
+      returns: { type: 'Object', description: 'The dialog instance (already open).' },
+      examples: [{ title: 'All five shorthands', run: true, code: `
+        const calls = {
+          success: () => Look.lkDialog.success('Saved!', 'Your changes are live.'),
+          error: () => Look.lkDialog.error('Upload failed', 'The server rejected the file.', { confirmText: 'Close' }),
+          warning: () => Look.lkDialog.warning('Delete file?', 'This cannot be undone.', { confirmText: 'Delete', onConfirm: () => log('warning: confirmed') }),
+          info: () => Look.lkDialog.info('Heads up', 'A new version is available.'),
+          question: () => Look.lkDialog.question('Discard draft?', 'You have unsaved changes.', { confirmText: 'Discard', onCancel: () => log('question: cancelled') }),
+        };
+        Object.keys(calls).forEach((name) => {
+          const b = document.createElement('button');
+          b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          b.style.margin = '0 6px 6px 0';
+          b.textContent = 'lkDialog.' + name + '()';
+          b.onclick = calls[name];
+          container.appendChild(b);
+        });` }],
+    },
+    { name: 'lkDialog.error', signature: 'Look.lkDialog.error(title, content = \'\', options = {}) → dialog', description: 'Same as `lkDialog.success` with `type: \'error\'` (confirm button `negative`, no Cancel).' },
+    { name: 'lkDialog.warning', signature: 'Look.lkDialog.warning(title, content = \'\', options = {}) → dialog', description: 'Same as `lkDialog.success` with `type: \'warning\'` (shows Cancel).' },
+    { name: 'lkDialog.info', signature: 'Look.lkDialog.info(title, content = \'\', options = {}) → dialog', description: 'Same as `lkDialog.success` with `type: \'info\'`.' },
+    { name: 'lkDialog.question', signature: 'Look.lkDialog.question(title, content = \'\', options = {}) → dialog', description: 'Same as `lkDialog.success` with `type: \'question\'` (shows Cancel).' },
+  ],
+
+  events: [
+    {
+      name: 'onOpen', signature: 'onOpen(dialog)',
+      description: 'Called synchronously at the end of `open()` — the enter animation has just started.',
+      args: [{ name: 'dialog', type: 'Object', description: 'The dialog instance.' }],
+    },
+    {
+      name: 'onClose', signature: 'onClose(reason, dialog)',
+      description: 'Called synchronously when the dialog starts closing (before the exit animation ends). Not called by `destroy()`.',
+      args: [
+        { name: 'reason', type: 'string', description: "`'confirm'` (confirm button), `'cancel'` (cancel button), `'close-button'` (×), `'escape'`, `'overlay'`, or whatever was passed to `close(reason)` (default `'close'`)." },
+        { name: 'dialog', type: 'Object', description: 'The dialog instance.' },
+      ],
+      examples: [{ title: 'Log every close reason', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--primary';
+        b.textContent = 'Open, then close it any way you like';
+        b.onclick = () => Look.lkDialog({
+          title: 'Close me', content: 'Try OK, Cancel, ×, Escape or the overlay.', destroyOnClose: true,
+          onClose: (reason) => log('onClose:', reason),
+        });
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'onConfirm', signature: 'onConfirm(dialog) → boolean | void',
+      description: 'Called when the confirm button is clicked. Return `false` to keep the dialog open (e.g. failed validation, request in flight) and close it yourself later with `close(\'confirm\')`. Any other return value closes with reason `\'confirm\'`. A returned Promise is **not** awaited.',
+      args: [{ name: 'dialog', type: 'Object', description: 'The dialog instance.' }],
+      examples: [
+        { title: 'Validate before closing', run: true, code: `
+          const input = document.createElement('input');
+          input.className = 'lk-input';
+          input.placeholder = 'Type DELETE to confirm';
+          const b = document.createElement('button');
+          b.className = 'lk-btn lk-btn--sm lk-btn--negative';
+          b.textContent = 'Delete project';
+          b.onclick = () => {
+            input.value = '';
+            Look.lkDialog({
+              type: 'warning', title: 'Delete project?', content: input, confirmText: 'Delete', confirmColor: 'negative', destroyOnClose: true,
+              onConfirm: () => {
+                if (input.value !== 'DELETE') { log('blocked: typed "' + input.value + '"'); input.focus(); return false; }
+                log('deleted');
+              },
+            });
+          };
+          container.appendChild(b);` },
+        { title: 'Async: keep open while saving', run: true, code: `
+          const b = document.createElement('button');
+          b.className = 'lk-btn lk-btn--sm lk-btn--primary';
+          b.textContent = 'Save to server';
+          b.onclick = () => Look.lkDialog({
+            title: 'Save changes?', content: 'This sends the form to the server.', confirmText: 'Save', destroyOnClose: true,
+            onConfirm: (d) => {
+              d.setContent('Saving…');
+              setTimeout(() => { log('saved'); d.close('confirm'); }, 1200);
+              return false; // keep open until the request finishes
+            },
+          });
+          container.appendChild(b);` },
+      ],
+    },
+    {
+      name: 'onCancel', signature: 'onCancel(dialog) → boolean | void',
+      description: 'Called when the **Cancel button** is clicked (not for ×, Escape or overlay — use `onClose` for those). Return `false` to keep the dialog open.',
+      args: [{ name: 'dialog', type: 'Object', description: 'The dialog instance.' }],
+      examples: [{ title: 'Ask twice', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        b.textContent = 'Open';
+        b.onclick = () => {
+          let tries = 0;
+          Look.lkDialog({
+            title: 'Leave without saving?', content: 'Click Cancel twice to really cancel.', destroyOnClose: true,
+            onCancel: (d) => { tries += 1; log('cancel click', tries); if (tries < 2) { d.setContent('Sure? Click Cancel again.'); return false; } },
+          });
+        };
+        container.appendChild(b);` }],
+    },
+  ],
+
+  classes: [
+    { name: '.lk-composable-dialog', description: 'Root wrapper created by lkDialog. Holds `hidden` while closed, `.lk-modal--open` while open and `.lk-modal--closing` during the exit animation.' },
+    { name: '.lk-modal-overlay', description: 'Fixed full-screen dimmed backdrop (`--lk-overlay`, `z-index: var(--lk-z-overlay)`). Click target for `closeOnOverlay`.' },
+    { name: '.lk-modal', description: 'The panel (max-width 32rem). Parts: `.lk-modal__header`, `__title`, `__close`, `__body`, `__footer`.' },
+    { name: '.lk-modal--dense', description: 'Tighter padding and spacing — pass via `className`.' },
+    { name: '.lk-modal--calm', description: 'Opt out of the SweetAlert pop/slide motion (added by `animation: \'calm\'`).' },
+    { name: '.lk-modal--status / .lk-modal--status-{type}', description: 'Status layout: centered text, bigger title, muted body, centered footer, × in the corner. Sets `--lk-dialog-status-color`.' },
+    { name: '.lk-dialog-status / .lk-dialog-status--{type}', description: 'The 80×80 SVG status icon. Parts: `__ring`, `__mark` (`__mark--2` for the second stroke of the error cross), `__dot`.' },
+  ],
+
+  tokens: [
+    { name: '--lk-modal-enter-duration', default: 'var(--lk-duration-base) (260ms)', description: 'Overlay fade-in and calm panel enter duration.' },
+    { name: '--lk-modal-exit-duration', default: '220ms', description: 'Exit animation (slide-out / calm drop). lkDialog reads it at close time to know when to hide/destroy.' },
+    { name: '--lk-modal-enter-easing', default: 'var(--lk-easing-out)', description: 'Enter easing.' },
+    { name: '--lk-modal-exit-easing', default: 'cubic-bezier(0.4, 0, 1, 1)', description: 'Exit easing (accelerates out).' },
+    { name: '--lk-dialog-status-color', default: 'per type', description: 'Status icon color: positive / negative / warning / info / secondary for the five types.' },
+    { name: '--lk-overlay', default: 'rgb(0 0 0 / 0.45)', description: 'Backdrop color.' },
+  ],
+});
+</script>
 <script>
   const output = document.getElementById('dialog-output');
 
@@ -53,6 +493,79 @@
         if (reason !== 'confirm') output.textContent = `Dialog closed: ${reason}`;
       },
       destroyOnClose: true,
+    });
+  });
+
+  const statusOut = document.getElementById('status-output');
+  const COPY = {
+    success: ['Saved!', 'Your changes are live.', {}],
+    error: ['Upload failed', 'The server rejected the file. Please try again.', { confirmText: 'Close' }],
+    warning: ['Delete file?', 'This cannot be undone.', { confirmText: 'Delete', confirmColor: 'negative' }],
+    info: ['Heads up', 'A new version of LookUI is available.', {}],
+    question: ['Discard draft?', 'You have unsaved changes.', { confirmText: 'Discard', cancelText: 'Keep editing' }],
+  };
+  document.querySelectorAll('[data-type]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const type = btn.dataset.type;
+      const [title, content, more] = COPY[type];
+      Look.lkDialog[type](title, content, {
+        ...more,
+        onConfirm: () => { statusOut.textContent = `${type}: confirmed`; },
+        onClose: (reason) => { if (reason !== 'confirm') statusOut.textContent = `${type}: closed (${reason})`; },
+      });
+    });
+  });
+  document.getElementById('open-calm-typed').addEventListener('click', () => {
+    Look.lkDialog({ type: 'success', animation: 'calm', title: 'Saved', content: 'Same layout, calm motion.', destroyOnClose: true });
+  });
+
+  // Reusable instance + async confirm
+  const reuseOut = document.getElementById('reuse-output');
+  let opens = 0;
+  const reusable = Look.lkDialog({
+    open: false,
+    title: 'Sync settings',
+    content: 'Push your local settings to the cloud?',
+    confirmText: 'Sync',
+    onOpen: (d) => {
+      opens += 1;
+      d.setTitle('Sync settings');
+      d.setContent('Push your local settings to the cloud? (opened ' + opens + 'x)');
+    },
+    onConfirm: (d) => {
+      d.setTitle('Syncing…');
+      d.setContent('Please wait, talking to the server.');
+      setTimeout(() => { reuseOut.textContent = 'Synced (instance kept, open it again)'; d.close('confirm'); }, 1200);
+      return false;
+    },
+    onClose: (reason) => { if (reason !== 'confirm') reuseOut.textContent = `Closed: ${reason}`; },
+  });
+  document.getElementById('open-reusable').addEventListener('click', () => reusable.open());
+
+  document.getElementById('open-locked').addEventListener('click', () => {
+    Look.lkDialog({
+      title: 'Accept the terms',
+      content: 'Escape, overlay click and the close button are disabled — pick a button.',
+      showClose: false, closeOnEscape: false, closeOnOverlay: false,
+      confirmText: 'Accept', cancelText: 'Decline', destroyOnClose: true,
+      onClose: (reason) => { reuseOut.textContent = `Locked dialog: ${reason}`; },
+    });
+  });
+
+  document.getElementById('open-node').addEventListener('click', () => {
+    const form = document.createElement('div');
+    form.innerHTML = '<p style="margin-bottom: var(--lk-space-3)">Content can be any DOM node:</p>'
+      + '<input class="lk-input" placeholder="Your name" style="width:100%" />';
+    const input = form.querySelector('input');
+    Look.lkDialog({
+      title: 'What is your name?',
+      content: form,
+      confirmText: 'Save',
+      destroyOnClose: true,
+      onConfirm: () => {
+        if (!input.value.trim()) { input.focus(); reuseOut.textContent = 'Name is required (dialog kept open)'; return false; }
+        reuseOut.textContent = `Hello, ${input.value.trim()}`;
+      },
     });
   });
 </script>

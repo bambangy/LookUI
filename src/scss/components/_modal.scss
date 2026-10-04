@@ -1,4 +1,15 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Modal component
+
+// Motion: enter decelerates in (no overshoot), exit accelerates out and is a bit
+// quicker. JS exit timers (lkModal, lkDialog) wait for --lk-modal-exit-duration.
+:root {
+  --lk-modal-enter-duration: var(--lk-duration-base);
+  --lk-modal-exit-duration:  220ms;
+  --lk-modal-enter-easing:   var(--lk-easing-out);
+  --lk-modal-exit-easing:    cubic-bezier(0.4, 0, 1, 1);
+}
 
 .lk-modal-overlay {
   position: fixed;
@@ -9,9 +20,14 @@
   justify-content: center;
   z-index: var(--lk-z-overlay);
 
+  // Closed: invisible AND hidden from focus/AT. visibility flips only after the
+  // fade so the exit transition still plays (see open/closing states below).
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity var(--lk-duration-base) var(--lk-easing-out);
+  transition:
+    opacity var(--lk-modal-exit-duration) var(--lk-modal-exit-easing),
+    visibility 0s linear var(--lk-modal-exit-duration);
 }
 
 .lk-modal {
@@ -26,30 +42,59 @@
   overflow-y: auto;
   z-index: var(--lk-z-modal);
 
+  // Enter: rises slightly and settles. Opacity and transform share one timing so
+  // the panel never pops in before it moves; its own layer keeps the big shadow
+  // from repainting every frame.
   opacity: 0;
-  transform: translateY(var(--lk-space-6)) scale(0.94);
+  transform: translate3d(0, 0.75rem, 0) scale(0.96);
+  transform-origin: 50% 60%;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
   transition:
-    transform var(--lk-duration-slow) var(--lk-easing-out),
-    opacity var(--lk-duration-base) var(--lk-easing-out);
+    transform var(--lk-modal-exit-duration) var(--lk-modal-exit-easing),
+    opacity   var(--lk-modal-exit-duration) var(--lk-modal-exit-easing);
 
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: var(--lk-space-3);
     margin-bottom: var(--lk-space-4);
   }
 
   &__title {
+    min-width: 0;
     font-size: var(--lk-text-xl);
     font-weight: var(--lk-weight-semibold);
+    line-height: var(--lk-leading-tight);
+    overflow-wrap: anywhere;
   }
 
   &__close {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
     background: none;
     border: none;
     cursor: pointer;
     padding: var(--lk-space-1);
     color: var(--lk-text-muted);
+    border-radius: var(--lk-radius);
+    transition:
+      color var(--lk-duration-fast) var(--lk-easing-out),
+      background-color var(--lk-duration-fast) var(--lk-easing-out),
+      transform var(--lk-duration-micro) var(--lk-easing-default);
+
+    &:hover {
+      color: var(--lk-text);
+      background-color: var(--lk-bg-subtle);
+    }
+
+    &:active {
+      transform: scale(0.92);
+    }
   }
 
   &__body {
@@ -58,8 +103,19 @@
 
   &__footer {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
     gap: var(--lk-space-3);
+  }
+
+  // Dense: tighter padding and section spacing
+  &--dense {
+    padding: var(--lk-space-4);
+
+    .lk-modal__header { margin-bottom: var(--lk-space-3); }
+    .lk-modal__title  { font-size: var(--lk-text-lg); }
+    .lk-modal__body   { margin-bottom: var(--lk-space-4); }
+    .lk-modal__footer { gap: var(--lk-space-2); }
   }
 }
 
@@ -67,20 +123,202 @@
 .lk-modal--open {
   .lk-modal-overlay {
     opacity: 1;
+    visibility: visible;
     pointer-events: auto;
+    transition:
+      opacity var(--lk-modal-enter-duration) var(--lk-modal-enter-easing),
+      visibility 0s linear 0s;
   }
 
   .lk-modal {
-    transform: translateY(0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
     opacity: 1;
+    transition:
+      transform var(--lk-modal-enter-duration) var(--lk-modal-enter-easing),
+      opacity   var(--lk-modal-enter-duration) var(--lk-modal-enter-easing);
   }
 }
 
-// Closing state for composables
+// Closing state: quick fade with a small drop (uses the base exit transitions)
 .lk-modal--closing {
   .lk-modal-overlay {
     pointer-events: none;
+    opacity: 0;
+  }
+
+  .lk-modal {
+    opacity: 0;
+    transform: translate3d(0, 0.5rem, 0) scale(0.97);
   }
 }
 
 
+
+// =============================================================================
+// Status dialogs (lkDialog type: success | error | warning | info | question)
+// =============================================================================
+
+.lk-modal--status {
+  --lk-dialog-status-color: var(--lk-primary);
+  text-align: center;
+  padding-top: var(--lk-space-8);
+
+  .lk-modal__header {
+    justify-content: center;
+    margin-bottom: var(--lk-space-2);
+  }
+
+  .lk-modal__title {
+    font-size: var(--lk-text-2xl);
+  }
+
+  .lk-modal__close {
+    position: absolute;
+    top: var(--lk-space-3);
+    right: var(--lk-space-3);
+    margin: 0;
+  }
+
+  .lk-modal__body {
+    color: var(--lk-text-muted);
+  }
+
+  .lk-modal__footer {
+    justify-content: center;
+  }
+
+  &-success  { --lk-dialog-status-color: var(--lk-positive); }
+  &-error    { --lk-dialog-status-color: var(--lk-negative); }
+  &-warning  { --lk-dialog-status-color: var(--lk-warning); }
+  &-info     { --lk-dialog-status-color: var(--lk-info); }
+  &-question { --lk-dialog-status-color: var(--lk-secondary); }
+}
+
+.lk-dialog-status {
+  width: 5rem;
+  height: 5rem;
+  margin: 0 auto var(--lk-space-5);
+  color: var(--lk-dialog-status-color);
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &__ring {
+    opacity: 0.3;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    transform: rotate(-90deg);
+    transform-origin: 40px 40px;
+  }
+
+  &__mark {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+
+  &__dot {
+    fill: currentColor;
+    stroke: none;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+}
+
+// Icon motion plays every time the dialog opens (root gets .lk-modal--open)
+.lk-modal--open .lk-modal:not(.lk-modal--calm) .lk-dialog-status {
+  &__ring {
+    animation: lk-status-draw 520ms var(--lk-easing-out) both;
+  }
+
+  &__mark {
+    animation: lk-status-draw 360ms cubic-bezier(0.65, 0, 0.35, 1) 280ms both;
+  }
+
+  &__mark--2 {
+    animation-delay: 420ms;
+  }
+
+  &__dot {
+    animation: lk-status-dot 320ms var(--lk-easing-spring) 460ms both;
+  }
+}
+
+.lk-modal--open .lk-modal:not(.lk-modal--calm) .lk-dialog-status--error {
+  animation: lk-status-pop 420ms var(--lk-easing-spring) 180ms both;
+}
+
+.lk-modal--open .lk-modal:not(.lk-modal--calm) .lk-dialog-status--warning,
+.lk-modal--open .lk-modal:not(.lk-modal--calm) .lk-dialog-status--info,
+.lk-modal--open .lk-modal:not(.lk-modal--calm) .lk-dialog-status--question {
+  animation: lk-status-pulse 900ms var(--lk-easing-in-out) 520ms both;
+}
+
+// --- SweetAlert2-style motion (lkModal + lkDialog) ---
+// Show: scale pop with a wobble (0.7 → 1.05 → 0.95 → 1).
+// Hide: slide down while fading. Add .lk-modal--calm to a panel (or pass
+// lkDialog({ animation: 'calm' })) for the plain rise/fade transitions instead.
+// Both directions are keyframe animations: browsers don't start a transition
+// from a value an animation is holding, so an animated show needs an animated hide.
+// JS exit timers (lkModal, lkDialog) wait for --lk-modal-exit-duration.
+
+.lk-modal--open .lk-modal:not(.lk-modal--calm) {
+  animation: lk-modal-pop 320ms var(--lk-easing-default) both;
+  transition: none;
+}
+
+.lk-modal--closing .lk-modal:not(.lk-modal--calm) {
+  animation: lk-modal-slide-out var(--lk-modal-exit-duration) var(--lk-modal-exit-easing) both;
+  transition: none;
+}
+
+@keyframes lk-modal-pop {
+  0%   { opacity: 0; transform: scale(0.7); }
+  45%  { opacity: 1; transform: scale(1.05); }
+  80%  { transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes lk-modal-slide-out {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to   { opacity: 0; transform: translate3d(0, 3rem, 0); }
+}
+
+@keyframes lk-status-draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes lk-status-dot {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+
+@keyframes lk-status-pop {
+  0%   { transform: scale(0.6); }
+  60%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes lk-status-pulse {
+  0%, 100% { transform: scale(1); }
+  40%      { transform: scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-modal--open .lk-modal,
+  .lk-modal--closing .lk-modal,
+  .lk-modal--open .lk-modal .lk-dialog-status,
+  .lk-modal--open .lk-modal .lk-dialog-status * {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}

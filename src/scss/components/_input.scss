@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Input component
 
 .lk-input {
@@ -34,10 +36,20 @@
     }
   }
 
+  &[readonly] {
+    background: var(--lk-surface);
+    cursor: default;
+  }
+
   &:disabled {
     background: var(--lk-surface);
     opacity: 0.6;
     cursor: not-allowed;
+  }
+
+  &--dense {
+    padding: var(--lk-space-1) var(--lk-space-2);
+    font-size: var(--lk-text-sm);
   }
 }
 
@@ -64,7 +76,108 @@
   color: var(--lk-text);
 }
 
+// Required marker — applied by form components to their own label and to any
+// external <label for="..."> (not tied to .lk-label so plain labels get it too).
+.lk-label--required::after {
+  content: '*';
+  content: '*' / ''; // decorative: the control's required state is announced instead
+  margin-inline-start: 0.2em;
+  color: var(--lk-negative);
+  font-weight: var(--lk-weight-bold);
+}
+
 .lk-field-error {
   font-size: var(--lk-text-sm);
   color: var(--lk-negative);
+}
+
+.lk-input-affix {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius);
+  background: var(--lk-bg);
+  transition:
+    border-color var(--lk-duration-fast) var(--lk-easing-default),
+    box-shadow   var(--lk-duration-fast) var(--lk-easing-default);
+
+  &:focus-within {
+    border-color: var(--lk-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-primary) 20%, transparent);
+  }
+}
+
+.lk-input-affix__prepend,
+.lk-input-affix__append {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  padding: 0 var(--lk-space-3);
+  color: var(--lk-text-muted);
+  white-space: nowrap;
+}
+
+.lk-input-affix__prepend {
+  border-right: var(--lk-border-width) solid var(--lk-border);
+}
+
+.lk-input-affix__append {
+  border-left: var(--lk-border-width) solid var(--lk-border);
+}
+
+.lk-input--affixed {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none !important;
+  background: transparent;
+  padding-left: var(--lk-space-3);
+  padding-right: var(--lk-space-3);
+}
+
+// Readonly / disabled — the visible box is the affix wrapper, so mirror the
+// input's state onto it.
+.lk-input-affix:has(> .lk-input[readonly]) {
+  background: var(--lk-surface);
+}
+
+.lk-input-affix:has(> .lk-input:disabled) {
+  background: var(--lk-surface);
+  opacity: 0.6;
+  cursor: not-allowed;
+
+  > .lk-input:disabled {
+    opacity: 1; // wrapper already dims — avoid double fade
+  }
+}
+
+.lk-input-affix .lk-input--affixed[readonly],
+.lk-input-affix .lk-input--affixed:disabled {
+  background: transparent;
+}
+
+// Dense
+.lk-field--dense .lk-input,
+.lk-input-affix:has(> .lk-input--dense) .lk-input--affixed {
+  padding: var(--lk-space-1) var(--lk-space-2);
+  font-size: var(--lk-text-sm);
+}
+
+.lk-field--dense .lk-input-affix__prepend,
+.lk-field--dense .lk-input-affix__append,
+.lk-input-affix:has(> .lk-input--dense) .lk-input-affix__prepend,
+.lk-input-affix:has(> .lk-input--dense) .lk-input-affix__append {
+  padding: 0 var(--lk-space-2);
+  font-size: var(--lk-text-sm);
+}
+
+// Error — wrapper-level (with label) or node-level (no label wrapper)
+.lk-input-affix:has(> .lk-input--error),
+.lk-field--error .lk-input-affix {
+  border-color: var(--lk-negative);
+
+  &:focus-within {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-negative) 20%, transparent);
+  }
 }

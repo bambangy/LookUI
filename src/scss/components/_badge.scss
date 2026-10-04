@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Badge component
 
 .lk-badge {
@@ -12,6 +14,8 @@
   white-space: nowrap;
   vertical-align: middle;
 
+  // Transparent border on every badge so outline variants keep the same height
+  border: var(--lk-border-width) solid transparent;
   border-radius: var(--lk-radius-full);
   background: var(--lk-primary);
   color: var(--lk-primary-contrast);
@@ -52,7 +56,7 @@
 
   &--outline {
     background: transparent;
-    border: var(--lk-border-width) solid currentColor;
+    border-color: currentColor;
     color: var(--lk-primary);
   }
 
@@ -68,6 +72,7 @@
     width: 0.5rem;
     height: 0.5rem;
     padding: 0;
+    border: none;
     border-radius: var(--lk-radius-full);
     font-size: 0;
   }

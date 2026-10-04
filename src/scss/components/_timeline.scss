@@ -1,6 +1,13 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Timeline component
 
 .lk-timeline {
+  // Dot geometry: the dot is vertically centered on the first line of the title,
+  // and the connector runs from the bottom of one dot to the top of the next.
+  --lk-timeline-dot: 1rem;
+  --lk-timeline-dot-top: calc((var(--lk-text-base) * var(--lk-leading-tight) - var(--lk-timeline-dot)) / 2);
+
   position: relative;
   padding: 0;
   margin: 0;
@@ -16,9 +23,9 @@
     &::before {
       content: '';
       position: absolute;
-      left: calc(0.5rem - 0.5px);
-      top: 1.25rem;
-      bottom: 0;
+      left: calc(var(--lk-timeline-dot) / 2 - var(--lk-border-width) / 2);
+      top: calc(var(--lk-timeline-dot-top) + var(--lk-timeline-dot));
+      bottom: calc(var(--lk-timeline-dot-top) * -1);
       width: var(--lk-border-width);
       background: var(--lk-border);
     }
@@ -34,10 +41,11 @@
   }
 
   &__dot {
+    position: relative;
     flex-shrink: 0;
-    width: 1rem;
-    height: 1rem;
-    margin-top: var(--lk-space-1);
+    width: var(--lk-timeline-dot);
+    height: var(--lk-timeline-dot);
+    margin-top: var(--lk-timeline-dot-top);
     border-radius: var(--lk-radius-full);
     background: var(--lk-border);
     border: var(--lk-border-width-md) solid var(--lk-bg);
@@ -102,14 +110,9 @@
     padding-bottom: var(--lk-space-4);
   }
 
-  &--dense &__dot {
-    width: 0.625rem;
-    height: 0.625rem;
-  }
-
-  &--dense &__item::before {
-    left: calc(0.3125rem - 0.5px);
-    top: 0.875rem;
+  &--dense {
+    --lk-timeline-dot: 0.625rem;
+    --lk-timeline-dot-top: calc((var(--lk-text-sm) * var(--lk-leading-tight) - var(--lk-timeline-dot)) / 2);
   }
 
   &--dense &__title {

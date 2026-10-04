@@ -111,13 +111,13 @@
         <div class="lk-grid lk-grid--cols-1 lk-grid--cols-lg-2" style="margin-top: var(--lk-space-4);">
           <div class="lk-card">
             <div class="lk-card__body">
-              <h3 style="margin-bottom: var(--lk-space-2);">Revenue Overview</h3>
+              <h3 class="lk-card__title" style="margin-bottom: var(--lk-space-2);">Revenue Overview</h3>
               <div class="mini-chart" style="height: 12rem;"></div>
             </div>
           </div>
           <div class="lk-card">
             <div class="lk-card__body">
-              <h3 style="margin-bottom: var(--lk-space-2);">Orders by Category</h3>
+              <h3 class="lk-card__title" style="margin-bottom: var(--lk-space-2);">Orders by Category</h3>
               <div class="mini-chart" style="height: 12rem;"></div>
             </div>
           </div>
@@ -127,7 +127,7 @@
         <div class="lk-card" style="margin-top: var(--lk-space-4);">
           <div class="lk-card__body">
             <div class="lk-flex lk-flex--justify-between lk-flex--align-center" style="margin-bottom: var(--lk-space-3);">
-              <h3>Recent Orders</h3>
+              <h3 class="lk-card__title">Recent Orders</h3>
               <a href="dashboard-orders.html" class="lk-btn lk-btn--ghost lk-btn--sm">View All</a>
             </div>
             <table id="recent-orders" class="lk-table lk-table--striped" style="width: 100%;">
@@ -158,7 +158,7 @@
   const badge = Look.lkPingBadge(bellBtn, { count: 3, position: 'top-right' });
 
   // lkTooltip on export button
-  Look.lkTooltip(document.querySelector('.lk-page-title__actions .lk-btn'), { text: 'Export as CSV', position: 'bottom' });
+  Look.lkTooltip(document.querySelector('.lk-page-title__actions .lk-btn'), { content: 'Export as CSV', position: 'bottom' });
 
   // Clicking bell → dismiss badge + lkToast
   bellBtn.addEventListener('click', () => {

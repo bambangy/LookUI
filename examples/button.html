@@ -6,6 +6,7 @@
   <title>LookUI — Button</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
 </head>
 <body>
 
@@ -31,6 +32,13 @@
       <button class="lk-btn lk-btn--info">Info</button>
     </div>
 
+    <p class="demo-sub">Outline, neutral &amp; link</p>
+    <div class="demo-row">
+      <button class="lk-btn">Neutral (no variant)</button>
+      <button class="lk-btn lk-btn--outline">Outline</button>
+      <a class="lk-btn lk-btn--primary" href="#">&lt;a&gt; as button</a>
+    </div>
+
     <p class="demo-sub">Sizes</p>
     <div class="demo-row">
       <button class="lk-btn lk-btn--primary lk-btn--sm">Small</button>
@@ -45,10 +53,18 @@
       <button class="lk-btn lk-btn--primary lk-btn--dense lk-btn--lg">Dense LG</button>
     </div>
 
+    <p class="demo-sub">With icons (lkIcon inside .lk-btn)</p>
+    <div class="demo-row" id="icon-buttons"></div>
+
     <p class="demo-sub">Disabled</p>
     <div class="demo-row">
       <button class="lk-btn lk-btn--primary" disabled>Disabled</button>
       <button class="lk-btn lk-btn--secondary" aria-disabled="true">Aria-disabled</button>
+    </div>
+
+    <p class="demo-sub">Full width</p>
+    <div style="max-width: 320px;">
+      <button class="lk-btn lk-btn--primary lk-btn--full-width">Full-width button</button>
     </div>
 
     <p class="demo-sub">Button group</p>
@@ -57,6 +73,11 @@
         <button class="lk-btn lk-btn--secondary">Left</button>
         <button class="lk-btn lk-btn--secondary">Center</button>
         <button class="lk-btn lk-btn--secondary">Right</button>
+      </div>
+      <div class="lk-btn-group">
+        <button class="lk-btn lk-btn--primary">Day</button>
+        <button class="lk-btn lk-btn--primary">Week</button>
+        <button class="lk-btn lk-btn--primary">Month</button>
       </div>
     </div>
 
@@ -81,6 +102,15 @@
           <button class="lk-btn-dropdown__item">Delete</button>
         </div>
       </div>
+
+      <div class="lk-btn-dropdown lk-btn-dropdown--dense">
+        <button class="lk-btn lk-btn--ghost lk-btn--sm">Dense menu <span class="lk-btn-dropdown__caret"></span></button>
+        <div class="lk-btn-dropdown__menu">
+          <button class="lk-btn-dropdown__item">Rename</button>
+          <button class="lk-btn-dropdown__item" disabled>Move (disabled)</button>
+          <button class="lk-btn-dropdown__item">Archive</button>
+        </div>
+      </div>
     </div>
     <div id="output" class="demo-output"></div>
   </section>
@@ -98,20 +128,316 @@ dd.querySelector('.lk-btn').addEventListener('click', () =&gt; {
 });</pre>
   </div>
 
+  <div id="api"></div>
+
 </main>
 
 <script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+// CSS-only live example: renders `markup` into the preview box.
+function live(title, markup) {
+  const lines = markup.replace(/^\n+|\s+$/g, '').split('\n');
+  const min = Math.min(...lines.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length));
+  return { title, run: true, code: 'container.innerHTML = `\n' + lines.map((l) => '  ' + l.slice(min)).join('\n') + '\n`;' };
+}
+
+LookDocs.render('#api', {
+  name: 'lkButton',
+  kind: 'Component',
+  signature: [
+    'const btn = Look.lkButton(element);',
+    '<button class="lk-btn lk-btn--primary">Save</button>',
+  ],
+  description: [
+    'Buttons are primarily a **CSS component**: any `<button>`, `<a>` or `<input type="button">` with the `.lk-btn` class gets the LookUI button look, and modifier classes pick the variant, size and density. No JavaScript is required.',
+    '`lkButton()` is a thin helper that adds `.lk-btn` to an element and returns a handle whose `destroy()` removes it again — useful when buttons are created by code that otherwise owns the element. Groups (`.lk-btn-group`) and the button dropdown (`.lk-btn-dropdown`) are also pure CSS; the dropdown is opened by toggling `.lk-btn-dropdown--open` (see [the dropdown classes](#api-classes-.lk-btn-dropdown)).',
+  ],
+  params: [
+    { name: 'element', type: 'Element | string', description: 'The element or a CSS selector. Throws `Look.lkButton: element not found` when nothing matches.' },
+  ],
+  returns: { type: 'Object', description: '`{ el, destroy }` — see below.' },
+  notes: [
+    'Hover lifts the button by 1 px with a small shadow, press scales it to 97 %; both are skipped for `:disabled` / `[aria-disabled="true"]` buttons. With `prefers-reduced-motion: reduce` all button transitions collapse to 1 ms.',
+  ],
+
+  properties: [
+    {
+      name: 'el', type: 'Element', readonly: true,
+      description: 'The element that received `.lk-btn`.',
+      examples: [{ title: 'Enhance a plain button', run: true, code: `
+        const b = document.createElement('button');
+        b.textContent = 'Enhanced by lkButton';
+        container.appendChild(b);
+        const btn = Look.lkButton(b);
+        btn.el.classList.add('lk-btn--primary');
+        log('className:', btn.el.className);` }],
+    },
+  ],
+
+  methods: [
+    {
+      name: 'destroy', signature: 'destroy()',
+      description: 'Removes the `.lk-btn` class that `lkButton()` added. Modifier classes you added yourself are left alone.',
+      examples: [{ title: 'Toggle the base class', run: true, code: `
+        const b = document.createElement('button');
+        b.textContent = 'Click to destroy';
+        container.appendChild(b);
+        const btn = Look.lkButton(b);
+        b.onclick = () => { btn.destroy(); log('after destroy:', JSON.stringify(b.className)); };` }],
+    },
+  ],
+
+  classes: [
+    {
+      name: '.lk-btn',
+      description: 'Base button: inline-flex, centred content with a `--lk-space-2` gap (icons + text line up automatically), `--lk-radius` corners, transparent 1 px border and a neutral `--lk-surface` background. Works on `<button>` and `<a>` (links lose their underline).',
+      examples: [live('Neutral base on different elements', `
+        <button class="lk-btn">&lt;button&gt;</button>
+        <a class="lk-btn" href="#">&lt;a href&gt;</a>
+        <input class="lk-btn" type="button" value="&lt;input&gt;">
+      `)],
+    },
+    {
+      name: '.lk-btn--{variant}',
+      description: 'Visual variant. Use exactly one per button.',
+      values: [
+        ['primary', 'Solid `--lk-primary`, hover `--lk-primary-dark`. The main call to action.'],
+        ['secondary', 'Transparent with a `--lk-border` border and normal text color; hover fills with `--lk-surface`.'],
+        ['outline', 'Transparent, border in `currentColor`, text `--lk-primary`; hover adds a 10 % tint.'],
+        ['ghost', 'No border or background, text `--lk-primary`; hover `--lk-bg-subtle`.'],
+        ['positive', 'Solid green (`--lk-positive`).'],
+        ['negative', 'Solid red (`--lk-negative`) — destructive actions.'],
+        ['warning', 'Solid amber (`--lk-warning`, black text).'],
+        ['info', 'Solid blue (`--lk-info`).'],
+      ],
+      examples: [
+        live('Every variant', `
+          <button class="lk-btn lk-btn--primary">Primary</button>
+          <button class="lk-btn lk-btn--secondary">Secondary</button>
+          <button class="lk-btn lk-btn--outline">Outline</button>
+          <button class="lk-btn lk-btn--ghost">Ghost</button>
+          <button class="lk-btn lk-btn--positive">Positive</button>
+          <button class="lk-btn lk-btn--negative">Negative</button>
+          <button class="lk-btn lk-btn--warning">Warning</button>
+          <button class="lk-btn lk-btn--info">Info</button>
+        `),
+        live('Typical form footer', `
+          <div style="display:flex; gap:8px; justify-content:flex-end">
+            <button class="lk-btn lk-btn--ghost">Cancel</button>
+            <button class="lk-btn lk-btn--secondary">Save draft</button>
+            <button class="lk-btn lk-btn--primary">Publish</button>
+          </div>
+        `),
+        live('Outline follows a custom color', `
+          <button class="lk-btn lk-btn--outline">Primary outline</button>
+          <button class="lk-btn lk-btn--outline" style="color: var(--lk-negative)">Red outline</button>
+          <button class="lk-btn lk-btn--outline" style="color: var(--lk-positive)">Green outline</button>
+        `),
+      ],
+    },
+    {
+      name: '.lk-btn--{size}',
+      description: 'Size. Omit for the default size.',
+      values: [
+        ['sm', 'Padding `space-2 / space-3`, font `--lk-text-sm`.'],
+        ['(default)', 'Padding `space-2 / space-5`, font `--lk-text-base`.'],
+        ['lg', 'Padding `space-4 / space-7`, font `--lk-text-md`.'],
+      ],
+      examples: [
+        live('Sizes × variants', `
+          <div style="display:grid; gap:8px">
+            <div><button class="lk-btn lk-btn--primary lk-btn--sm">Small</button> <button class="lk-btn lk-btn--primary">Default</button> <button class="lk-btn lk-btn--primary lk-btn--lg">Large</button></div>
+            <div><button class="lk-btn lk-btn--secondary lk-btn--sm">Small</button> <button class="lk-btn lk-btn--secondary">Default</button> <button class="lk-btn lk-btn--secondary lk-btn--lg">Large</button></div>
+          </div>
+        `),
+      ],
+    },
+    {
+      name: '.lk-btn--dense',
+      description: 'Compact spacing for toolbars, tables and dense forms. Combines with sizes: `--dense --sm` is the smallest button (`--lk-text-xs`), `--dense --lg` keeps base text with tighter padding.',
+      values: [
+        ['lk-btn--dense lk-btn--sm', 'Padding `space-1×0.5 / space-2`, font `--lk-text-xs`.'],
+        ['lk-btn--dense', 'Padding `space-1 / space-3`, font `--lk-text-sm`, gap `space-1`.'],
+        ['lk-btn--dense lk-btn--lg', 'Padding `space-2 / space-4`, font `--lk-text-base`.'],
+      ],
+      examples: [
+        live('Dense sizes', `
+          <button class="lk-btn lk-btn--primary lk-btn--dense lk-btn--sm">Dense SM</button>
+          <button class="lk-btn lk-btn--primary lk-btn--dense">Dense</button>
+          <button class="lk-btn lk-btn--primary lk-btn--dense lk-btn--lg">Dense LG</button>
+          <button class="lk-btn lk-btn--secondary lk-btn--dense">Secondary dense</button>
+        `),
+      ],
+    },
+    {
+      name: '.lk-btn--full-width',
+      description: 'Stretches the button to `width: 100%` of its container (mobile actions, login forms).',
+      examples: [
+        live('Stacked full-width actions', `
+          <div style="display:grid; gap:8px; max-width:280px">
+            <button class="lk-btn lk-btn--primary lk-btn--full-width">Sign in</button>
+            <button class="lk-btn lk-btn--secondary lk-btn--full-width">Create account</button>
+          </div>
+        `),
+      ],
+    },
+    {
+      name: ':disabled / [aria-disabled="true"]',
+      description: 'Disabled look: 50 % opacity, no pointer events, no hover/press motion. Use the native `disabled` attribute on `<button>`; use `aria-disabled="true"` on `<a class="lk-btn">`.',
+      examples: [
+        live('Disabled variants', `
+          <button class="lk-btn lk-btn--primary" disabled>Primary</button>
+          <button class="lk-btn lk-btn--secondary" disabled>Secondary</button>
+          <a class="lk-btn lk-btn--outline" href="#" aria-disabled="true">Link (aria-disabled)</a>
+        `),
+      ],
+    },
+    {
+      name: 'Icon buttons',
+      description: 'There is no dedicated icon-button class: put an [lkIcon](icon.html) (or `<span class="lk-icon lk-icon--name">`) inside `.lk-btn`; the built-in gap spaces icon and text. For an icon-only button add an `aria-label` and, if you want it square, equalise the padding yourself.',
+      examples: [
+        { title: 'Leading, trailing and icon-only', run: true, code: `
+          const make = (cls, parts, label) => {
+            const b = document.createElement('button');
+            b.className = cls;
+            parts.forEach((p) => b.append(p.startsWith('i:') ? Look.lkIcon(p.slice(2)) : p));
+            if (label) b.setAttribute('aria-label', label);
+            b.style.marginRight = '8px';
+            container.appendChild(b);
+          };
+          make('lk-btn lk-btn--primary', ['i:plus', 'New']);
+          make('lk-btn lk-btn--secondary', ['Next', 'i:arrow-right']);
+          make('lk-btn lk-btn--negative lk-btn--sm', ['i:delete', 'Delete']);
+          make('lk-btn lk-btn--ghost', ['i:settings'], 'Settings');
+          make('lk-btn lk-btn--secondary lk-btn--dense', ['i:refresh'], 'Refresh');` },
+        live('Markup only', `
+          <button class="lk-btn lk-btn--info">
+            <span class="lk-icon lk-icon--download" aria-hidden="true"></span> Export
+          </button>
+          <button class="lk-btn lk-btn--ghost" aria-label="More" style="padding-inline: var(--lk-space-2)">
+            <span class="lk-icon lk-icon--more-vertical" aria-hidden="true"></span>
+          </button>
+        `),
+      ],
+    },
+    {
+      name: '.lk-btn-group',
+      description: 'Joins adjacent `.lk-btn` children into one segmented control: inner corners squared, borders collapsed, and a subtle `currentColor` divider between solid/ghost buttons. Hovered/focused buttons are raised so their outline is not clipped.',
+      examples: [
+        live('Secondary, primary and mixed groups', `
+          <div style="display:flex; flex-wrap:wrap; gap:12px">
+            <div class="lk-btn-group">
+              <button class="lk-btn lk-btn--secondary">Left</button>
+              <button class="lk-btn lk-btn--secondary">Center</button>
+              <button class="lk-btn lk-btn--secondary">Right</button>
+            </div>
+            <div class="lk-btn-group">
+              <button class="lk-btn lk-btn--primary">Day</button>
+              <button class="lk-btn lk-btn--primary">Week</button>
+              <button class="lk-btn lk-btn--primary">Month</button>
+            </div>
+            <div class="lk-btn-group">
+              <button class="lk-btn lk-btn--secondary lk-btn--sm">1</button>
+              <button class="lk-btn lk-btn--primary lk-btn--sm">2</button>
+              <button class="lk-btn lk-btn--secondary lk-btn--sm">3</button>
+            </div>
+          </div>
+        `),
+      ],
+    },
+    {
+      name: '.lk-btn-dropdown',
+      description: 'Wrapper (`position: relative; inline-flex`) for a trigger button plus a `.lk-btn-dropdown__menu`. The menu is hidden until the wrapper gets `.lk-btn-dropdown--open`; it then fades/scales in with `--lk-duration-base` and `--lk-easing-snap`. Opening/closing is up to your code.',
+      examples: [
+        { title: 'Toggle open with a click', run: true, code: `
+          container.innerHTML = \`
+            <div class="lk-btn-dropdown">
+              <button class="lk-btn lk-btn--primary">Actions <span class="lk-btn-dropdown__caret"></span></button>
+              <div class="lk-btn-dropdown__menu">
+                <button class="lk-btn-dropdown__item">Edit</button>
+                <button class="lk-btn-dropdown__item lk-btn-dropdown__item--active">Duplicate</button>
+                <hr class="lk-btn-dropdown__divider">
+                <button class="lk-btn-dropdown__item">Delete</button>
+              </div>
+            </div>\`;
+          container.style.minHeight = '11rem';
+          const dd = container.querySelector('.lk-btn-dropdown');
+          dd.querySelector('.lk-btn').onclick = () => dd.classList.toggle('lk-btn-dropdown--open');
+          dd.querySelectorAll('.lk-btn-dropdown__item').forEach((item) => {
+            item.onclick = () => { log('picked', item.textContent); dd.classList.remove('lk-btn-dropdown--open'); };
+          });` },
+      ],
+    },
+    { name: '.lk-btn-dropdown--open', description: 'Shows the menu and rotates the caret 180°.' ,
+      examples: [live('Rendered open (static)', `
+        <div style="min-height:9rem">
+          <div class="lk-btn-dropdown lk-btn-dropdown--open">
+            <button class="lk-btn lk-btn--secondary">Options <span class="lk-btn-dropdown__caret"></span></button>
+            <div class="lk-btn-dropdown__menu">
+              <button class="lk-btn-dropdown__item">Rename</button>
+              <button class="lk-btn-dropdown__item">Share</button>
+            </div>
+          </div>
+        </div>
+      `)] },
+    { name: '.lk-btn-dropdown--dense', description: 'Tighter menu items (`space-1 / space-3`, `--lk-text-sm`). Pair with a dense or small trigger.',
+      examples: [live('Dense open menu', `
+        <div style="min-height:8rem">
+          <div class="lk-btn-dropdown lk-btn-dropdown--dense lk-btn-dropdown--open">
+            <button class="lk-btn lk-btn--secondary lk-btn--dense">Dense <span class="lk-btn-dropdown__caret"></span></button>
+            <div class="lk-btn-dropdown__menu">
+              <button class="lk-btn-dropdown__item">Rename</button>
+              <button class="lk-btn-dropdown__item">Archive</button>
+              <button class="lk-btn-dropdown__item">Delete</button>
+            </div>
+          </div>
+        </div>
+      `)] },
+    { name: '.lk-btn-dropdown__caret', description: 'CSS triangle (border trick) drawn in `currentColor`; place it inside the trigger button after the label.' },
+    { name: '.lk-btn-dropdown__menu', description: 'Absolutely positioned panel below the trigger (`top: 100%`, `min-width: 10rem`, `z-index: var(--lk-z-dropdown)`, `--lk-shadow-md`).' },
+    { name: '.lk-btn-dropdown__item', description: 'Full-width, left-aligned menu entry (use `<button>` or `<a>`). Hover/focus tints it and colors the text `--lk-primary`; `:disabled` dims it.' },
+    { name: '.lk-btn-dropdown__item--active', description: 'Marks the current/selected entry with a 10 % primary tint.' },
+    { name: '.lk-btn-dropdown__divider', description: 'Horizontal rule between item groups — use on an `<hr>`.' },
+  ],
+
+  tokens: [
+    { name: '--lk-primary / --lk-primary-dark', default: '#5c6bc0 / #3949ab', description: 'Primary background and hover; also outline/ghost text color.' },
+    { name: '--lk-{positive|negative|warning|info}[-dark]', default: 'see tokens', description: 'Semantic variant background and hover. Text uses the matching `-contrast` token.' },
+    { name: '--lk-surface', default: '#efefef', description: 'Neutral `.lk-btn` background and `--secondary` hover.' },
+    { name: '--lk-border', default: '#d0d0d8', description: '`--secondary` border and dropdown menu border/divider.' },
+    { name: '--lk-radius', default: '0.25rem', description: 'Button and menu corner radius (also the outer corners of a group).' },
+    { name: '--lk-duration-fast / --lk-easing-spring', default: '180ms / cubic-bezier(0.34, 1.56, 0.64, 1)', description: 'Hover color/lift transition; press uses `--lk-duration-micro` (100ms).' },
+    { name: '--lk-z-dropdown', default: '50', description: 'Stacking level of `.lk-btn-dropdown__menu`.' },
+  ],
+});
+</script>
 <script>
   const out = document.getElementById('output');
 
-  // Wire up all .lk-btn-dropdown: toggle on click, close on outside
-  document.querySelectorAll('.lk-btn-dropdown').forEach(dd => {
+  // Icon buttons
+  const iconRow = document.getElementById('icon-buttons');
+  [
+    ['lk-btn lk-btn--primary', 'plus', 'New item'],
+    ['lk-btn lk-btn--secondary', 'download', 'Download'],
+    ['lk-btn lk-btn--negative lk-btn--sm', 'delete', 'Delete'],
+    ['lk-btn lk-btn--ghost', 'settings', ''],
+  ].forEach(([cls, icon, text]) => {
+    const b = document.createElement('button');
+    b.className = cls;
+    b.appendChild(Look.lkIcon(icon));
+    if (text) b.append(text); else b.setAttribute('aria-label', 'Settings');
+    iconRow.appendChild(b);
+  });
+
+  // Wire up the demo .lk-btn-dropdown elements (not the ones inside the API docs)
+  document.querySelectorAll('.demo-section .lk-btn-dropdown').forEach(dd => {
     const trigger = dd.querySelector('.lk-btn');
 
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
       // Close other open dropdowns first
-      document.querySelectorAll('.lk-btn-dropdown--open').forEach(other => {
+      document.querySelectorAll('.demo-section .lk-btn-dropdown--open').forEach(other => {
         if (other !== dd) other.classList.remove('lk-btn-dropdown--open');
       });
       dd.classList.toggle('lk-btn-dropdown--open');
@@ -128,7 +454,7 @@ dd.querySelector('.lk-btn').addEventListener('click', () =&gt; {
 
   // Close all on outside click
   document.addEventListener('click', () => {
-    document.querySelectorAll('.lk-btn-dropdown--open').forEach(dd => {
+    document.querySelectorAll('.demo-section .lk-btn-dropdown--open').forEach(dd => {
       dd.classList.remove('lk-btn-dropdown--open');
     });
   });

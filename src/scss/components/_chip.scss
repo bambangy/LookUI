@@ -1,143 +1,277 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Chip component
+//
+// Color modifiers only swap `--lk-chip-*` variables, so each style
+// (tonal default, --filled, --outline) works with every color modifier:
+//   <span class="lk-chip lk-chip--positive lk-chip--outline">…</span>
+//
+// Structure (all parts optional):
+//   .lk-chip
+//     .lk-chip__icon | .lk-chip__avatar   leading visual
+//     .lk-chip__label                      text (ellipsis when constrained)
+//     .lk-chip__close                      remove button
 
 .lk-chip {
+  // Neutral defaults; color modifiers below only swap these variables.
+  --lk-chip-tone: var(--lk-primary);                // used by selected / focus / avatar
+  --lk-chip-height: 1.75rem;
+  --lk-chip-pad: var(--lk-space-3);
+  --lk-chip-bg: var(--lk-surface);
+  --lk-chip-fg: var(--lk-text);
+  --lk-chip-hover-bg: color-mix(in srgb, var(--lk-text) 9%, var(--lk-surface));
+  --lk-chip-outline: var(--lk-border);
+  --lk-chip-border: transparent;
+
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   gap: var(--lk-space-1);
+  max-width: 100%;
+  height: var(--lk-chip-height);
+  padding-inline: var(--lk-chip-pad);
+  vertical-align: middle;
 
-  padding: var(--lk-space-1) var(--lk-space-3);
   font-size: var(--lk-text-sm);
   font-weight: var(--lk-weight-medium);
   line-height: 1;
   white-space: nowrap;
-  vertical-align: middle;
 
+  border: var(--lk-border-width) solid var(--lk-chip-border);
   border-radius: var(--lk-radius-full);
-  background: var(--lk-surface);
-  color: var(--lk-text);
-  border: var(--lk-border-width) solid transparent;
+  background: var(--lk-chip-bg);
+  color: var(--lk-chip-fg);
 
-  // --- Color variants ---
+  transition:
+    background-color var(--lk-duration-fast) var(--lk-easing-default),
+    border-color     var(--lk-duration-fast) var(--lk-easing-default),
+    color            var(--lk-duration-fast) var(--lk-easing-default),
+    box-shadow       var(--lk-duration-fast) var(--lk-easing-default),
+    opacity          var(--lk-duration-fast) var(--lk-easing-default),
+    transform        var(--lk-duration-fast) var(--lk-easing-default);
 
-  &--primary {
-    background: color-mix(in srgb, var(--lk-primary) 15%, transparent);
-    color: var(--lk-primary-dark);
+  // --- Color modifiers (tonal) ---
+
+  @each $name in primary, secondary, accent, positive, warning, negative, info {
+    &--#{$name} {
+      --lk-chip-tone: var(--lk-#{$name});
+      --lk-chip-bg: color-mix(in srgb, var(--lk-#{$name}) 14%, transparent);
+      --lk-chip-fg: color-mix(in srgb, var(--lk-#{$name}) 72%, #000);
+      --lk-chip-hover-bg: color-mix(in srgb, var(--lk-#{$name}) 22%, transparent);
+      --lk-chip-outline: color-mix(in srgb, var(--lk-#{$name}) 55%, transparent);
+    }
   }
 
-  &--secondary {
-    background: color-mix(in srgb, var(--lk-secondary) 15%, transparent);
-    color: var(--lk-secondary-dark);
-  }
+  // Orange/cyan are too light to darken into readable text the same way
+  &--warning { --lk-chip-fg: color-mix(in srgb, var(--lk-warning-dark) 80%, #000); }
+  &--accent  { --lk-chip-fg: var(--lk-accent-dark); }
 
-  &--positive {
-    background: color-mix(in srgb, var(--lk-positive) 15%, transparent);
-    color: var(--lk-positive-dark);
-  }
-
-  &--warning {
-    background: color-mix(in srgb, var(--lk-warning) 15%, transparent);
-    color: var(--lk-warning-dark);
-  }
-
-  &--negative {
-    background: color-mix(in srgb, var(--lk-negative) 15%, transparent);
-    color: var(--lk-negative-dark);
-  }
-
-  &--info {
-    background: color-mix(in srgb, var(--lk-info) 15%, transparent);
-    color: var(--lk-info-dark);
-  }
-
-  // --- Filled (solid) variants ---
+  // --- Filled (solid) --- plain --filled (no color) is primary, as before
 
   &--filled {
-    background: var(--lk-primary);
-    color: var(--lk-primary-contrast);
-  }
+    --lk-chip-bg: var(--lk-chip-tone);
+    --lk-chip-fg: #fff;
+    --lk-chip-hover-bg: color-mix(in srgb, var(--lk-chip-tone) 86%, #000);
 
-  &--filled#{&}--secondary {
-    background: var(--lk-secondary);
-    color: var(--lk-secondary-contrast);
-  }
-
-  &--filled#{&}--positive {
-    background: var(--lk-positive);
-    color: var(--lk-positive-contrast);
-  }
-
-  &--filled#{&}--negative {
-    background: var(--lk-negative);
-    color: var(--lk-negative-contrast);
+    &.lk-chip--accent  { --lk-chip-fg: var(--lk-accent-contrast); }
+    &.lk-chip--warning { --lk-chip-fg: var(--lk-warning-contrast); }
   }
 
   // --- Outline ---
 
   &--outline {
-    background: transparent;
-    border-color: var(--lk-border);
-    color: var(--lk-text);
+    --lk-chip-bg: transparent;
+    --lk-chip-border: var(--lk-chip-outline);
+    --lk-chip-hover-bg: color-mix(in srgb, var(--lk-chip-tone) 8%, transparent);
   }
 
-  // --- Clickable ---
-
-  &--clickable {
-    cursor: pointer;
-    transition: background-color var(--lk-duration-fast) var(--lk-easing-default);
-
-    &:hover {
-      filter: brightness(0.95);
-    }
-  }
-
-  // --- Selected ---
-
-  &--selected {
-    border-color: var(--lk-primary);
-    box-shadow: 0 0 0 1px var(--lk-primary);
-  }
-
-  // --- Close button inside chip ---
-
-  &__close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1rem;
-    height: 1rem;
-    padding: 0;
-    margin-left: var(--lk-space-1);
-    font-size: 0.625rem;
-    border: none;
-    border-radius: var(--lk-radius-full);
-    background: rgb(var(--lk-shadow-color) / 0.15);
-    color: inherit;
-    cursor: pointer;
-    line-height: 1;
-
-    &:hover {
-      background: rgb(var(--lk-shadow-color) / 0.25);
-    }
-  }
-
-  // --- Square shape ---
+  // --- Shape ---
 
   &--square {
     border-radius: var(--lk-radius);
   }
 
+  // --- Parts ---
+
+  &__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    // keep descenders (g, y) inside the clipped box
+    padding-block: 0.15em;
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    width: 1em;
+    height: 1em;
+    margin-inline-start: calc(var(--lk-space-1) * -0.5);
+    font-size: 1.05em;
+  }
+
+  &__avatar {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--lk-chip-height) - 6px);
+    height: calc(var(--lk-chip-height) - 6px);
+    margin-inline-start: calc(var(--lk-chip-pad) * -1 + 2px);
+    border-radius: var(--lk-radius-full);
+    background: var(--lk-chip-tone);
+    color: #fff;
+    font-size: 0.75em;
+    font-weight: var(--lk-weight-semibold);
+    overflow: hidden;
+    object-fit: cover;
+  }
+
+  &--square &__avatar {
+    border-radius: calc(var(--lk-radius) - 2px);
+  }
+
+  &__close {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    padding: 0;
+    margin-inline: calc(var(--lk-space-1) * 0.5) calc(var(--lk-chip-pad) * -1 + var(--lk-space-1));
+    border: none;
+    border-radius: var(--lk-radius-full);
+    background: transparent;
+    color: inherit;
+    opacity: 0.65;
+    cursor: pointer;
+    line-height: 1;
+    font-size: 0.75rem;
+    transition:
+      background-color var(--lk-duration-fast) var(--lk-easing-default),
+      opacity          var(--lk-duration-fast) var(--lk-easing-default);
+
+    .lk-icon {
+      width: 0.75rem;
+      height: 0.75rem;
+    }
+
+    &:hover,
+    &:focus-visible {
+      opacity: 1;
+      background: color-mix(in srgb, currentColor 16%, transparent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 1px;
+    }
+  }
+
+  // --- Interactive ---
+
+  &--clickable {
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      background: var(--lk-chip-hover-bg);
+    }
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--lk-chip-tone);
+    outline-offset: 2px;
+  }
+
+  // Selected: tone tint + tone border, and a check mark grows in before the label
+  &--selected {
+    --lk-chip-border: var(--lk-chip-tone);
+    background: color-mix(in srgb, var(--lk-chip-tone) 16%, transparent);
+    color: color-mix(in srgb, var(--lk-chip-tone) 72%, #000);
+
+    &::before {
+      content: '';
+      flex-shrink: 0;
+      width: 0.85em;
+      height: 0.85em;
+      margin-inline-start: calc(var(--lk-space-1) * -0.5);
+      background: currentColor;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / contain no-repeat;
+      animation: lk-chip-check var(--lk-duration-fast) var(--lk-easing-out);
+    }
+  }
+
+  &--warning.lk-chip--selected { color: color-mix(in srgb, var(--lk-warning-dark) 80%, #000); }
+  &--accent.lk-chip--selected  { color: var(--lk-accent-dark); }
+
+  &--filled.lk-chip--selected {
+    background: color-mix(in srgb, var(--lk-chip-tone) 82%, #000);
+    color: var(--lk-chip-fg);
+  }
+
+  // Disabled (class, aria, or applyBase's .lk-disabled)
+  &--disabled,
+  &[aria-disabled="true"],
+  &.lk-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+
+  // Leaving: played by lkChip before the node is removed
+  &--leaving {
+    opacity: 0;
+    transform: scale(0.85);
+    pointer-events: none;
+  }
+
   // --- Dense ---
 
   &--dense {
-    padding: calc(var(--lk-space-1) * 0.5) var(--lk-space-2);
+    --lk-chip-height: 1.375rem;
+    --lk-chip-pad: var(--lk-space-2);
     font-size: var(--lk-text-xs);
-    gap: calc(var(--lk-space-1) * 0.5);
+    gap: calc(var(--lk-space-1) * 0.75);
   }
 
   &--dense &__close {
-    width: 0.75rem;
-    height: 0.75rem;
-    font-size: 0.5rem;
-    margin-left: calc(var(--lk-space-1) * 0.5);
+    width: 0.875rem;
+    height: 0.875rem;
+
+    .lk-icon {
+      width: 0.625rem;
+      height: 0.625rem;
+    }
+  }
+}
+
+// Wrapping row of chips
+.lk-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lk-space-2);
+
+  &--dense {
+    gap: var(--lk-space-1);
+  }
+}
+
+@keyframes lk-chip-check {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-chip,
+  .lk-chip__close,
+  .lk-chip--selected::before {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
   }
 }

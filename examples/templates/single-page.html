@@ -43,7 +43,7 @@
     <h1 class="lk-hero__title">Creative Developer</h1>
     <p class="lk-hero__subtitle">I build beautiful, fast, and accessible web experiences. Let's create something great together.</p>
     <div class="lk-hero__actions">
-      <a href="#work" class="lk-btn lk-btn--primary">View My Work</a>
+      <a href="#work" class="lk-btn lk-btn--secondary">View My Work</a>
       <a href="#contact" class="lk-btn lk-btn--outline">Get in Touch</a>
     </div>
   </section>
@@ -89,7 +89,7 @@
         <div class="lk-card">
           <div class="portfolio-img"></div>
           <div class="lk-card__body">
-            <h3>E-Commerce Platform</h3>
+            <h3 class="lk-card__title" style="margin-bottom: var(--lk-space-2);">E-Commerce Platform</h3>
             <p style="color: var(--lk-text-muted); font-size: var(--lk-text-sm);">Full-stack online store with payment integration and admin dashboard.</p>
             <div style="margin-top: var(--lk-space-2);">
               <span class="lk-badge lk-badge--primary">JavaScript</span>
@@ -100,7 +100,7 @@
         <div class="lk-card">
           <div class="portfolio-img"></div>
           <div class="lk-card__body">
-            <h3>Analytics Dashboard</h3>
+            <h3 class="lk-card__title" style="margin-bottom: var(--lk-space-2);">Analytics Dashboard</h3>
             <p style="color: var(--lk-text-muted); font-size: var(--lk-text-sm);">Real-time data visualization dashboard for marketing teams.</p>
             <div style="margin-top: var(--lk-space-2);">
               <span class="lk-badge lk-badge--primary">TypeScript</span>
@@ -111,7 +111,7 @@
         <div class="lk-card">
           <div class="portfolio-img"></div>
           <div class="lk-card__body">
-            <h3>Mobile Banking App</h3>
+            <h3 class="lk-card__title" style="margin-bottom: var(--lk-space-2);">Mobile Banking App</h3>
             <p style="color: var(--lk-text-muted); font-size: var(--lk-text-sm);">Cross-platform banking application with biometric auth.</p>
             <div style="margin-top: var(--lk-space-2);">
               <span class="lk-badge lk-badge--primary">React Native</span>
@@ -156,7 +156,7 @@
 
   // lkTooltip on nav links
   document.querySelectorAll('.lk-bar__end .lk-btn').forEach(btn => {
-    Look.lkTooltip(btn, { text: 'Go to ' + btn.textContent.trim(), position: 'bottom' });
+    Look.lkTooltip(btn, { content: 'Go to ' + btn.textContent.trim(), position: 'bottom' });
   });
 
   // Form submit with lkToast feedback

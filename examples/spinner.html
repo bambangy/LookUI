@@ -6,6 +6,7 @@
   <title>LookUI — Spinner</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
 </head>
 <body>
 
@@ -31,10 +32,13 @@
 
     <p class="demo-sub">Colors</p>
     <div class="demo-row">
+      <div class="lk-spinner"></div>
+      <div class="lk-spinner lk-spinner--secondary"></div>
+      <div class="lk-spinner lk-spinner--accent"></div>
       <div class="lk-spinner lk-spinner--positive"></div>
       <div class="lk-spinner lk-spinner--warning"></div>
       <div class="lk-spinner lk-spinner--negative"></div>
-      <div class="lk-spinner lk-spinner--accent"></div>
+      <div class="lk-spinner lk-spinner--info"></div>
     </div>
 
     <p class="demo-sub">Dense</p>
@@ -43,12 +47,19 @@
       <div class="lk-spinner lk-spinner--dense lk-spinner--sm"></div>
       <div class="lk-spinner lk-spinner--dense"></div>
       <div class="lk-spinner lk-spinner--dense lk-spinner--lg"></div>
+      <div class="lk-spinner lk-spinner--dense lk-spinner--xl"></div>
     </div>
 
     <p class="demo-sub">On dark</p>
     <div class="demo-row" style="background:var(--lk-secondary-dark);padding:var(--lk-space-4);border-radius:var(--lk-radius);">
       <div class="lk-spinner lk-spinner--on-dark"></div>
       <div class="lk-spinner lk-spinner--on-dark lk-spinner--lg"></div>
+    </div>
+
+    <p class="demo-sub">Inside a button</p>
+    <div class="demo-row">
+      <button class="lk-btn lk-btn--primary" disabled><span class="lk-spinner lk-spinner--xs lk-spinner--on-dark" role="status" aria-label="Saving"></span> Saving…</button>
+      <button class="lk-btn lk-btn--secondary" disabled><span class="lk-spinner lk-spinner--xs"></span> Loading</button>
     </div>
   </section>
 
@@ -59,6 +70,140 @@
 &lt;div class="lk-spinner lk-spinner--on-dark"&gt;&lt;/div&gt;</pre>
   </div>
 
+  <div id="api"></div>
+
 </main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+// CSS-only live example: renders `markup` into the preview box.
+function live(title, markup) {
+  const lines = markup.replace(/^\n+|\s+$/g, '').split('\n');
+  const min = Math.min(...lines.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length));
+  return { title, run: true, code: 'container.innerHTML = `\n' + lines.map((l) => '  ' + l.slice(min)).join('\n') + '\n`;' };
+}
+
+LookDocs.render('#api', {
+  name: '.lk-spinner',
+  kind: 'CSS',
+  signature: '<span class="lk-spinner [lk-spinner--{size}] [lk-spinner--{color}] [lk-spinner--on-dark] [lk-spinner--dense]" role="status" aria-label="Loading"></span>',
+  description: [
+    'A circular indeterminate loading indicator: a ring in `--lk-border` with a colored top segment, rotating every 0.75 s (`@keyframes lk-spin`). Pure CSS — an empty element is all it needs.',
+    'Use it inline (buttons, table cells) or centred in a panel. For a full-page or element overlay with a spinner and message, use the [lkLoading](composable-loading.html) / [lkInnerLoading](composable-inner-loading.html) composables.',
+  ],
+  notes: [
+    'Add `role="status"` and an `aria-label` (or adjacent visible text) so assistive tech announces the busy state. With `prefers-reduced-motion: reduce` the rotation slows to 1.5 s instead of stopping.',
+  ],
+
+  classes: [
+    {
+      name: 'Markup',
+      description: 'Accessible spinner next to a label.',
+      examples: [live('Spinner with status text', `
+        <div style="display:flex; align-items:center; gap:8px" role="status">
+          <span class="lk-spinner lk-spinner--sm"></span>
+          <span>Loading orders…</span>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-spinner',
+      description: 'Base: 2rem, 3 px ring in `--lk-border`, top segment `--lk-primary`, inline-block, `flex-shrink: 0`.',
+      examples: [live('Default spinner', `<div class="lk-spinner" role="status" aria-label="Loading"></div>`)],
+    },
+    {
+      name: '.lk-spinner--{size}',
+      description: 'Size with proportional ring thickness.',
+      values: [
+        ['xs', '1rem, 2px ring'],
+        ['sm', '1.5rem, 2px ring'],
+        ['(default)', '2rem, 3px ring'],
+        ['lg', '3rem, 4px ring'],
+        ['xl', '4rem, 5px ring'],
+      ],
+      examples: [live('All sizes', `
+        <div style="display:flex; gap:16px; align-items:center">
+          <div class="lk-spinner lk-spinner--xs"></div>
+          <div class="lk-spinner lk-spinner--sm"></div>
+          <div class="lk-spinner"></div>
+          <div class="lk-spinner lk-spinner--lg"></div>
+          <div class="lk-spinner lk-spinner--xl"></div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-spinner--{color}',
+      description: 'Color of the moving segment.',
+      values: [
+        ['(default)', '`--lk-primary`'],
+        ['secondary', '`--lk-secondary`'],
+        ['accent', '`--lk-accent`'],
+        ['positive', '`--lk-positive`'],
+        ['warning', '`--lk-warning`'],
+        ['negative', '`--lk-negative`'],
+        ['info', '`--lk-info`'],
+      ],
+      examples: [
+        live('Every color', `
+          <div style="display:flex; gap:16px">
+            <div class="lk-spinner"></div>
+            <div class="lk-spinner lk-spinner--secondary"></div>
+            <div class="lk-spinner lk-spinner--accent"></div>
+            <div class="lk-spinner lk-spinner--positive"></div>
+            <div class="lk-spinner lk-spinner--warning"></div>
+            <div class="lk-spinner lk-spinner--negative"></div>
+            <div class="lk-spinner lk-spinner--info"></div>
+          </div>
+        `),
+        live('Size + color combinations', `
+          <div style="display:flex; gap:16px; align-items:center">
+            <div class="lk-spinner lk-spinner--xs lk-spinner--negative"></div>
+            <div class="lk-spinner lk-spinner--lg lk-spinner--positive"></div>
+            <div class="lk-spinner lk-spinner--xl lk-spinner--accent"></div>
+          </div>
+        `),
+      ],
+    },
+    {
+      name: '.lk-spinner--on-dark',
+      description: 'For dark or colored backgrounds: translucent white ring with a white segment.',
+      examples: [live('On dark and primary backgrounds', `
+        <div style="display:flex; gap:12px">
+          <div style="background:var(--lk-secondary-dark); padding:16px; border-radius:var(--lk-radius)"><div class="lk-spinner lk-spinner--on-dark"></div></div>
+          <div style="background:var(--lk-primary); padding:16px; border-radius:var(--lk-radius)"><div class="lk-spinner lk-spinner--on-dark lk-spinner--lg"></div></div>
+          <button class="lk-btn lk-btn--primary" disabled><span class="lk-spinner lk-spinner--xs lk-spinner--on-dark"></span> Saving…</button>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-spinner--dense',
+      description: 'One step smaller at every size.',
+      values: [
+        ['dense + xs', '0.75rem, 1.5px ring'],
+        ['dense + sm', '1rem, 2px ring'],
+        ['dense', '1.5rem, 2px ring'],
+        ['dense + lg', '2rem, 3px ring'],
+        ['dense + xl', '3rem, 4px ring'],
+      ],
+      examples: [live('Dense sizes', `
+        <div style="display:flex; gap:16px; align-items:center">
+          <div class="lk-spinner lk-spinner--dense lk-spinner--xs"></div>
+          <div class="lk-spinner lk-spinner--dense lk-spinner--sm"></div>
+          <div class="lk-spinner lk-spinner--dense"></div>
+          <div class="lk-spinner lk-spinner--dense lk-spinner--lg"></div>
+          <div class="lk-spinner lk-spinner--dense lk-spinner--xl"></div>
+        </div>
+      `)],
+    },
+  ],
+
+  tokens: [
+    { name: '--lk-border', default: '#d0d0d8', description: 'Ring (track) color.' },
+    { name: '--lk-primary', default: '#5c6bc0', description: 'Default segment color; color modifiers use the matching semantic token.' },
+    { name: '--lk-radius-full', default: '9999px', description: 'Makes the ring round.' },
+  ],
+});
+</script>
 </body>
 </html>

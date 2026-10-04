@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Table component
 
 .lk-table {
@@ -22,28 +24,61 @@
       color var(--lk-duration-fast) var(--lk-easing-out),
       background-color var(--lk-duration-fast) var(--lk-easing-out);
 
-    &[aria-sort] {
+    // aria-sort="none" marks a sortable-but-unsorted column — not highlighted
+    &[aria-sort='ascending'],
+    &[aria-sort='descending'] {
       color: var(--lk-primary);
       background: color-mix(in srgb, var(--lk-primary) 6%, transparent);
     }
 
+    // Sort indicator: small CSS triangle (faint on hover when unsorted,
+    // solid when sorted; flipped for descending).
+    &.lk-table__th--sortable {
+      cursor: pointer;
+      user-select: none;
+
+      &::after {
+        content: '';
+        display: inline-block;
+        width: 0;
+        height: 0;
+        margin-left: var(--lk-space-2);
+        vertical-align: 0.15em;
+        border-left: 0.3em solid transparent;
+        border-right: 0.3em solid transparent;
+        border-bottom: 0.4em solid currentColor;
+        opacity: 0;
+        transition:
+          opacity var(--lk-duration-fast) var(--lk-easing-out),
+          transform var(--lk-duration-fast) var(--lk-easing-out);
+      }
+
+      &:hover {
+        background: var(--lk-bg-subtle);
+
+        &::after {
+          opacity: 0.35;
+        }
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--lk-primary);
+        outline-offset: -2px;
+      }
+    }
+
     &[aria-sort='ascending']::after,
     &[aria-sort='descending']::after {
-      display: inline-block;
-      margin-left: var(--lk-space-1);
-      font-size: var(--lk-text-xs);
       opacity: 0.9;
-      transition: transform var(--lk-duration-fast) var(--lk-easing-out);
-    }
-
-    &[aria-sort='ascending']::after {
-      content: '^';
-      transform: translateY(-1px);
     }
 
     &[aria-sort='descending']::after {
-      content: 'v';
-      transform: translateY(1px);
+      transform: rotate(180deg);
+    }
+
+    &[aria-sort='ascending']:hover,
+    &[aria-sort='descending']:hover {
+      background: color-mix(in srgb, var(--lk-primary) 10%, transparent);
     }
   }
 
@@ -66,16 +101,6 @@
     }
   }
 
-  // --- Hover rows ---
-
-  &--hover tbody tr {
-    transition: background-color var(--lk-duration-fast) var(--lk-easing-default);
-
-    &:hover {
-      background: var(--lk-bg-subtle);
-    }
-  }
-
   // --- Striped odd ---
 
   &--striped tbody tr:nth-child(odd) {
@@ -86,6 +111,12 @@
 
   &--striped-even tbody tr:nth-child(even) {
     background: var(--lk-bg-subtle);
+  }
+
+  // --- Hover rows (after striping so striped rows also highlight) ---
+
+  &--hover tbody tr:hover {
+    background: color-mix(in srgb, var(--lk-text) 8%, transparent);
   }
 
   // --- Compact ---
@@ -119,19 +150,19 @@
 
   // --- Row states ---
 
-  tr.lk-table__row--active {
+  tbody tr.lk-table__row--active {
     background: color-mix(in srgb, var(--lk-primary) 8%, transparent);
   }
 
-  tr.lk-table__row--positive {
+  tbody tr.lk-table__row--positive {
     background: color-mix(in srgb, var(--lk-positive) 8%, transparent);
   }
 
-  tr.lk-table__row--warning {
+  tbody tr.lk-table__row--warning {
     background: color-mix(in srgb, var(--lk-warning) 8%, transparent);
   }
 
-  tr.lk-table__row--negative {
+  tbody tr.lk-table__row--negative {
     background: color-mix(in srgb, var(--lk-negative) 8%, transparent);
   }
 

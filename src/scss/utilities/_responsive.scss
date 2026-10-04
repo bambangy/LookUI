@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Responsive breakpoint utilities
 // Uses the SCSS variables from tokens/_layout.scss
 
@@ -107,12 +109,15 @@
 
 // --- Responsive flex direction ---
 
+// When a row collapses to a column, children must stretch to full width;
+// a row-oriented cross-axis alignment (e.g. inline align-items:flex-start
+// used to top-align columns) would otherwise shrink each stacked child.
 @media (max-width: ($look-bp-md - 1px)) {
-  .lk-flex--col-sm { flex-direction: column; }
+  .lk-flex--col-sm { flex-direction: column; align-items: stretch !important; }
 }
 
 @media (max-width: ($look-bp-lg - 1px)) {
-  .lk-flex--col-md { flex-direction: column; }
+  .lk-flex--col-md { flex-direction: column; align-items: stretch !important; }
 }
 
 // --- Responsive text alignment ---

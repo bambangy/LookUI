@@ -6,6 +6,7 @@
   <title>LookUI - Composable Toast</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
 </head>
 <body>
 <header class="demo-header">
@@ -24,6 +25,7 @@
       <button id="toast-info"     class="lk-btn lk-btn--info">Info</button>
       <button id="toast-warning"  class="lk-btn lk-btn--warning">Warning</button>
       <button id="toast-negative" class="lk-btn lk-btn--negative">Negative</button>
+      <button id="toast-primary"  class="lk-btn lk-btn--primary">Primary</button>
       <button id="toast-default"  class="lk-btn lk-btn--secondary">Default</button>
     </div>
   </section>
@@ -34,6 +36,15 @@
       <button id="toast-bottom"  class="lk-btn lk-btn--secondary">Bottom Center</button>
       <button id="toast-action"  class="lk-btn lk-btn--info">With Action</button>
       <button id="toast-no-icon" class="lk-btn lk-btn--secondary">No Icon</button>
+    </div>
+    <p class="demo-sub">Every position (each one has its own stack; toasts slide out toward their edge)</p>
+    <div class="demo-row" style="display:flex;flex-wrap:wrap;gap:var(--lk-space-2);">
+      <button class="lk-btn lk-btn--ghost lk-btn--sm" data-pos="top-left">top-left</button>
+      <button class="lk-btn lk-btn--ghost lk-btn--sm" data-pos="top-center">top-center</button>
+      <button class="lk-btn lk-btn--ghost lk-btn--sm" data-pos="top-right">top-right</button>
+      <button class="lk-btn lk-btn--ghost lk-btn--sm" data-pos="bottom-left">bottom-left</button>
+      <button class="lk-btn lk-btn--ghost lk-btn--sm" data-pos="bottom-center">bottom-center</button>
+      <button class="lk-btn lk-btn--ghost lk-btn--sm" data-pos="bottom-right">bottom-right</button>
     </div>
     <div id="toast-output" class="demo-output">Ready</div>
   </section>
@@ -52,9 +63,245 @@
   onClose: (reason) => {},
 });</pre>
   </div>
+
+  <div id="api"></div>
 </main>
 
 <script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkToast',
+  kind: 'Composable',
+  signature: 'const toast = Look.lkToast(options);',
+  description: [
+    'Shows a disposable notification immediately. Toasts are stacked in a fixed container per `position` (`.lk-toast-container--{position}`), created on demand in `document.body` and removed again when its last toast closes.',
+    'Each toast can carry an icon, a bold title, a message, an action link and a dismiss button, and closes itself after `duration` ms. There is no `destroy()` — a toast removes itself after `close()` finishes its exit animation.',
+    'All live examples below render a button — click it to show the toast.',
+  ],
+  params: [
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below. Every option is optional.' },
+  ],
+  returns: { type: 'Object', description: '`{ el, close, update, isOpen }`.' },
+  notes: [
+    '**Motion contract — show.** The toast springs in (`lk-toast-in-top`, or `lk-toast-in-bottom` for `bottom-*` positions, `--lk-duration-slow`). `negative` and `warning` toasts add an attention **shake** (`lk-toast-shake`, 0.5 s) right after the entrance.',
+    '**Motion contract — hide.** `.lk-toast--closing` slides the toast out toward the edge its stack sits on — `*-right` → right, `*-left` → left, `top-center` → up, `bottom-center` → down — over `--lk-toast-slide-duration` (240 ms), then collapses its height/padding/gap over `--lk-toast-collapse-duration` (180 ms) so the toasts below glide into place. lkToast reads both variables at close time and removes the element after their sum + 20 ms, then fires `onClose`.',
+    '`prefers-reduced-motion: reduce` shortens toast animations and transitions to 1 ms.',
+  ],
+
+  options: [
+    {
+      name: 'title', type: 'string', default: "''",
+      description: 'Bold heading (text). Hidden when empty.',
+    },
+    {
+      name: 'message', type: 'string', default: "''",
+      description: 'Body text (set as text, not HTML). Hidden when empty.',
+      examples: [{ title: 'Title + message, message only, title only', run: true, code: `
+        const variants = [
+          ['Both', { title: 'Saved', message: 'Your profile was updated.' }],
+          ['Message only', { message: 'Copied to clipboard' }],
+          ['Title only', { title: 'Connection restored' }],
+        ];
+        variants.forEach(([label, opts]) => {
+          const b = document.createElement('button');
+          b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          b.style.margin = '0 6px 6px 0';
+          b.textContent = label;
+          b.onclick = () => Look.lkToast(opts);
+          container.appendChild(b);
+        });` }],
+    },
+    {
+      name: 'type', type: 'string', default: "'' (neutral)",
+      description: 'Color variant. Adds `.lk-toast--{type}` (solid background with contrast text) and picks a default icon.',
+      values: [
+        ["''", 'Neutral surface (`--lk-bg`), no default icon.'],
+        ['positive', 'Green, icon `circle-check`.'],
+        ['negative', 'Red, icon `circle-x`, attention shake on enter.'],
+        ['warning', 'Orange, icon `alert-triangle`, attention shake on enter.'],
+        ['info', 'Blue, icon `circle-info`.'],
+        ['primary', 'Brand color, icon `circle-info`.'],
+      ],
+      examples: [{ title: 'Every type', run: true, code: `
+        ['', 'positive', 'negative', 'warning', 'info', 'primary'].forEach((type) => {
+          const b = document.createElement('button');
+          b.className = 'lk-btn lk-btn--sm lk-btn--' + (type || 'secondary');
+          b.style.margin = '0 6px 6px 0';
+          b.textContent = type || 'neutral';
+          b.onclick = () => Look.lkToast({ type, title: type || 'neutral', message: "type: '" + type + "'" });
+          container.appendChild(b);
+        });` }],
+    },
+    {
+      name: 'icon', type: 'string | false | null', default: 'null (per type)',
+      description: 'Leading [lkIcon](icon.html) name. `null`/omitted uses the type\'s default icon (none for neutral); a string overrides it; `false` hides the icon even for typed toasts.',
+      examples: [{ title: 'Custom, default and none', run: true, code: `
+        const variants = [
+          ['icon: \\'bell\\'', { icon: 'bell', title: 'Reminder', message: 'Stand-up in 5 minutes.' }],
+          ['default (info)', { type: 'info', title: 'Default info icon' }],
+          ['icon: false', { type: 'info', icon: false, title: 'No icon' }],
+        ];
+        variants.forEach(([label, opts]) => {
+          const b = document.createElement('button');
+          b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          b.style.margin = '0 6px 6px 0';
+          b.textContent = label;
+          b.onclick = () => Look.lkToast(opts);
+          container.appendChild(b);
+        });` }],
+    },
+    {
+      name: 'duration', type: 'number', default: '3000',
+      description: 'Milliseconds before closing automatically with reason `\'timeout\'`. `0` (or any value ≤ 0) keeps the toast until dismissed or closed in code. The timer does not pause on hover.',
+      examples: [{ title: '1 s, 6 s and sticky', run: true, code: `
+        [1000, 6000, 0].forEach((duration) => {
+          const b = document.createElement('button');
+          b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          b.style.margin = '0 6px 6px 0';
+          b.textContent = 'duration: ' + duration;
+          b.onclick = () => Look.lkToast({
+            title: duration ? duration / 1000 + ' seconds' : 'Sticky', message: duration ? 'Closes by itself.' : 'Dismiss me with ×.',
+            duration, onClose: (reason) => log('duration ' + duration + ' →', reason),
+          });
+          container.appendChild(b);
+        });` }],
+    },
+    {
+      name: 'position', type: 'string', default: "'top-right'",
+      description: 'Which stack the toast joins. Each position has its own fixed container (max width `min(28rem, 100vw - 2rem)`). New toasts are appended to the end of the stack. Unknown strings fall back to top-right placement.',
+      values: [
+        ['top-right', 'Default. Slides out to the right.'],
+        ['top-center', 'Centered at the top. Slides out upward.'],
+        ['top-left', 'Slides out to the left.'],
+        ['bottom-right', 'Enters from below, slides out to the right.'],
+        ['bottom-center', 'Enters from below, slides out downward.'],
+        ['bottom-left', 'Enters from below, slides out to the left.'],
+      ],
+      examples: [{ title: 'Every position', run: true, code: `
+        ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'].forEach((position) => {
+          const b = document.createElement('button');
+          b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          b.style.margin = '0 6px 6px 0';
+          b.textContent = position;
+          b.onclick = () => Look.lkToast({ position, type: 'info', title: position, message: 'Watch the exit direction.', duration: 2000 });
+          container.appendChild(b);
+        });` }],
+    },
+    {
+      name: 'dismissible', type: 'boolean', default: 'true',
+      description: 'Show the × button (`aria-label="Dismiss"`), which closes with reason `\'dismiss\'`.',
+      examples: [{ run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        b.textContent = 'dismissible: false';
+        b.onclick = () => Look.lkToast({ title: 'Processing…', message: 'No close button; gone in 2 s.', dismissible: false, duration: 2000 });
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'zIndex', type: 'number', default: 'null (var(--lk-z-toast) = 110)',
+      description: 'z-index of the position container. Only applied when that container is **created** — while toasts are already showing at the same position, the existing container keeps its z-index.',
+    },
+    {
+      name: 'actionText', type: 'string', default: "''",
+      description: 'Renders an underlined action button (`.lk-toast__action`). Clicking it calls `onAction()` and closes the toast with reason `\'action\'`.',
+      examples: [{ title: 'Undo pattern', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--negative';
+        b.textContent = 'Delete message';
+        b.onclick = () => Look.lkToast({
+          message: 'Message deleted.', actionText: 'Undo', duration: 5000,
+          onAction: () => log('undo clicked'),
+          onClose: (reason) => log('closed:', reason),
+        });
+        container.appendChild(b);` }],
+    },
+  ],
+
+  properties: [
+    { name: 'el', type: 'Element', readonly: true, description: 'The `.lk-toast` element.' },
+    { name: 'isOpen', type: 'boolean', readonly: true, description: '`false` as soon as `close()` runs (before the exit animation ends).' },
+  ],
+
+  methods: [
+    {
+      name: 'close', signature: 'close(reason = \'close\')',
+      description: 'Cancels the auto-close timer and plays the slide-out + collapse; then removes the element (and the empty container) and calls `onClose(reason)`. Calling it again is a no-op.',
+      params: [{ name: 'reason', type: 'string', optional: true, default: "'close'", description: 'Passed to `onClose`.' }],
+      examples: [{ title: 'Sticky toast closed from code', run: true, code: `
+        let t = null;
+        const show = document.createElement('button');
+        show.className = 'lk-btn lk-btn--sm lk-btn--primary';
+        show.textContent = 'Show sticky';
+        show.onclick = () => { if (!t || !t.isOpen) t = Look.lkToast({ title: 'Sticky', duration: 0, dismissible: false, onClose: (r) => log('onClose:', r) }); };
+        const hide = document.createElement('button');
+        hide.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        hide.style.marginLeft = '6px';
+        hide.textContent = "toast.close('done')";
+        hide.onclick = () => t && t.close('done');
+        container.append(show, hide);` }],
+    },
+    {
+      name: 'update', signature: 'update({ title?, message? })',
+      description: 'Changes the title and/or message in place. Only string values are applied; an empty title hides the title row. Type, icon and duration cannot be changed.',
+      params: [{ name: 'patch', type: 'Object', description: '`{ title?: string, message?: string }`.' }],
+      examples: [{ title: 'Progress toast', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--primary';
+        b.textContent = 'Start export';
+        b.onclick = () => {
+          const t = Look.lkToast({ type: 'info', title: 'Exporting…', message: '0%', duration: 0 });
+          let pct = 0;
+          const timer = setInterval(() => {
+            pct += 20;
+            t.update({ message: pct + '%' });
+            if (pct >= 100) { clearInterval(timer); t.update({ title: 'Export ready' }); setTimeout(() => t.close('done'), 1200); }
+          }, 400);
+        };
+        container.appendChild(b);` }],
+    },
+  ],
+
+  events: [
+    {
+      name: 'onClose', signature: 'onClose(reason)',
+      description: 'Called **after** the exit animation, once the element is removed from the DOM.',
+      args: [{ name: 'reason', type: 'string', description: "`'timeout'` (duration elapsed), `'dismiss'` (× button), `'action'` (action button), or the value passed to `close(reason)` (default `'close'`)." }],
+      examples: [{ title: 'Log the reason', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        b.textContent = 'Show (wait, dismiss or click Retry)';
+        b.onclick = () => Look.lkToast({
+          type: 'negative', title: 'Sync failed', message: 'Check your connection.', actionText: 'Retry', duration: 4000,
+          onClose: (reason) => log('onClose:', reason),
+        });
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'onAction', signature: 'onAction()',
+      description: 'Called with no arguments when the action button is clicked, right before the toast closes with reason `\'action\'`.',
+    },
+  ],
+
+  classes: [
+    { name: '.lk-toast-container--{position}', description: 'Fixed stack per position (also `.lk-toast-container`). Inline-positioned with `--lk-space-4` offsets, `gap: var(--lk-space-2)`, `pointer-events: none` (toasts re-enable it).' },
+    { name: '.lk-toast', description: 'Toast row: icon, content, action, close. Neutral surface, `--lk-radius-lg`, `--lk-shadow-md`, min-width 14rem.' },
+    { name: '.lk-toast--{type}', description: '`positive`, `negative`, `warning`, `info`, `primary` — solid color with matching `-contrast` text.' },
+    { name: '.lk-toast--open / --closing', description: 'Visible state (spring entrance) / exit state (slide-out + collapse).' },
+    { name: '.lk-toast--from-bottom', description: 'Added for `bottom-*` positions: enters from below.' },
+    { name: '.lk-toast--exit-{left|right|up|down}', description: 'Exit direction, derived from `position`.' },
+    { name: '.lk-toast__icon / __content / __title / __message', description: 'Parts. The message is hidden when empty; spacing is added only when a title is visible.' },
+    { name: '.lk-toast__action / __close', description: 'Underlined action link; dismiss button (scales on hover).' },
+  ],
+
+  tokens: [
+    { name: '--lk-toast-slide-duration', default: '240ms', description: 'Slide-out duration (first exit phase). lkToast reads it at close time.' },
+    { name: '--lk-toast-collapse-duration', default: '180ms', description: 'Height collapse after the slide (second exit phase). lkToast waits slide + collapse + 20 ms.' },
+    { name: '--lk-duration-slow', default: '380ms', description: 'Entrance duration; also the delay before the shake.' },
+    { name: '--lk-z-toast', default: '110', description: 'Default container z-index (above modals at 100).' },
+  ],
+});
+</script>
 <script>
   const output = document.getElementById('toast-output');
 
@@ -72,6 +319,10 @@
 
   document.getElementById('toast-negative').addEventListener('click', () => {
     Look.lkToast({ title: 'Error', message: 'Something went wrong. Please try again.', type: 'negative' });
+  });
+
+  document.getElementById('toast-primary').addEventListener('click', () => {
+    Look.lkToast({ title: 'New feature', message: 'Dark mode is now available.', type: 'primary' });
   });
 
   document.getElementById('toast-default').addEventListener('click', () => {
@@ -97,6 +348,16 @@
 
   document.getElementById('toast-no-icon').addEventListener('click', () => {
     Look.lkToast({ title: 'Plain Toast', message: 'No icon, just text.', icon: false });
+  });
+
+  document.querySelectorAll('[data-pos]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const position = btn.dataset.pos;
+      Look.lkToast({
+        position, title: position, message: 'Slides out toward its edge.', type: 'positive', duration: 2500,
+        onClose: (reason) => { output.textContent = `${position}: ${reason}`; },
+      });
+    });
   });
 </script>
 </body>

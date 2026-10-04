@@ -54,9 +54,7 @@
     <div class="lk-container">
       <nav class="lk-breadcrumbs">
         <a href="ecommerce-home.html" class="lk-breadcrumbs__item">Home</a>
-        <span class="lk-breadcrumbs__sep">/</span>
         <a href="#" class="lk-breadcrumbs__item">Men</a>
-        <span class="lk-breadcrumbs__sep">/</span>
         <span class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Classic Cotton Tee</span>
       </nav>
     </div>
@@ -81,7 +79,7 @@
         <div style="flex: 1; min-width: 0;">
           <h1 style="font-size: var(--lk-text-2xl); margin-bottom: var(--lk-space-2);">Classic Cotton Tee</h1>
           <div style="display: flex; align-items: center; gap: var(--lk-space-2); margin-bottom: var(--lk-space-3);">
-            <span style="color: var(--lk-warning);">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
+            <div id="product-rating" class="lk-rating lk-rating--sm"></div>
             <span style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">4.5 (128 reviews)</span>
           </div>
 
@@ -181,7 +179,7 @@
 <script src="../../dist/look.js"></script>
 <script>
   // lkRating for product stars
-  Look.lkRating(document.querySelector('[style*="color: var(--lk-warning)"]').parentElement, {
+  Look.lkRating('#product-rating', {
     value: 4, max: 5, readonly: true
   });
 
@@ -212,7 +210,7 @@
     const icon = btn.querySelector('.lk-icon');
     if (icon) {
       const name = icon.className.includes('search') ? 'Search' : 'Cart';
-      Look.lkTooltip(btn, { text: name, position: 'bottom' });
+      Look.lkTooltip(btn, { content: name, position: 'bottom' });
     }
   });
 </script>

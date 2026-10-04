@@ -6,6 +6,7 @@
   <title>LookUI - Composable Loading</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
 </head>
 <body>
 <header class="demo-header">
@@ -23,26 +24,245 @@
       <button id="show-loading" class="lk-btn lk-btn--primary">Show Loading</button>
       <button id="hide-loading" class="lk-btn lk-btn--secondary">Hide Loading</button>
     </div>
+    <p class="demo-sub">The overlay blocks the page, so the instance above also hides itself after 3 seconds.</p>
     <div id="loading-output" class="demo-output">Ready</div>
   </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Progress with setContent &amp; click-to-dismiss</p>
+    <div class="demo-row" style="display:flex;flex-wrap:wrap;gap:var(--lk-space-2);">
+      <button id="show-progress" class="lk-btn lk-btn--primary">Simulate steps</button>
+      <button id="show-dismissable" class="lk-btn lk-btn--secondary">closeOnClick: true</button>
+    </div>
+    <div id="loading-output-2" class="demo-output">Ready</div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const loading = Look.lkLoading({ open: false, text: 'Loading dashboard...' });
+
+loading.show();
+await fetchDashboard();
+loading.hide();
+
+loading.destroy();   // when the page/controller goes away</pre>
+  </div>
+
+  <div id="api"></div>
 </main>
 
 <script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkLoading',
+  kind: 'Composable',
+  signature: 'const loading = Look.lkLoading(options);',
+  description: [
+    'A fullscreen, page-blocking loading overlay: a fixed `.lk-loading-overlay` with a dimmed backdrop and a centered raised card holding a spinner, an optional text line and optional custom content. It is appended to `document.body` on first show and shown immediately unless `open: false`.',
+    'While visible it locks page scroll (`body { overflow: hidden }`) — the lock is shared, so overlapping overlays restore the original overflow only when the last one hides. Each newly shown overlay stacks above earlier visible ones.',
+    'For a loader scoped to one element use [lkInnerLoading](composable-inner-loading.html); for skeleton-style placeholders use [lkShimmer](composable-shimmer.html). Live examples below render a button and hide the overlay automatically after a moment.',
+  ],
+  params: [
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: '`{ el, show, hide, setContent, destroy, isVisible }`.' },
+  notes: [
+    '**Motion.** Show removes `hidden` and adds `.lk-loading-overlay--open` on the next frame: the overlay fades in (`--lk-duration-base`) while the card pops up with a spring (from `translateY(1.25rem) scale(0.88)`). Hide removes the class (fade + card drops back) and sets `hidden` after 360 ms. `prefers-reduced-motion` shortens this to 1 ms.',
+  ],
+
+  options: [
+    {
+      name: 'text', type: 'string', default: "''",
+      description: 'Centered text under the spinner. Rendered only when non-empty at creation (cannot be changed later — use `setContent` for dynamic text).',
+      examples: [{ title: 'Text variants', run: true, code: `
+        ['Loading…', 'Saving your changes', 'Uploading 3 files, please keep this tab open'].forEach((text) => {
+          const b = document.createElement('button');
+          b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          b.style.margin = '0 6px 6px 0';
+          b.textContent = text.slice(0, 18);
+          b.onclick = () => { const l = Look.lkLoading({ text }); setTimeout(() => l.destroy(), 1500); };
+          container.appendChild(b);
+        });` }],
+    },
+    {
+      name: 'spinner', type: 'boolean', default: 'true',
+      description: 'Render the `.lk-spinner`. Set `false` for a text- or content-only overlay.',
+      examples: [{ run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        b.textContent = 'spinner: false';
+        b.onclick = () => { const l = Look.lkLoading({ spinner: false, text: 'Please wait…' }); setTimeout(() => l.destroy(), 1500); };
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'spinnerSize', type: 'string', default: "'lg'",
+      description: 'Spinner size, added as `lk-spinner--{size}`.',
+      values: [['xs', 'Extra small'], ['sm', 'Small'], ['md', 'No such class — renders the base (medium) spinner'], ['lg', 'Large (default)'], ['xl', 'Extra large']],
+      examples: [{ title: 'Sizes', run: true, code: `
+        ['sm', 'lg', 'xl'].forEach((spinnerSize) => {
+          const b = document.createElement('button');
+          b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          b.style.marginRight = '6px';
+          b.textContent = "spinnerSize: '" + spinnerSize + "'";
+          b.onclick = () => { const l = Look.lkLoading({ spinnerSize, text: spinnerSize }); setTimeout(() => l.destroy(), 1500); };
+          container.appendChild(b);
+        });` }],
+    },
+    {
+      name: 'content', type: 'string | Node | Function', default: 'null',
+      description: 'Extra content below the text. A string becomes a text `<div>`, a Node is appended as-is, a function is called and its result used.',
+      examples: [{ title: 'Node content (cancel button)', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        b.textContent = 'With a Cancel button';
+        b.onclick = () => {
+          const cancel = document.createElement('button');
+          cancel.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          cancel.textContent = 'Cancel';
+          const l = Look.lkLoading({ text: 'Generating report…', content: cancel, onHide: (r) => log('onHide:', r) });
+          cancel.onclick = () => l.hide('cancelled');
+          setTimeout(() => l.hide('done'), 4000);
+        };
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'backdrop', type: 'boolean', default: 'true',
+      description: 'Dim the page with `var(--lk-overlay)`. With `false` the overlay is transparent but **still blocks clicks**.',
+      examples: [{ run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        b.textContent = 'backdrop: false';
+        b.onclick = () => { const l = Look.lkLoading({ backdrop: false, text: 'No dimming' }); setTimeout(() => l.destroy(), 1500); };
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'closeOnClick', type: 'boolean', default: 'false',
+      description: 'Hide with reason `\'backdrop\'` when the overlay itself (outside the card) is clicked.',
+      examples: [{ run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        b.textContent = 'closeOnClick: true';
+        b.onclick = () => Look.lkLoading({ closeOnClick: true, text: 'Click outside the card', onHide: (r) => log('onHide:', r) });
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'lockScroll', type: 'boolean', default: 'true',
+      description: 'Lock `document.body` scrolling while visible (shared reference-counted lock).',
+    },
+    {
+      name: 'zIndexBase', type: 'number', default: '100',
+      description: 'Base z-index. Each `show()` sets `zIndexBase + number of visible lkLoading overlays`, so later overlays sit above earlier ones. The default is above modals (100) and below toasts (`--lk-z-toast` 110) for the first ten overlays.',
+    },
+    {
+      name: 'open', type: 'boolean', default: 'true',
+      description: 'Show immediately. Pass `false` to create the instance up front and call `show()` later.',
+    },
+  ],
+
+  properties: [
+    { name: 'el', type: 'Element', readonly: true, description: 'The `.lk-loading-overlay` root element.' },
+    { name: 'isVisible', type: 'boolean', readonly: true, description: '`true` between `show()` and `hide()`.' },
+  ],
+
+  methods: [
+    {
+      name: 'show', signature: 'show()',
+      description: 'Appends the overlay to `document.body` if needed, raises its z-index, fades it in, locks scrolling and fires `onShow`. No-op when visible or destroyed.',
+    },
+    {
+      name: 'hide', signature: 'hide(reason = \'hide\')',
+      description: 'Fades the overlay out (it stays in the DOM for the next `show()`), releases the scroll lock and fires `onHide(reason)`. No-op when hidden.',
+      params: [{ name: 'reason', type: 'string', optional: true, default: "'hide'", description: 'Passed to `onHide`.' }],
+      examples: [{ title: 'Reusable instance', run: true, code: `
+        const loading = Look.lkLoading({ open: false, text: 'Working…', onShow: () => log('onShow'), onHide: (r) => log('onHide:', r) });
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--primary';
+        b.textContent = 'show() → hide() after 1.5 s';
+        b.onclick = () => { loading.show(); setTimeout(() => loading.hide('finished'), 1500); };
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'setContent', signature: 'setContent(content)',
+      description: 'Replaces the custom content slot (same rules as the `content` option). `null` removes the slot.',
+      params: [{ name: 'content', type: 'string | Node | Function | null', description: 'New content.' }],
+      examples: [{ title: 'Step messages', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--primary';
+        b.textContent = 'Run 3 steps';
+        b.onclick = () => {
+          const steps = ['Step 1/3: fetching', 'Step 2/3: parsing', 'Step 3/3: rendering'];
+          const l = Look.lkLoading({ content: steps[0] });
+          steps.slice(1).forEach((s, i) => setTimeout(() => l.setContent(s), (i + 1) * 800));
+          setTimeout(() => { l.destroy(); log('done'); }, 3000);
+        };
+        container.appendChild(b);` }],
+    },
+    {
+      name: 'destroy', signature: 'destroy()',
+      description: 'Calls `hide(\'destroy\')` (so `onHide` fires if it was visible), then removes the element and its listener immediately.',
+    },
+  ],
+
+  events: [
+    { name: 'onShow', signature: 'onShow()', description: 'Called with no arguments at the end of `show()`.' },
+    {
+      name: 'onHide', signature: 'onHide(reason)',
+      description: 'Called when hiding starts.',
+      args: [{ name: 'reason', type: 'string', description: "`'hide'` (default `hide()`), `'backdrop'` (closeOnClick), `'destroy'` (destroy while visible), or the string passed to `hide(reason)`." }],
+    },
+  ],
+
+  classes: [
+    { name: '.lk-loading-overlay', description: 'Fixed full-screen root (layout and background set inline).' },
+    { name: '.lk-loading-overlay--open', description: 'Visible state: opacity 1, card popped in.' },
+    { name: '.lk-loading-overlay .lk-card', description: 'The raised card (min-width 10rem) with `.lk-card__body` holding spinner, text and content.' },
+  ],
+
+  tokens: [
+    { name: '--lk-overlay', default: 'rgb(0 0 0 / 0.45)', description: 'Backdrop color (when `backdrop: true`).' },
+    { name: '--lk-duration-base', default: '260ms', description: 'Overlay fade.' },
+    { name: '--lk-duration-slow', default: '380ms', description: 'Card spring pop.' },
+  ],
+});
+</script>
 <script>
   const output = document.getElementById('loading-output');
+  let autoHide = null;
   const loading = Look.lkLoading({
     open: false,
-    text: 'Loading dashboard...'
+    text: 'Loading dashboard...',
+    onHide: (reason) => { output.textContent = `Loading closed (${reason})`; },
   });
 
   document.getElementById('show-loading').addEventListener('click', () => {
     loading.show();
     output.textContent = 'Loading opened';
+    clearTimeout(autoHide);
+    autoHide = setTimeout(() => loading.hide('auto'), 3000);
   });
 
   document.getElementById('hide-loading').addEventListener('click', () => {
     loading.hide();
     output.textContent = 'Loading closed';
+  });
+
+  const output2 = document.getElementById('loading-output-2');
+  document.getElementById('show-progress').addEventListener('click', () => {
+    const l = Look.lkLoading({ text: 'Importing contacts', content: '0 / 300' });
+    let n = 0;
+    const t = setInterval(() => {
+      n += 60;
+      l.setContent(`${n} / 300`);
+      if (n >= 300) { clearInterval(t); l.destroy(); output2.textContent = 'Imported 300 contacts'; }
+    }, 450);
+  });
+  document.getElementById('show-dismissable').addEventListener('click', () => {
+    Look.lkLoading({
+      text: 'Click anywhere outside the card',
+      closeOnClick: true,
+      onHide: (reason) => { output2.textContent = `Hidden: ${reason}`; },
+    });
   });
 </script>
 </body>

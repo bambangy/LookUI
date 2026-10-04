@@ -6,6 +6,7 @@
   <title>LookUI - Composable Inner Loading</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
 </head>
 <body>
 <header class="demo-header">
@@ -31,9 +32,190 @@
       </div>
     </div>
   </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Several widgets loading independently</p>
+    <button id="refresh-all" class="lk-btn lk-btn--primary" style="margin-bottom: var(--lk-space-3);">Refresh all</button>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:var(--lk-space-3);">
+      <div class="lk-card" data-widget="900"><div class="lk-card__body"><strong>Revenue</strong><p data-value>$12,400</p></div></div>
+      <div class="lk-card" data-widget="1600"><div class="lk-card__body"><strong>Visitors</strong><p data-value>8,210</p></div></div>
+      <div class="lk-card" data-widget="2300"><div class="lk-card__body"><strong>Refunds</strong><p data-value>14</p></div></div>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const busy = Look.lkInnerLoading('#orders-card', { open: false, text: 'Loading orders...' });
+
+busy.show();
+await loadOrders();
+busy.hide();
+
+busy.destroy();   // removes the overlay and restores the target's position</pre>
+  </div>
+
+  <div id="api"></div>
 </main>
 
 <script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkInnerLoading',
+  kind: 'Composable',
+  signature: 'const busy = Look.lkInnerLoading(target, options);',
+  description: [
+    'Covers a single element with a loading veil — a light translucent backdrop plus a small raised card with a spinner and optional text/content — while the rest of the page stays usable.',
+    'The overlay (`.lk-inner-loading`, `position: absolute; inset: 0`) is appended to the target right away (hidden). If the target is `position: static` it is switched to `relative`; `destroy()` restores the original inline position. Corners follow the target (`border-radius: inherit`).',
+  ],
+  params: [
+    { name: 'target', type: 'Element | string', description: 'Element or selector to cover. Throws `Look.lkInnerLoading: target is required.` / `target not found` otherwise.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: '`{ el, show, hide, setContent, destroy, isVisible }`.' },
+  notes: [
+    '**Motion.** Shares the [lkLoading](composable-loading.html) motion: the veil fades in over `--lk-duration-base` and the card springs up from `translateY(1.25rem) scale(0.88)`. On hide the class is removed and `hidden` is set after 360 ms.',
+    'Unlike lkLoading, lkInnerLoading has no `onShow`/`onHide` callbacks and does not lock page scroll.',
+  ],
+
+  options: [
+    {
+      name: 'text', type: 'string', default: "''",
+      description: 'Small text under the spinner (`--lk-text-sm`). Fixed at creation; use `setContent` for dynamic text.',
+      examples: [{ title: 'Text', run: true, code: `
+        const card = document.createElement('div');
+        card.className = 'lk-card';
+        card.style.minHeight = '7rem';
+        card.innerHTML = '<div class="lk-card__body"><strong>Inbox</strong><p>3 unread</p></div>';
+        container.appendChild(card);
+        Look.lkInnerLoading(card, { text: 'Fetching mail…' });` }],
+    },
+    {
+      name: 'spinner', type: 'boolean', default: 'true',
+      description: 'Render the spinner.',
+    },
+    {
+      name: 'spinnerSize', type: 'string', default: "'sm'",
+      description: 'Spinner size class `lk-spinner--{size}`.',
+      values: [['xs', 'Extra small'], ['sm', 'Small (default)'], ['lg', 'Large'], ['xl', 'Extra large']],
+      examples: [{ title: 'xs, sm, lg side by side', run: true, code: `
+        container.style.display = 'grid';
+        container.style.gridTemplateColumns = 'repeat(3, 1fr)';
+        container.style.gap = '8px';
+        ['xs', 'sm', 'lg'].forEach((spinnerSize) => {
+          const box = document.createElement('div');
+          box.className = 'lk-card';
+          box.style.minHeight = '6rem';
+          box.innerHTML = '<div class="lk-card__body">' + spinnerSize + '</div>';
+          container.appendChild(box);
+          Look.lkInnerLoading(box, { spinnerSize });
+        });` }],
+    },
+    {
+      name: 'content', type: 'string | Node | Function', default: 'null',
+      description: 'Extra content in the card (string → text `<div>`, Node → appended, function → called).',
+    },
+    {
+      name: 'backdrop', type: 'boolean', default: 'true',
+      description: 'Light veil `color-mix(in srgb, var(--lk-bg) 70%, transparent)` over the target. `false` = transparent (only the card shows).',
+      examples: [{ title: 'With and without backdrop', run: true, code: `
+        container.style.display = 'grid';
+        container.style.gridTemplateColumns = '1fr 1fr';
+        container.style.gap = '8px';
+        [true, false].forEach((backdrop) => {
+          const box = document.createElement('div');
+          box.className = 'lk-card';
+          box.style.minHeight = '7rem';
+          box.innerHTML = '<div class="lk-card__body"><strong>backdrop: ' + backdrop + '</strong><p>Content underneath</p></div>';
+          container.appendChild(box);
+          Look.lkInnerLoading(box, { backdrop });
+        });` }],
+    },
+    {
+      name: 'lockPointer', type: 'boolean', default: 'true',
+      description: 'Block clicks on the target while visible (`pointer-events: auto` on the overlay). `false` lets clicks pass through to the content underneath.',
+      examples: [{ title: 'Pointer locked vs pass-through', run: true, code: `
+        container.style.display = 'grid';
+        container.style.gridTemplateColumns = '1fr 1fr';
+        container.style.gap = '8px';
+        [true, false].forEach((lockPointer) => {
+          const box = document.createElement('div');
+          box.className = 'lk-card';
+          box.style.minHeight = '7rem';
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          btn.style.margin = '12px';
+          btn.textContent = 'Click me (lockPointer: ' + lockPointer + ')';
+          btn.onclick = () => log('clicked, lockPointer =', lockPointer);
+          box.appendChild(btn);
+          container.appendChild(box);
+          Look.lkInnerLoading(box, { lockPointer, spinner: false, text: '' });
+        });` }],
+    },
+    {
+      name: 'open', type: 'boolean', default: 'true',
+      description: 'Show immediately. Pass `false` to attach the (hidden) overlay now and `show()` it later.',
+    },
+  ],
+
+  properties: [
+    { name: 'el', type: 'Element', readonly: true, description: 'The `.lk-inner-loading` overlay element (child of the target).' },
+    { name: 'isVisible', type: 'boolean', readonly: true, description: '`true` between `show()` and `hide()`.' },
+  ],
+
+  methods: [
+    {
+      name: 'show', signature: 'show()', description: 'Fades the overlay in. No-op when visible or destroyed.',
+      examples: [{ title: 'Toggle', run: true, code: `
+        const card = document.createElement('div');
+        card.className = 'lk-card';
+        card.style.minHeight = '6rem';
+        card.innerHTML = '<div class="lk-card__body"><strong>Orders</strong><p>42 open</p></div>';
+        const busy = Look.lkInnerLoading(card, { open: false, text: 'Refreshing…' });
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--primary';
+        b.style.marginBottom = '8px';
+        b.textContent = 'Toggle';
+        b.onclick = () => { busy.isVisible ? busy.hide() : busy.show(); log('isVisible:', busy.isVisible); };
+        container.append(b, card);` }],
+    },
+    { name: 'hide', signature: 'hide()', description: 'Fades the overlay out; it stays attached for the next `show()`. No-op when hidden.' },
+    {
+      name: 'setContent', signature: 'setContent(content)',
+      description: 'Replaces the custom content slot. `null` removes it.',
+      params: [{ name: 'content', type: 'string | Node | Function | null', description: 'New content.' }],
+      examples: [{ title: 'Countdown', run: true, code: `
+        const card = document.createElement('div');
+        card.className = 'lk-card';
+        card.style.minHeight = '7rem';
+        card.innerHTML = '<div class="lk-card__body"><strong>Report</strong></div>';
+        container.appendChild(card);
+        const busy = Look.lkInnerLoading(card, { content: 'Ready in 3…' });
+        let n = 3;
+        const t = setInterval(() => {
+          n -= 1;
+          if (n > 0) busy.setContent('Ready in ' + n + '…');
+          else { clearInterval(t); busy.hide(); log('hidden'); }
+        }, 1000);` }],
+    },
+    { name: 'destroy', signature: 'destroy()', description: 'Hides, removes the overlay immediately and restores the target\'s original inline `position`.' },
+  ],
+
+  events: [],
+
+  classes: [
+    { name: '.lk-inner-loading', description: 'Absolute overlay inside the target (layout, veil and pointer-events set inline; `border-radius: inherit`).' },
+    { name: '.lk-inner-loading--open', description: 'Visible state.' },
+    { name: '.lk-inner-loading .lk-card', description: 'The small raised card with spinner/text/content.' },
+  ],
+
+  tokens: [
+    { name: '--lk-bg', default: 'theme background', description: 'Mixed at 70% to build the veil color.' },
+    { name: '--lk-duration-base', default: '260ms', description: 'Veil fade.' },
+    { name: '--lk-duration-slow', default: '380ms', description: 'Card spring pop.' },
+  ],
+});
+</script>
 <script>
   const innerLoading = Look.lkInnerLoading('#target-card', {
     open: false,
@@ -46,6 +228,21 @@
 
   document.getElementById('hide-inner-loading').addEventListener('click', () => {
     innerLoading.hide();
+  });
+
+  const widgets = [...document.querySelectorAll('[data-widget]')].map((el) => ({
+    el,
+    delay: Number(el.dataset.widget),
+    busy: Look.lkInnerLoading(el, { open: false, spinnerSize: 'xs' }),
+  }));
+  document.getElementById('refresh-all').addEventListener('click', () => {
+    widgets.forEach(({ el, delay, busy }) => {
+      busy.show();
+      setTimeout(() => {
+        el.querySelector('[data-value]').textContent = `Updated ${new Date().toLocaleTimeString()}`;
+        busy.hide();
+      }, delay);
+    });
   });
 </script>
 </body>

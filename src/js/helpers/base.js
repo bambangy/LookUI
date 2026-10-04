@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Base widget mixin — shared imperative properties for all components
 
 import { qs } from '../core/index.js';

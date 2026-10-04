@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // =============================================================================
 // Page layout primitives — reusable structural classes for building pages
 // =============================================================================
@@ -119,6 +121,18 @@
   gap: var(--lk-space-3);
   flex-wrap: wrap;
   justify-content: center;
+
+  // Heroes usually sit on a colored background: outlined actions follow the
+  // hero's text color instead of the default primary/text colors.
+  > .lk-btn--outline,
+  > .lk-btn--secondary {
+    color: inherit;
+    border-color: currentColor;
+
+    &:hover:not(:disabled) {
+      background-color: color-mix(in srgb, currentColor 12%, transparent);
+    }
+  }
 }
 
 // --- Content prose (readable text width) ---
@@ -320,7 +334,9 @@
     height: 4rem;
     object-fit: cover;
     border-radius: var(--lk-radius);
-    background: var(--lk-surface);
+    // Tint relative to text colour so the placeholder stays visible on both
+    // plain and surface backgrounds (e.g. inside .lk-order-summary).
+    background: color-mix(in srgb, var(--lk-text) 8%, transparent);
     flex-shrink: 0;
   }
 

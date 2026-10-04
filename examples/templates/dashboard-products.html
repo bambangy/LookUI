@@ -119,10 +119,10 @@
 
   // Tooltips on action buttons
   document.querySelectorAll('.lk-icon--edit').forEach(icon => {
-    Look.lkTooltip(icon.parentElement, { text: 'Edit', position: 'top' });
+    Look.lkTooltip(icon.parentElement, { content: 'Edit', position: 'top' });
   });
   document.querySelectorAll('.lk-icon--delete').forEach(icon => {
-    Look.lkTooltip(icon.parentElement, { text: 'Delete', position: 'top' });
+    Look.lkTooltip(icon.parentElement, { content: 'Delete', position: 'top' });
   });
 
   // Delete buttons → lkDialog confirm

@@ -6,6 +6,7 @@
   <title>LookUI — Checkbox</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
 </head>
 <body>
 
@@ -36,6 +37,25 @@
     <div id="output" class="demo-output"></div>
   </section>
 
+  <section class="demo-section">
+    <p class="demo-section__title">Validation, dense &amp; a group</p>
+
+    <form id="cb-form" style="max-width: 400px; display: flex; flex-direction: column; gap: var(--lk-space-4);">
+      <input type="checkbox" id="cb-terms" />
+      <input type="checkbox" id="cb-dense" class="lk-checkbox--dense" />
+      <fieldset style="border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--lk-space-2);">
+        <legend class="lk-label" style="margin-bottom: var(--lk-space-2);">Interests</legend>
+        <input type="checkbox" value="design" class="cb-topic" />
+        <input type="checkbox" value="code" class="cb-topic" />
+        <input type="checkbox" value="music" class="cb-topic" />
+      </fieldset>
+      <div>
+        <button type="submit" class="lk-btn lk-btn--primary lk-btn--sm">Submit</button>
+      </div>
+    </form>
+    <div id="cb-form-output" class="demo-output"></div>
+  </section>
+
   <div class="demo-usage">
     <p class="demo-usage__title">HTML</p>
     <pre>&lt;input type="checkbox" id="agree" /&gt;</pre>
@@ -55,9 +75,218 @@ agree.clearError();
 agree.destroy();</pre>
   </div>
 
+  <div id="api"></div>
+
 </main>
 
 <script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+// Shared API entries for the checkable form components (lkCheckbox / lkRadio / lkSwitch).
+// FN = factory name, MK = one-line snippet that creates `el` and appends it to `container`.
+function checkableDocs(FN, MK, noun) {
+  return {
+    options: [
+      {
+        name: 'label', type: 'string', default: '— (no wrapper)',
+        description: 'Creates a `.lk-field` wrapper holding the ' + noun + ', a clickable `<label class="lk-label" for="…">` and a hidden `.lk-field-error` slot. Omit it when the markup already has its own label (`<label for>` or a wrapping `<label>`) — that label is managed instead.',
+        examples: [
+          { title: 'Created label', run: true, code: `
+            ${MK}
+            Look.${FN}(el, { label: 'Created by the component' });` },
+          { title: 'Existing wrapping label', run: true, code: `
+            container.innerHTML = '<label><input type="${noun === 'radio' ? 'radio' : 'checkbox'}"> Wrapped by my own label</label>';
+            const c = Look.${FN}(container.querySelector('input'));
+            log('label =', c.label, '| labels:', c.labels.length);` },
+        ],
+      },
+      {
+        name: 'name', type: 'string', default: '— (keeps existing)',
+        description: 'Sets the `name` attribute used for form submission' + (noun === 'radio' ? ' — radios with the same name form one group (only one can be checked).' : '.'),
+      },
+      {
+        name: 'checked', type: 'boolean', default: '— (keeps existing state)',
+        description: 'Initial checked state. When omitted the element keeps its current `checked` state (e.g. from the `checked` attribute).',
+        examples: [
+          { title: 'checked: true / false', run: true, code: `
+            [true, false].forEach((checked) => {
+              ${MK}
+              Look.${FN}(el, { label: 'checked: ' + checked, checked${noun === 'radio' ? ", name: 'rc-' + checked" : ''} });
+            });` },
+        ],
+      },
+      {
+        name: 'required', type: 'boolean', default: 'from attribute / label flag',
+        description: 'Sets the native `required` attribute and adds a red asterisk to every label of the control. When omitted, an existing `required` attribute or a label marked `data-required` / `data-mandatory` makes it required. An explicit `false` overrides both.',
+        examples: [
+          { title: 'required: true', run: true, code: `
+            ${MK}
+            Look.${FN}(el, { label: 'I accept the terms', required: true });` },
+          { title: 'From data-mandatory on an external label', run: true, code: `
+            const el = document.createElement('input'); el.type = '${noun === 'radio' ? 'radio' : 'checkbox'}'; el.id = '${FN}-mand'; container.appendChild(el);
+            const label = document.createElement('label'); label.htmlFor = el.id; label.textContent = ' Flagged by data-mandatory'; label.dataset.mandatory = '';
+            container.appendChild(label);
+            const c = Look.${FN}(el);
+            log('required =', c.required);` },
+        ],
+      },
+      { name: 'mandatory', type: 'boolean', default: '—', description: 'Alias of `required` (used only when `required` is not given).' },
+      {
+        name: 'requiredMark', type: 'boolean', default: 'true',
+        description: 'Set to `false` to keep native required validation without drawing the asterisk.',
+        examples: [{ run: true, code: `
+          ${MK}
+          Look.${FN}(el, { label: 'Required, but no asterisk', required: true, requiredMark: false });` }],
+      },
+      {
+        name: 'readonly', type: 'boolean', default: 'false',
+        description: 'Adds the `readonly` attribute. **Browsers ignore `readonly` on checkboxes and radios** — the user can still toggle it. To lock the control use `enabled = false` (note: disabled controls are not submitted).',
+      },
+    ],
+
+    properties: [
+      { name: 'checked', type: 'boolean', description: 'Get or set the checked state. Setting it does not fire `change`.',
+        examples: [{ run: true, code: `
+          ${MK}
+          const c = Look.${FN}(el, { label: 'Toggle me from code'${noun === 'radio' ? ", name: 'rprop'" : ''} });
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--sm lk-btn--secondary'; btn.style.marginTop = '6px';
+          btn.textContent = 'c.checked = !c.checked';
+          btn.onclick = () => { c.checked = !c.checked; log('checked =', c.checked); };
+          container.appendChild(btn);` }] },
+      { name: 'value', type: 'boolean', description: 'Same as `checked` for checkable inputs (getter returns the boolean state; setter coerces with `!!`). It is **not** the `value` attribute — read `c.el.value` for the submitted value.',
+        examples: [{ run: true, code: `
+          ${MK}
+          el.value = 'yes';
+          const c = Look.${FN}(el, { label: 'Value demo', checked: true });
+          log('c.value =', c.value, '| c.el.value =', c.el.value);` }] },
+      { name: 'label', type: 'string', description: 'Get the primary label text; setting it updates every label of the control (text inside a wrapping label is replaced without removing the input).',
+        examples: [{ run: true, code: `
+          ${MK}
+          const c = Look.${FN}(el, { label: 'Old text' });
+          c.label = 'New text';
+          log('label =', c.label);` }] },
+      { name: 'labels', type: 'HTMLLabelElement[]', readonly: true, description: 'All managed labels: the created label first, then external `<label for>` / wrapping labels.' },
+      { name: 'required', type: 'boolean', description: 'Get or set the required state (native attribute + asterisk on all labels).' },
+      { name: 'mandatory', type: 'boolean', description: 'Alias of `required` (not enumerable).' },
+      { name: 'readonly', type: 'boolean', description: 'Get or set the native `readOnly` flag (no effect on toggling, see the option).' },
+      { name: 'name', type: 'string', description: 'Get or set the `name` attribute.' },
+      { name: 'enabled', type: 'boolean', description: 'Get or set enabled state. `false` sets `disabled`, `.lk-disabled` and `aria-disabled="true"`; the field label dims.',
+        examples: [{ run: true, code: `
+          ${MK}
+          const c = Look.${FN}(el, { label: 'Disabled', checked: true });
+          c.enabled = false;
+          log('enabled =', c.enabled);` }] },
+      { name: 'hidden', type: 'boolean', description: 'Show/hide. Toggles `.lk-hidden` on the `.lk-field` wrapper when there is one, otherwise on the input itself (an external label stays visible).' },
+      { name: 'el', type: 'HTMLInputElement', readonly: true, description: 'The underlying `<input>`.' },
+      { name: 'id', type: 'string', description: 'Get or set the input id (auto-generated when `label` was given and the input had none).' },
+    ],
+
+    methods: [
+      {
+        name: 'setError', signature: 'setError(message?: string) → void',
+        description: 'Marks the field invalid: `.lk-field--error` on the wrapper (red label and a red outline around the control), `.lk-input--error` and `aria-invalid="true"` on the input. The message is shown only when the field has a `.lk-field-error` slot (i.e. it was created with `label`).',
+        params: [{ name: 'message', type: 'string', optional: true, description: 'Text shown under the control.' }],
+        examples: [{ run: true, code: `
+          ${MK}
+          const c = Look.${FN}(el, { label: 'I agree', required: true });
+          c.setError('You must agree to continue');
+          c.el.addEventListener('change', () => (c.checked ? c.clearError() : c.setError('You must agree to continue')));` }],
+      },
+      { name: 'clearError', signature: 'clearError() → void', description: 'Removes the error state and hides the message.' },
+      { name: 'refreshLabels', signature: 'refreshLabels() → void', description: 'Re-scans the document for `<label for>` / wrapping labels added after creation and applies text sync and the asterisk to them.' },
+    ],
+
+    events: [
+      {
+        name: 'change', signature: "c.el.addEventListener('change', (event) => …)",
+        description: 'Native DOM event fired when the user toggles the control. ' + FN + ' has no callback options — subscribe on `c.el`. Programmatic changes (`checked`, `value`' + (noun === 'radio' ? '' : ', `toggle()`') + ') do not fire it.',
+        args: [{ name: 'event', type: 'Event', description: 'Native change event; read the state from `c.checked`.' }],
+        examples: [{ run: true, code: `
+          ['Email', 'SMS'].forEach((label) => {
+            ${MK}
+            const c = Look.${FN}(el, { label${noun === 'radio' ? ", name: 'rchg'" : ''} });
+            c.el.addEventListener('change', () => log(label, '→', c.checked));
+          });` }],
+      },
+    ],
+
+    fieldClasses: [
+      { name: '.lk-field', description: 'Wrapper created by `label`. For this control it is laid out as an inline row; the error message wraps to its own line.' },
+      { name: '.lk-field--error', description: 'Red label + 2px red outline around the control.' },
+      { name: '.lk-label / .lk-label--required', description: 'Label text (regular weight, pointer cursor inside the field) and the red asterisk.' },
+      { name: '.lk-field-error', description: 'Error message slot.' },
+    ],
+  };
+}
+
+(function () {
+  const MK = "const el = document.createElement('input'); el.type = 'checkbox'; container.appendChild(el);";
+  const D = checkableDocs('lkCheckbox', MK, 'checkbox');
+
+  LookDocs.render('#api', {
+    name: 'lkCheckbox',
+    kind: 'Component',
+    signature: 'const cb = Look.lkCheckbox(element, options);',
+    description: [
+      'Styles a native `<input type="checkbox">` (`.lk-checkbox`), optionally wraps it with a clickable label and an error slot, and keeps external labels in sync (text + required asterisk).',
+      'The input stays a real checkbox: it submits `name=value` only while checked, supports native `required` validation and fires native `change` events — lkCheckbox adds no callback options.',
+    ],
+    params: [
+      { name: 'element', type: 'HTMLInputElement | string', description: 'An `<input type="checkbox">` or a CSS selector. Insert it into the page first — the label wrapper is only created for an attached element.' },
+      { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+    ],
+    returns: { type: 'Object', description: 'The checkbox instance with the properties and methods below.' },
+    notes: [
+      '**Layout:** with `label` the DOM becomes `div.lk-field > label.lk-label + input.lk-checkbox + span.lk-field-error`; CSS shows the box first and the label after it on one row. If the input already sits directly inside a `.lk-field`, that wrapper is reused.',
+      '**Label `for` + id:** a random id (`lk-xxxxxxx`) is assigned when `label` is given and the input has none. External `<label for="id">` and wrapping `<label>`s are found at creation time; call `refreshLabels()` for labels rendered later.',
+      '`readonly` does not stop a user from toggling a checkbox (browser behavior). `enabled = false` does, but disabled checkboxes are left out of form submission.',
+      'There is no indeterminate option — set `cb.el.indeterminate = true` directly if you need it (the Look style does not draw a dash for it).',
+    ],
+
+    options: D.options,
+
+    properties: [D.properties[0], D.properties[1]].concat(D.properties.slice(2)),
+
+    methods: [
+      {
+        name: 'toggle', signature: 'toggle() → void',
+        description: 'Flips `checked`. Does not dispatch a `change` event.',
+        examples: [{ run: true, code: `
+          ${MK}
+          const cb = Look.lkCheckbox(el, { label: 'Toggled from code' });
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--sm lk-btn--secondary'; btn.style.marginTop = '6px';
+          btn.textContent = 'cb.toggle()';
+          btn.onclick = () => { cb.toggle(); log('checked =', cb.checked); };
+          container.appendChild(btn);` }],
+      },
+    ].concat(D.methods, [
+      { name: 'destroy', signature: 'destroy() → void', description: 'Removes `.lk-checkbox`, the error state and (if it created one) the `.lk-field` wrapper; restores label asterisks to how the author marked them.' },
+    ]),
+
+    events: D.events,
+
+    classes: [
+      { name: '.lk-checkbox', description: 'Custom 18 px box with a check mark (added by lkCheckbox; usable as a CSS-only class).',
+        examples: [{ title: 'CSS only', code: `
+          <label><input type="checkbox" class="lk-checkbox" checked> Remember me</label>` }] },
+      { name: '.lk-checkbox--dense', description: 'Smaller 14 px box. Put it on the input before enhancing.',
+        examples: [{ run: true, code: `
+          ${MK}
+          el.classList.add('lk-checkbox--dense');
+          Look.lkCheckbox(el, { label: 'Dense checkbox', checked: true });` }] },
+    ].concat(D.fieldClasses),
+
+    tokens: [
+      { name: '--lk-primary', default: 'theme', description: 'Checked fill, border and focus ring.' },
+      { name: '--lk-primary-contrast', default: 'theme', description: 'Check mark color.' },
+      { name: '--lk-border / --lk-radius-sm', default: 'theme', description: 'Unchecked border color and box corner radius.' },
+      { name: '--lk-negative', default: 'theme', description: 'Error outline/label and the required asterisk.' },
+    ],
+  });
+})();
+</script>
 <script>
   const agree = Look.lkCheckbox('#demo-agree', { label: 'I agree to the terms', name: 'agree' });
   const news = Look.lkCheckbox('#demo-news', { label: 'Subscribe to newsletter', name: 'news', checked: true });
@@ -72,6 +301,27 @@ agree.destroy();</pre>
   document.getElementById('btn-val').onclick = () => {
     out.textContent = `agree=${agree.checked} | news=${news.checked}`;
   };
+
+  // Validation, dense & group
+  const formOut = document.getElementById('cb-form-output');
+  const terms = Look.lkCheckbox('#cb-terms', { label: 'I accept the terms (required)', name: 'terms', required: true });
+  Look.lkCheckbox('#cb-dense', { label: 'Dense checkbox', name: 'dense', checked: true });
+  const topics = [...document.querySelectorAll('.cb-topic')].map((el) =>
+    Look.lkCheckbox(el, { label: el.value[0].toUpperCase() + el.value.slice(1), name: 'topics' }));
+  terms.el.addEventListener('change', () => { if (terms.checked) terms.clearError(); });
+  document.getElementById('cb-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!terms.checked) {
+      terms.setError('Please accept the terms');
+      formOut.textContent = 'Blocked: terms not accepted';
+      return;
+    }
+    const data = new FormData(e.target);
+    formOut.textContent = 'Submitted: ' + new URLSearchParams(data).toString() +
+      '  |  topics checked = ' + topics.filter((t) => t.checked).length;
+  });
+  // Native validation would stop the submit before our handler; let the custom message show instead.
+  document.getElementById('cb-form').noValidate = true;
 </script>
 </body>
 </html>

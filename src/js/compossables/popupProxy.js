@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 import { createPresenceController } from '../helpers/motion.js';
 
 const LAYER_CLASS = 'lk-popup-proxy';
@@ -149,6 +151,17 @@ function clampPosition(position, popupRect, viewport, margin) {
   };
 }
 
+const TRANSFORM_ORIGIN = {
+  'bottom-left': 'top left',
+  'bottom-right': 'top right',
+  'top-left': 'bottom left',
+  'top-right': 'bottom right',
+  'left-top': 'top right',
+  'left-bottom': 'bottom right',
+  'right-top': 'top left',
+  'right-bottom': 'bottom left',
+};
+
 function getSideFromPlacement(placement) {
   const side = String(placement || '').split('-')[0];
   if (side === 'top' || side === 'bottom' || side === 'left' || side === 'right') return side;
@@ -296,11 +309,14 @@ export function lkPopupProxy(target, opts = {}) {
     anchorEl = resolved;
 
     const rect = anchorEl.getBoundingClientRect();
-    const popupRect = panel.getBoundingClientRect();
+    // Use layout size (offset*), not getBoundingClientRect(): the panel carries an
+    // enter/exit scale transform that would shrink the measured box and misplace it.
+    const popupRect = { width: panel.offsetWidth, height: panel.offsetHeight };
     const nextPosition = computePlacement(rect, popupRect);
 
     panel.style.top = `${nextPosition.top}px`;
     panel.style.left = `${nextPosition.left}px`;
+    panel.style.transformOrigin = TRANSFORM_ORIGIN[nextPosition.placement] || '';
     panel.dataset.side = getSideFromPlacement(nextPosition.placement);
     panel.dataset.placement = nextPosition.placement;
   }
@@ -323,6 +339,7 @@ export function lkPopupProxy(target, opts = {}) {
 
     const targetNode = e.target;
     if (panel.contains(targetNode) || trigger.contains(targetNode)) return;
+    if (anchorEl && anchorEl !== trigger && anchorEl.contains && anchorEl.contains(targetNode)) return;
 
     hide('outside');
   }

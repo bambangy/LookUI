@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Button component
 
 .lk-btn {
@@ -13,16 +15,38 @@
   font-weight: 500;
   line-height: var(--lk-line-height);
   white-space: nowrap;
+  text-decoration: none; // <a class="lk-btn"> must not look like a link (incl. hover/focus)
 
+  // Explicit neutral default so a variant-less .lk-btn doesn't fall back to UA button chrome
+  background-color: var(--lk-surface);
+  color: var(--lk-text);
   border: var(--lk-border-width) solid transparent;
   border-radius: var(--lk-radius);
-  cursor: pointer;
   user-select: none;
+
+  &:hover,
+  &:focus,
+  &:focus-visible {
+    text-decoration: none;
+  }
 
   transition:
     background-color var(--lk-duration-fast) var(--lk-easing-default),
-    border-color var(--lk-duration-fast) var(--lk-easing-default),
-    box-shadow var(--lk-duration-fast) var(--lk-easing-default);
+    border-color     var(--lk-duration-fast) var(--lk-easing-default),
+    box-shadow       var(--lk-duration-fast) var(--lk-easing-default),
+    transform        var(--lk-duration-fast) var(--lk-easing-spring),
+    filter           var(--lk-duration-fast) var(--lk-easing-out);
+
+  &:hover:not(:disabled):not([aria-disabled="true"]) {
+    transform: translateY(-1px);
+    box-shadow: var(--lk-shadow-sm);
+  }
+
+  &:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: translateY(1px) scale(0.97);
+    box-shadow: none;
+    transition-duration: var(--lk-duration-micro);
+  }
 
   // --- Color variants ---
 
@@ -30,11 +54,11 @@
     background-color: var(--lk-primary);
     color: var(--lk-primary-contrast);
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: var(--lk-primary-dark);
     }
-    &:active {
-      filter: brightness(0.95);
+    &:active:not(:disabled) {
+      filter: brightness(0.9);
     }
   }
 
@@ -43,8 +67,18 @@
     border-color: var(--lk-border);
     color: var(--lk-text);
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: var(--lk-surface);
+    }
+  }
+
+  &--outline {
+    background-color: transparent;
+    border-color: currentColor;
+    color: var(--lk-primary);
+
+    &:hover:not(:disabled) {
+      background-color: color-mix(in srgb, currentColor 10%, transparent);
     }
   }
 
@@ -52,7 +86,7 @@
     background-color: transparent;
     color: var(--lk-primary);
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: var(--lk-bg-subtle);
     }
   }
@@ -61,7 +95,7 @@
     background-color: var(--lk-positive);
     color: var(--lk-positive-contrast);
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: var(--lk-positive-dark);
     }
   }
@@ -70,7 +104,7 @@
     background-color: var(--lk-negative);
     color: var(--lk-negative-contrast);
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: var(--lk-negative-dark);
     }
   }
@@ -79,7 +113,7 @@
     background-color: var(--lk-warning);
     color: var(--lk-warning-contrast);
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: var(--lk-warning-dark);
     }
   }
@@ -88,7 +122,7 @@
     background-color: var(--lk-info);
     color: var(--lk-info-contrast);
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: var(--lk-info-dark);
     }
   }
@@ -107,18 +141,18 @@
 
   // --- Dense: tighter spacing + smaller text, proportional ---
   &--dense {
-    padding: var(--lk-space-1) var(--lk-space-2);
+    padding: var(--lk-space-1) var(--lk-space-3);
     font-size: var(--lk-text-sm);
     gap: var(--lk-space-1);
   }
 
   &--dense#{&}--sm {
-    padding: calc(var(--lk-space-1) * 0.75) var(--lk-space-1);
+    padding: calc(var(--lk-space-1) * 0.5) var(--lk-space-2);
     font-size: var(--lk-text-xs);
   }
 
   &--dense#{&}--lg {
-    padding: var(--lk-space-2) var(--lk-space-3);
+    padding: var(--lk-space-2) var(--lk-space-4);
     font-size: var(--lk-text-base);
   }
 
@@ -145,6 +179,12 @@
 
     &:not(:first-child) {
       margin-left: calc(var(--lk-border-width) * -1);
+    }
+
+    // Solid/ghost variants have a transparent border, so adjacent buttons would
+    // merge into one block — draw a subtle divider in the button's own text color.
+    &:not(.lk-btn--secondary):not(:first-child) {
+      border-left-color: color-mix(in srgb, currentColor 30%, transparent);
     }
 
     &:first-child {
@@ -179,7 +219,7 @@
     border-right: 4px solid transparent;
     border-top: 5px solid currentColor;
     vertical-align: middle;
-    transition: transform var(--lk-duration-fast) var(--lk-easing-out);
+    transition: transform var(--lk-duration-micro) var(--lk-easing-spring);
   }
 
   &__menu {
@@ -198,12 +238,12 @@
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transform: translateY(-10px) scale(0.95);
+    transform: translateY(-0.6rem) scale(0.92);
     transform-origin: top left;
     transition:
-      opacity var(--lk-duration-base) var(--lk-easing-out),
-      transform var(--lk-duration-slow) var(--lk-easing-out),
-      visibility 0s linear var(--lk-duration-base);
+      opacity var(--lk-duration-fast) var(--lk-easing-out),
+      transform var(--lk-duration-base) var(--lk-easing-snap),
+      visibility 0s linear var(--lk-duration-fast);
   }
 
   &__item {
@@ -218,9 +258,11 @@
     cursor: pointer;
     white-space: nowrap;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
       background: var(--lk-bg-subtle);
       color: var(--lk-primary);
+      outline: none;
     }
 
     &--active {
@@ -247,8 +289,8 @@
     pointer-events: auto;
     transform: translateY(0) scale(1);
     transition:
-      opacity var(--lk-duration-base) var(--lk-easing-out),
-      transform var(--lk-duration-slow) var(--lk-easing-out),
+      opacity var(--lk-duration-fast) var(--lk-easing-out),
+      transform var(--lk-duration-base) var(--lk-easing-snap),
       visibility 0s;
   }
 
@@ -263,9 +305,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .lk-btn,
   .lk-btn-dropdown__menu,
   .lk-btn-dropdown__caret {
     transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
   }
 }
 

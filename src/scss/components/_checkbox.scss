@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Checkbox component
 
 .lk-checkbox {
@@ -45,10 +47,39 @@
     cursor: not-allowed;
   }
 
-  // When inside .lk-field, use row layout instead of column
-  .lk-field:has(&) {
-    flex-direction: row;
-    align-items: center;
-    gap: var(--lk-space-2);
+  // Dense variant
+  &--dense {
+    width: 0.875rem;
+    height: 0.875rem;
+
+    &:checked::after {
+      width: 0.3rem;
+      height: 0.5rem;
+    }
   }
+}
+
+// Inline field layout: control first, then label; error message wraps below.
+.lk-field:has(> .lk-checkbox) {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lk-space-2);
+
+  > .lk-checkbox { order: -1; }
+
+  > .lk-label {
+    cursor: pointer;
+    font-weight: var(--lk-weight-regular);
+  }
+
+  > .lk-field-error {
+    flex-basis: 100%;
+    order: 1;
+  }
+}
+
+.lk-field:has(> .lk-checkbox:disabled) > .lk-label {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

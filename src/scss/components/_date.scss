@@ -1,9 +1,12 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 .lk-popup-proxy__panel.lk-date-proxy {
-  min-width: 19rem;
-  max-width: min(22rem, calc(100vw - var(--lk-space-4)));
+  width: 19rem;
+  max-width: calc(100vw - var(--lk-space-4));
   padding: var(--lk-space-2);
+  border: var(--lk-border-width) solid var(--lk-border);
   border-radius: var(--lk-radius-xl);
-  background: #fff;
+  background: var(--lk-bg);
 }
 
 .lk-date {
@@ -19,20 +22,37 @@
 
 .lk-date__track {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
   width: 100%;
   transform: translateX(0);
   transition: transform var(--lk-duration-base) var(--lk-easing-default);
   will-change: transform;
 }
 
+// minmax(0, 1fr) keeps both steps exactly 50% wide even when one step's
+// min-content is wider; plain 1fr lets the columns drift and the -50% slide
+// leaves a sliver of the date step visible in the time step.
 .lk-date--time-enabled .lk-date__track {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   width: 200%;
 }
 
 .lk-date--time-enabled.lk-date--view-time .lk-date__track {
   transform: translateX(-50%);
+}
+
+// Inactive step collapses to zero height so the viewport sizes to the active step
+// (content still paints while sliding out, clipped by the viewport).
+.lk-date--time-enabled:not(.lk-date--view-time) .lk-date__time-view,
+.lk-date--time-enabled.lk-date--view-time .lk-date__date-view {
+  height: 0;
+}
+
+// Used by JS to reset the step without animation while the popup is hidden.
+.lk-date--instant,
+.lk-date--instant * {
+  transition: none !important;
 }
 
 .lk-date__date-view,
@@ -58,7 +78,6 @@
   display: none;
 }
 
-
 .lk-date--time-enabled.lk-date--view-time .lk-date__date-view {
   pointer-events: none;
 }
@@ -81,7 +100,7 @@
   min-height: 2rem;
   border: var(--lk-border-width) solid var(--lk-border);
   border-radius: var(--lk-radius);
-  background: #fff;
+  background: var(--lk-bg);
   color: var(--lk-secondary-dark);
   font-size: var(--lk-text-xs);
   font-weight: var(--lk-weight-medium);
@@ -93,7 +112,7 @@
   width: 2rem;
   border-radius: var(--lk-radius);
   border: var(--lk-border-width) solid var(--lk-border);
-  background: #fff;
+  background: var(--lk-bg);
   color: var(--lk-secondary-dark);
   display: inline-flex;
   align-items: center;
@@ -109,12 +128,15 @@
   transform: translateY(-1px);
 }
 
+.lk-date__nav:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 .lk-date__nav .lk-icon,
 .lk-date__time-btn .lk-icon {
   font-size: var(--lk-text-sm);
 }
-
 
 .lk-date__weekdays,
 .lk-date__grid {
@@ -169,12 +191,10 @@
   border-radius: var(--lk-radius-sm);
 }
 
-
 .lk-date__day--range-hover {
   background: color-mix(in srgb, var(--lk-primary) 14%, transparent);
   border-radius: var(--lk-radius-sm);
 }
-
 
 .lk-date__day--selected {
   background: var(--lk-primary);
@@ -200,7 +220,6 @@
   pointer-events: none;
 }
 
-
 .lk-date__separator {
   height: var(--lk-border-width);
   background: var(--lk-border);
@@ -224,10 +243,27 @@
   height: 2.2rem;
   border-radius: var(--lk-radius);
   border: var(--lk-border-width) solid var(--lk-border);
-  background: #fff;
+  background: var(--lk-bg);
+  color: var(--lk-secondary-dark);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   font-size: var(--lk-text-sm);
   font-weight: var(--lk-weight-semibold);
+  transition: background-color var(--lk-duration-fast) var(--lk-easing-default);
+}
+
+.lk-date__time-btn:hover {
+  background: var(--lk-bg-subtle);
+}
+
+.lk-date__time-date {
+  text-align: center;
+  font-size: var(--lk-text-sm);
+  font-weight: var(--lk-weight-semibold);
+  padding: var(--lk-space-1) 0;
+  border-bottom: var(--lk-border-width) solid var(--lk-border);
 }
 
 .lk-date__time-value {
@@ -258,7 +294,7 @@
   min-height: 2rem;
   border: 0;
   border-right: var(--lk-border-width) solid var(--lk-border);
-  background: #fff;
+  background: var(--lk-bg);
   color: var(--lk-secondary-dark);
   font-weight: var(--lk-weight-medium);
   cursor: pointer;
@@ -268,9 +304,14 @@
   border-right: 0;
 }
 
-.lk-date__ampm-btn--active {
+.lk-date__ampm-btn:hover:not(.lk-date__ampm-btn--active) {
   background: var(--lk-bg-subtle);
+}
+
+.lk-date__ampm-btn--active {
+  background: color-mix(in srgb, var(--lk-primary) 12%, transparent);
   color: var(--lk-primary);
+  font-weight: var(--lk-weight-semibold);
 }
 
 .lk-date__time-preview {
@@ -282,16 +323,17 @@
 
 .lk-date__time-actions {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--lk-space-2);
 }
 
 .lk-date__time-actions .lk-btn {
   width: 100%;
-  min-height: 2.6rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .lk-date__track,
+  .lk-date__time-view,
   .lk-date__day,
   .lk-date__nav,
   .lk-date__select,
@@ -301,14 +343,4 @@
     animation-duration: 1ms !important;
   }
 }
-
-
-
-
-
-
-
-
-
-
 

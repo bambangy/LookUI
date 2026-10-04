@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { setCollapsibleState } from '../helpers/motion.js';
 
@@ -27,6 +29,10 @@ function createBranch(item, submenu, trigger, depth) {
     trigger,
     depth,
     open: false,
+    settleTimer: null,
+    createdTrigger: false,
+    createdCaret: null,
+    createdId: false,
   };
 }
 
@@ -52,23 +58,24 @@ export function lkList(el, opts = {}) {
   const branches = [];
   const branchByItem = new Map();
   const listeners = [];
-  let heightSyncFrame = null;
+  // Once an open submenu has finished sliding, release its max-height cap
+  // ('none') so nested submenus opening inside it are never clipped.
+  const SETTLE_FALLBACK_MS = 700;
 
-  function queueHeightSync() {
-    if (heightSyncFrame != null) {
-      cancelAnimationFrame(heightSyncFrame);
+  function clearSettle(branch) {
+    if (branch.settleTimer != null) {
+      clearTimeout(branch.settleTimer);
+      branch.settleTimer = null;
     }
+  }
 
-    heightSyncFrame = requestAnimationFrame(() => {
-      heightSyncFrame = null;
-      branches.forEach((branch) => {
-        if (!branch.open) return;
-        branch.submenu.style.setProperty('--lk-submenu-h', `${branch.submenu.scrollHeight}px`);
-      });
-    });
+  function settleOpen(branch) {
+    clearSettle(branch);
+    if (branch.open) branch.submenu.style.setProperty('--lk-submenu-h', 'none');
   }
 
   function openBranchVisual(branch) {
+    clearSettle(branch);
     setCollapsibleState(branch.submenu, {
       open: true,
       openClass: 'lk-list-submenu--open',
@@ -80,10 +87,17 @@ export function lkList(el, opts = {}) {
     branch.submenu.setAttribute('aria-hidden', 'false');
     if ('inert' in branch.submenu) branch.submenu.inert = false;
     branch.open = true;
-    queueHeightSync();
+    branch.settleTimer = setTimeout(() => settleOpen(branch), SETTLE_FALLBACK_MS);
   }
 
   function closeBranchVisual(branch) {
+    clearSettle(branch);
+    if (branch.open) {
+      // Pin the current height (it may be 'none') and flush styles so the
+      // collapse to 0 animates instead of jumping.
+      branch.submenu.style.setProperty('--lk-submenu-h', `${branch.submenu.scrollHeight}px`);
+      void branch.submenu.offsetHeight;
+    }
     setCollapsibleState(branch.submenu, {
       open: false,
       openClass: 'lk-list-submenu--open',
@@ -173,7 +187,10 @@ export function lkList(el, opts = {}) {
     item.classList.add('lk-list-item--branch');
 
     let trigger = item.querySelector(':scope > .lk-list-item__trigger, :scope > [data-lk-submenu-trigger]');
+    let createdTrigger = false;
+    let createdId = false;
     if (!trigger) {
+      createdTrigger = true;
       trigger = document.createElement('button');
       trigger.type = 'button';
       trigger.className = 'lk-list-item__trigger';
@@ -183,11 +200,13 @@ export function lkList(el, opts = {}) {
       item.insertBefore(trigger, submenu);
     }
 
-    if (!trigger.classList.contains('lk-list-item__trigger')) {
+    const addedTriggerClass = !trigger.classList.contains('lk-list-item__trigger');
+    if (addedTriggerClass) {
       trigger.classList.add('lk-list-item__trigger');
     }
 
     if (!submenu.id) {
+      createdId = true;
       submenu.id = `lk-list-submenu-${Math.random().toString(36).slice(2, 9)}`;
     }
 
@@ -199,11 +218,13 @@ export function lkList(el, opts = {}) {
     }
 
     let caret = trigger.querySelector(':scope > .lk-list-item__caret');
+    let createdCaret = null;
     if (!caret) {
       caret = document.createElement('span');
       caret.className = 'lk-list-item__caret';
       caret.setAttribute('aria-hidden', 'true');
       trigger.appendChild(caret);
+      createdCaret = caret;
     }
 
     let depth = 1;
@@ -214,12 +235,23 @@ export function lkList(el, opts = {}) {
     }
 
     const branch = createBranch(item, submenu, trigger, depth);
+    branch.createdTrigger = createdTrigger;
+    branch.addedTriggerClass = addedTriggerClass && !createdTrigger;
+    branch.createdCaret = createdCaret;
+    branch.createdId = createdId;
     branches.push(branch);
     branchByItem.set(item, branch);
 
     const defaultOpen = item.classList.contains('lk-list-item--open') || trigger.getAttribute('aria-expanded') === 'true';
     submenu.style.setProperty('--lk-submenu-h', defaultOpen ? `${submenu.scrollHeight}px` : '0px');
     setBranchOpen(branch, defaultOpen, 'init');
+    if (defaultOpen) settleOpen(branch);
+
+    const onTransitionEnd = (e) => {
+      if (e.target !== submenu || e.propertyName !== 'max-height') return;
+      settleOpen(branch);
+    };
+    submenu.addEventListener('transitionend', onTransitionEnd);
 
     const onClick = (e) => {
       if (trigger.tagName === 'A') e.preventDefault();
@@ -236,6 +268,7 @@ export function lkList(el, opts = {}) {
     trigger.addEventListener('click', onClick);
     trigger.addEventListener('keydown', onKeydown);
     listeners.push(() => {
+      submenu.removeEventListener('transitionend', onTransitionEnd);
       trigger.removeEventListener('click', onClick);
       trigger.removeEventListener('keydown', onKeydown);
     });
@@ -261,12 +294,8 @@ export function lkList(el, opts = {}) {
   comp.destroy = function () {
     listeners.forEach((dispose) => dispose());
 
-    if (heightSyncFrame != null) {
-      cancelAnimationFrame(heightSyncFrame);
-      heightSyncFrame = null;
-    }
-
     branches.forEach((branch) => {
+      clearSettle(branch);
       branch.item.classList.remove('lk-list-item--branch', 'lk-list-item--open');
       branch.submenu.classList.remove('lk-list-submenu--open');
       branch.submenu.removeAttribute('aria-hidden');
@@ -278,7 +307,20 @@ export function lkList(el, opts = {}) {
         branch.trigger.removeAttribute('role');
         branch.trigger.removeAttribute('tabindex');
       }
+      if (branch.createdId) branch.submenu.removeAttribute('id');
+      if (branch.createdCaret) branch.createdCaret.remove();
+      if (branch.addedTriggerClass) branch.trigger.classList.remove('lk-list-item__trigger');
+      if (branch.createdTrigger) {
+        // Unwrap the generated trigger, restoring original children in place.
+        while (branch.trigger.firstChild) {
+          branch.item.insertBefore(branch.trigger.firstChild, branch.trigger);
+        }
+        branch.trigger.remove();
+      }
     });
+    branches.length = 0;
+    branchByItem.clear();
+    listeners.length = 0;
   };
 
   return comp;

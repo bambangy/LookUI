@@ -1,8 +1,39 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Form component factories — Textbox, Dropdown, Checkbox, Radio, Switch
 
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { wrapField, applyFieldProps } from '../helpers/field.js';
 
+function createAffixSlot(className) {
+  const slot = document.createElement('span');
+  slot.className = className;
+  slot.hidden = true;
+  return slot;
+}
+function setAffixContent(slot, content) {
+  slot.textContent = '';
+  if (content == null || content === false || content === '') {
+    slot.hidden = true;
+    return;
+  }
+  slot.hidden = false;
+  const append = (value) => {
+    if (value == null || value === false || value === '') return;
+    if (value instanceof Node) {
+      slot.appendChild(value);
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach(append);
+      return;
+    }
+    const span = document.createElement('span');
+    span.textContent = String(value);
+    slot.appendChild(span);
+  };
+  append(content);
+}
 // ---------------------------------------------------------------------------
 // Textbox — wraps <input> or <textarea>
 // ---------------------------------------------------------------------------
@@ -21,28 +52,36 @@ import { wrapField, applyFieldProps } from '../helpers/field.js';
 export function lkTextbox(el, opts = {}) {
   const node = resolveEl(el, 'lkTextbox');
   node.classList.add('lk-input');
-
   let inputType = node.tagName === 'INPUT' ? node.type : '';
-
   function applyInputType(nextType) {
     if (node.tagName !== 'INPUT') return;
-
     const requested = (nextType == null || nextType === '') ? 'text' : String(nextType).toLowerCase();
     node.setAttribute('type', requested);
     // Browser normalizes unsupported types back to text.
     inputType = node.type;
   }
-
   if (node.tagName === 'INPUT') {
     applyInputType(opts.type ?? node.getAttribute('type') ?? 'text');
   }
-
   const field = wrapField(node, opts);
+  // Optional affix wrapper so prepend/append content never overlaps cursor/text.
+  const affixWrap = document.createElement('div');
+  affixWrap.className = 'lk-input-affix';
+  const prependEl = createAffixSlot('lk-input-affix__prepend');
+  const appendEl = createAffixSlot('lk-input-affix__append');
+  const parent = node.parentNode;
+  parent?.insertBefore(affixWrap, node);
+  affixWrap.appendChild(prependEl);
+  affixWrap.appendChild(node);
+  affixWrap.appendChild(appendEl);
+  node.classList.add('lk-input--affixed');
+  setAffixContent(prependEl, opts.prepend);
+  setAffixContent(appendEl, opts.append);
+  affixWrap.classList.toggle('lk-input-affix--has-prepend', !prependEl.hidden);
+  affixWrap.classList.toggle('lk-input-affix--has-append', !appendEl.hidden);
   const comp = {};
-
-  applyBase(comp, node, { hiddenTarget: field.wrapper || node });
+  applyBase(comp, node, { hiddenTarget: field.wrapper || affixWrap });
   applyFieldProps(comp, node, field);
-
   Object.defineProperty(comp, 'type', {
     get() {
       return node.tagName === 'INPUT' ? inputType : '';
@@ -52,76 +91,41 @@ export function lkTextbox(el, opts = {}) {
     },
     enumerable: true,
   });
-
-  comp.destroy = function () {
-    node.classList.remove('lk-input', 'lk-input--error');
-    node.removeAttribute('aria-invalid');
-    field.destroyField();
-  };
-
-  return comp;
-}
-
-// ---------------------------------------------------------------------------
-// Dropdown — wraps <select>
-// ---------------------------------------------------------------------------
-
-/**
- * Enhance a <select> element with Look styling, label wrapper, and validation.
- * @param {Element|string} el — <select> element or selector
- * @param {Object} [opts]
- * @param {string}  [opts.label]
- * @param {string}  [opts.name]
- * @param {boolean} [opts.required]
- * @param {Array}   [opts.items] — [{ value, text, selected?, disabled? }, ...]
- * @returns {Object}
- */
-export function lkDropdown(el, opts = {}) {
-  const node = resolveEl(el, 'lkDropdown');
-  node.classList.add('lk-input', 'lk-select');
-
-  // Populate options if provided
-  if (opts.items && Array.isArray(opts.items)) {
-    opts.items.forEach(item => {
-      const option = document.createElement('option');
-      option.value = item.value ?? '';
-      option.textContent = item.text ?? item.value ?? '';
-      if (item.selected) option.selected = true;
-      if (item.disabled) option.disabled = true;
-      node.appendChild(option);
-    });
-  }
-
-  const field = wrapField(node, opts);
-  const comp = {};
-
-  applyBase(comp, node, { hiddenTarget: field.wrapper || node });
-  applyFieldProps(comp, node, field);
-
   Object.defineProperties(comp, {
-    selectedIndex: {
-      get() { return node.selectedIndex; },
-      set(v) { node.selectedIndex = v; },
+    prepend: {
+      get() {
+        return prependEl.hidden ? null : prependEl;
+      },
+      set(value) {
+        setAffixContent(prependEl, value);
+        affixWrap.classList.toggle('lk-input-affix--has-prepend', !prependEl.hidden);
+      },
       enumerable: true,
     },
-
-    selectedText: {
+    append: {
       get() {
-        const opt = node.options[node.selectedIndex];
-        return opt ? opt.textContent : '';
+        return appendEl.hidden ? null : appendEl;
+      },
+      set(value) {
+        setAffixContent(appendEl, value);
+        affixWrap.classList.toggle('lk-input-affix--has-append', !appendEl.hidden);
       },
       enumerable: true,
     },
   });
-
   comp.destroy = function () {
-    node.classList.remove('lk-input', 'lk-select', 'lk-input--error');
+    node.classList.remove('lk-input', 'lk-input--error', 'lk-input--affixed');
     node.removeAttribute('aria-invalid');
+    if (affixWrap.parentNode) {
+      affixWrap.parentNode.insertBefore(node, affixWrap);
+      affixWrap.remove();
+    }
     field.destroyField();
   };
-
   return comp;
 }
+
+// lkDropdown is now a full custom component in dropdown.js
 
 // ---------------------------------------------------------------------------
 // Checkbox — wraps <input type="checkbox">
@@ -266,4 +270,5 @@ export function lkSwitch(el, opts = {}) {
 
   return comp;
 }
+
 

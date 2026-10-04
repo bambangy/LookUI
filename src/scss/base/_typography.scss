@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Base typography
 
 body {
@@ -23,8 +25,15 @@ p {
   line-height: var(--lk-line-height);
 }
 
-a {
+// Zero-specificity so component classes (e.g. a.lk-btn) always win.
+:where(a) {
   color: var(--lk-primary);
+  text-decoration: none;
+}
+
+// Underline only plain prose links; classed links (buttons, nav items,
+// cards) are styled by their own component and must not inherit it.
+:where(a:not([class])) {
   text-decoration: underline;
   text-underline-offset: 2px;
 

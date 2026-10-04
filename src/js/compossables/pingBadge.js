@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 import { createPresenceController } from '../helpers/motion.js';
 
 function resolveTarget(target) {
@@ -53,17 +55,18 @@ export function lkPingBadge(target, opts = {}) {
   badge.style.justifyContent = 'center';
   badge.style.textAlign = 'center';
   badge.style.fontWeight = '600';
-  badge.style.color = '#fff';
   badge.style.transition = 'min-width 0.15s, padding 0.15s';
 
   // Pulse layer (animates behind the badge)
   const pulse = document.createElement('span');
   pulse.className = `lk-badge ${options.colorClass}`.trim();
   pulse.style.position = 'absolute';
+  // Pulse always fills the wrapper (which is sized by the badge) so its shape
+  // matches the dot or the counter pill exactly.
   pulse.style.inset = '0';
-  pulse.style.width = '100%';
-  pulse.style.height = '100%';
+  pulse.style.minWidth = '0';
   pulse.style.padding = '0';
+  pulse.style.borderRadius = 'var(--lk-radius-full)';
   pulse.style.opacity = '0.6';
   pulse.style.zIndex = '0';
 
@@ -129,7 +132,6 @@ export function lkPingBadge(target, opts = {}) {
       badge.style.fontSize = '';
       badge.style.lineHeight = '';
       applyShape(badge, dotShape);
-      applyShape(pulse, dotShape);
       return;
     }
 
@@ -145,7 +147,6 @@ export function lkPingBadge(target, opts = {}) {
     badge.style.fontSize = '0.625rem';
     badge.style.lineHeight = '1.125rem';
     applyShape(badge, counterShape);
-    applyShape(pulse, counterShape);
   }
 
   function show() {

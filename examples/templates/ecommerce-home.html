@@ -73,12 +73,12 @@
   </section>
 
   <!-- Categories -->
-  <section class="lk-section lk-section--sm">
+  <section class="lk-section" style="padding-bottom: 0;">
     <div class="lk-container">
       <h2 style="margin-bottom: var(--lk-space-4);">Shop by Category</h2>
       <div class="lk-grid lk-grid--cols-2 lk-grid--cols-md-4 lk-grid--cols-lg-6">
         <div class="category-card">
-          <div class="category-icon"><span class="lk-icon lk-icon--lg lk-icon--primary" style="mask-image:none;">T</span></div>
+          <div class="category-icon"><span style="font-weight: 600; color: var(--lk-primary);">T</span></div>
           <span style="font-size: var(--lk-text-sm); font-weight: 500;">T-Shirts</span>
         </div>
         <div class="category-card">
@@ -205,7 +205,7 @@
   const newsletter = Look.lkTextbox('#newsletter-email');
 
   // lkTooltip on cart icon
-  Look.lkTooltip(document.querySelector('.lk-bar__end .lk-btn:last-child'), { text: 'Shopping Cart', position: 'bottom' });
+  Look.lkTooltip(document.querySelector('.lk-bar__end .lk-btn:last-child'), { content: 'Shopping Cart', position: 'bottom' });
 
   // Add to cart buttons → lkToast
   document.querySelectorAll('.lk-product-card__actions .lk-btn').forEach(btn => {

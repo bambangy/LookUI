@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 import { createPresenceController } from '../helpers/motion.js';
 
 const EXIT_MS = 360;
@@ -46,11 +48,14 @@ export function lkInnerLoading(target, opts = {}) {
   overlay.style.display = 'flex';
   overlay.style.alignItems = 'center';
   overlay.style.justifyContent = 'center';
-  overlay.style.background = options.backdrop ? 'var(--lk-overlay)' : 'transparent';
+  // Light veil: a scoped loader should dim its target, not black it out.
+  overlay.style.background = options.backdrop
+    ? 'color-mix(in srgb, var(--lk-bg) 70%, transparent)'
+    : 'transparent';
   overlay.style.pointerEvents = options.lockPointer ? 'auto' : 'none';
 
   const panel = document.createElement('div');
-  panel.className = 'lk-card';
+  panel.className = 'lk-card lk-card--raised';
 
   const body = document.createElement('div');
   body.className = 'lk-card__body';

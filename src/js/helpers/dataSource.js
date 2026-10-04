@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 function isObject(value) {
   return value != null && typeof value === 'object' && !Array.isArray(value);
 }
@@ -313,6 +315,8 @@ export function lkDataSource(opts = {}) {
   let filteredTotal = items.length;
   let batching = 0;
   let dirty = false;
+  let loadSeq = 0;
+  let pending = 0; // in-flight transport calls; loading stays true until all settle
 
   function getTotal() {
     if (options.server.paging && Number.isFinite(serverTotal)) return serverTotal;
@@ -474,6 +478,7 @@ export function lkDataSource(opts = {}) {
     const endpoint = normalizeEndpoint(options.transport[action]);
     if (!endpoint) return null;
 
+    pending += 1;
     loading = true;
     error = null;
     refresh('loading', { action, payload });
@@ -502,7 +507,8 @@ export function lkDataSource(opts = {}) {
 
       throw err;
     } finally {
-      loading = false;
+      pending = Math.max(0, pending - 1);
+      loading = pending > 0;
       refresh('idle', { action, payload });
       events.emit('request:end', { action, payload, state: snapshot() });
     }
@@ -523,7 +529,11 @@ export function lkDataSource(opts = {}) {
       ...(options.server.paging ? { page, pageSize } : {}),
     };
 
+    // Rapid query changes (paging, typing in a filter) can overlap: only the
+    // latest read may write its result, so a slow older response never wins.
+    const seq = ++loadSeq;
     const result = await runTransport('read', payload);
+    if (seq !== loadSeq) return view.slice();
     const normalized = normalizeReadResponse(result);
     items = normalized.items.map(applyParseItem);
     serverTotal = normalized.total;
@@ -856,6 +866,26 @@ export function lkDataSource(opts = {}) {
     totalPages: {
       get() {
         return getTotalPages();
+      },
+      enumerable: true,
+    },
+    keyField: {
+      get() {
+        return options.keyField;
+      },
+      enumerable: true,
+    },
+    // Which query parts the server handles (copy — read-only)
+    server: {
+      get() {
+        return { ...options.server };
+      },
+      enumerable: true,
+    },
+    // True when a read transport is configured (remote data)
+    canRead: {
+      get() {
+        return !!normalizeEndpoint(options.transport.read);
       },
       enumerable: true,
     },

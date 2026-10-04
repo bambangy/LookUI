@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Avatar component
 
 .lk-avatar {
@@ -108,14 +110,14 @@
 // Avatar group — overlapping stack
 .lk-avatar-group {
   display: inline-flex;
-  flex-direction: row-reverse;
+  // Keep DOM order (first avatar on the left); later avatars overlap earlier ones.
+  flex-direction: row;
 
   > .lk-avatar {
-    border: 2px solid var(--lk-bg);
-    margin-left: -0.5rem;
+    border: calc(var(--lk-border-width) * 2) solid var(--lk-bg);
 
-    &:last-child {
-      margin-left: 0;
+    &:not(:first-child) {
+      margin-left: -0.5rem;
     }
   }
 }

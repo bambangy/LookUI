@@ -1,0 +1,579 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Custom Dropdown component
+// Structure:
+//   .lk-field > .lk-label + .lk-dropdown__trigger + .lk-field-error
+//   (body) .lk-dropdown__layer > .lk-dropdown__panel >
+//             .lk-dropdown__search > .lk-dropdown__search-input
+//             .lk-dropdown__list   > .lk-dropdown__option(s)
+//             .lk-dropdown__loading
+//             .lk-dropdown__empty
+
+// =============================================================================
+// Trigger button
+// =============================================================================
+
+// Compound selector: the trigger also carries .lk-input, which is emitted later
+// in main.scss and would otherwise win (display:block hid the caret and
+// collapsed the flex row).
+.lk-dropdown__trigger.lk-input {
+  // Full-width flex row — overrides .lk-input display:block
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+
+  // Inherit all .lk-input visual tokens explicitly so a <button> renders
+  // identically to an <input>.
+  padding: var(--lk-space-2) var(--lk-space-3);
+  font-size: var(--lk-text-base);
+  font-family: inherit;
+  font-weight: inherit;
+  line-height: var(--lk-line-height);
+  color: var(--lk-text);
+  background: var(--lk-bg);
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius);
+  cursor: pointer;
+  text-align: left;
+  user-select: none;
+  appearance: none;
+  position: relative;
+  gap: var(--lk-space-2);
+
+  transition:
+    border-color var(--lk-duration-fast) var(--lk-easing-default),
+    box-shadow   var(--lk-duration-fast) var(--lk-easing-default);
+
+  &:focus {
+    outline: none;
+    border-color: var(--lk-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-primary) 20%, transparent);
+  }
+
+  // Open state — same focus ring as :focus
+  &.lk-dropdown__trigger--open {
+    border-color: var(--lk-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-primary) 20%, transparent);
+
+   .lk-dropdown__caret {
+      transform: rotate(180deg);
+    }
+  }
+
+  &.lk-dropdown__trigger--readonly {
+    cursor: default;
+    background: var(--lk-surface);
+    pointer-events: none;
+
+    .lk-dropdown__caret { opacity: 0.4; }
+  }
+
+  &:disabled,
+  &[disabled] {
+    background: var(--lk-surface);
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  // Error state (added by field.js via lk-input--error)
+  &.lk-input--error {
+    border-color: var(--lk-negative);
+
+    &:focus,
+    &.lk-dropdown__trigger--open {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-negative) 20%, transparent);
+    }
+  }
+
+  // Loading spinner on the right side of the trigger while fetching
+  // Spinner takes the caret's slot so the two never overlap.
+  &.lk-dropdown--loading {
+    .lk-dropdown__caret { visibility: hidden; }
+
+    &::after {
+      content: '';
+      position: absolute;
+      right: calc(var(--lk-space-3) + 1px);
+      top: 50%;
+      width: 0.85rem;
+      height: 0.85rem;
+      border: 2px solid var(--lk-border);
+      border-top-color: var(--lk-primary);
+      border-radius: 50%;
+      animation: lk-dropdown-spin 0.6s linear infinite;
+      // Spin keyframe handles transform — keep translateY separate
+      margin-top: -0.425rem;
+    }
+  }
+}
+
+@keyframes lk-dropdown-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+// =============================================================================
+// Trigger label (the text content slot)
+// =============================================================================
+
+.lk-dropdown__trigger-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--lk-text-base);
+  color: var(--lk-text);
+  line-height: var(--lk-line-height);
+
+  &--placeholder {
+    color: var(--lk-text-muted);
+  }
+}
+
+// =============================================================================
+// Multiple mode — chips inside a growing trigger
+// =============================================================================
+
+.lk-dropdown__trigger.lk-input.lk-dropdown__trigger--multiple {
+  height: auto;
+  min-height: 0;
+  align-items: center;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.lk-dropdown__chips {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lk-space-1);
+  // one chip row is exactly one text line, so the empty and filled trigger heights match
+  min-height: calc(1em * var(--lk-line-height));
+
+  > .lk-chip {
+    max-width: 100%;
+  }
+}
+
+.lk-dropdown__chip-more {
+  cursor: default;
+  font-variant-numeric: tabular-nums;
+}
+
+// Checkbox indicator for options in multiple mode (replaces the trailing check)
+.lk-dropdown__panel--multiple {
+  .lk-dropdown__option {
+    gap: var(--lk-space-2);
+  }
+
+  .lk-dropdown__option--selected {
+    font-weight: inherit;
+
+    &::after { content: none; }
+  }
+}
+
+.lk-dropdown__option-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lk-dropdown__option-check {
+  position: relative;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  border: 1.5px solid var(--lk-border-strong);
+  border-radius: calc(var(--lk-radius) * 0.75);
+  background: var(--lk-bg);
+  transition:
+    background-color var(--lk-duration-fast) var(--lk-easing-default),
+    border-color     var(--lk-duration-fast) var(--lk-easing-default);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    background: var(--lk-primary-contrast, #fff);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / contain no-repeat;
+    transform: scale(0);
+    transition: transform var(--lk-duration-fast) var(--lk-easing-out);
+  }
+
+  .lk-dropdown__option--selected & {
+    background: var(--lk-primary);
+    border-color: var(--lk-primary);
+
+    &::after { transform: scale(1); }
+  }
+}
+
+.lk-dropdown__prepend,
+.lk-dropdown__append {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--lk-text-muted);
+}
+
+.lk-dropdown__prepend {
+  margin-right: var(--lk-space-1);
+}
+
+.lk-dropdown__append {
+  margin-left: var(--lk-space-1);
+}
+
+// =============================================================================
+// Caret icon
+// =============================================================================
+
+.lk-dropdown__caret {
+  flex-shrink: 0;
+  margin-left: var(--lk-space-1);
+  width: 1rem;
+  height: 1rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23888' d='M8 10.94L1.47 4.4l1.06-1.06L8 8.82l5.47-5.48 1.06 1.06z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  transition: transform var(--lk-duration-micro) var(--lk-easing-spring);
+}
+
+// =============================================================================
+// Clear button  (×)
+// =============================================================================
+
+.lk-dropdown__clear {
+  position: relative;       // containing block for ::before/::after
+  flex-shrink: 0;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  line-height: 1;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--lk-radius-full);
+  cursor: pointer;
+  color: var(--lk-text-muted);
+  transition:
+    color            var(--lk-duration-fast) var(--lk-easing-out),
+    background-color var(--lk-duration-fast) var(--lk-easing-out),
+    transform        var(--lk-duration-fast) var(--lk-easing-spring);
+
+  // ×  drawn with two rotated bars
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: 9px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 1px;
+  }
+  &::before { transform: rotate(45deg); }
+  &::after  { transform: rotate(-45deg); }
+
+  &:hover {
+    color: var(--lk-text);
+    background-color: color-mix(in srgb, var(--lk-text) 10%, transparent);
+    transform: scale(1.15);
+  }
+
+  &:active {
+    transform: scale(0.88);
+  }
+}
+
+// =============================================================================
+// Floating layer (fixed full-viewport backdrop — panel lives inside)
+// =============================================================================
+
+.lk-dropdown__layer {
+  pointer-events: none;
+}
+
+// =============================================================================
+// Panel (the floating dropdown card)
+// =============================================================================
+
+.lk-dropdown__panel {
+  position: fixed;      // JS sets top/left/width; position: fixed overrides any stacking
+  pointer-events: auto;
+  background: var(--lk-bg);
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius-lg);
+  box-shadow: var(--lk-shadow-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+
+  // Enter animation: scale up from anchor origin
+  opacity: 0;
+  transform: translateY(-6px) scale(0.95);
+  transform-origin: top left;
+  transition:
+    opacity   var(--lk-duration-fast) var(--lk-easing-out),
+    transform var(--lk-duration-base) var(--lk-easing-snap);
+}
+
+// Open state — fully visible
+.lk-dropdown__layer--open .lk-dropdown__panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+// Panel opens above trigger — flip origin and start direction
+.lk-dropdown__layer--above .lk-dropdown__panel {
+  transform-origin: bottom left;
+}
+
+.lk-dropdown__layer--above:not(.lk-dropdown__layer--open) .lk-dropdown__panel {
+  transform: translateY(6px) scale(0.95);
+}
+
+// Closing state: snap back fast
+.lk-dropdown__layer--closing .lk-dropdown__panel {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.97);
+  transition:
+    opacity   var(--lk-duration-fast) var(--lk-easing-in),
+    transform var(--lk-duration-fast) var(--lk-easing-in);
+}
+
+.lk-dropdown__layer--above.lk-dropdown__layer--closing .lk-dropdown__panel {
+  transform: translateY(4px) scale(0.97);
+}
+
+// =============================================================================
+// Search row
+// =============================================================================
+
+.lk-dropdown__search {
+  padding: var(--lk-space-2);
+  flex-shrink: 0;
+  border-bottom: var(--lk-border-width) solid var(--lk-border);
+}
+
+.lk-dropdown__search-input.lk-input {   // compound: beat later .lk-input rules
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--lk-space-1) var(--lk-space-3);
+  font-size: var(--lk-text-sm);
+  font-family: inherit;
+  color: var(--lk-text);
+  background: var(--lk-surface);
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius);
+  outline: none;
+  line-height: 1.5;
+  transition: border-color var(--lk-duration-fast) var(--lk-easing-default),
+              box-shadow   var(--lk-duration-fast) var(--lk-easing-default);
+
+  &::placeholder { color: var(--lk-text-muted); }
+
+  &:focus {
+    border-color: var(--lk-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-primary) 20%, transparent);
+  }
+}
+
+// =============================================================================
+// Options list
+// =============================================================================
+
+.lk-dropdown__list {
+  list-style: none;
+  margin: 0;
+  padding: var(--lk-space-1) 0;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 280px;
+
+  // Thin custom scrollbar
+  scrollbar-width: thin;
+  scrollbar-color: var(--lk-border) transparent;
+
+  &::-webkit-scrollbar       { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: var(--lk-border);
+    border-radius: var(--lk-radius-full);
+  }
+}
+
+// =============================================================================
+// Option item
+// =============================================================================
+
+.lk-dropdown__option {
+  display: flex;
+  align-items: center;
+  padding: var(--lk-space-2) var(--lk-space-3);
+  margin: 1px var(--lk-space-1);
+  font-size: var(--lk-text-base);
+  line-height: 1.4;
+  color: var(--lk-text);
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--lk-radius);
+  outline: none;
+  transition:
+    background-color var(--lk-duration-fast) var(--lk-easing-default),
+    color            var(--lk-duration-fast) var(--lk-easing-default),
+    transform        var(--lk-duration-fast) var(--lk-easing-spring);
+
+  &:hover,
+  &:focus {
+    background: color-mix(in srgb, var(--lk-primary) 8%, transparent);
+    color: var(--lk-primary);
+    transform: translateX(2px);
+  }
+
+  &:active {
+    background: color-mix(in srgb, var(--lk-primary) 15%, transparent);
+    transform: translateX(1px) scale(0.99);
+  }
+
+  // Selected — tinted background + checkmark
+  &--selected {
+    background: color-mix(in srgb, var(--lk-primary) 10%, transparent);
+    color: var(--lk-primary);
+    font-weight: var(--lk-weight-medium);
+
+    &::after {
+      content: '';
+      display: block;
+      margin-left: auto;
+      flex-shrink: 0;
+      width: 0.35rem;
+      height: 0.65rem;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg) translateY(-1px);
+      opacity: 0.85;
+    }
+  }
+
+  // Disabled
+  &--disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+}
+
+// =============================================================================
+// Group header (optional — future use)
+// =============================================================================
+
+.lk-dropdown__group-label {
+  padding: var(--lk-space-2) var(--lk-space-4) var(--lk-space-1);
+  font-size: var(--lk-text-xs, 0.72rem);
+  font-weight: var(--lk-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--lk-text-muted);
+}
+
+// =============================================================================
+// Loading row
+// =============================================================================
+
+.lk-dropdown__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lk-space-2);
+  padding: var(--lk-space-3) var(--lk-space-4);
+  font-size: var(--lk-text-sm);
+  color: var(--lk-text-muted);
+
+  &::before {
+    content: '';
+    flex-shrink: 0;
+    width: 0.9rem;
+    height: 0.9rem;
+    border: 2px solid var(--lk-border);
+    border-top-color: var(--lk-primary);
+    border-radius: 50%;
+    animation: lk-dropdown-spin 0.65s linear infinite;
+  }
+}
+
+// =============================================================================
+// Empty / no-results row
+// =============================================================================
+
+.lk-dropdown__empty {
+  padding: var(--lk-space-5) var(--lk-space-4);
+  font-size: var(--lk-text-sm);
+  color: var(--lk-text-muted);
+  text-align: center;
+}
+
+// =============================================================================
+// Dense modifier
+// =============================================================================
+
+.lk-dropdown__trigger.lk-input--dense,
+.lk-field--dense .lk-dropdown__trigger {
+  padding: var(--lk-space-1) var(--lk-space-2);
+  font-size: var(--lk-text-sm);
+
+  .lk-dropdown__trigger-label { font-size: var(--lk-text-sm); }
+}
+
+.lk-dropdown__panel--dense .lk-dropdown__option-check {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.lk-field--dense .lk-dropdown__option,
+.lk-dropdown__panel--dense .lk-dropdown__option {
+  padding: var(--lk-space-1) var(--lk-space-3);
+  font-size: var(--lk-text-sm);
+}
+
+// =============================================================================
+// Reduced motion
+// =============================================================================
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-dropdown__trigger,
+  .lk-dropdown__caret,
+  .lk-dropdown__clear,
+  .lk-dropdown__option,
+  .lk-dropdown__option-check,
+  .lk-dropdown__option-check::after,
+  .lk-dropdown__panel,
+  .lk-dropdown__layer--closing .lk-dropdown__panel {
+    transition-duration: 1ms !important;
+    animation-duration:  1ms !important;
+    animation-delay:     0ms !important;
+  }
+}
+
+
+
+

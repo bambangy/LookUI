@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Slider component factory
 
 import { resolveEl, applyBase } from '../helpers/base.js';
@@ -25,17 +27,38 @@ export function lkSlider(el, opts = {}) {
 
   let min   = opts.min ?? 0;
   let max   = opts.max ?? 100;
-  let step  = opts.step ?? 1;
-  let value = opts.value ?? min;
+  let step  = opts.step > 0 ? opts.step : 1;
+  let value = 0;
   let dragging = false;
+  const hadTabindex = node.hasAttribute('tabindex');
 
+  // Decimal places of the step, used to strip float noise (0.1 + 0.2 ...)
+  function precision() {
+    const s = String(step);
+    const i = s.indexOf('.');
+    return i < 0 ? 0 : s.length - i - 1;
+  }
+
+  // Snap to the step grid anchored at `min`, then clamp to [min, max]
   function clamp(v) {
-    v = Math.round(v / step) * step;
+    v = Number(v);
+    if (!Number.isFinite(v)) v = min;
+    v = min + Math.round((v - min) / step) * step;
+    v = Number(v.toFixed(precision()));
     return Math.max(min, Math.min(max, v));
   }
 
+  value = clamp(opts.value ?? min);
+
+  function isDisabled() {
+    return node.hasAttribute('disabled')
+      || node.classList.contains('lk-disabled')
+      || node.classList.contains('lk-slider--disabled');
+  }
+
   function updateView() {
-    const pct = ((value - min) / (max - min)) * 100;
+    const range = max - min;
+    const pct = range > 0 ? ((value - min) / range) * 100 : 0;
     if (fill)  fill.style.width = pct + '%';
     if (thumb) thumb.style.left = pct + '%';
     if (label) label.textContent = value;
@@ -44,21 +67,35 @@ export function lkSlider(el, opts = {}) {
     node.setAttribute('aria-valuemax', max);
   }
 
-  function setFromEvent(e) {
-    if (!track) return;
-    const rect = track.getBoundingClientRect();
-    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const raw = min + ratio * (max - min);
-    value = clamp(raw);
+  function commit(v) {
+    const next = clamp(v);
+    if (next === value) return;
+    value = next;
     updateView();
     if (opts.onChange) opts.onChange(value);
   }
 
+  function setFromEvent(e) {
+    if (!track) return;
+    const rect = track.getBoundingClientRect();
+    if (!rect.width) return;
+    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    commit(min + ratio * (max - min));
+  }
+
+  // Thumb lives inside the track, so a single listener on the track
+  // (or the thumb when it is outside) handles both without double-firing.
   function onPointerDown(e) {
+    if (dragging || isDisabled()) return;
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault();
     dragging = true;
+    node.classList.add('lk-slider--dragging');
+    if (node.focus) node.focus({ preventScroll: true });
     setFromEvent(e);
     document.addEventListener('pointermove', onPointerMove);
     document.addEventListener('pointerup', onPointerUp);
+    document.addEventListener('pointercancel', onPointerUp);
   }
 
   function onPointerMove(e) {
@@ -67,14 +104,36 @@ export function lkSlider(el, opts = {}) {
 
   function onPointerUp() {
     dragging = false;
+    node.classList.remove('lk-slider--dragging');
     document.removeEventListener('pointermove', onPointerMove);
     document.removeEventListener('pointerup', onPointerUp);
+    document.removeEventListener('pointercancel', onPointerUp);
   }
 
+  function onKeyDown(e) {
+    if (isDisabled()) return;
+    const big = Math.max(step, (max - min) / 10);
+    let next = null;
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowUp':   next = value + step; break;
+      case 'ArrowLeft':  case 'ArrowDown': next = value - step; break;
+      case 'PageUp':   next = value + big; break;
+      case 'PageDown': next = value - big; break;
+      case 'Home': next = min; break;
+      case 'End':  next = max; break;
+      default: return;
+    }
+    e.preventDefault();
+    commit(next);
+  }
+
+  const thumbOutsideTrack = thumb && (!track || !track.contains(thumb));
   if (track) track.addEventListener('pointerdown', onPointerDown);
-  if (thumb) thumb.addEventListener('pointerdown', onPointerDown);
+  if (thumbOutsideTrack) thumb.addEventListener('pointerdown', onPointerDown);
+  node.addEventListener('keydown', onKeyDown);
 
   node.setAttribute('role', 'slider');
+  if (!hadTabindex) node.setAttribute('tabindex', '0');
   updateView();
 
   const comp = {};
@@ -88,28 +147,29 @@ export function lkSlider(el, opts = {}) {
     },
     min: {
       get() { return min; },
-      set(v) { min = v; value = clamp(value); updateView(); },
+      set(v) { min = Number(v); value = clamp(value); updateView(); },
       enumerable: true,
     },
     max: {
       get() { return max; },
-      set(v) { max = v; value = clamp(value); updateView(); },
+      set(v) { max = Number(v); value = clamp(value); updateView(); },
       enumerable: true,
     },
     step: {
       get() { return step; },
-      set(v) { step = v; },
+      set(v) { step = v > 0 ? Number(v) : 1; value = clamp(value); updateView(); },
       enumerable: true,
     },
   });
 
   comp.destroy = function () {
+    onPointerUp();
     if (track) track.removeEventListener('pointerdown', onPointerDown);
-    if (thumb) thumb.removeEventListener('pointerdown', onPointerDown);
-    document.removeEventListener('pointermove', onPointerMove);
-    document.removeEventListener('pointerup', onPointerUp);
-    node.classList.remove('lk-slider');
+    if (thumbOutsideTrack) thumb.removeEventListener('pointerdown', onPointerDown);
+    node.removeEventListener('keydown', onKeyDown);
+    node.classList.remove('lk-slider', 'lk-slider--dragging');
     node.removeAttribute('role');
+    if (!hadTabindex) node.removeAttribute('tabindex');
     node.removeAttribute('aria-valuenow');
     node.removeAttribute('aria-valuemin');
     node.removeAttribute('aria-valuemax');

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 import { lkPopupProxy } from './popupProxy.js';
 import { lkIcon } from '../components/icon.js';
 
@@ -73,6 +75,16 @@ function clampDate(date, minDate, maxDate) {
   if (minDay && dateDay < minDay) return new Date(minDay);
   if (maxDay && dateDay > maxDay) return new Date(maxDay);
   return new Date(dateDay);
+}
+
+// Like clampDate, but keeps the time-of-day (used by time mode).
+function clampDateTime(date, minDate, maxDate) {
+  if (!date) return date;
+  if (withinBounds(date, minDate, maxDate)) return new Date(date);
+
+  const out = clampDate(date, minDate, maxDate);
+  out.setHours(date.getHours(), date.getMinutes(), date.getSeconds(), 0);
+  return out;
 }
 
 function resolveTarget(target) {
@@ -271,7 +283,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
     const parsed = parseDate(options.value);
     if (parsed) {
       singleValue = options.time
-        ? composeDateTime(parsed, createTimeState(parsed))
+        ? clampDateTime(composeDateTime(parsed, createTimeState(parsed)), minDate, maxDate)
         : clampDate(parsed, minDate, maxDate);
     }
   }
@@ -301,7 +313,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
     '        <div class="lk-date__grid"></div>' +
     '      </div>' +
     '      <div class="lk-date__time-view" aria-hidden="true">' +
-    '        <div class="lk-date__separator"></div>' +
+    '        <div class="lk-date__time-date"></div>' +
     '        <div class="lk-date__time-grid">' +
     '          <div class="lk-date__time-col">' +
     '            <button type="button" class="lk-date__time-btn" data-part="hour" data-dir="up" aria-label="Increase hour"></button>' +
@@ -348,16 +360,15 @@ export function lkDate(targetOrOpts, maybeOpts) {
     zIndex: options.zIndex,
     open: false,
     onShow() {
+      resetTransientState();
+
       if (typeof options.onOpen === 'function') {
         options.onOpen(api);
       }
     },
     onHide(reason) {
-      viewMode = 'date';
-      pendingTimeDate = null;
-      hoverDate = null;
-      syncViewMode();
-
+      // Transient state (time step, hover preview) is reset on the next open, not here:
+      // resetting now would visibly slide the track back while the panel fades out.
       if (typeof options.onClose === 'function') {
         options.onClose(reason, api);
       }
@@ -377,6 +388,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
   const weekdaysRow = root.querySelector('.lk-date__weekdays');
   const grid = root.querySelector('.lk-date__grid');
 
+  const timeDateEl = root.querySelector('.lk-date__time-date');
   const timeContainer = root.querySelector('.lk-date__time-grid');
   const hourValueEl = root.querySelector('[data-time-value="hour"]');
   const minuteValueEl = root.querySelector('[data-time-value="minute"]');
@@ -399,6 +411,13 @@ export function lkDate(targetOrOpts, maybeOpts) {
 
   okBtn.textContent = options.okText;
   cancelBtn.textContent = options.cancelText;
+
+  const timeDateFormatter = new Intl.DateTimeFormat(options.locale, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 
   createWeekdayLabels(options.locale).forEach((label) => {
     const cell = document.createElement('div');
@@ -475,13 +494,22 @@ export function lkDate(targetOrOpts, maybeOpts) {
   function inHoverRange(date) {
     if (!options.range || !rangeStart || rangeEnd || !hoverDate) return false;
 
+    // Preview only forward from the start: clicking an earlier day restarts the range.
     const d = toStartOfDay(date).getTime();
     const a = toStartOfDay(rangeStart).getTime();
     const b = toStartOfDay(hoverDate).getTime();
-    const from = Math.min(a, b);
-    const to = Math.max(a, b);
 
-    return d >= from && d <= to;
+    return b >= a && d >= a && d <= b;
+  }
+
+  function syncRangeHover() {
+    Array.from(grid.children).forEach((btn) => {
+      const date = parseDate(btn.dataset.date);
+      const isEdge = btn.classList.contains('lk-date__day--range-start')
+        || btn.classList.contains('lk-date__day--range-end')
+        || btn.classList.contains('lk-date__day--in-range');
+      btn.classList.toggle('lk-date__day--range-hover', !!date && !isEdge && inHoverRange(date));
+    });
   }
 
   function syncGrid() {
@@ -557,6 +585,9 @@ export function lkDate(targetOrOpts, maybeOpts) {
       ampmRow.hidden = true;
     }
 
+    const dateRef = pendingTimeDate || singleValue;
+    timeDateEl.textContent = dateRef ? timeDateFormatter.format(dateRef) : '';
+
     minuteValueEl.textContent = minute;
     secondValueEl.textContent = second;
     previewEl.textContent = formatPreview(timeDraft, options.timeFormat);
@@ -573,6 +604,10 @@ export function lkDate(targetOrOpts, maybeOpts) {
     root.classList.toggle('lk-date--view-time', isTime);
     dateViewEl.setAttribute('aria-hidden', String(isTime));
     timeViewEl.setAttribute('aria-hidden', String(!isTime));
+    // Keep the off-screen step out of the tab order; focusing it would scroll the
+    // clipped viewport and break the slide layout.
+    dateViewEl.inert = isTime;
+    timeViewEl.inert = !isTime;
 
     if (isTime) {
       syncTimeView();
@@ -626,7 +661,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
     }
 
     if (options.time) {
-      singleValue = new Date(parsed);
+      singleValue = clampDateTime(parsed, minDate, maxDate);
       hoverDate = null;
       timeDraft = createTimeState(singleValue);
       viewDate = new Date(singleValue.getFullYear(), singleValue.getMonth(), 1);
@@ -745,7 +780,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
     if (hoverDate && sameDay(hoverDate, nextHover)) return;
 
     hoverDate = nextHover;
-    syncGrid();
+    syncRangeHover();
   }
 
   function onGridPointerLeave() {
@@ -753,7 +788,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
     if (!hoverDate) return;
 
     hoverDate = null;
-    syncGrid();
+    syncRangeHover();
   }
   function onMonthChange() {
     const year = Number(yearSelect.value);
@@ -818,14 +853,29 @@ export function lkDate(targetOrOpts, maybeOpts) {
     singleValue = composeDateTime(pendingTimeDate, timeDraft);
     viewDate = new Date(singleValue.getFullYear(), singleValue.getMonth(), 1);
     pendingTimeDate = null;
-    viewMode = 'date';
 
+    // Stay on the time step while the panel fades out; resetTransientState()
+    // returns to the date step (without animation) on the next open.
     refreshDateView();
-    syncViewMode();
 
     emitChange(new Date(singleValue), 'confirm');
     emitConfirm(new Date(singleValue));
     proxy.hide('select');
+  }
+
+  function resetTransientState() {
+    if (viewMode === 'date' && !pendingTimeDate && !hoverDate) return;
+
+    viewMode = 'date';
+    pendingTimeDate = null;
+    hoverDate = null;
+
+    // Jump straight back to the date step: the panel is still invisible at this point.
+    root.classList.add('lk-date--instant');
+    syncGrid();
+    syncViewMode();
+    void root.offsetWidth;
+    root.classList.remove('lk-date--instant');
   }
 
   prevBtn.addEventListener('click', prevMonth);

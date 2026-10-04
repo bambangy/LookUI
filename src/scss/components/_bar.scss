@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Bar component (app bar / header bar / footer bar)
 
 .lk-bar {
@@ -56,6 +58,17 @@
     background: var(--lk-secondary-dark);
     color: var(--lk-text-on-dark);
     border-bottom-color: transparent;
+  }
+
+  // Ghost buttons on coloured bars: inherit the bar's text colour and use a
+  // translucent hover instead of the light --lk-bg-subtle (white-on-white).
+  &--primary .lk-btn--ghost,
+  &--dark .lk-btn--ghost {
+    color: inherit;
+
+    &:hover:not(:disabled) {
+      background-color: color-mix(in srgb, currentColor 15%, transparent);
+    }
   }
 
   &--flat {

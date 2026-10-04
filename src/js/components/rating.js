@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Rating component factory
 
 import { resolveEl, applyBase } from '../helpers/base.js';
@@ -22,9 +24,10 @@ export function lkRating(el, opts = {}) {
   const maxVal   = opts.max ?? 5;
   const useIcon  = !opts.symbol;
   const symbol   = opts.symbol ?? null;
-  let value      = opts.value ?? 0;
+  let value      = Math.max(0, Math.min(maxVal, Number(opts.value) || 0));
   let isReadonly = opts.readonly ?? false;
   let items      = qsa('.lk-rating__item', node);
+  const created  = items.length === 0;
 
   // Auto-create star items if empty
   if (items.length === 0) {
@@ -35,7 +38,7 @@ export function lkRating(el, opts = {}) {
         'data-value': String(i),
         'aria-label': `${i} of ${maxVal}`,
       }, useIcon ? '' : symbol);
-      if (useIcon) btn.appendChild(lkIcon('star'));
+      if (useIcon) btn.appendChild(lkIcon('star-fill'));
       node.appendChild(btn);
     }
     items = qsa('.lk-rating__item', node);
@@ -48,8 +51,9 @@ export function lkRating(el, opts = {}) {
     node.setAttribute('aria-valuenow', value);
     node.setAttribute('aria-valuemax', maxVal);
 
-    if (isReadonly) node.classList.add('lk-rating--readonly');
-    else node.classList.remove('lk-rating--readonly');
+    node.classList.toggle('lk-rating--readonly', isReadonly);
+    if (isReadonly) node.setAttribute('aria-readonly', 'true');
+    else node.removeAttribute('aria-readonly');
   }
 
   function onClick(e) {
@@ -73,7 +77,7 @@ export function lkRating(el, opts = {}) {
   Object.defineProperties(comp, {
     value: {
       get() { return value; },
-      set(v) { value = Math.max(0, Math.min(maxVal, v)); updateView(); },
+      set(v) { value = Math.max(0, Math.min(maxVal, Number(v) || 0)); updateView(); },
       enumerable: true,
     },
     max: {
@@ -92,6 +96,9 @@ export function lkRating(el, opts = {}) {
     node.classList.remove('lk-rating', 'lk-rating--readonly');
     node.removeAttribute('aria-valuenow');
     node.removeAttribute('aria-valuemax');
+    node.removeAttribute('aria-readonly');
+    if (created) items.forEach(item => item.remove());
+    else items.forEach(item => item.classList.remove('lk-rating__item--active'));
   };
 
   return comp;

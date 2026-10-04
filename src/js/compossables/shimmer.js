@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 import { createPresenceController } from '../helpers/motion.js';
 
 const EXIT_MS = 280;
@@ -19,7 +21,7 @@ export function lkShimmer(target, opts = {}) {
   const node = resolveTarget(target);
   const options = {
     backdrop: true,
-    radius: 'var(--lk-radius)',
+    radius: 'inherit', // follow the target's corners
     lockPointer: true,
     open: true,
     ...opts,

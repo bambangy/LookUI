@@ -1,5 +1,56 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Toast composable
 // Structure: .lk-toast > .lk-toast__icon + .lk-toast__content + .lk-toast__close
+
+// --- Keyframes ---
+
+@keyframes lk-toast-in-top {
+  0%   { opacity: 0; transform: translateY(-1.5rem) scale(0.88); }
+  55%  { opacity: 1; transform: translateY(0.2rem)  scale(1.02); }
+  100% { opacity: 1; transform: translateY(0)       scale(1); }
+}
+
+@keyframes lk-toast-in-bottom {
+  0%   { opacity: 0; transform: translateY(1.5rem) scale(0.88); }
+  55%  { opacity: 1; transform: translateY(-0.2rem) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0)       scale(1); }
+}
+
+// Attention shake for negative toasts
+:root {
+  --lk-toast-slide-duration: 240ms;
+  --lk-toast-collapse-duration: 180ms;
+}
+
+@keyframes lk-toast-out-right {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to   { opacity: 0; transform: translate3d(110%, 0, 0); }
+}
+
+@keyframes lk-toast-out-left {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to   { opacity: 0; transform: translate3d(-110%, 0, 0); }
+}
+
+@keyframes lk-toast-out-up {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to   { opacity: 0; transform: translate3d(0, -120%, 0); }
+}
+
+@keyframes lk-toast-out-down {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to   { opacity: 0; transform: translate3d(0, 120%, 0); }
+}
+
+@keyframes lk-toast-shake {
+  0%, 100% { transform: translateX(0); }
+  15%       { transform: translateX(-6px) rotate(-1deg); }
+  30%       { transform: translateX(5px)  rotate(1deg); }
+  45%       { transform: translateX(-4px) rotate(-0.5deg); }
+  60%       { transform: translateX(3px)  rotate(0.5deg); }
+  75%       { transform: translateX(-1px); }
+}
 
 .lk-toast {
   display: flex;
@@ -14,29 +65,63 @@
   background: var(--lk-bg);
   color: var(--lk-text);
 
+  // Default hidden state
   opacity: 0;
-  transform: translateY(-0.75rem) scale(0.95);
+  transform: translateY(-1.5rem) scale(0.88);
   transition:
-    opacity var(--lk-duration-base) var(--lk-easing-out),
-    transform var(--lk-duration-slow) var(--lk-easing-out);
+    opacity var(--lk-duration-fast) var(--lk-easing-out),
+    transform var(--lk-duration-slow) var(--lk-easing-spring);
 
   &--from-bottom {
-    transform: translateY(0.75rem) scale(0.95);
+    transform: translateY(1.5rem) scale(0.88);
   }
 
+  // Enter: spring bounce in from top
   &--open {
     opacity: 1;
     transform: translateY(0) scale(1);
+    animation: lk-toast-in-top var(--lk-duration-slow) var(--lk-easing-spring) both;
   }
 
+  &--from-bottom.lk-toast--open {
+    animation-name: lk-toast-in-bottom;
+  }
+
+  // Error + warning: enter, then an attention shake
+  &--negative.lk-toast--open,
+  &--warning.lk-toast--open {
+    animation:
+      lk-toast-in-top var(--lk-duration-slow) var(--lk-easing-spring) both,
+      lk-toast-shake 0.5s var(--lk-easing-default) var(--lk-duration-slow);
+  }
+
+  &--negative.lk-toast--from-bottom.lk-toast--open,
+  &--warning.lk-toast--from-bottom.lk-toast--open {
+    animation:
+      lk-toast-in-bottom var(--lk-duration-slow) var(--lk-easing-spring) both,
+      lk-toast-shake 0.5s var(--lk-easing-default) var(--lk-duration-slow);
+  }
+
+  // Exit: slide out toward the screen edge it came from, then collapse so the
+  // toasts below glide into place. Keyframes (not transitions), because the
+  // open state is held by an animation. lkToast waits for both durations.
   &--closing {
-    opacity: 0;
-    transform: translateY(-0.5rem) scale(0.95);
+    overflow: hidden;
+    pointer-events: none;
+    animation: lk-toast-out-right var(--lk-toast-slide-duration) var(--lk-easing-in) both;
+    // collapse (starts from the inline max-height lkToast sets before hiding)
+    max-height: 0 !important;
+    padding-block: 0;
+    margin-bottom: calc(var(--lk-space-2) * -1); // give back the stack gap
+    transition:
+      max-height    var(--lk-toast-collapse-duration) var(--lk-easing-default) var(--lk-toast-slide-duration),
+      padding-block var(--lk-toast-collapse-duration) var(--lk-easing-default) var(--lk-toast-slide-duration),
+      margin-bottom var(--lk-toast-collapse-duration) var(--lk-easing-default) var(--lk-toast-slide-duration);
   }
 
-  &--from-bottom.lk-toast--closing {
-    transform: translateY(0.5rem) scale(0.95);
-  }
+  &--exit-left.lk-toast--closing  { animation-name: lk-toast-out-left; }
+  &--exit-up.lk-toast--closing    { animation-name: lk-toast-out-up; }
+  &--exit-down.lk-toast--closing  { animation-name: lk-toast-out-down; }
 
   // --- Icon slot ---
 
@@ -63,10 +148,14 @@
   &__message {
     font-size: var(--lk-text-sm);
     opacity: 0.9;
-    margin-top: var(--lk-space-1);
     line-height: var(--lk-leading-tight);
 
     &:empty { display: none; }
+  }
+
+  // Only space the message when a title is actually shown above it
+  &__title:not([hidden]) + &__message {
+    margin-top: var(--lk-space-1);
   }
 
   // --- Close button ---
@@ -84,8 +173,18 @@
     color: inherit;
     display: flex;
     align-items: center;
+    transition:
+      opacity var(--lk-duration-fast) var(--lk-easing-out),
+      transform var(--lk-duration-fast) var(--lk-easing-spring);
 
-    &:hover { opacity: 1; }
+    &:hover {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+
+    &:active {
+      transform: scale(0.9);
+    }
   }
 
   // --- Action link ---
@@ -101,6 +200,7 @@
     color: inherit;
     text-decoration: underline;
     opacity: 0.85;
+    transition: opacity var(--lk-duration-fast) var(--lk-easing-out);
 
     &:hover { opacity: 1; }
   }
@@ -134,5 +234,3 @@
     color: var(--lk-primary-contrast);
   }
 }
-
-

@@ -6,11 +6,18 @@
   <title>LookUI — Color Tokens</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
   <style>
     .demo-token-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--lk-space-3); }
     .demo-swatch { border-radius: var(--lk-radius-lg); overflow: hidden; box-shadow: var(--lk-shadow-sm); }
     .demo-swatch__color { height: 56px; }
     .demo-swatch__label { font-size: var(--lk-text-xs); padding: var(--lk-space-2); background: var(--lk-bg); color: var(--lk-text-muted); font-family: var(--lk-font-mono); border-top: var(--lk-border-width) solid var(--lk-border); }
+    .demo-scale-row { display: flex; align-items: center; gap: var(--lk-space-4); }
+    .demo-scale-row code { width: 8rem; font-size: var(--lk-text-sm); color: var(--lk-text-muted); }
+    .demo-scale-bar { height: var(--lk-space-3); background: var(--lk-primary); border-radius: var(--lk-radius-sm); }
+    .demo-radius { display: flex; flex-direction: column; align-items: center; gap: var(--lk-space-2); }
+    .demo-radius span { width: 4rem; height: 4rem; background: var(--lk-primary-light); }
+    .demo-radius code { font-size: var(--lk-text-xs); color: var(--lk-text-muted); }
   </style>
 </head>
 <body>
@@ -18,8 +25,8 @@
 <header class="demo-header">
   <div class="demo-container">
     <a href="index.html" class="demo-back">&larr; All Components</a>
-    <h1 style="font-size: var(--lk-text-2xl);">Color Tokens</h1>
-    <p style="opacity: 0.85;">Design token color palette</p>
+    <h1 style="font-size: var(--lk-text-2xl);">Design Tokens</h1>
+    <p style="opacity: 0.85;">Color palette, typography scale, spacing and radius</p>
   </div>
 </header>
 
@@ -54,19 +61,357 @@
 
   <section class="demo-section">
     <p class="demo-section__title">Typography Scale</p>
-    <div style="display:flex;flex-direction:column;gap:var(--lk-space-2);">
-      <p style="font-size:var(--lk-text-4xl)">text-4xl — The quick brown fox</p>
-      <p style="font-size:var(--lk-text-3xl)">text-3xl — The quick brown fox</p>
-      <p style="font-size:var(--lk-text-2xl)">text-2xl — The quick brown fox</p>
-      <p style="font-size:var(--lk-text-xl)">text-xl — The quick brown fox</p>
-      <p style="font-size:var(--lk-text-lg)">text-lg — The quick brown fox</p>
-      <p style="font-size:var(--lk-text-md)">text-md — The quick brown fox</p>
-      <p style="font-size:var(--lk-text-base)">text-base — The quick brown fox</p>
-      <p style="font-size:var(--lk-text-sm)">text-sm — The quick brown fox</p>
-      <p style="font-size:var(--lk-text-xs)">text-xs — The quick brown fox</p>
+    <div style="display:flex;flex-direction:column;gap:var(--lk-space-2);line-height:var(--lk-leading-tight);">
+      <p style="font-size:var(--lk-text-5xl);line-height:inherit">text-5xl — Hero</p>
+      <p style="font-size:var(--lk-text-4xl);line-height:inherit">text-4xl — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-3xl);line-height:inherit">text-3xl — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-2xl);line-height:inherit">text-2xl — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-xl);line-height:inherit">text-xl — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-lg);line-height:inherit">text-lg — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-md);line-height:inherit">text-md — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-base);line-height:inherit">text-base — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-sm);line-height:inherit">text-sm — The quick brown fox</p>
+      <p style="font-size:var(--lk-text-xs);line-height:inherit">text-xs — The quick brown fox</p>
     </div>
   </section>
 
+  <section class="demo-section">
+    <p class="demo-section__title">Spacing Scale</p>
+    <div style="display:flex;flex-direction:column;gap:var(--lk-space-2);">
+      <div class="demo-scale-row"><code>--lk-space-1</code><span class="demo-scale-bar" style="width:var(--lk-space-1)"></span></div>
+      <div class="demo-scale-row"><code>--lk-space-2</code><span class="demo-scale-bar" style="width:var(--lk-space-2)"></span></div>
+      <div class="demo-scale-row"><code>--lk-space-3</code><span class="demo-scale-bar" style="width:var(--lk-space-3)"></span></div>
+      <div class="demo-scale-row"><code>--lk-space-4</code><span class="demo-scale-bar" style="width:var(--lk-space-4)"></span></div>
+      <div class="demo-scale-row"><code>--lk-space-5</code><span class="demo-scale-bar" style="width:var(--lk-space-5)"></span></div>
+      <div class="demo-scale-row"><code>--lk-space-6</code><span class="demo-scale-bar" style="width:var(--lk-space-6)"></span></div>
+      <div class="demo-scale-row"><code>--lk-space-7</code><span class="demo-scale-bar" style="width:var(--lk-space-7)"></span></div>
+      <div class="demo-scale-row"><code>--lk-space-8</code><span class="demo-scale-bar" style="width:var(--lk-space-8)"></span></div>
+      <div class="demo-scale-row"><code>--lk-space-9</code><span class="demo-scale-bar" style="width:var(--lk-space-9)"></span></div>
+      <div class="demo-scale-row"><code>--lk-space-10</code><span class="demo-scale-bar" style="width:var(--lk-space-10)"></span></div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Border Radius</p>
+    <div class="demo-token-grid">
+      <div class="demo-radius"><span style="border-radius:var(--lk-radius-sm)"></span><code>--lk-radius-sm</code></div>
+      <div class="demo-radius"><span style="border-radius:var(--lk-radius)"></span><code>--lk-radius</code></div>
+      <div class="demo-radius"><span style="border-radius:var(--lk-radius-md)"></span><code>--lk-radius-md</code></div>
+      <div class="demo-radius"><span style="border-radius:var(--lk-radius-lg)"></span><code>--lk-radius-lg</code></div>
+      <div class="demo-radius"><span style="border-radius:var(--lk-radius-xl)"></span><code>--lk-radius-xl</code></div>
+      <div class="demo-radius"><span style="border-radius:var(--lk-radius-2xl)"></span><code>--lk-radius-2xl</code></div>
+      <div class="demo-radius"><span style="border-radius:var(--lk-radius-full)"></span><code>--lk-radius-full</code></div>
+    </div>
+  </section>
+
+  <div id="api"></div>
+
 </main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+// Token tables, grouped (name, default, description) — mirrors src/scss/tokens/*.scss
+const TOKEN_ROWS = [
+  // Brand
+  ...['primary', 'secondary', 'accent'].flatMap((c) => {
+    const d = { primary: ['#5c6bc0', '#7986cb', '#3949ab', '#ffffff'], secondary: ['#546e7a', '#78909c', '#37474f', '#ffffff'], accent: ['#00bcd4', '#4dd0e1', '#0097a7', '#000000'] }[c];
+    return [
+      { name: `--lk-${c}`, default: d[0], description: `Brand color **${c}** — buttons, links, focus rings, selected states.` },
+      { name: `--lk-${c}-light`, default: d[1], description: `Lighter ${c} (hover tints, soft fills).` },
+      { name: `--lk-${c}-dark`, default: d[2], description: `Darker ${c} (pressed / hover on solid fills).` },
+      { name: `--lk-${c}-contrast`, default: d[3], description: `Text/icon color on a solid ${c} background.` },
+    ];
+  }),
+  // Semantic
+  ...['positive', 'warning', 'negative', 'info'].flatMap((c) => {
+    const d = { positive: ['#2e7d32', '#4caf50', '#1b5e20', '#ffffff'], warning: ['#f57f17', '#ffb300', '#e65100', '#000000'], negative: ['#c62828', '#ef5350', '#b71c1c', '#ffffff'], info: ['#0277bd', '#039be5', '#01579b', '#ffffff'] }[c];
+    const meaning = { positive: 'success', warning: 'warning / attention', negative: 'error / destructive', info: 'informational' }[c];
+    return [
+      { name: `--lk-${c}`, default: d[0], description: `State color: ${meaning}.` },
+      { name: `--lk-${c}-light`, default: d[1], description: `Lighter ${c}.` },
+      { name: `--lk-${c}-dark`, default: d[2], description: `Darker ${c}.` },
+      { name: `--lk-${c}-contrast`, default: d[3], description: `Text on a solid ${c} background.` },
+    ];
+  }),
+  // Surface / text / border
+  { name: '--lk-bg', default: '#ffffff', description: 'Page / panel background (`body` uses it).' },
+  { name: '--lk-bg-subtle', default: '#f5f5f7', description: 'Subtle background for sections, table stripes, hovers.' },
+  { name: '--lk-surface', default: '#efefef', description: 'Filled surfaces (neutral chips, tracks).' },
+  { name: '--lk-overlay', default: 'rgb(0 0 0 / 0.45)', description: 'Backdrop behind modals / dialogs / loading.' },
+  { name: '--lk-text', default: '#1a1a2e', description: 'Body text.' },
+  { name: '--lk-text-muted', default: '#757575', description: 'Secondary text, hints, `.lk-icon--muted`.' },
+  { name: '--lk-text-on-dark', default: '#f5f5f7', description: 'Text on dark surfaces.' },
+  { name: '--lk-border', default: '#d0d0d8', description: 'Default border / divider.' },
+  { name: '--lk-border-strong', default: '#9e9ea8', description: 'Stronger border (hovered inputs, emphasis).' },
+  { name: '--lk-shadow-color', default: '0 0 0', description: 'RGB **triplet** (space separated, no `rgb()`) used by every `--lk-shadow-*` as `rgb(var(--lk-shadow-color) / α)`.' },
+  // Spacing
+  ...[['1', '0.25rem', '4px'], ['2', '0.5rem', '8px'], ['3', '0.75rem', '12px'], ['4', '1rem', '16px'], ['5', '1.25rem', '20px'], ['6', '1.5rem', '24px'], ['7', '2rem', '32px'], ['8', '2.5rem', '40px'], ['9', '3rem', '48px'], ['10', '4rem', '64px'], ['12', '6rem', '96px'], ['16', '8rem', '128px']]
+    .map(([k, v, px]) => ({ name: `--lk-space-${k}`, default: v, description: `Spacing step ${k} (${px} at a 16px root).` })),
+  // Radius
+  ...[['none', '0'], ['sm', '0.125rem', '2px'], ['', '0.25rem', '4px — default'], ['md', '0.375rem', '6px'], ['lg', '0.5rem', '8px'], ['xl', '0.75rem', '12px'], ['2xl', '1rem', '16px'], ['full', '9999px', 'pill / circle']]
+    .map(([k, v, note]) => ({ name: k ? `--lk-radius-${k}` : '--lk-radius', default: v, description: `Corner radius${note ? ' (' + note + ')' : ''}.` })),
+  // Border widths
+  { name: '--lk-border-width', default: '1px', description: 'Default border width.' },
+  { name: '--lk-border-width-md', default: '2px', description: 'Medium border (focus outlines, selected).' },
+  { name: '--lk-border-width-lg', default: '4px', description: 'Thick border / accent bars.' },
+  // Shadows
+  { name: '--lk-shadow-xs', default: '0 1px 2px 0 …/0.04', description: 'Hairline elevation.' },
+  { name: '--lk-shadow-sm', default: '0 1px 3px 0 …/0.08, …', description: 'Cards, swatches.' },
+  { name: '--lk-shadow', default: '0 4px 6px -1px …/0.08, …', description: 'Default elevation.' },
+  { name: '--lk-shadow-md', default: '0 6px 12px -2px …/0.1, …', description: 'Dropdowns, popovers.' },
+  { name: '--lk-shadow-lg', default: '0 10px 15px -3px …/0.1, …', description: 'Floating panels, toasts.' },
+  { name: '--lk-shadow-xl', default: '0 20px 25px -5px …/0.1, …', description: 'Modals / dialogs.' },
+  { name: '--lk-shadow-inner', default: 'inset 0 2px 4px 0 …/0.06', description: 'Inset (pressed / wells).' },
+  { name: '--lk-shadow-none', default: 'none', description: 'No shadow.' },
+  // Containers / grid
+  { name: '--lk-container-sm', default: '540px', description: 'Container max-width at ≥ sm.' },
+  { name: '--lk-container-md', default: '720px', description: 'Container max-width at ≥ md.' },
+  { name: '--lk-container-lg', default: '960px', description: 'Container max-width at ≥ lg.' },
+  { name: '--lk-container-xl', default: '1140px', description: 'Container max-width at ≥ xl.' },
+  { name: '--lk-container-2xl', default: '1320px', description: 'Container max-width at ≥ 2xl.' },
+  { name: '--lk-container-fluid', default: '100%', description: 'Fluid container width.' },
+  { name: '--lk-grid-columns', default: '12', description: 'Grid column count (declared for custom layouts; not read by built-in classes).' },
+  { name: '--lk-grid-gutter', default: 'var(--lk-space-4)', description: 'Grid gutter, 16px (declared for custom layouts; `.lk-grid` uses `--lk-space-4` directly).' },
+  // Motion
+  { name: '--lk-duration-instant', default: '0ms', description: 'No animation.' },
+  { name: '--lk-duration-micro', default: '100ms', description: 'Icon rotate, caret flip.' },
+  { name: '--lk-duration-fast', default: '180ms', description: 'Hover tints, small state changes.' },
+  { name: '--lk-duration-base', default: '260ms', description: 'Overlays, fades, tooltips, modal enter.' },
+  { name: '--lk-duration-slow', default: '380ms', description: 'Panels sliding in/out.' },
+  { name: '--lk-duration-slower', default: '540ms', description: 'Page-level entrances, carousel slides.' },
+  { name: '--lk-easing-default', default: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)', description: 'Smooth ease-out.' },
+  { name: '--lk-easing-in', default: 'cubic-bezier(0.55, 0, 0.85, 0.15)', description: 'Accelerate — exits.' },
+  { name: '--lk-easing-out', default: 'cubic-bezier(0.16, 1, 0.3, 1)', description: 'Decelerate — enters.' },
+  { name: '--lk-easing-in-out', default: 'cubic-bezier(0.45, 0, 0.15, 1)', description: 'Symmetric — slides.' },
+  { name: '--lk-easing-spring', default: 'cubic-bezier(0.34, 1.56, 0.64, 1)', description: 'Light overshoot.' },
+  { name: '--lk-easing-bounce', default: 'cubic-bezier(0.22, 1.8, 0.36, 1)', description: 'Playful pop (ping badge, chips).' },
+  { name: '--lk-easing-snap', default: 'cubic-bezier(0.12, 0.8, 0.32, 1.2)', description: 'Snappy scale (tooltip, dropdown).' },
+  // Z-index
+  ...[['below', '-1', 'Behind the base layer'], ['base', '0', 'Base layer'], ['raised', '10', 'Raised elements'], ['dropdown', '50', 'Dropdown / popup panels'], ['sticky', '60', 'Sticky headers'], ['overlay', '90', 'Overlays / loading'], ['modal', '100', 'Modals & dialogs'], ['toast', '110', 'Toast stacks'], ['tooltip', '120', 'Tooltips (top-most)']]
+    .map(([k, v, d]) => ({ name: `--lk-z-${k}`, default: v, description: d + '.' })),
+  // Typography
+  { name: '--lk-font-sans', default: "system-ui, -apple-system, 'Segoe UI', Roboto, …", description: 'Sans-serif stack.' },
+  { name: '--lk-font-serif', default: "Georgia, 'Times New Roman', Times, serif", description: 'Serif stack.' },
+  { name: '--lk-font-mono', default: "ui-monospace, 'Cascadia Code', 'Fira Mono', …", description: 'Monospace stack (`code`, `pre`).' },
+  { name: '--lk-font-family', default: 'var(--lk-font-sans)', description: 'Body font (`body`).' },
+  ...[['xs', '0.64rem', '~10px — captions, badges'], ['sm', '0.8rem', '~13px — labels, secondary text'], ['base', '1rem', '16px — body'], ['md', '1.125rem', '~18px — lead, h6'], ['lg', '1.25rem', '20px — h5'], ['xl', '1.563rem', '25px — h4'], ['2xl', '1.953rem', '31px — h3'], ['3xl', '2.441rem', '39px — h2'], ['4xl', '3.052rem', '49px — h1'], ['5xl', '3.815rem', '61px — hero display']]
+    .map(([k, v, d]) => ({ name: `--lk-text-${k}`, default: v, description: `Font size: ${d}.` })),
+  ...[['thin', '100'], ['light', '300'], ['regular', '400'], ['medium', '500'], ['semibold', '600', ' — headings'], ['bold', '700'], ['extrabold', '800']]
+    .map(([k, v, d]) => ({ name: `--lk-weight-${k}`, default: v, description: `Font weight${d || ''}.` })),
+  ...[['none', '1'], ['tight', '1.25', ' — headings'], ['snug', '1.375'], ['normal', '1.5'], ['relaxed', '1.625'], ['loose', '2']]
+    .map(([k, v, d]) => ({ name: `--lk-leading-${k}`, default: v, description: `Line height${d || ''}.` })),
+  { name: '--lk-line-height', default: 'var(--lk-leading-normal)', description: 'Body line height.' },
+  ...[['tight', '-0.025em'], ['normal', '0em'], ['wide', '0.025em'], ['wider', '0.05em'], ['widest', '0.1em']]
+    .map(([k, v]) => ({ name: `--lk-tracking-${k}`, default: v, description: 'Letter spacing.' })),
+  { name: '--lk-prose-max-width', default: '65ch', description: 'Comfortable reading width for prose.' },
+];
+
+LookDocs.render('#api', {
+  name: 'Design tokens',
+  kind: 'CSS',
+  signature: [
+    '/* read */  color: var(--lk-primary);  padding: var(--lk-space-4);',
+    '/* write */ :root { --lk-primary: #00897b; }',
+  ],
+  description: [
+    'Every visual constant in LookUI is a CSS custom property on `:root` with the `--lk-` prefix. Components only read tokens, so overriding a token (globally, on a subtree, or from JS) re-themes everything that uses it — no rebuild. See [Theming](theming.html).',
+    'Sources: `src/scss/tokens/_color.scss`, `_typography.scss`, `_layout.scss` (defaults) and `src/scss/tokens/custom/*` (build-time overrides, loaded after the defaults). The full list is in [CSS variables](#api-section-tokens); [Properties](#api-section-properties) groups them with live previews that read the computed values.',
+  ],
+  notes: [
+    'Breakpoints are **not** CSS variables (custom properties cannot be used in `@media`). In Sass use `$look-bp-sm` 480px, `$look-bp-md` 768px, `$look-bp-lg` 1024px, `$look-bp-xl` 1280px, `$look-bp-2xl` 1536px.',
+    'There is no built-in dark theme; a dark palette is a set of token overrides (see [Theming](theming.html)).',
+  ],
+
+  properties: [
+    {
+      name: 'Brand colors', type: '--lk-{primary|secondary|accent}[-light|-dark|-contrast]',
+      description: 'Each brand color has a base, `-light`, `-dark` and `-contrast` (text on the solid color).',
+      examples: [{ title: 'Swatches with computed values', run: true, code: `
+        const cs = getComputedStyle(document.documentElement);
+        container.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px';
+        ['primary', 'secondary', 'accent'].forEach((c) => ['', '-light', '-dark'].forEach((v) => {
+          const name = '--lk-' + c + v;
+          const box = document.createElement('div');
+          box.style.cssText = 'padding:10px;border-radius:var(--lk-radius-lg);font:12px var(--lk-font-mono);' +
+            'background:var(' + name + ');color:var(--lk-' + c + '-contrast)';
+          box.textContent = name + ' ' + cs.getPropertyValue(name).trim();
+          container.appendChild(box);
+        }));` }],
+    },
+    {
+      name: 'Semantic colors', type: '--lk-{positive|warning|negative|info}[-light|-dark|-contrast]',
+      description: 'State colors used by buttons, badges, chips, toasts, dialogs, validation and icon color modifiers.',
+      examples: [{ title: 'Solid and tinted use', run: true, code: `
+        ['positive', 'warning', 'negative', 'info'].forEach((c) => {
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex;gap:8px;margin-bottom:6px;align-items:center';
+          row.innerHTML =
+            '<span style="padding:4px 10px;border-radius:var(--lk-radius-full);background:var(--lk-' + c + ');color:var(--lk-' + c + '-contrast)">' + c + '</span>' +
+            '<span style="padding:4px 10px;border-radius:var(--lk-radius-full);background:color-mix(in srgb,var(--lk-' + c + ') 14%,transparent);color:var(--lk-' + c + '-dark)">tinted</span>' +
+            '<span style="padding:4px 10px;border-radius:var(--lk-radius-full);border:1px solid var(--lk-' + c + ');color:var(--lk-' + c + ')">outline</span>';
+          container.appendChild(row);
+        });` }],
+    },
+    {
+      name: 'Surface, text & border', type: '--lk-bg, --lk-bg-subtle, --lk-surface, --lk-overlay, --lk-text*, --lk-border*',
+      description: 'Neutral layers. `--lk-overlay` is the modal backdrop.',
+      examples: [{ title: 'Layered card', run: true, code: `
+        container.innerHTML =
+          '<div style="background:var(--lk-bg-subtle);padding:var(--lk-space-4);border-radius:var(--lk-radius-xl)">' +
+            '<div style="background:var(--lk-bg);border:var(--lk-border-width) solid var(--lk-border);border-radius:var(--lk-radius-lg);padding:var(--lk-space-4)">' +
+              '<div style="color:var(--lk-text);font-weight:var(--lk-weight-semibold)">--lk-text on --lk-bg</div>' +
+              '<div style="color:var(--lk-text-muted);font-size:var(--lk-text-sm)">--lk-text-muted, inside --lk-border</div>' +
+              '<div style="margin-top:8px;padding:8px;background:var(--lk-surface);border-radius:var(--lk-radius)">--lk-surface</div>' +
+              '<div style="margin-top:8px;padding:8px;background:var(--lk-overlay);color:var(--lk-text-on-dark);border-radius:var(--lk-radius)">--lk-overlay + --lk-text-on-dark</div>' +
+            '</div></div>';` }],
+    },
+    {
+      name: 'Spacing', type: '--lk-space-{1…10, 12, 16}',
+      description: '4px-based scale. Steps 1–10 are consecutive; 12 and 16 are large jumps. The spacing utility classes (`.lk-p-*`, `.lk-m-*`) cover 0–6, 8 and 10.',
+      examples: [{ title: 'Scale bars (computed)', run: true, code: `
+        const cs = getComputedStyle(document.documentElement);
+        ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '12', '16'].forEach((k) => {
+          const name = '--lk-space-' + k;
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex;align-items:center;gap:12px;margin-bottom:4px;font:12px var(--lk-font-mono)';
+          row.innerHTML = '<code style="width:9rem">' + name + ' ' + cs.getPropertyValue(name).trim() + '</code>' +
+            '<span style="height:10px;border-radius:2px;background:var(--lk-primary);width:var(' + name + ')"></span>';
+          container.appendChild(row);
+        });` }],
+    },
+    {
+      name: 'Radius & border width', type: '--lk-radius[-none|-sm|-md|-lg|-xl|-2xl|-full], --lk-border-width[-md|-lg]',
+      description: '`--lk-radius` (4px) is the default control radius; `-full` makes pills/circles.',
+      examples: [{ title: 'Every radius', run: true, code: `
+        container.style.cssText = 'display:flex;flex-wrap:wrap;gap:12px';
+        ['-none', '-sm', '', '-md', '-lg', '-xl', '-2xl', '-full'].forEach((k) => {
+          const b = document.createElement('div');
+          b.style.cssText = 'width:64px;height:64px;display:grid;place-items:center;font:11px var(--lk-font-mono);' +
+            'background:var(--lk-primary-light);color:#fff;border-radius:var(--lk-radius' + k + ')';
+          b.textContent = k || 'radius';
+          container.appendChild(b);
+        });` },
+        { title: 'Border widths', run: true, code: `
+          ['', '-md', '-lg'].forEach((k) => {
+            const b = document.createElement('div');
+            b.style.cssText = 'padding:8px 12px;margin-bottom:6px;border-radius:var(--lk-radius-lg);border:var(--lk-border-width' + k + ') solid var(--lk-primary)';
+            b.textContent = '--lk-border-width' + k;
+            container.appendChild(b);
+          });` }],
+    },
+    {
+      name: 'Shadows', type: '--lk-shadow[-xs|-sm|-md|-lg|-xl|-inner|-none]',
+      description: 'Elevation scale. All shadows are built from `--lk-shadow-color` (an RGB triplet), so tinting shadows is one override.',
+      examples: [{ title: 'Elevation scale', run: true, code: `
+          container.style.cssText = 'display:flex;flex-wrap:wrap;gap:16px;padding:8px';
+          ['-xs', '-sm', '', '-md', '-lg', '-xl', '-inner'].forEach((k) => {
+            const b = document.createElement('div');
+            b.style.cssText = 'width:96px;height:64px;display:grid;place-items:center;border-radius:var(--lk-radius-lg);' +
+              'background:var(--lk-bg);font:11px var(--lk-font-mono);box-shadow:var(--lk-shadow' + k + ')';
+            b.textContent = 'shadow' + k;
+            container.appendChild(b);
+          });` },
+        { title: 'Tinted shadows via --lk-shadow-color', run: true, code: `
+          const b = document.createElement('div');
+          b.style.cssText = '--lk-shadow-color:92 107 192;width:180px;padding:16px;border-radius:var(--lk-radius-xl);background:var(--lk-bg);box-shadow:var(--lk-shadow-xl)';
+          b.textContent = '--lk-shadow-color: 92 107 192';
+          container.style.padding = '12px';
+          container.appendChild(b);` }],
+    },
+    {
+      name: 'Typography', type: '--lk-font-*, --lk-text-*, --lk-weight-*, --lk-leading-*, --lk-tracking-*',
+      description: 'Major-third type scale (1.25×) on a 16px base. Headings use `--lk-leading-tight` + `--lk-weight-semibold`; `h1`…`h6` map to `--lk-text-4xl`…`--lk-text-md`.',
+      examples: [
+        { title: 'Size scale', run: true, code: `
+          ['5xl', '4xl', '3xl', '2xl', 'xl', 'lg', 'md', 'base', 'sm', 'xs'].forEach((k) => {
+            const p = document.createElement('div');
+            p.style.cssText = 'font-size:var(--lk-text-' + k + ');line-height:var(--lk-leading-tight);white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+            p.textContent = 'text-' + k + ' — Aa';
+            container.appendChild(p);
+          });` },
+        { title: 'Weights, line heights, tracking, families', run: true, code: `
+          const add = (style, text) => { const d = document.createElement('div'); d.style.cssText = style; d.textContent = text; container.appendChild(d); };
+          ['thin', 'light', 'regular', 'medium', 'semibold', 'bold', 'extrabold'].forEach((w) => add('font-weight:var(--lk-weight-' + w + ')', 'weight-' + w));
+          ['tight', 'normal', 'widest'].forEach((t) => add('letter-spacing:var(--lk-tracking-' + t + ');text-transform:uppercase;font-size:var(--lk-text-sm)', 'tracking-' + t));
+          ['sans', 'serif', 'mono'].forEach((f) => add('font-family:var(--lk-font-' + f + ')', 'font-' + f + ' — The quick brown fox'));
+          add('line-height:var(--lk-leading-loose);max-width:var(--lk-prose-max-width);background:var(--lk-bg-subtle);margin-top:6px;padding:4px 8px', 'leading-loose inside --lk-prose-max-width: comfortable prose wraps around sixty-five characters per line so long paragraphs stay readable.');` },
+      ],
+    },
+    {
+      name: 'Motion', type: '--lk-duration-*, --lk-easing-*',
+      description: 'Shared durations and easings so every component moves alike. Components that must wait for an exit animation read their own duration variable (see [Theming](theming.html)). Reduced-motion users get near-instant transitions via `prefers-reduced-motion` rules in the component styles.',
+      examples: [{ title: 'Easing race (click Play)', run: true, code: `
+          const names = ['default', 'in', 'out', 'in-out', 'spring', 'bounce', 'snap'];
+          const dots = names.map((n) => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:4px;font:11px var(--lk-font-mono)';
+            row.innerHTML = '<span style="width:7rem">easing-' + n + '</span><span style="flex:1;position:relative;height:14px;background:var(--lk-bg-subtle);border-radius:7px"></span>';
+            const dot = document.createElement('span');
+            dot.style.cssText = 'position:absolute;left:0;top:0;width:14px;height:14px;border-radius:50%;background:var(--lk-primary);' +
+              'transition:left var(--lk-duration-slower) var(--lk-easing-' + n + ')';
+            row.lastChild.appendChild(dot);
+            container.appendChild(row);
+            return dot;
+          });
+          let right = false;
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--sm lk-btn--primary';
+          btn.textContent = 'Play';
+          btn.onclick = () => { right = !right; dots.forEach((d) => { d.style.left = right ? 'calc(100% - 14px)' : '0'; }); };
+          container.appendChild(btn);` },
+        { title: 'Durations', run: true, code: `
+          const cs = getComputedStyle(document.documentElement);
+          ['instant', 'micro', 'fast', 'base', 'slow', 'slower'].forEach((k) => log('--lk-duration-' + k, cs.getPropertyValue('--lk-duration-' + k).trim()));` }],
+    },
+    {
+      name: 'Z-index layers', type: '--lk-z-{below|base|raised|dropdown|sticky|overlay|modal|toast|tooltip}',
+      description: 'Stacking order: tooltip (120) > toast (110) > modal (100) > overlay (90) > sticky (60) > dropdown (50) > raised (10) > base (0) > below (-1).',
+      examples: [{ title: 'Stack', run: true, code: `
+          container.style.cssText = 'position:relative;height:150px';
+          ['raised', 'dropdown', 'sticky', 'overlay', 'modal', 'toast', 'tooltip'].forEach((k, i) => {
+            const b = document.createElement('div');
+            b.style.cssText = 'position:absolute;left:' + (i * 34) + 'px;top:' + (i * 12) + 'px;width:130px;padding:6px 8px;border-radius:var(--lk-radius-lg);' +
+              'background:var(--lk-bg);border:1px solid var(--lk-border);box-shadow:var(--lk-shadow-md);font:11px var(--lk-font-mono);z-index:var(--lk-z-' + k + ')';
+            b.textContent = '--lk-z-' + k;
+            container.appendChild(b);
+          });` }],
+    },
+    {
+      name: 'Layout', type: '--lk-container-*, --lk-grid-columns, --lk-grid-gutter',
+      description: 'Container max-widths per breakpoint, read by `.lk-container` (`--lk-container-fluid` by `.lk-container--fluid`). `--lk-grid-columns` / `--lk-grid-gutter` are declared for your own layouts — the built-in `.lk-grid` currently uses `--lk-space-4` for its gap and does not read them.',
+      examples: [{ title: 'Computed values', run: true, code: `
+          const cs = getComputedStyle(document.documentElement);
+          ['sm', 'md', 'lg', 'xl', '2xl', 'fluid'].forEach((k) => log('--lk-container-' + k, cs.getPropertyValue('--lk-container-' + k).trim()));
+          log('--lk-grid-columns', cs.getPropertyValue('--lk-grid-columns').trim(), '| --lk-grid-gutter', cs.getPropertyValue('--lk-grid-gutter').trim());` }],
+    },
+    {
+      name: 'Reading tokens from JS', type: 'getComputedStyle()',
+      description: 'Token values resolve like any custom property: read them with `getComputedStyle(el).getPropertyValue(name)` on the element whose scope you care about (a scoped override changes the answer).',
+      examples: [{ title: 'Global vs. scoped value', run: true, code: `
+          const scoped = document.createElement('div');
+          scoped.style.setProperty('--lk-primary', '#e91e63');
+          scoped.innerHTML = '<button class="lk-btn lk-btn--primary">Scoped primary</button>';
+          container.appendChild(scoped);
+          log(':root  →', getComputedStyle(document.documentElement).getPropertyValue('--lk-primary').trim());
+          log('scoped →', getComputedStyle(scoped).getPropertyValue('--lk-primary').trim());` }],
+    },
+  ],
+
+  classes: [
+    {
+      name: '.lk-{m|p}[t|r|b|l|x|y]-{0|1|2|3|4|5|6|8|10}', description: 'Spacing utilities backed by `--lk-space-*` (`0` = 0). `m` margin, `p` padding; sides `t r b l`, axes `x y`. Steps 7, 9, 12 and 16 have no utility class — use `var(--lk-space-7)` directly.',
+      examples: [{ title: 'Padding steps', run: true, code: `
+        container.innerHTML = ['1', '2', '4', '6', '10'].map((k) =>
+          '<span class="lk-p-' + k + '" style="display:inline-block;margin:0 6px 6px 0;background:var(--lk-primary-light);color:#fff;border-radius:var(--lk-radius)">lk-p-' + k + '</span>').join('');` }],
+    },
+    {
+      name: 'body, h1…h6, a, code', description: 'Base styles read tokens: `body` uses `--lk-font-family`, `--lk-text-base`, `--lk-text`, `--lk-bg`, `--lk-line-height`; headings `--lk-leading-tight` + `--lk-weight-semibold`; links `--lk-primary`; `code` `--lk-font-mono`.',
+    },
+  ],
+
+  tokens: TOKEN_ROWS,
+});
+</script>
 </body>
 </html>

@@ -1,3 +1,26 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+/**
+ * Read a CSS time value (e.g. a duration custom property) from an element and
+ * return milliseconds. Comma lists use the longest entry.
+ * @param {Element} el
+ * @param {string} prop — e.g. '--lk-modal-exit-duration'
+ * @param {number} [fallback=0]
+ * @returns {number}
+ */
+export function readDurationMs(el, prop, fallback = 0) {
+  if (!el || typeof getComputedStyle !== 'function') return fallback;
+  const raw = getComputedStyle(el).getPropertyValue(prop);
+  if (!raw || !raw.trim()) return fallback;
+  const values = raw.split(',').map((part) => {
+    const v = part.trim();
+    const n = parseFloat(v);
+    if (!Number.isFinite(n)) return NaN;
+    return v.endsWith('ms') ? n : n * 1000;
+  }).filter(Number.isFinite);
+  return values.length ? Math.max(...values) : fallback;
+}
+
 /**
  * Shared show/hide presence controller for animated UI visibility.
  * Uses class toggling plus delayed hide to allow CSS exit transitions.
@@ -6,7 +29,7 @@
  * @param {Element} opts.element
  * @param {string} [opts.visibleClass='is-open']
  * @param {string} [opts.closingClass='is-closing']
- * @param {number} [opts.exitMs=180]
+ * @param {number|Function} [opts.exitMs=180] — ms, or a function read at hide time
  * @param {boolean} [opts.hideWithHiddenAttr=true]
  * @param {Function} [opts.beforeShow]
  * @param {Function} [opts.afterShow]
@@ -53,6 +76,9 @@ export function createPresenceController(opts) {
   function show() {
     if (destroyed || visible) return false;
 
+    // Re-opened while the exit transition is still running: reverse from the
+    // current in-between state instead of snapping back to the hidden start.
+    const interruptingExit = hideTimer != null;
     clear();
 
     if (typeof options.beforeShow === 'function') {
@@ -66,6 +92,19 @@ export function createPresenceController(opts) {
     if (options.closingClass) {
       el.classList.remove(options.closingClass);
     }
+
+    if (interruptingExit) {
+      if (options.visibleClass) el.classList.add(options.visibleClass);
+      visible = true;
+      if (typeof options.afterShow === 'function') options.afterShow();
+      return true;
+    }
+
+    // Flush styles so the element's hidden/initial state is committed before the
+    // visible class lands. Without this, an element coming out of display:none
+    // (the [hidden] attribute) or freshly inserted has no 'before' style and the
+    // enter transition is skipped.
+    void el.offsetWidth;
 
     showFrame = requestAnimationFrame(() => {
       if (options.visibleClass) {
@@ -115,7 +154,8 @@ export function createPresenceController(opts) {
       }
     };
 
-    const exitMs = Math.max(0, Number(options.exitMs) || 0);
+    const rawExit = typeof options.exitMs === 'function' ? options.exitMs() : options.exitMs;
+    const exitMs = Math.max(0, Number(rawExit) || 0);
     if (exitMs === 0) {
       finish();
     } else {

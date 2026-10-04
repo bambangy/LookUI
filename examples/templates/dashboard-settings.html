@@ -41,7 +41,7 @@
         <!-- Profile -->
         <div class="lk-card" style="margin-bottom: var(--lk-space-4);">
           <div class="lk-card__body">
-            <h3 style="margin-bottom: var(--lk-space-4);"><span class="lk-icon lk-icon--user" aria-hidden="true"></span> Profile</h3>
+            <h3 class="lk-card__title" style="margin-bottom: var(--lk-space-4);"><span class="lk-icon lk-icon--user" aria-hidden="true"></span> Profile</h3>
             <div class="lk-flex lk-flex--gap-md lk-flex--align-center" style="margin-bottom: var(--lk-space-4);">
               <span class="lk-avatar lk-avatar--lg" style="background: var(--lk-primary); font-size: var(--lk-text-xl);">AD</span>
               <div>
@@ -63,27 +63,27 @@
         <!-- Notifications -->
         <div class="lk-card" style="margin-bottom: var(--lk-space-4);">
           <div class="lk-card__body">
-            <h3 style="margin-bottom: var(--lk-space-4);"><span class="lk-icon lk-icon--bell" aria-hidden="true"></span> Notifications</h3>
+            <h3 class="lk-card__title" style="margin-bottom: var(--lk-space-4);"><span class="lk-icon lk-icon--bell" aria-hidden="true"></span> Notifications</h3>
             <div class="lk-flex lk-flex--justify-between lk-flex--align-center" style="padding: var(--lk-space-2) 0; border-bottom: var(--lk-border-width) solid var(--lk-border);">
               <div>
                 <div style="font-weight: 500;">Email notifications</div>
                 <div style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">Receive order updates via email</div>
               </div>
-              <label class="lk-switch"><input id="sw-email" type="checkbox" checked /><span class="lk-switch__track"></span></label>
+              <input id="sw-email" type="checkbox" checked />
             </div>
             <div class="lk-flex lk-flex--justify-between lk-flex--align-center" style="padding: var(--lk-space-2) 0; border-bottom: var(--lk-border-width) solid var(--lk-border);">
               <div>
                 <div style="font-weight: 500;">Low stock alerts</div>
                 <div style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">Get notified when products run low</div>
               </div>
-              <label class="lk-switch"><input id="sw-stock" type="checkbox" checked /><span class="lk-switch__track"></span></label>
+              <input id="sw-stock" type="checkbox" checked />
             </div>
             <div class="lk-flex lk-flex--justify-between lk-flex--align-center" style="padding: var(--lk-space-2) 0;">
               <div>
                 <div style="font-weight: 500;">Marketing emails</div>
                 <div style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">Receive tips and product updates</div>
               </div>
-              <label class="lk-switch"><input id="sw-marketing" type="checkbox" /><span class="lk-switch__track"></span></label>
+              <input id="sw-marketing" type="checkbox" />
             </div>
           </div>
         </div>
@@ -91,7 +91,7 @@
         <!-- Danger zone -->
         <div class="lk-card" style="border-color: var(--lk-negative);">
           <div class="lk-card__body">
-            <h3 style="margin-bottom: var(--lk-space-3); color: var(--lk-negative);">Danger Zone</h3>
+            <h3 class="lk-card__title" style="margin-bottom: var(--lk-space-3); color: var(--lk-negative);">Danger Zone</h3>
             <div class="lk-flex lk-flex--justify-between lk-flex--align-center">
               <div>
                 <div style="font-weight: 500;">Delete Account</div>

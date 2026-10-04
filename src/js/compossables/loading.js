@@ -1,6 +1,12 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 import { createPresenceController } from '../helpers/motion.js';
 
 let activeCount = 0;
+
+// Shared body scroll lock so overlapping overlays restore overflow correctly.
+let scrollLocks = 0;
+let savedBodyOverflow = '';
 const EXIT_MS = 360;
 
 function toElement(content) {
@@ -84,7 +90,7 @@ export function lkLoading(opts = {}) {
 
   let visible = false;
   let destroyed = false;
-  let previousOverflow = '';
+  let holdsLock = false;
 
   const presence = createPresenceController({
     element: root,
@@ -95,13 +101,21 @@ export function lkLoading(opts = {}) {
   });
 
   function setBodyLock(lock) {
-    if (!options.lockScroll) return;
-
     if (lock) {
-      previousOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
+      if (!options.lockScroll || holdsLock) return;
+      holdsLock = true;
+      if (scrollLocks === 0) {
+        savedBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+      }
+      scrollLocks += 1;
     } else {
-      document.body.style.overflow = previousOverflow;
+      if (!holdsLock) return;
+      holdsLock = false;
+      scrollLocks = Math.max(0, scrollLocks - 1);
+      if (scrollLocks === 0) {
+        document.body.style.overflow = savedBodyOverflow;
+      }
     }
   }
 

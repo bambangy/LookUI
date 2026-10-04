@@ -43,7 +43,7 @@
       <div class="lk-page-title">
         <div class="lk-page-title__text">Sales Report</div>
         <div class="lk-page-title__actions">
-          <select id="sales-range" style="width: auto;"></select>
+          <select id="sales-range" style="width: 11rem;"></select>
           <button class="lk-btn lk-btn--outline lk-btn--sm"><span class="lk-icon lk-icon--download" aria-hidden="true"></span> Export</button>
         </div>
       </div>
@@ -77,7 +77,7 @@
         <!-- Chart -->
         <div class="lk-card" style="margin-bottom: var(--lk-space-4);">
           <div class="lk-card__body">
-            <h3 style="margin-bottom: var(--lk-space-3);">Sales Trend</h3>
+            <h3 class="lk-card__title" style="margin-bottom: var(--lk-space-3);">Sales Trend</h3>
             <div class="chart-placeholder">[Chart placeholder — integrate your charting library here]</div>
           </div>
         </div>
@@ -85,7 +85,7 @@
         <!-- Top products -->
         <div class="lk-card">
           <div class="lk-card__body">
-            <h3 style="margin-bottom: var(--lk-space-3);">Top Selling Products</h3>
+            <h3 class="lk-card__title" style="margin-bottom: var(--lk-space-3);">Top Selling Products</h3>
             <table id="top-products" class="lk-table" style="width: 100%;">
               <thead>
                 <tr><th>Product</th><th style="text-align: right;">Units</th><th style="text-align: right;">Revenue</th></tr>
@@ -108,11 +108,12 @@
 <script>
   // lkDropdown for date range
   Look.lkDropdown('#sales-range', {
+    value: '30',
     items: [
-      { value: '7', text: 'Last 7 days' },
-      { value: '30', text: 'Last 30 days', selected: true },
-      { value: '90', text: 'Last 90 days' },
-      { value: 'year', text: 'This year' },
+      { value: '7', label: 'Last 7 days' },
+      { value: '30', label: 'Last 30 days' },
+      { value: '90', label: 'Last 90 days' },
+      { value: 'year', label: 'This year' },
     ]
   });
 

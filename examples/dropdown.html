@@ -6,6 +6,76 @@
   <title>LookUI — Dropdown</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+  <style>
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--lk-space-5);
+    }
+    .demo-card {
+      padding: var(--lk-space-5);
+      border: var(--lk-border-width) solid var(--lk-border);
+      border-radius: var(--lk-radius-lg);
+      background: var(--lk-bg);
+    }
+    .demo-card__title {
+      font-size: var(--lk-text-sm);
+      font-weight: var(--lk-weight-semibold);
+      color: var(--lk-text-muted);
+      text-transform: uppercase;
+      letter-spacing: var(--lk-tracking-wider);
+      margin-bottom: var(--lk-space-4);
+    }
+    .demo-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--lk-space-2);
+      margin-top: var(--lk-space-4);
+    }
+    .result-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--lk-space-1);
+      padding: var(--lk-space-1) var(--lk-space-3);
+      background: var(--lk-surface);
+      border-radius: var(--lk-radius-full);
+      font-size: var(--lk-text-sm);
+      font-family: var(--lk-font-mono);
+      color: var(--lk-text-muted);
+      margin-top: var(--lk-space-3);
+    }
+    .result-badge.has-value {
+      background: color-mix(in srgb, var(--lk-primary) 10%, transparent);
+      color: var(--lk-primary);
+    }
+    /* Mock server panel styling */
+    .mock-server {
+      padding: var(--lk-space-4);
+      background: var(--lk-secondary-dark, #1e293b);
+      border-radius: var(--lk-radius-lg);
+      margin-top: var(--lk-space-4);
+    }
+    .mock-server__title {
+      font-size: var(--lk-text-xs);
+      font-weight: var(--lk-weight-semibold);
+      text-transform: uppercase;
+      letter-spacing: var(--lk-tracking-wider);
+      color: #64748b;
+      margin-bottom: var(--lk-space-2);
+    }
+    .mock-server__log {
+      font-family: var(--lk-font-mono);
+      font-size: var(--lk-text-xs);
+      color: #94a3b8;
+      max-height: 120px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .mock-server__log .req  { color: #7dd3fc; }
+    .mock-server__log .res  { color: #86efac; }
+    .mock-server__log .hint { color: #fbbf24; }
+  </style>
 </head>
 <body>
 
@@ -13,83 +83,1729 @@
   <div class="demo-container">
     <a href="index.html" class="demo-back">&larr; All Components</a>
     <h1 style="font-size: var(--lk-text-2xl);">Dropdown</h1>
-    <p style="opacity: 0.85;">lkDropdown(el, opts) — wraps &lt;select&gt; elements</p>
+    <p style="opacity: 0.85;">lkDropdown(el, opts) — custom styled select with search, remote data &amp; infinite scroll</p>
   </div>
 </header>
 
 <main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
 
+  <!-- ===================================================================== -->
+  <!-- 1. Basic static items                                                  -->
+  <!-- ===================================================================== -->
   <section class="demo-section">
-    <p class="demo-section__title">Live Demo</p>
+    <p class="demo-section__title">1 — Basic Static Items</p>
+    <p class="demo-sub">Pass an array of <code>{ value, label }</code> objects. Supports placeholder, initial value, and clearable.</p>
 
-    <div style="max-width: 400px; display: flex; flex-direction: column; gap: var(--lk-space-5);">
-      <select id="demo-country"></select>
-      <select id="demo-size">
-        <option value="">Choose size…</option>
-        <option value="s">Small</option>
-        <option value="m">Medium</option>
-        <option value="l">Large</option>
-      </select>
+    <div class="demo-grid">
+
+      <div class="demo-card">
+        <p class="demo-card__title">Default</p>
+        <div id="basic-default"></div>
+        <div class="demo-actions">
+          <button id="btn-basic-get" class="lk-btn lk-btn--primary lk-btn--sm">Get value</button>
+        </div>
+        <div id="out-basic" class="result-badge">—</div>
+      </div>
+
+      <div class="demo-card">
+        <p class="demo-card__title">With Initial Value</p>
+        <div id="basic-preselect"></div>
+        <div class="demo-actions">
+          <button id="btn-preselect-clear" class="lk-btn lk-btn--secondary lk-btn--sm">Clear</button>
+          <button id="btn-preselect-set" class="lk-btn lk-btn--primary lk-btn--sm">Set to JP</button>
+        </div>
+        <div id="out-preselect" class="result-badge">—</div>
+      </div>
+
+      <div class="demo-card">
+        <p class="demo-card__title">Clearable</p>
+        <div id="basic-clearable"></div>
+        <p class="demo-sub" style="margin-top: var(--lk-space-3); margin-bottom: 0;">
+          Shows ✕ button when a value is selected.
+        </p>
+      </div>
+
+      <div class="demo-card">
+        <p class="demo-card__title">Disabled Item</p>
+        <div id="basic-disabled-item"></div>
+      </div>
+
     </div>
 
-    <div style="margin-top: var(--lk-space-4);">
-      <button id="btn-val" class="lk-btn lk-btn--primary lk-btn--sm">Get Value</button>
-      <button id="btn-error" class="lk-btn lk-btn--negative lk-btn--sm">Set Error</button>
-      <button id="btn-clear" class="lk-btn lk-btn--positive lk-btn--sm">Clear Error</button>
-    </div>
+    <div class="demo-usage" style="margin-top: var(--lk-space-6);">
+      <p class="demo-usage__title">JavaScript</p>
+      <pre>const role = Look.lkDropdown('#el', {
+  label: 'Role',
+  name: 'role',
+  placeholder: 'Pick a role…',
+  clearable: true,
+  items: [
+    { value: 'admin',  label: 'Admin' },
+    { value: 'editor', label: 'Editor' },
+    { value: 'viewer', label: 'Viewer', disabled: true },
+  ],
+  onChange(value, item) {
+    console.log(value, item);
+  },
+});
 
-    <div id="output" class="demo-output"></div>
+// Read / write value
+role.value;            // current value
+role.value = 'editor'; // programmatic set
+role.selectedItem;     // full item object</pre>
+    </div>
   </section>
 
-  <div class="demo-usage">
-    <p class="demo-usage__title">HTML</p>
-    <pre>&lt;select id="country"&gt;&lt;/select&gt;</pre>
+  <!-- ===================================================================== -->
+  <!-- 2. States — disabled, readonly, error                                 -->
+  <!-- ===================================================================== -->
+  <section class="demo-section">
+    <p class="demo-section__title">2 — States</p>
 
-    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
-    <pre>const country = Look.lkDropdown('#country', {
+    <div class="demo-grid">
+
+      <div class="demo-card">
+        <p class="demo-card__title">Disabled</p>
+        <div id="state-disabled"></div>
+      </div>
+
+      <div class="demo-card">
+        <p class="demo-card__title">Readonly</p>
+        <div id="state-readonly"></div>
+      </div>
+
+      <div class="demo-card">
+        <p class="demo-card__title">Error</p>
+        <div id="state-error"></div>
+        <div class="demo-actions">
+          <button id="btn-err-set" class="lk-btn lk-btn--negative lk-btn--sm">Set error</button>
+          <button id="btn-err-clear" class="lk-btn lk-btn--positive lk-btn--sm">Clear error</button>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <p class="demo-card__title">Required</p>
+        <div id="state-required"></div>
+        <div class="demo-actions">
+          <button id="btn-req-toggle" class="lk-btn lk-btn--secondary lk-btn--sm">Toggle required</button>
+        </div>
+        <div id="out-req" class="result-badge">required = true</div>
+      </div>
+
+    </div>
+
+    <div class="demo-usage" style="margin-top: var(--lk-space-6);">
+      <p class="demo-usage__title">JavaScript</p>
+      <pre>const dd = Look.lkDropdown('#el', { label: 'Status', disabled: true, ...opts });
+
+// Toggle states at runtime
+dd.disabled = false;
+dd.readonly = true;
+dd.required = false;
+dd.setError('Required field');
+dd.clearError();
+dd.hidden = true;</pre>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 3. Search / filter                                                     -->
+  <!-- ===================================================================== -->
+  <section class="demo-section">
+    <p class="demo-section__title">3 — Search Input (useInput)</p>
+    <p class="demo-sub">Set <code>useInput: true</code> to embed a filter input inside the panel. Great for long static lists.</p>
+
+    <div class="demo-grid">
+
+      <div class="demo-card">
+        <p class="demo-card__title">Client-side filter</p>
+        <div id="search-local"></div>
+        <p class="demo-sub" style="margin-top: var(--lk-space-3); margin-bottom: 0;">
+          Filters 50+ country list locally in-browser.
+        </p>
+      </div>
+
+      <div class="demo-card">
+        <p class="demo-card__title">Custom placeholder &amp; debounce</p>
+        <div id="search-custom"></div>
+      </div>
+
+    </div>
+
+    <div class="demo-usage" style="margin-top: var(--lk-space-6);">
+      <p class="demo-usage__title">JavaScript</p>
+      <pre>Look.lkDropdown('#el', {
   label: 'Country',
-  name: 'country',
-  required: true,
+  useInput: true,
+  searchPlaceholder: 'Type to filter…',
+  debounce: 150,            // ms, default 220
+  clearable: true,
+  items: COUNTRIES,         // large array — filtered client-side
+});</pre>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 4. Custom valueField / labelField                                      -->
+  <!-- ===================================================================== -->
+  <section class="demo-section">
+    <p class="demo-section__title">4 — Custom Field Mapping</p>
+    <p class="demo-sub">Map any object shape with <code>valueField</code> and <code>labelField</code> — no need to reshape your data.</p>
+
+    <div class="demo-grid">
+
+      <div class="demo-card">
+        <p class="demo-card__title">id / name mapping</p>
+        <div id="custom-field"></div>
+        <div class="demo-actions">
+          <button id="btn-cf-get" class="lk-btn lk-btn--primary lk-btn--sm">Get value</button>
+        </div>
+        <div id="out-cf" class="result-badge">—</div>
+      </div>
+
+      <div class="demo-card">
+        <p class="demo-card__title">String array items</p>
+        <div id="str-items"></div>
+      </div>
+
+    </div>
+
+    <div class="demo-usage" style="margin-top: var(--lk-space-6);">
+      <p class="demo-usage__title">JavaScript</p>
+      <pre>// Your API returns { id, name } objects — use them directly
+Look.lkDropdown('#el', {
+  label: 'Department',
+  valueField: 'id',
+  labelField: 'name',
   items: [
-    { value: '',   text: 'Select a country…' },
-    { value: 'us', text: 'United States' },
-    { value: 'uk', text: 'United Kingdom' },
-    { value: 'jp', text: 'Japan', disabled: true },
+    { id: 1, name: 'Engineering' },
+    { id: 2, name: 'Design' },
+    { id: 3, name: 'Marketing' },
   ],
 });
 
-country.value;           // 'us'
-country.selectedIndex;   // 1
-country.selectedText;    // 'United States'
-country.setError('Required');
-country.clearError();
-country.destroy();</pre>
-  </div>
+// Simple string arrays also work
+Look.lkDropdown('#el', {
+  label: 'Tag',
+  items: ['frontend', 'backend', 'devops', 'design'],
+});</pre>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 5. Transport — URL (simulated)                                         -->
+  <!-- ===================================================================== -->
+  <section class="demo-section">
+    <p class="demo-section__title">5 — Remote Data via Transport (Function)</p>
+    <p class="demo-sub">
+      Pass <code>transport.read</code> as a <strong>function</strong> that returns a Promise.
+      The dropdown loads page 1 on first open and passes <code>{ page, pageSize }</code> to your function.
+    </p>
+
+    <div class="demo-grid">
+
+      <div class="demo-card" style="grid-column: span 2;">
+        <p class="demo-card__title">Mock API — paginated (pageSize 8)</p>
+        <div id="transport-fn"></div>
+        <div class="mock-server" id="server-log-1">
+          <p class="mock-server__title">Request log</p>
+          <div class="mock-server__log" id="log-transport-fn">
+            <em>— open dropdown to trigger first request —</em>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <p class="demo-card__title">Simulated latency (800 ms)</p>
+        <div id="transport-slow"></div>
+        <p class="demo-sub" style="margin-top: var(--lk-space-3); margin-bottom: 0;">
+          Watch the spinner appear on the trigger while loading.
+        </p>
+      </div>
+
+    </div>
+
+    <div class="demo-usage" style="margin-top: var(--lk-space-6);">
+      <p class="demo-usage__title">JavaScript</p>
+      <pre>Look.lkDropdown('#el', {
+  label: 'User',
+  useInput: true,
+  clearable: true,
+  pageSize: 10,
+  transport: {
+    read(payload, { signal }) {
+      const { page, pageSize, q } = payload;
+      // call your real API here
+      return fetch(`/api/users?page=${page}&size=${pageSize}&q=${q ?? ''}`, { signal })
+        .then(r => r.json());
+      // Expected response shape: { items: [...], total: 120 }
+      // Also accepted:           { data: [...], total: 120 }
+      //                          [...array...] (no total = no infinite scroll)
+    },
+  },
+});</pre>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 6. Server-side filter                                                  -->
+  <!-- ===================================================================== -->
+  <section class="demo-section">
+    <p class="demo-section__title">6 — Server-side Search (server.filter)</p>
+    <p class="demo-sub">
+      Set <code>server: { filter: true }</code> to forward the search query to <code>transport.read</code>
+      as a query parameter (default param name: <code>q</code>, configurable via <code>searchParam</code>).
+      Each keystroke resets to page 1 and re-fetches.
+    </p>
+
+    <div class="demo-grid">
+
+      <div class="demo-card" style="grid-column: span 2;">
+        <p class="demo-card__title">Server-filtered search</p>
+        <div id="server-filter"></div>
+        <div class="mock-server" id="server-log-2">
+          <p class="mock-server__title">Request log — watch <span class="hint">q=</span> appear when you type</p>
+          <div class="mock-server__log" id="log-server-filter">
+            <em>— open and type to see server filter requests —</em>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="demo-usage" style="margin-top: var(--lk-space-6);">
+      <p class="demo-usage__title">JavaScript</p>
+      <pre>Look.lkDropdown('#el', {
+  label: 'Product',
+  useInput: true,
+  clearable: true,
+  pageSize: 10,
+  server: { filter: true },   // push search text to server
+  searchParam: 'q',           // default — matches payload key
+  transport: {
+    read: '/api/products',    // GET /api/products?page=1&pageSize=10&q=widget
+  },
+});</pre>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 7. Infinite scroll                                                     -->
+  <!-- ===================================================================== -->
+  <section class="demo-section">
+    <p class="demo-section__title">7 — Infinite Scroll</p>
+    <p class="demo-sub">
+      Set <code>infinite: true</code> alongside <code>transport.read</code>. As you scroll the options list
+      near the bottom (60 px threshold), the next page loads and appends to the list automatically.
+    </p>
+
+    <div class="demo-grid">
+
+      <div class="demo-card" style="grid-column: span 2;">
+        <p class="demo-card__title">200 items, pageSize 12 — scroll to load more</p>
+        <div id="infinite-scroll"></div>
+        <div class="mock-server">
+          <p class="mock-server__title">Pages loaded</p>
+          <div class="mock-server__log" id="log-infinite">
+            <em>— open dropdown and scroll to bottom —</em>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="demo-usage" style="margin-top: var(--lk-space-6);">
+      <p class="demo-usage__title">JavaScript</p>
+      <pre>Look.lkDropdown('#el', {
+  label: 'Employee',
+  useInput: true,
+  clearable: true,
+  infinite: true,
+  pageSize: 12,
+  transport: {
+    read(payload, { signal }) {
+      return myApi.getEmployees(payload, { signal });
+      // Must return { items: [...], total: N } for hasMore to work.
+    },
+  },
+});</pre>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 8. Selected param — paginated value resolution                        -->
+  <!-- ===================================================================== -->
+  <section class="demo-section">
+    <p class="demo-section__title">8 — Paginated Value Resolution (selectedParam)</p>
+    <p class="demo-sub">
+      When a value is pre-set and items are paginated, LookUI injects a
+      <code>selected=&lt;value&gt;</code> parameter into every <code>transport.read</code> request.
+      The server can use this hint to guarantee the selected item appears in the response —
+      even if it falls on page 3. If the server ignores the hint the raw value is shown as a ghost label.
+    </p>
+
+    <div class="demo-grid">
+
+      <div class="demo-card" style="grid-column: span 2;">
+        <p class="demo-card__title">Pre-selected value on a remote paginated list</p>
+        <div id="selected-param"></div>
+        <div class="mock-server">
+          <p class="mock-server__title">Request log — notice <span class="hint">selected=</span> in every request</p>
+          <div class="mock-server__log" id="log-selected-param">
+            <em>— open dropdown to see selected= in requests —</em>
+          </div>
+        </div>
+        <div class="demo-actions">
+          <button id="btn-sp-set42" class="lk-btn lk-btn--primary lk-btn--sm">Set value = 42</button>
+          <button id="btn-sp-clear" class="lk-btn lk-btn--secondary lk-btn--sm">Clear</button>
+          <button id="btn-sp-load" class="lk-btn lk-btn--secondary lk-btn--sm">Reload</button>
+        </div>
+        <div id="out-sp" class="result-badge">value = 99 (pre-set)</div>
+      </div>
+
+    </div>
+
+    <div class="demo-usage" style="margin-top: var(--lk-space-6);">
+      <p class="demo-usage__title">JavaScript — server receives selected= on every page fetch</p>
+      <pre>Look.lkDropdown('#el', {
+  label: 'Record',
+  value: 99,                  // pre-selected value
+  clearable: true,
+  infinite: true,
+  pageSize: 10,
+  server: {
+    selected: true,           // default: true — inject selected param
+  },
+  selectedParam: 'selected',  // default param name
+  transport: {
+    read(payload, { signal }) {
+      // payload = { page: 1, pageSize: 10, selected: 99 }
+      // Server guarantees item 99 appears in the response.
+      return myApi.getRecords(payload, { signal });
+    },
+  },
+});
+
+// Disable the hint if your server doesn't support it:
+// server: { selected: false }</pre>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 9. Programmatic control                                                -->
+  <!-- ===================================================================== -->
+  <section class="demo-section">
+    <p class="demo-section__title">9 — Programmatic Control</p>
+    <p class="demo-sub">Open, close, set items, set value — all from JavaScript.</p>
+
+    <div class="demo-grid">
+
+      <div class="demo-card" style="grid-column: span 2;">
+        <p class="demo-card__title">Runtime API</p>
+        <div id="prog-dd"></div>
+        <div class="demo-actions">
+          <button id="btn-prog-open"  class="lk-btn lk-btn--primary lk-btn--sm">open()</button>
+          <button id="btn-prog-close" class="lk-btn lk-btn--secondary lk-btn--sm">close()</button>
+          <button id="btn-prog-val"   class="lk-btn lk-btn--secondary lk-btn--sm">Set value = 'vue'</button>
+          <button id="btn-prog-items" class="lk-btn lk-btn--secondary lk-btn--sm">Swap items</button>
+          <button id="btn-prog-get"   class="lk-btn lk-btn--outline lk-btn--sm">Get value</button>
+          <button id="btn-prog-hide"  class="lk-btn lk-btn--secondary lk-btn--sm">Toggle hidden</button>
+          <button id="btn-prog-dis"   class="lk-btn lk-btn--secondary lk-btn--sm">Toggle disabled</button>
+          <button id="btn-prog-load"  class="lk-btn lk-btn--secondary lk-btn--sm">load()</button>
+          <button id="btn-prog-destroy" class="lk-btn lk-btn--negative lk-btn--sm">destroy()</button>
+        </div>
+        <div id="out-prog" class="result-badge">—</div>
+      </div>
+
+    </div>
+
+    <div class="demo-usage" style="margin-top: var(--lk-space-6);">
+      <p class="demo-usage__title">JavaScript — full API reference</p>
+      <pre>const dd = Look.lkDropdown('#el', opts);
+
+// Open / close
+dd.open();
+dd.close();
+
+// Value
+dd.value;                   // get current value
+dd.value = 'react';         // set programmatically (looks up in localItems)
+dd.selectedItem;            // full item object for the selected value
+
+// Items
+dd.items;                   // get current items array (copy)
+dd.items = newArray;        // replace all items
+
+// States
+dd.disabled = true;
+dd.readonly = true;
+dd.required = false;
+dd.hidden   = true;
+dd.enabled;                 // same as !disabled (from applyBase)
+
+// Form
+dd.name;                    // get/set hidden input name
+dd.label;                   // get/set label text
+
+// Validation
+dd.setError('Required');
+dd.clearError();
+
+// Remote
+dd.load();                  // manually (re)load from transport
+
+// Lifecycle
+dd.destroy();</pre>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 10. Dense modifier                                                     -->
+  <!-- ===================================================================== -->
+  <section class="demo-section">
+    <p class="demo-section__title">10 — Dense Modifier</p>
+    <p class="demo-sub">Add <code>lk-input--dense</code> to the host element or wrap in <code>.lk-field--dense</code> for a compact layout.</p>
+
+    <div class="demo-grid">
+
+      <div class="demo-card">
+        <p class="demo-card__title">Normal</p>
+        <div id="dense-normal"></div>
+      </div>
+
+      <div class="demo-card">
+        <p class="demo-card__title">Dense (lk-field--dense wrapper)</p>
+        <div class="lk-field--dense" id="dense-wrap">
+          <div id="dense-dense"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 11. onChange event                                                     -->
+  <!-- ===================================================================== -->
+  <section class="demo-section">
+    <p class="demo-section__title">11 — onChange Event Log</p>
+    <p class="demo-sub">Every selection triggers <code>onChange(value, item)</code>. Use it to drive form logic, reactive state, or API calls.</p>
+
+    <div style="max-width: 480px;">
+      <div id="onchange-dd"></div>
+    </div>
+
+    <div id="out-log" style="
+      margin-top: var(--lk-space-4);
+      padding: var(--lk-space-3);
+      background: var(--lk-secondary-dark, #1e293b);
+      border-radius: var(--lk-radius-lg);
+      font-family: var(--lk-font-mono);
+      font-size: var(--lk-text-sm);
+      color: #94a3b8;
+      min-height: 80px;
+      max-height: 180px;
+      overflow-y: auto;
+    ">
+      <em>Select an option…</em>
+    </div>
+
+    <div class="demo-usage" style="margin-top: var(--lk-space-6);">
+      <p class="demo-usage__title">JavaScript</p>
+      <pre>Look.lkDropdown('#el', {
+  label: 'Priority',
+  clearable: true,
+  items: PRIORITIES,
+  onChange(value, item) {
+    console.log('selected:', value, item);
+    // update another field, fire API, etc.
+  },
+});</pre>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 12. Multiple selection                                                 -->
+  <!-- ===================================================================== -->
+  <section class="demo-section">
+    <p class="demo-section__title">12 — Multiple Selection (chips)</p>
+    <p class="demo-sub">Set <code>multiple: true</code> (or enhance a native <code>&lt;select multiple&gt;</code>). Picks stay open, selected values render as <code>lkChip</code>s, &times; or <kbd>Backspace</kbd> removes them, and the form submits one value per selection.</p>
+
+    <div class="demo-grid">
+
+      <div class="demo-card">
+        <p class="demo-card__title">Searchable + clearable</p>
+        <div id="multi-basic"></div>
+        <div id="out-multi" class="demo-output"></div>
+      </div>
+
+      <div class="demo-card">
+        <p class="demo-card__title">maxChips: 2 + chipColor</p>
+        <div id="multi-max"></div>
+      </div>
+
+      <div class="demo-card">
+        <p class="demo-card__title">Native &lt;select multiple&gt;</p>
+        <label class="lk-label" for="multi-native">Languages</label>
+        <select id="multi-native" name="languages" multiple>
+          <option value="js" selected>JavaScript</option>
+          <option value="ts">TypeScript</option>
+          <option value="go" selected>Go</option>
+          <option value="rs">Rust</option>
+          <option value="py">Python</option>
+        </select>
+      </div>
+
+      <div class="demo-card">
+        <p class="demo-card__title">Dense &amp; disabled</p>
+        <div class="lk-field--dense"><div id="multi-dense"></div></div>
+        <div style="margin-top: var(--lk-space-3);"><div id="multi-disabled"></div></div>
+      </div>
+
+    </div>
+
+    <div class="demo-usage" style="margin-top: var(--lk-space-6);">
+      <p class="demo-usage__title">JavaScript</p>
+      <pre>const skills = Look.lkDropdown('#el', {
+  label: 'Skills',
+  name: 'skills',          // submits skills=a&amp;skills=b
+  multiple: true,           // alias: multiselect
+  useInput: true,
+  clearable: true,
+  maxChips: 3,              // then a "+N" chip
+  chipColor: 'primary',     // any lkChip color
+  closeOnSelect: false,     // default in multiple mode
+  items: SKILLS,
+  value: ['design', 'sales'],
+  onChange(values, items) { console.log(values); },
+});
+
+skills.value;               // ['design', 'sales']
+skills.value = ['legal'];   // replace selection
+skills.selectedItems;       // [{ value, label }, …]</pre>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 13. Adornments, native select & form submit                            -->
+  <!-- ===================================================================== -->
+  <section class="demo-section">
+    <p class="demo-section__title">13 — Prepend / Append, Native &lt;select&gt; &amp; Form Submit</p>
+    <p class="demo-sub">
+      <code>prepend</code> / <code>append</code> put text, icons or nodes inside the trigger. A native <code>&lt;select&gt;</code> donates its
+      options, <code>selected</code>, <code>name</code> and <code>required</code>; its id moves to the trigger so the external <code>&lt;label for&gt;</code> keeps working.
+      Submit the form to see what the hidden input(s) post.
+    </p>
+
+    <form id="dd-form" class="demo-grid" novalidate>
+      <div class="demo-card">
+        <p class="demo-card__title">prepend icon + append text</p>
+        <div id="adorn-dd"></div>
+      </div>
+      <div class="demo-card">
+        <p class="demo-card__title">Native &lt;select required&gt;</p>
+        <label class="lk-label" for="native-single">Priority</label>
+        <select id="native-single" name="priority" required>
+          <option value="">—</option>
+          <option value="low">Low</option>
+          <option value="normal" selected>Normal</option>
+          <option value="high">High</option>
+          <option value="urgent" disabled>Urgent (disabled)</option>
+        </select>
+      </div>
+      <div class="demo-card">
+        <p class="demo-card__title">multiple → repeated hidden inputs</p>
+        <div id="form-multi"></div>
+        <div class="demo-actions" style="margin-top: var(--lk-space-3);">
+          <button type="submit" class="lk-btn lk-btn--primary lk-btn--sm">Submit form</button>
+        </div>
+        <div id="out-form" class="demo-output"></div>
+      </div>
+    </form>
+  </section>
+
+  <div id="api"></div>
 
 </main>
 
 <script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
 <script>
-  const country = Look.lkDropdown('#demo-country', {
-    label: 'Country',
-    name: 'country',
-    items: [
-      { value: '', text: 'Select a country…' },
-      { value: 'us', text: 'United States' },
-      { value: 'uk', text: 'United Kingdom' },
-      { value: 'de', text: 'Germany' },
-      { value: 'jp', text: 'Japan' },
+(function () {
+  const MK = "const el = document.createElement('div'); container.appendChild(el);";
+  const FRUITS = "const items = [{ value: 'apple', label: 'Apple' }, { value: 'banana', label: 'Banana' }, { value: 'cherry', label: 'Cherry' }, { value: 'mango', label: 'Mango' }];";
+  // One-line mock server used by the remote examples: filters by q, pages by page/pageSize.
+  const MOCK = "const DATA = Array.from({ length: 95 }, (_, i) => ({ value: i + 1, label: 'Customer #' + (i + 1) })); const server = (p) => new Promise((ok) => setTimeout(() => { const rows = DATA.filter((r) => !p.q || r.label.toLowerCase().includes(String(p.q).toLowerCase())); ok({ items: rows.slice((p.page - 1) * p.pageSize, p.page * p.pageSize), total: rows.length }); }, 250));";
+
+  LookDocs.render('#api', {
+    name: 'lkDropdown',
+    kind: 'Component',
+    signature: 'const dd = Look.lkDropdown(element, options);',
+    description: [
+      'A fully custom select: the host element (usually a `<select>` or an empty `<div>`) is **replaced** by a trigger button plus a hidden `<input>` that carries the value for form submission. The option panel floats in a fixed layer appended to `<body>`, so it is never clipped by overflow containers.',
+      'Items come from `items`, from the host `<select>`\'s `<option>`s, or from a remote `transport` with paging, server-side search and infinite scroll. `multiple: true` turns it into a multi-select that shows the picks as removable [lkChip](chip.html)s.',
+    ],
+    params: [
+      { name: 'element', type: 'Element | string', description: 'Host element or selector. A `<select>` is adopted (options, `selected`, `name`, `required`, `multiple`, id); any other element is just a placeholder. It must be in the document — it is removed and the trigger is inserted in its place.' },
+      { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+    ],
+    returns: { type: 'Object', description: 'The dropdown instance. `dd.el` is the **trigger**, not the original element.' },
+    notes: [
+      '**DOM after enhancement:** `[div.lk-field > label.lk-label +] .lk-dropdown__trigger.lk-input [+ span.lk-field-error]` followed by `input[type=hidden]`; the panel lives in `body > .lk-dropdown__layer > .lk-dropdown__panel`. The original element is removed from the DOM.',
+      '**Single mode** uses a `<button type="button">` trigger. **Multiple mode** uses a focusable `<div role="combobox" tabindex="0">`, because chips with their own remove buttons cannot be nested in a `<button>`. In multiple mode `disabled` is therefore mirrored with the `disabled` attribute, `tabindex="-1"` and `aria-disabled`.',
+      '**Form submission:** single mode posts one hidden `name=value` (empty string when nothing is selected). Multiple mode posts **one hidden input per selected value** with the same name (`skills=a&skills=b`), like a native `<select multiple>`; with no selection a single empty value is posted. Disabled dropdowns post nothing.',
+      '**Label `for` + id takeover:** if the host has an id, it is moved to the trigger, so an external `<label for="that-id">` still focuses/labels the control and gets the required asterisk. A `<select required>` (or a label with `data-required` / `data-mandatory`) makes the dropdown required. The `required` flag lives on the hidden input, which browsers skip during constraint validation — validate in your submit handler (`dd.required && !dd.value`).',
+      '**Native `<select>` adoption** only happens when you pass neither `items` nor `transport`: its options (text, value, `disabled`, `selected`) become items and its `name` is used unless `name` is given. `<select multiple>` turns on multiple mode unless `multiple`/`multiselect` is set explicitly.',
+      '**Keyboard:** Enter / Space / ArrowDown on the trigger opens (or moves into) the list; ArrowUp/ArrowDown move between options; Enter / Space picks; Escape closes; Tab closes and moves on. In multiple mode Backspace / Delete on the trigger removes the last chip.',
+      '**Remote loading:** without `infinite`, only page 1 (`pageSize` items) is fetched — raise `pageSize` or enable `infinite` to reach more rows. Data loads the first time the panel opens (or when you call `load()`); with `useInput` + `server.filter` it reloads on every open and every (debounced) keystroke.',
+    ],
+
+    options: [
+      // ---- data -----------------------------------------------------------
+      {
+        name: 'items', type: 'Array<Object | string | number>', default: '[] (or the <select> options)',
+        description: 'Static items. Objects use `valueField` / `labelField` (fallbacks: `value`; `label` → `text` → value) and may carry `disabled: true` and `selected: true`. Strings and numbers are shorthand for `{ value: x, label: String(x) }`.',
+        examples: [
+          { title: 'Objects', run: true, code: `
+            ${MK}
+            ${FRUITS}
+            Look.lkDropdown(el, { label: 'Fruit', items });` },
+          { title: 'Strings / numbers', run: true, code: `
+            ${MK}
+            Look.lkDropdown(el, { label: 'Year', items: [2024, 2025, 2026], value: 2026 });` },
+          { title: 'disabled and selected flags', run: true, code: `
+            ${MK}
+            Look.lkDropdown(el, { label: 'Plan', items: [
+              { value: 'free', label: 'Free' },
+              { value: 'pro', label: 'Pro', selected: true },
+              { value: 'ent', label: 'Enterprise (contact sales)', disabled: true },
+            ] });` },
+        ],
+      },
+      {
+        name: 'value', type: 'any | any[]', default: '— (item flagged selected, else none)',
+        description: 'Initially selected value (array in multiple mode). Compared to item values as strings, so `1` matches `\'1\'`. A value with no matching item is kept and shown as raw text until its item arrives (useful for remote data).',
+        examples: [
+          { title: 'Single', run: true, code: `
+            ${MK}
+            ${FRUITS}
+            Look.lkDropdown(el, { label: 'Fruit', items, value: 'cherry' });` },
+          { title: 'Multiple', run: true, code: `
+            ${MK}
+            ${FRUITS}
+            Look.lkDropdown(el, { label: 'Fruits', items, multiple: true, value: ['apple', 'mango'] });` },
+          { title: 'Value before its item is known', run: true, code: `
+            ${MK}
+            const dd = Look.lkDropdown(el, { label: 'Assignee', value: 'u42' });
+            setTimeout(() => { dd.items = [{ value: 'u42', label: 'Jane Doe' }]; log('items arrived →', dd.selectedItem.label); }, 800);` },
+        ],
+      },
+      {
+        name: 'valueField', type: 'string', default: "'value'",
+        description: 'Property of an item that holds its value.',
+        examples: [{ title: 'Map an API shape', run: true, code: `
+          ${MK}
+          const dd = Look.lkDropdown(el, {
+            label: 'Department', valueField: 'id', labelField: 'name',
+            items: [{ id: 10, name: 'Engineering' }, { id: 20, name: 'Design' }, { id: 30, name: 'Finance' }],
+            onChange: (v, item) => log('value =', v, 'item =', item),
+          });` }],
+      },
+      { name: 'labelField', type: 'string', default: "'label'", description: 'Property of an item that holds its display text (falls back to `label`, `text`, then the value).' },
+
+      // ---- appearance -----------------------------------------------------
+      {
+        name: 'placeholder', type: 'string', default: "'Select…'",
+        description: 'Text shown (muted) in the trigger when nothing is selected.',
+        examples: [{ run: true, code: `
+          ${MK}
+          ${FRUITS}
+          Look.lkDropdown(el, { label: 'Fruit', items, placeholder: 'Pick your favourite…' });` }],
+      },
+      {
+        name: 'clearable', type: 'boolean', default: 'false',
+        description: 'Shows a × button in the trigger while something is selected; clicking it clears the value (all chips in multiple mode) and fires `onChange`. Hidden while disabled/readonly in multiple mode.',
+        examples: [{ run: true, code: `
+          ${MK}
+          ${FRUITS}
+          Look.lkDropdown(el, { label: 'Fruit', items, value: 'banana', clearable: true, onChange: (v) => log('onChange', v) });` }],
+      },
+      {
+        name: 'prepend', type: 'string | number | Node | Array', default: '—',
+        description: 'Content placed in the trigger before the text (`.lk-dropdown__prepend`). Strings become `<span>`s, Nodes are inserted as-is, arrays may mix; `null` / `false` / empty string hide it.',
+        examples: [
+          { title: 'Icon', run: true, code: `
+            ${MK}
+            ${FRUITS}
+            Look.lkDropdown(el, { label: 'Owner', items, prepend: Look.lkIcon('user', { size: 'sm' }) });` },
+          { title: 'Text', run: true, code: `
+            ${MK}
+            Look.lkDropdown(el, { label: 'Currency', prepend: 'Pay in', items: ['IDR', 'USD', 'EUR'], value: 'IDR' });` },
+        ],
+      },
+      {
+        name: 'append', type: 'string | number | Node | Array', default: '—',
+        description: 'Content placed after the caret (`.lk-dropdown__append`). Same value rules as `prepend`.',
+        examples: [{ run: true, code: `
+          ${MK}
+          Look.lkDropdown(el, { label: 'Interval', items: [5, 10, 15, 30], value: 15, append: 'min' });` }],
+      },
+      {
+        name: 'noResultsText', type: 'string', default: "'No results'",
+        description: 'Shown when the (filtered) list is empty. A failed remote request shows the error message instead.',
+        examples: [{ run: true, code: `
+          ${MK}
+          const dd = Look.lkDropdown(el, { label: 'Empty list', items: [], noResultsText: 'Nothing here yet' });
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--sm lk-btn--secondary'; btn.style.marginTop = '6px';
+          btn.textContent = 'dd.open()'; btn.onclick = (e) => { e.stopPropagation(); dd.open(); };
+          container.appendChild(btn);` }],
+      },
+      { name: 'loadingText', type: 'string', default: "'Loading…'", description: 'Text of the loading row shown while a remote page is in flight (and as the infinite-scroll sentinel).' },
+
+      // ---- search ---------------------------------------------------------
+      {
+        name: 'useInput', type: 'boolean', default: 'false',
+        description: 'Adds a search box at the top of the panel. Filters the loaded items client-side (case-insensitive "contains" on the label), or sends the text to the server when `transport` + `server.filter` are set.',
+        examples: [{ run: true, code: `
+          ${MK}
+          const names = ['Jakarta', 'Bandung', 'Surabaya', 'Medan', 'Semarang', 'Makassar', 'Denpasar', 'Yogyakarta'];
+          Look.lkDropdown(el, { label: 'City', items: names, useInput: true, clearable: true });` }],
+      },
+      { name: 'searchPlaceholder', type: 'string', default: "'Search…'", description: 'Placeholder of the search box (`useInput`).',
+        examples: [{ run: true, code: `
+          ${MK}
+          ${FRUITS}
+          Look.lkDropdown(el, { label: 'Fruit', items, useInput: true, searchPlaceholder: 'Type a fruit…' });` }] },
+      { name: 'debounce', type: 'number (ms)', default: '220', description: 'Delay between the last keystroke and filtering / the server request. Use `0` for instant local filtering, larger values to spare a slow API.' },
+
+      // ---- multiple -------------------------------------------------------
+      {
+        name: 'multiple', type: 'boolean', default: 'false (true for <select multiple>)',
+        description: 'Multi-select. `value` becomes an array, options show a checkbox, picks render as dense removable chips inside a growing trigger, the panel stays open after each pick (see `closeOnSelect`) and the form posts one hidden input per value.',
+        examples: [
+          { title: 'Basic', run: true, code: `
+            ${MK}
+            ${FRUITS}
+            Look.lkDropdown(el, { label: 'Fruits', items, multiple: true, onChange: (values) => log('values =', values) });` },
+          { title: 'Searchable + clearable', run: true, code: `
+            ${MK}
+            const tags = ['bug', 'feature', 'docs', 'ui', 'backend', 'security', 'performance'];
+            Look.lkDropdown(el, { label: 'Labels', items: tags, multiple: true, useInput: true, clearable: true, value: ['ui', 'docs'] });` },
+          { title: 'From <select multiple>', run: true, code: `
+            container.innerHTML = '<select name="langs" multiple><option value="js" selected>JavaScript</option><option value="go">Go</option><option value="rs" selected>Rust</option></select>';
+            const dd = Look.lkDropdown(container.querySelector('select'), { label: 'Languages' });
+            log('multiple =', dd.multiple, 'value =', dd.value, 'name =', dd.name);` },
+        ],
+      },
+      { name: 'multiselect', type: 'boolean', default: '—', description: 'Alias of `multiple` (used only when `multiple` is not given).' },
+      {
+        name: 'chipColor', type: 'string', default: "'primary'",
+        description: 'lkChip color for the selected-value chips (multiple mode).',
+        values: [['primary', 'Brand (default)'], ['secondary', 'Blue-grey'], ['accent', 'Cyan'], ['positive', 'Green'], ['warning', 'Orange'], ['negative', 'Red'], ['info', 'Blue']],
+        examples: [{ title: 'Several colors', run: true, code: `
+          ['primary', 'positive', 'warning', 'negative'].forEach((chipColor) => {
+            const el = document.createElement('div'); el.style.marginBottom = '8px'; container.appendChild(el);
+            Look.lkDropdown(el, { items: ['one', 'two', 'three'], multiple: true, chipColor, value: ['one', 'two'] });
+          });` }],
+      },
+      {
+        name: 'maxChips', type: 'number', default: 'null (all)',
+        description: 'Show at most N chips; the rest collapse into a `+N` chip whose tooltip lists the hidden labels. `0` shows only the counter.',
+        examples: [
+          { title: 'maxChips: 2', run: true, code: `
+            ${MK}
+            Look.lkDropdown(el, { label: 'Team', multiple: true, maxChips: 2, items: ['Ana', 'Budi', 'Citra', 'Dewi', 'Eko'], value: ['Ana', 'Budi', 'Citra', 'Dewi'] });` },
+          { title: 'maxChips: 0', run: true, code: `
+            ${MK}
+            Look.lkDropdown(el, { label: 'Team', multiple: true, maxChips: 0, items: ['Ana', 'Budi', 'Citra'], value: ['Ana', 'Citra'] });` },
+        ],
+      },
+      {
+        name: 'closeOnSelect', type: 'boolean', default: 'true (single) / false (multiple)',
+        description: 'Whether the panel closes after a pick. In single mode the panel always closes on selection; this option matters for multiple mode.',
+        examples: [{ title: 'Multiple, close after each pick', run: true, code: `
+          ${MK}
+          ${FRUITS}
+          Look.lkDropdown(el, { label: 'Fruits', items, multiple: true, closeOnSelect: true });` }],
+      },
+
+      // ---- remote ---------------------------------------------------------
+      {
+        name: 'transport', type: 'Object', default: 'null',
+        description: '`{ read }` — loads items remotely. `read` can be:\n\n**a function** `(payload, { signal }) → Promise<response>`; **a URL string** (GET, payload appended as query string); or **a config object** `{ url, method, headers, credentials }` (non-GET sends the payload as a JSON body). `{key}` placeholders in the URL are replaced from the payload.\n\nThe payload is `{ page, pageSize }` plus `[searchParam]` (when `server.filter` and a query exist) and `[selectedParam]` (when `server.selected` and there is a value; comma-joined in multiple mode). The response may be an array, or an object with `items` / `data` / `results` / `rows` and `total` / `totalCount` / `count` / `meta.total`.',
+        examples: [
+          { title: 'Function transport (mock server)', run: true, code: `
+            ${MK}
+            ${MOCK}
+            Look.lkDropdown(el, {
+              label: 'Customer', pageSize: 10,
+              transport: { read: (payload) => { log('read', payload); return server(payload); } },
+            });` },
+          { title: 'URL string (GET)', code: `
+            Look.lkDropdown('#country', {
+              transport: { read: '/api/countries' },   // GET /api/countries?page=1&pageSize=20
+            });` },
+          { title: 'Config object (POST + headers + URL template)', code: `
+            Look.lkDropdown('#member', {
+              transport: {
+                read: {
+                  url: '/api/teams/{page}/members',   // {page} replaced from the payload
+                  method: 'POST',                    // payload sent as JSON body
+                  headers: { 'X-Tenant': 'acme' },
+                  credentials: 'include',
+                },
+              },
+            });` },
+        ],
+      },
+      { name: 'pageSize', type: 'number', default: '20', description: 'Rows requested per page (`payload.pageSize`).' },
+      {
+        name: 'infinite', type: 'boolean', default: 'false',
+        description: 'Requires `transport`. Scrolling within 60 px of the panel bottom loads the next page and appends it, until `total` rows are loaded.',
+        examples: [{ title: 'Scroll the open list', run: true, code: `
+          ${MK}
+          ${MOCK}
+          Look.lkDropdown(el, {
+            label: 'Customer (infinite)', pageSize: 15, infinite: true,
+            transport: { read: (p) => { log('page', p.page); return server(p); } },
+          });` }],
+      },
+      {
+        name: 'server', type: '{ filter?: boolean, selected?: boolean }', default: '{ filter: false, selected: true }',
+        description: '`filter: true` sends the search text to the server (`payload[searchParam]`) instead of filtering loaded rows locally — use with `useInput`. `selected: true` sends the current value(s) on every request (`payload[selectedParam]`) so the server can include the selected row on any page and the trigger can show its label. Partial objects are merged with the defaults.',
+        examples: [
+          { title: 'Server-side search', run: true, code: `
+            ${MK}
+            ${MOCK}
+            Look.lkDropdown(el, {
+              label: 'Customer (server search)', useInput: true, server: { filter: true }, pageSize: 8,
+              transport: { read: (p) => { log('q =', p.q ?? '(none)', 'selected =', p.selected ?? '-'); return server(p); } },
+            });` },
+          { title: 'Turn off the selected hint', code: `
+            Look.lkDropdown('#city', { value: 'jkt', server: { selected: false }, transport: { read: '/api/cities' } });` },
+        ],
+      },
+      {
+        name: 'searchParam', type: 'string', default: "'q'",
+        description: 'Payload / query-string key for the search text when `server.filter` is on.',
+        examples: [{ code: `
+          Look.lkDropdown('#user', {
+            useInput: true, server: { filter: true },
+            searchParam: 'search',                 // GET /api/users?page=1&pageSize=20&search=jan
+            transport: { read: '/api/users' },
+          });` }],
+      },
+      { name: 'selectedParam', type: 'string', default: "'selected'", description: 'Payload key for the selected-value hint (`server.selected`). Multiple mode sends the values comma-joined (`selected=3,7,9`).' },
+      {
+        name: 'request', type: '{ headers?: Object, credentials?: string }', default: "{ headers: {}, credentials: 'same-origin' }",
+        description: 'Defaults for URL / config transports: extra headers merged into every request (a `Content-Type: application/json` header is always sent; per-transport `headers` win) and the fetch `credentials` mode (`omit` | `same-origin` | `include`). Ignored by function transports.',
+        examples: [{ code: `
+          Look.lkDropdown('#project', {
+            request: { headers: { Authorization: 'Bearer ' + token }, credentials: 'include' },
+            transport: { read: 'https://api.example.com/projects' },
+          });` }],
+      },
+
+      // ---- field ----------------------------------------------------------
+      {
+        name: 'label', type: 'string', default: 'null (no wrapper)',
+        description: 'Creates a `.lk-field` wrapper with a `<label class="lk-label">` pointing at the trigger and a hidden `.lk-field-error` slot. Omit it to rely on an external `<label for="host-id">`.',
+        examples: [
+          { title: 'Created label', run: true, code: `
+            ${MK}
+            Look.lkDropdown(el, { label: 'Status', items: ['Open', 'Closed'] });` },
+          { title: 'External label (id takeover)', run: true, code: `
+            container.innerHTML = '<label class="lk-label" for="dd-ext-demo">Status (external label)</label><div id="dd-ext-demo"></div>';
+            const dd = Look.lkDropdown('#dd-ext-demo', { items: ['Open', 'Closed'], required: true });
+            log('trigger id =', dd.el.id, '| labels =', dd.labels.length);` },
+        ],
+      },
+      {
+        name: 'name', type: 'string', default: "null (or the <select>'s name)",
+        description: 'Name of the hidden input(s) submitted with the form.',
+        examples: [{ title: 'What the form posts', run: true, code: `
+          const form = document.createElement('form'); container.appendChild(form);
+          const a = document.createElement('div'); const b = document.createElement('div'); form.append(a, b);
+          Look.lkDropdown(a, { label: 'Size', name: 'size', items: ['S', 'M', 'L'], value: 'M' });
+          Look.lkDropdown(b, { label: 'Colors', name: 'color', multiple: true, items: ['red', 'green', 'blue'], value: ['red', 'blue'] });
+          log(new URLSearchParams(new FormData(form)).toString());` }],
+      },
+      {
+        name: 'required', type: 'boolean', default: 'from <select required> / label flag',
+        description: 'Marks the field required: `required` on the hidden input, `aria-required` on the trigger and a red asterisk on every label. An explicit `false` overrides the select attribute and flagged labels.',
+        examples: [{ run: true, code: `
+          ${MK}
+          ${FRUITS}
+          Look.lkDropdown(el, { label: 'Fruit', items, required: true });` }],
+      },
+      { name: 'mandatory', type: 'boolean', default: '—', description: 'Alias of `required`.' },
+      { name: 'requiredMark', type: 'boolean', default: 'true', description: 'Set to `false` to keep the required state without drawing the asterisk.' },
+      {
+        name: 'readonly', type: 'boolean', default: 'false',
+        description: 'Shows the value but the panel will not open; chips lose their remove buttons. Unlike `disabled`, the value is still submitted. Adds `.lk-dropdown__trigger--readonly`.',
+        examples: [{ run: true, code: `
+          ${MK}
+          Look.lkDropdown(el, { label: 'Region (readonly)', readonly: true, items: ['Asia', 'Europe'], value: 'Asia' });` }],
+      },
+      {
+        name: 'disabled', type: 'boolean', default: 'false',
+        description: 'Disables the trigger and the hidden input(s) — nothing opens and nothing is submitted.',
+        examples: [
+          { title: 'Single', run: true, code: `
+            ${MK}
+            Look.lkDropdown(el, { label: 'Status (disabled)', disabled: true, items: ['Active', 'Inactive'], value: 'Active' });` },
+          { title: 'Multiple', run: true, code: `
+            ${MK}
+            Look.lkDropdown(el, { label: 'Tags (disabled)', multiple: true, disabled: true, items: ['a', 'b', 'c'], value: ['a', 'c'] });` },
+        ],
+      },
+    ],
+
+    properties: [
+      {
+        name: 'value', type: 'any | any[]',
+        description: 'Get or set the selection (array in multiple mode — the getter returns a copy). Setting it updates the trigger and hidden input(s) but **does not fire `onChange`**. Set `null` (or `[]`) to clear.',
+        examples: [{ run: true, code: `
+          ${MK}
+          ${FRUITS}
+          const dd = Look.lkDropdown(el, { label: 'Fruit', items });
+          ['banana', 'mango', null].forEach((v, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'lk-btn lk-btn--sm lk-btn--secondary'; btn.style.margin = '6px 6px 0 0';
+            btn.textContent = 'value = ' + JSON.stringify(v);
+            btn.onclick = () => { dd.value = v; log('value =', dd.value, '| selectedItem =', dd.selectedItem); };
+            container.appendChild(btn);
+          });` }],
+      },
+      { name: 'selectedItem', type: 'Object | null', readonly: true, description: 'The item object of the current value (first selected item in multiple mode), or `null` (also while a value\'s item is not loaded yet).' },
+      { name: 'selectedItems', type: 'Array<Object | null>', readonly: true, description: 'All selected items in selection order (`[]` / one-element array in single mode). Entries are `null` for values whose item is not known yet.',
+        examples: [{ run: true, code: `
+          ${MK}
+          ${FRUITS}
+          const dd = Look.lkDropdown(el, { label: 'Fruits', items, multiple: true, value: ['cherry', 'apple'] });
+          log(dd.selectedItems.map((i) => i.label));` }] },
+      { name: 'items', type: 'Array', description: 'Get (copy) or replace the item list. The current value is kept and re-resolved against the new items; an open panel re-renders.',
+        examples: [{ run: true, code: `
+          ${MK}
+          const dd = Look.lkDropdown(el, { label: 'Model', placeholder: 'Pick a brand first' });
+          const brand = document.createElement('div'); container.prepend(brand);
+          Look.lkDropdown(brand, { label: 'Brand', items: ['Toyota', 'Honda'], onChange: (v) => {
+            dd.items = v === 'Toyota' ? ['Avanza', 'Innova', 'Yaris'] : ['Brio', 'Jazz', 'HR-V'];
+            dd.value = null;
+            log('models →', dd.items.map((i) => i.label));
+          } });` }] },
+      { name: 'multiple', type: 'boolean', readonly: true, description: 'Whether the dropdown is in multiple mode (fixed at creation).' },
+      { name: 'loading', type: 'boolean', readonly: true, description: '`true` while a remote request is in flight. The closed trigger also shows a spinner (`.lk-dropdown--loading`).' },
+      { name: 'prepend', type: 'HTMLElement | null', description: 'Getter returns the prepend slot (or `null` when empty); setter accepts the `prepend` option values.' },
+      { name: 'append', type: 'HTMLElement | null', description: 'Getter returns the append slot (or `null`); setter accepts the `append` option values.' },
+      { name: 'disabled', type: 'boolean', description: 'Get or set disabled state (trigger + hidden inputs; closes an open panel). Prefer this over `enabled` for dropdowns.',
+        examples: [{ run: true, code: `
+          ${MK}
+          const dd = Look.lkDropdown(el, { label: 'Toggle me', multiple: true, items: ['x', 'y', 'z'], value: ['x'] });
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--sm lk-btn--secondary'; btn.style.marginTop = '6px';
+          btn.textContent = 'dd.disabled = !dd.disabled';
+          btn.onclick = () => { dd.disabled = !dd.disabled; log('disabled =', dd.disabled); };
+          container.appendChild(btn);` }] },
+      { name: 'readonly', type: 'boolean', description: 'Get or set readonly state (closes an open panel; chips lose/regain remove buttons).' },
+      { name: 'name', type: 'string', description: 'Get or set the name of the hidden input(s).' },
+      { name: 'label', type: 'string', description: 'Get the primary label text; setting updates every managed label.' },
+      { name: 'labels', type: 'HTMLLabelElement[]', readonly: true, description: 'Created label plus external `<label for>` labels pointing at the trigger.' },
+      { name: 'required', type: 'boolean', description: 'Get or set required state (hidden input `required`, trigger `aria-required`, label asterisks).' },
+      { name: 'mandatory', type: 'boolean', description: 'Alias of `required` (not enumerable).' },
+      { name: 'enabled', type: 'boolean', description: 'Base property from applyBase: toggles `disabled` / `.lk-disabled` / `aria-disabled` on the trigger only. It blocks opening but does not disable the hidden inputs or update `disabled` — use `disabled` instead.' },
+      { name: 'hidden', type: 'boolean', description: 'Show/hide via `.lk-hidden` on the `.lk-field` wrapper (or the trigger when there is no wrapper).' },
+      { name: 'el', type: 'HTMLButtonElement | HTMLDivElement', readonly: true, description: 'The trigger element (`<button>` in single mode, `<div role="combobox">` in multiple mode).' },
+      { name: 'id', type: 'string', description: 'Get or set the trigger id (initially the host element\'s id).' },
+    ],
+
+    methods: [
+      {
+        name: 'open', signature: 'open() → void',
+        description: 'Opens the panel (no-op when disabled, readonly or already open). Loads remote data if needed.',
+        examples: [{ run: true, code: `
+          ${MK}
+          ${FRUITS}
+          const dd = Look.lkDropdown(el, { label: 'Fruit', items });
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--sm lk-btn--primary'; btn.style.marginTop = '6px';
+          btn.textContent = 'Open';
+          btn.onclick = (e) => { e.stopPropagation(); dd.open(); };
+          container.appendChild(btn);` }],
+      },
+      { name: 'close', signature: 'close() → void', description: 'Closes the panel and returns focus to the trigger.' },
+      {
+        name: 'load', signature: 'load() → Promise<void>',
+        description: 'Discards loaded rows and fetches page 1 again with the current search text (no-op without `transport`). Use it to preload before the first open or to refresh after server data changed.',
+        returns: { type: 'Promise<void>', description: 'Resolves when the request finished (also on error — the error text is shown in the panel).' },
+        examples: [{ title: 'Preload so the saved value shows its label', run: true, code: `
+          ${MK}
+          ${MOCK}
+          const dd = Look.lkDropdown(el, { label: 'Customer', value: 7, transport: { read: server } });
+          log('before load:', dd.selectedItem);
+          dd.load().then(() => log('after load:', dd.selectedItem.label));` }],
+      },
+      {
+        name: 'setError', signature: 'setError(message?: string) → void',
+        description: 'Red trigger border (`.lk-input--error`), `aria-invalid`, `.lk-field--error` on the wrapper and the message in `.lk-field-error` (only when the field has one, i.e. `label` was given).',
+        params: [{ name: 'message', type: 'string', optional: true, description: 'Text shown under the trigger.' }],
+        examples: [{ title: 'Validate on submit', run: true, code: `
+          ${MK}
+          ${FRUITS}
+          const dd = Look.lkDropdown(el, { label: 'Fruit', items, required: true, onChange: () => dd.clearError() });
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--sm lk-btn--primary'; btn.style.marginTop = '6px';
+          btn.textContent = 'Validate';
+          btn.onclick = () => { if (dd.required && dd.value == null) dd.setError('Please pick a fruit'); else log('ok:', dd.value); };
+          container.appendChild(btn);` }],
+      },
+      { name: 'clearError', signature: 'clearError() → void', description: 'Removes the error state and hides the message.' },
+      { name: 'refreshLabels', signature: 'refreshLabels() → void', description: 'Re-scans for `<label for="trigger-id">` labels added after creation and applies text sync and the asterisk.' },
+      {
+        name: 'destroy', signature: 'destroy() → void',
+        description: 'Closes the panel, aborts requests, removes all listeners, the floating layer, chips, the trigger, the hidden input(s) and a created wrapper. The original host element is **not** restored — an empty `span.lk-dropdown--destroyed` placeholder is left in its place.',
+      },
+    ],
+
+    events: [
+      {
+        name: 'onChange (single)', signature: 'onChange(value, item)',
+        description: 'Fired when the user picks an option or clears with ×. Not fired for programmatic `value` / `items` changes.',
+        args: [
+          { name: 'value', type: 'any', description: 'The picked item\'s value, or `null` after clearing.' },
+          { name: 'item', type: 'Object | null', description: 'The picked item object (as given, not a copy), or `null` after clearing.' },
+        ],
+        examples: [{ run: true, code: `
+          ${MK}
+          ${FRUITS}
+          Look.lkDropdown(el, { label: 'Fruit', items, clearable: true, onChange: (value, item) => log('onChange', value, item) });` }],
+      },
+      {
+        name: 'onChange (multiple)', signature: 'onChange(values, items)',
+        description: 'Fired on every pick/unpick in the panel, chip ×, Backspace on the trigger and the clear button.',
+        args: [
+          { name: 'values', type: 'any[]', description: 'Copy of all selected values, in selection order.' },
+          { name: 'items', type: 'Array<Object | null>', description: 'Matching item objects (`null` for values whose item is unknown).' },
+        ],
+        examples: [{ run: true, code: `
+          ${MK}
+          ${FRUITS}
+          Look.lkDropdown(el, { label: 'Fruits', items, multiple: true, clearable: true,
+            onChange: (values, picked) => log(values, picked.map((i) => i && i.label)) });` }],
+      },
+    ],
+
+    classes: [
+      { name: '.lk-dropdown__trigger', description: 'The control (also `.lk-input`). States: `--open`, `--readonly`, `--multiple`; `[disabled]` dims it; `.lk-input--error` paints it red.' },
+      { name: '.lk-dropdown--loading', description: 'On the closed trigger while a request runs (spinner in place of the caret).' },
+      { name: '.lk-dropdown__trigger-label', description: 'Selected text; `--placeholder` when showing the placeholder.' },
+      { name: '.lk-dropdown__prepend / __append / __caret / __clear', description: 'Trigger parts: adornments, the chevron and the × clear button.' },
+      { name: '.lk-dropdown__chips / __chip-more', description: 'Chip row in multiple mode and the `+N` overflow chip.' },
+      { name: '.lk-dropdown__layer', description: 'Fixed full-viewport layer in `<body>` hosting the panel; `--open`, `--closing`, `--above` drive the open/close motion and flip direction.' },
+      { name: '.lk-dropdown__panel', description: 'Floating card (`role="listbox"`); `--multiple` shows option checkboxes, `--dense` mirrors a dense trigger. `data-side="top|bottom"` tells where it opened.' },
+      { name: '.lk-dropdown__search / __search-input', description: 'Search row (`useInput`).' },
+      { name: '.lk-dropdown__list / __option', description: 'Option list; options get `--selected` (check mark / ticked box) and `--disabled`. Multiple mode adds `__option-check` and `__option-label` inside.' },
+      { name: '.lk-dropdown__loading / __empty', description: 'Loading row and no-results / error row.' },
+      {
+        name: '.lk-input--dense (host) / .lk-field--dense (ancestor)', description: 'Compact trigger, options and chips. Put `lk-input--dense` on the host element (copied to the trigger) or wrap the dropdown in `.lk-field--dense`.',
+        examples: [{ run: true, code: `
+          ${MK}
+          el.className = 'lk-input--dense';
+          Look.lkDropdown(el, { label: 'Dense', items: ['Low', 'Normal', 'High'], value: 'Normal' });` }],
+      },
+      { name: '.lk-dropdown--destroyed', description: 'Empty placeholder left behind by `destroy()`.' },
+    ],
+
+    tokens: [
+      { name: '--lk-z-dropdown', default: 'theme', description: 'z-index of the floating layer.' },
+      { name: '--lk-primary', default: 'theme', description: 'Focus ring, selected option tint, checkboxes.' },
+      { name: '--lk-shadow-lg / --lk-radius-lg', default: 'theme', description: 'Panel shadow and corner radius.' },
+      { name: '--lk-negative', default: 'theme', description: 'Error border and required asterisk.' },
+      { name: '--lk-duration-fast / --lk-easing-*', default: 'theme', description: 'Open/close motion (disabled under `prefers-reduced-motion`).' },
     ],
   });
+})();
+</script>
+<script>
+// =============================================================================
+// Shared data
+// =============================================================================
 
-  const size = Look.lkDropdown('#demo-size', { label: 'Size' });
-  const out = document.getElementById('output');
+const COUNTRIES = [
+  { value: 'af', label: 'Afghanistan' }, { value: 'al', label: 'Albania' },
+  { value: 'dz', label: 'Algeria' },     { value: 'ad', label: 'Andorra' },
+  { value: 'ao', label: 'Angola' },      { value: 'ar', label: 'Argentina' },
+  { value: 'am', label: 'Armenia' },     { value: 'au', label: 'Australia' },
+  { value: 'at', label: 'Austria' },     { value: 'az', label: 'Azerbaijan' },
+  { value: 'bs', label: 'Bahamas' },     { value: 'bh', label: 'Bahrain' },
+  { value: 'bd', label: 'Bangladesh' },  { value: 'by', label: 'Belarus' },
+  { value: 'be', label: 'Belgium' },     { value: 'bz', label: 'Belize' },
+  { value: 'bj', label: 'Benin' },       { value: 'bt', label: 'Bhutan' },
+  { value: 'bo', label: 'Bolivia' },     { value: 'ba', label: 'Bosnia' },
+  { value: 'bw', label: 'Botswana' },    { value: 'br', label: 'Brazil' },
+  { value: 'bn', label: 'Brunei' },      { value: 'bg', label: 'Bulgaria' },
+  { value: 'kh', label: 'Cambodia' },    { value: 'cm', label: 'Cameroon' },
+  { value: 'ca', label: 'Canada' },      { value: 'cl', label: 'Chile' },
+  { value: 'cn', label: 'China' },       { value: 'co', label: 'Colombia' },
+  { value: 'cg', label: 'Congo' },       { value: 'cr', label: 'Costa Rica' },
+  { value: 'hr', label: 'Croatia' },     { value: 'cu', label: 'Cuba' },
+  { value: 'cy', label: 'Cyprus' },      { value: 'cz', label: 'Czechia' },
+  { value: 'dk', label: 'Denmark' },     { value: 'do', label: 'Dominican Republic' },
+  { value: 'ec', label: 'Ecuador' },     { value: 'eg', label: 'Egypt' },
+  { value: 'sv', label: 'El Salvador' }, { value: 'ee', label: 'Estonia' },
+  { value: 'et', label: 'Ethiopia' },    { value: 'fi', label: 'Finland' },
+  { value: 'fr', label: 'France' },      { value: 'ge', label: 'Georgia' },
+  { value: 'de', label: 'Germany' },     { value: 'gh', label: 'Ghana' },
+  { value: 'gr', label: 'Greece' },      { value: 'gt', label: 'Guatemala' },
+  { value: 'hn', label: 'Honduras' },    { value: 'hk', label: 'Hong Kong' },
+  { value: 'hu', label: 'Hungary' },     { value: 'is', label: 'Iceland' },
+  { value: 'in', label: 'India' },       { value: 'id', label: 'Indonesia' },
+  { value: 'ir', label: 'Iran' },        { value: 'iq', label: 'Iraq' },
+  { value: 'ie', label: 'Ireland' },     { value: 'il', label: 'Israel' },
+  { value: 'it', label: 'Italy' },       { value: 'jm', label: 'Jamaica' },
+  { value: 'jp', label: 'Japan' },       { value: 'jo', label: 'Jordan' },
+  { value: 'kz', label: 'Kazakhstan' },  { value: 'ke', label: 'Kenya' },
+  { value: 'kw', label: 'Kuwait' },      { value: 'la', label: 'Laos' },
+  { value: 'lv', label: 'Latvia' },      { value: 'lb', label: 'Lebanon' },
+  { value: 'lt', label: 'Lithuania' },   { value: 'lu', label: 'Luxembourg' },
+  { value: 'my', label: 'Malaysia' },    { value: 'mv', label: 'Maldives' },
+  { value: 'mx', label: 'Mexico' },      { value: 'md', label: 'Moldova' },
+  { value: 'mn', label: 'Mongolia' },    { value: 'ma', label: 'Morocco' },
+  { value: 'mz', label: 'Mozambique' },  { value: 'mm', label: 'Myanmar' },
+  { value: 'np', label: 'Nepal' },       { value: 'nl', label: 'Netherlands' },
+  { value: 'nz', label: 'New Zealand' }, { value: 'ng', label: 'Nigeria' },
+  { value: 'kp', label: 'North Korea' }, { value: 'no', label: 'Norway' },
+  { value: 'om', label: 'Oman' },        { value: 'pk', label: 'Pakistan' },
+  { value: 'pa', label: 'Panama' },      { value: 'py', label: 'Paraguay' },
+  { value: 'pe', label: 'Peru' },        { value: 'ph', label: 'Philippines' },
+  { value: 'pl', label: 'Poland' },      { value: 'pt', label: 'Portugal' },
+  { value: 'qa', label: 'Qatar' },       { value: 'ro', label: 'Romania' },
+  { value: 'ru', label: 'Russia' },      { value: 'sa', label: 'Saudi Arabia' },
+  { value: 'sn', label: 'Senegal' },     { value: 'rs', label: 'Serbia' },
+  { value: 'sg', label: 'Singapore' },   { value: 'sk', label: 'Slovakia' },
+  { value: 'si', label: 'Slovenia' },    { value: 'za', label: 'South Africa' },
+  { value: 'kr', label: 'South Korea' }, { value: 'es', label: 'Spain' },
+  { value: 'lk', label: 'Sri Lanka' },   { value: 'se', label: 'Sweden' },
+  { value: 'ch', label: 'Switzerland' }, { value: 'sy', label: 'Syria' },
+  { value: 'tw', label: 'Taiwan' },      { value: 'tj', label: 'Tajikistan' },
+  { value: 'tz', label: 'Tanzania' },    { value: 'th', label: 'Thailand' },
+  { value: 'tn', label: 'Tunisia' },     { value: 'tr', label: 'Turkey' },
+  { value: 'tm', label: 'Turkmenistan'},  { value: 'ug', label: 'Uganda' },
+  { value: 'ua', label: 'Ukraine' },     { value: 'ae', label: 'UAE' },
+  { value: 'gb', label: 'United Kingdom'},{ value: 'us', label: 'United States' },
+  { value: 'uy', label: 'Uruguay' },     { value: 'uz', label: 'Uzbekistan' },
+  { value: 've', label: 'Venezuela' },   { value: 'vn', label: 'Vietnam' },
+  { value: 'ye', label: 'Yemen' },       { value: 'zm', label: 'Zambia' },
+  { value: 'zw', label: 'Zimbabwe' },
+];
 
-  document.getElementById('btn-val').onclick = () => {
-    out.textContent = `value="${country.value}" | selectedText="${country.selectedText}" | index=${country.selectedIndex}`;
+const FRAMEWORKS = [
+  { value: 'vue',     label: 'Vue.js' },
+  { value: 'react',   label: 'React' },
+  { value: 'angular', label: 'Angular' },
+  { value: 'svelte',  label: 'Svelte' },
+  { value: 'solid',   label: 'SolidJS' },
+  { value: 'astro',   label: 'Astro' },
+];
+
+// Fake 200-row dataset
+const EMPLOYEES = Array.from({ length: 200 }, (_, i) => ({
+  id: i + 1,
+  name: [
+    'Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank', 'Grace', 'Hank',
+    'Iris', 'Jack', 'Karen', 'Leo', 'Mia', 'Nina', 'Oscar', 'Paula',
+    'Quinn', 'Ray', 'Sara', 'Tom',
+  ][i % 20] + ' ' + String.fromCharCode(65 + Math.floor(i / 20)) + String(i + 1).padStart(3, '0'),
+}));
+
+// Helper to append a server log line
+function logLine(logEl, cls, text) {
+  const em = logEl.querySelector('em');
+  if (em) em.remove();
+  const line = document.createElement('div');
+  line.innerHTML = `<span class="${cls}">${text}</span>`;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+// Mock transport factory — filters & paginates a local array
+function mockTransport(data, opts = {}) {
+  const delay = opts.delay || 0;
+  const logEl  = opts.logEl || null;
+  const labelField = opts.labelField || 'label';
+  const valueField = opts.valueField || 'value';
+  const searchField = opts.searchField || labelField;
+
+  return async function(payload, { signal }) {
+    const { page = 1, pageSize = 10, selected } = payload;
+    const q = payload[opts.searchParam || 'q'];
+
+    if (logEl) {
+      const parts = [`page=${page}`, `pageSize=${pageSize}`];
+      if (q)        parts.push(`<span class="req">q="${q}"</span>`);
+      if (selected != null) parts.push(`<span class="hint">selected=${selected}</span>`);
+      logLine(logEl, 'req', `→ GET { ${parts.join(', ')} }`);
+    }
+
+    await new Promise(res => setTimeout(res, delay));
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+
+    let filtered = data;
+    if (q) {
+      const lq = String(q).toLowerCase();
+      filtered = data.filter(item => String(item[searchField]).toLowerCase().includes(lq));
+    }
+
+    // Honor the selected hint: ensure selected item is in the results
+    let mustInclude = null;
+    if (selected != null) {
+      mustInclude = data.find(item => String(item[valueField]) === String(selected));
+    }
+
+    const total  = filtered.length;
+    const start  = (page - 1) * pageSize;
+    const end    = start + pageSize;
+    let items    = filtered.slice(start, end);
+
+    if (mustInclude && !items.find(i => String(i[valueField]) === String(selected))) {
+      items = [mustInclude, ...items.slice(0, pageSize - 1)];
+    }
+
+    if (logEl) {
+      logLine(logEl, 'res', `← { items: ${items.length}, total: ${total} }`);
+    }
+
+    return { items, total };
   };
-  document.getElementById('btn-error').onclick = () => { country.setError('Please select a country'); };
-  document.getElementById('btn-clear').onclick = () => { country.clearError(); };
+}
+
+// =============================================================================
+// Section 1 — Basic
+// =============================================================================
+const basicDd = Look.lkDropdown('#basic-default', {
+  label: 'Framework',
+  name: 'framework',
+  placeholder: 'Select framework…',
+  items: FRAMEWORKS,
+  onChange(v) {
+    const out = document.getElementById('out-basic');
+    out.textContent = `value = "${v}"`;
+    out.classList.toggle('has-value', v != null);
+  },
+});
+document.getElementById('btn-basic-get').onclick = () => {
+  const out = document.getElementById('out-basic');
+  out.textContent = `value = "${basicDd.value}"`;
+  out.classList.toggle('has-value', basicDd.value != null);
+};
+
+const preselectDd = Look.lkDropdown('#basic-preselect', {
+  label: 'Country',
+  name: 'country',
+  value: 'au',
+  clearable: true,
+  items: COUNTRIES.slice(0, 12),
+  onChange(v, item) {
+    const out = document.getElementById('out-preselect');
+    out.textContent = item ? `${item.label} (${v})` : '(cleared)';
+    out.classList.toggle('has-value', v != null);
+  },
+});
+document.getElementById('btn-preselect-clear').onclick = () => { preselectDd.value = null; };
+document.getElementById('btn-preselect-set').onclick   = () => { preselectDd.value = 'jp'; };
+
+Look.lkDropdown('#basic-clearable', {
+  label: 'Size',
+  clearable: true,
+  placeholder: 'Choose size…',
+  items: [
+    { value: 'xs', label: 'Extra Small' },
+    { value: 's',  label: 'Small' },
+    { value: 'm',  label: 'Medium' },
+    { value: 'l',  label: 'Large' },
+    { value: 'xl', label: 'Extra Large' },
+  ],
+});
+
+Look.lkDropdown('#basic-disabled-item', {
+  label: 'Plan',
+  items: [
+    { value: 'free',       label: 'Free' },
+    { value: 'pro',        label: 'Pro' },
+    { value: 'enterprise', label: 'Enterprise', disabled: true },
+  ],
+});
+
+// =============================================================================
+// Section 2 — States
+// =============================================================================
+Look.lkDropdown('#state-disabled', {
+  label: 'Status',
+  disabled: true,
+  value: 'active',
+  items: [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }],
+});
+
+Look.lkDropdown('#state-readonly', {
+  label: 'Region',
+  readonly: true,
+  value: 'eu',
+  items: [{ value: 'eu', label: 'Europe' }, { value: 'us', label: 'United States' }],
+});
+
+const errDd = Look.lkDropdown('#state-error', {
+  label: 'Category',
+  items: [
+    { value: 'bug',     label: 'Bug' },
+    { value: 'feature', label: 'Feature request' },
+    { value: 'docs',    label: 'Documentation' },
+  ],
+});
+document.getElementById('btn-err-set').onclick   = () => errDd.setError('Please select a category');
+document.getElementById('btn-err-clear').onclick = () => errDd.clearError();
+
+const reqDd = Look.lkDropdown('#state-required', {
+  label: 'Language',
+  required: true,
+  items: [
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'French' },
+    { value: 'de', label: 'German' },
+    { value: 'ja', label: 'Japanese' },
+  ],
+});
+const outReq = document.getElementById('out-req');
+document.getElementById('btn-req-toggle').onclick = () => {
+  reqDd.required = !reqDd.required;
+  outReq.textContent = `required = ${reqDd.required}`;
+};
+
+// =============================================================================
+// Section 3 — Search
+// =============================================================================
+Look.lkDropdown('#search-local', {
+  label: 'Country',
+  useInput: true,
+  clearable: true,
+  items: COUNTRIES,
+});
+
+Look.lkDropdown('#search-custom', {
+  label: 'Framework',
+  useInput: true,
+  clearable: true,
+  searchPlaceholder: 'Find a framework…',
+  debounce: 80,
+  noResultsText: 'No matching framework',
+  items: FRAMEWORKS,
+});
+
+// =============================================================================
+// Section 4 — Custom field mapping
+// =============================================================================
+const cfDd = Look.lkDropdown('#custom-field', {
+  label: 'Department',
+  valueField: 'id',
+  labelField: 'name',
+  clearable: true,
+  items: [
+    { id: 1, name: 'Engineering' },
+    { id: 2, name: 'Design' },
+    { id: 3, name: 'Marketing' },
+    { id: 4, name: 'Finance' },
+    { id: 5, name: 'Human Resources' },
+  ],
+});
+document.getElementById('btn-cf-get').onclick = () => {
+  const out = document.getElementById('out-cf');
+  out.textContent = `id = ${cfDd.value} | item = ${JSON.stringify(cfDd.selectedItem)}`;
+  out.classList.toggle('has-value', cfDd.value != null);
+};
+
+Look.lkDropdown('#str-items', {
+  label: 'Tag',
+  clearable: true,
+  items: ['frontend', 'backend', 'devops', 'design', 'data', 'security'],
+});
+
+// =============================================================================
+// Section 5 — Transport function
+// =============================================================================
+const logTransportFn = document.getElementById('log-transport-fn');
+Look.lkDropdown('#transport-fn', {
+  label: 'User',
+  useInput: true,
+  clearable: true,
+  pageSize: 8,
+  transport: {
+    read: mockTransport(EMPLOYEES, {
+      labelField: 'name', valueField: 'id', searchField: 'name',
+      logEl: logTransportFn,
+    }),
+  },
+  valueField: 'id',
+  labelField: 'name',
+});
+
+Look.lkDropdown('#transport-slow', {
+  label: 'Employee (800 ms delay)',
+  useInput: true,
+  clearable: true,
+  pageSize: 10,
+  transport: {
+    read: mockTransport(EMPLOYEES, {
+      labelField: 'name', valueField: 'id', delay: 800,
+    }),
+  },
+  valueField: 'id',
+  labelField: 'name',
+});
+
+// =============================================================================
+// Section 6 — Server-side filter
+// =============================================================================
+const logServerFilter = document.getElementById('log-server-filter');
+Look.lkDropdown('#server-filter', {
+  label: 'Country (server search)',
+  useInput: true,
+  clearable: true,
+  pageSize: 10,
+  server: { filter: true },
+  searchParam: 'q',
+  transport: {
+    read: mockTransport(COUNTRIES, {
+      labelField: 'label', valueField: 'value', searchField: 'label',
+      searchParam: 'q',
+      logEl: logServerFilter,
+    }),
+  },
+});
+
+// =============================================================================
+// Section 7 — Infinite scroll
+// =============================================================================
+const logInfinite = document.getElementById('log-infinite');
+let infPage = 0;
+Look.lkDropdown('#infinite-scroll', {
+  label: 'Employee (infinite scroll)',
+  useInput: true,
+  clearable: true,
+  infinite: true,
+  pageSize: 12,
+  server: { filter: true },
+  transport: {
+    read: mockTransport(EMPLOYEES, {
+      labelField: 'name', valueField: 'id', searchField: 'name',
+      logEl: logInfinite, delay: 250,
+    }),
+  },
+  valueField: 'id',
+  labelField: 'name',
+});
+
+// =============================================================================
+// Section 8 — Selected param / paginated value resolution
+// =============================================================================
+const logSp = document.getElementById('log-selected-param');
+const spDd  = Look.lkDropdown('#selected-param', {
+  label: 'Record',
+  value: 99,
+  clearable: true,
+  infinite: true,
+  pageSize: 10,
+  server: { selected: true },
+  selectedParam: 'selected',
+  transport: {
+    read: mockTransport(EMPLOYEES, {
+      labelField: 'name', valueField: 'id', searchField: 'name',
+      logEl: logSp, delay: 200,
+    }),
+  },
+  valueField: 'id',
+  labelField: 'name',
+  onChange(v) {
+    const out = document.getElementById('out-sp');
+    out.textContent = v == null ? '(cleared)' : `value = ${v}`;
+    out.classList.toggle('has-value', v != null);
+  },
+});
+document.getElementById('btn-sp-set42').onclick = () => { spDd.value = 42; document.getElementById('out-sp').textContent = 'value = 42'; document.getElementById('out-sp').classList.add('has-value'); };
+document.getElementById('btn-sp-clear').onclick  = () => { spDd.value = null; };
+document.getElementById('btn-sp-load').onclick   = () => spDd.load();
+
+// =============================================================================
+// Section 9 — Programmatic control
+// =============================================================================
+let progItems1 = FRAMEWORKS.slice();
+let progItems2 = [
+  { value: 'django',   label: 'Django' },
+  { value: 'rails',    label: 'Ruby on Rails' },
+  { value: 'laravel',  label: 'Laravel' },
+  { value: 'express',  label: 'Express.js' },
+  { value: 'fastapi',  label: 'FastAPI' },
+];
+let swapped = false;
+let progDestroyed = false;
+
+const progDd = Look.lkDropdown('#prog-dd', {
+  label: 'Framework',
+  clearable: true,
+  useInput: true,
+  items: progItems1,
+  onChange(v, item) {
+    document.getElementById('out-prog').textContent = `onChange → value="${v}" label="${item?.label}"`;
+    document.getElementById('out-prog').classList.toggle('has-value', v != null);
+  },
+});
+
+const outProg = document.getElementById('out-prog');
+
+document.getElementById('btn-prog-open').onclick  = () => { if (!progDestroyed) progDd.open(); };
+document.getElementById('btn-prog-close').onclick = () => { if (!progDestroyed) progDd.close(); };
+document.getElementById('btn-prog-val').onclick   = () => { if (!progDestroyed) { progDd.value = 'vue'; outProg.textContent = 'value set to "vue"'; } };
+document.getElementById('btn-prog-items').onclick = () => {
+  if (progDestroyed) return;
+  swapped = !swapped;
+  progDd.items = swapped ? progItems2 : progItems1;
+  outProg.textContent = `items swapped to ${swapped ? 'backend' : 'frontend'} frameworks`;
+};
+document.getElementById('btn-prog-get').onclick   = () => { if (!progDestroyed) { outProg.textContent = `value="${progDd.value}" | selectedItem=${JSON.stringify(progDd.selectedItem)}`; } };
+document.getElementById('btn-prog-hide').onclick  = () => { if (!progDestroyed) { progDd.hidden = !progDd.hidden; outProg.textContent = `hidden = ${progDd.hidden}`; } };
+document.getElementById('btn-prog-dis').onclick   = () => { if (!progDestroyed) { progDd.disabled = !progDd.disabled; outProg.textContent = `disabled = ${progDd.disabled}`; } };
+document.getElementById('btn-prog-load').onclick  = () => { if (!progDestroyed) { progDd.load(); outProg.textContent = 'load() called (no transport, no-op)'; } };
+document.getElementById('btn-prog-destroy').onclick = () => {
+  if (!progDestroyed) {
+    progDd.destroy();
+    progDestroyed = true;
+    outProg.textContent = 'destroy() called — component removed from DOM';
+  }
+};
+
+// =============================================================================
+// Section 10 — Dense
+// =============================================================================
+Look.lkDropdown('#dense-normal', {
+  label: 'Priority',
+  items: [
+    { value: 'low',    label: 'Low' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'high',   label: 'High' },
+  ],
+});
+Look.lkDropdown('#dense-dense', {
+  label: 'Priority',
+  items: [
+    { value: 'low',    label: 'Low' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'high',   label: 'High' },
+  ],
+});
+
+// =============================================================================
+// Section 11 — onChange event log
+// =============================================================================
+const logEl = document.getElementById('out-log');
+Look.lkDropdown('#onchange-dd', {
+  label: 'Framework',
+  clearable: true,
+  useInput: true,
+  items: FRAMEWORKS,
+  onChange(value, item) {
+    const em = logEl.querySelector('em');
+    if (em) em.remove();
+    const line = document.createElement('div');
+    const t = new Date().toLocaleTimeString();
+    line.style.borderBottom = '1px solid #1e293b';
+    line.style.paddingBottom = '2px';
+    line.style.marginBottom  = '2px';
+    line.innerHTML = `<span style="color:#475569">${t}</span>  `
+      + `onChange(<span style="color:#7dd3fc">${JSON.stringify(value)}</span>, `
+      + `<span style="color:#86efac">${JSON.stringify(item)}</span>)`;
+    logEl.appendChild(line);
+    logEl.scrollTop = logEl.scrollHeight;
+  },
+});
+
+// --- 12. Multiple selection ---------------------------------------------------
+const SKILLS = ['Design', 'Engineering', 'Marketing', 'Sales', 'Support', 'Finance', 'Legal', 'Operations']
+  .map((label) => ({ value: label.toLowerCase(), label }));
+const outMulti = document.getElementById('out-multi');
+const multiBasic = Look.lkDropdown('#multi-basic', {
+  label: 'Skills',
+  name: 'skills',
+  multiple: true,
+  useInput: true,
+  clearable: true,
+  placeholder: 'Pick skills…',
+  items: SKILLS,
+  value: ['design', 'engineering'],
+  onChange(values) { outMulti.textContent = 'value = ' + JSON.stringify(values); },
+});
+outMulti.textContent = 'value = ' + JSON.stringify(multiBasic.value);
+
+Look.lkDropdown('#multi-max', {
+  label: 'Teams',
+  multiple: true,
+  maxChips: 2,
+  chipColor: 'positive',
+  items: SKILLS,
+  value: ['design', 'sales', 'legal', 'finance'],
+});
+
+Look.lkDropdown('#multi-native');
+
+Look.lkDropdown('#multi-dense', {
+  label: 'Dense',
+  multiple: true,
+  items: SKILLS,
+  value: ['support', 'operations'],
+});
+
+Look.lkDropdown('#multi-disabled', {
+  label: 'Disabled',
+  multiple: true,
+  disabled: true,
+  items: SKILLS,
+  value: ['finance'],
+});
+
+// =============================================================================
+// Section 13 — Adornments, native select & form submit
+// =============================================================================
+Look.lkDropdown('#adorn-dd', {
+  label: 'Reviewer',
+  name: 'reviewer',
+  clearable: true,
+  prepend: Look.lkIcon('user', { size: 'sm' }),
+  append: 'team',
+  items: EMPLOYEES.slice(0, 8).map((e) => ({ value: e.id, label: e.name })),
+  value: 3,
+});
+
+const nativeDd = Look.lkDropdown('#native-single');   // options, selected, name, required, id all adopted
+
+const formMulti = Look.lkDropdown('#form-multi', {
+  label: 'Watchers',
+  name: 'watchers',
+  multiple: true,
+  maxChips: 3,
+  items: FRAMEWORKS,
+  value: ['vue', 'svelte'],
+});
+
+document.getElementById('dd-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const out = document.getElementById('out-form');
+  // The required flag lives on a hidden input, which browsers do not validate — check it here.
+  if (nativeDd.required && !nativeDd.value) {
+    nativeDd.setError('Pick a priority');
+    out.textContent = 'Blocked: priority is required';
+    return;
+  }
+  nativeDd.clearError();
+  out.textContent = new URLSearchParams(new FormData(e.target)).toString();
+  out.classList.add('has-value');
+});
 </script>
 </body>
 </html>

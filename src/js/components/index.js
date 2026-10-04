@@ -1,7 +1,10 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Component registry — factory functions for each UI component
 
 import { qs } from '../core/index.js';
-import { lkToggleable, lkFocusTrap } from '../behaviors/index.js';
+import { lkFocusTrap } from '../behaviors/index.js';
+import { readDurationMs } from '../helpers/motion.js';
 
 // --- Button ---
 
@@ -30,34 +33,95 @@ export function lkButton(el) {
  * Create and manage a modal dialog.
  * @param {Element|string} triggerEl  — element or selector for the open trigger
  * @param {Element|string} modalEl    — element or selector for the modal container
- * @returns {{ open: Function, close: Function, destroy: Function }}
+ * @returns {{ open: Function, close: Function, isOpen: boolean, destroy: Function }}
  */
 export function lkModal(triggerEl, modalEl) {
   const trigger = typeof triggerEl === 'string' ? qs(triggerEl) : triggerEl;
   const modal   = typeof modalEl   === 'string' ? qs(modalEl)   : modalEl;
   if (!trigger || !modal) throw new Error('Look.lkModal: trigger or modal element not found.');
 
-  const toggle = lkToggleable(trigger, modal, 'lk-modal--open');
-  const trap   = lkFocusTrap(modal);
+  // Fallback for the exit timer; the real value is --lk-modal-exit-duration.
+  const EXIT_MS = 180;
 
-  function open()  { modal.classList.add('lk-modal--open');    trigger.setAttribute('aria-expanded', 'true');  }
-  function close() { modal.classList.remove('lk-modal--open'); trigger.setAttribute('aria-expanded', 'false'); }
+  const trap = lkFocusTrap(modal);
+  const dialog = modal.querySelector('.lk-modal') || modal;
+  const addedTabindex = !dialog.hasAttribute('tabindex');
+  if (addedTabindex) dialog.setAttribute('tabindex', '-1');
+
+  let isOpen = modal.classList.contains('lk-modal--open');
+  let closeTimer = null;
+  let previousFocus = null;
+
+  function clearCloseTimer() {
+    if (closeTimer) {
+      clearTimeout(closeTimer);
+      closeTimer = null;
+    }
+  }
+
+  function open() {
+    if (isOpen) return;
+    isOpen = true;
+    clearCloseTimer();
+    previousFocus = document.activeElement;
+    modal.classList.remove('lk-modal--closing');
+    modal.classList.add('lk-modal--open');
+    trigger.setAttribute('aria-expanded', 'true');
+    if (typeof dialog.focus === 'function') dialog.focus({ preventScroll: true });
+  }
+
+  function close() {
+    if (!isOpen) return;
+    isOpen = false;
+    clearCloseTimer();
+    modal.classList.remove('lk-modal--open');
+    modal.classList.add('lk-modal--closing');
+    trigger.setAttribute('aria-expanded', 'false');
+    closeTimer = setTimeout(() => {
+      closeTimer = null;
+      modal.classList.remove('lk-modal--closing');
+    }, readDurationMs(modal, '--lk-modal-exit-duration', EXIT_MS) + 20);
+
+    if (modal.contains(document.activeElement) && previousFocus && previousFocus.isConnected
+      && typeof previousFocus.focus === 'function') {
+      previousFocus.focus({ preventScroll: true });
+    }
+    previousFocus = null;
+  }
+
+  function onTriggerClick() {
+    if (isOpen) close();
+    else open();
+  }
+
+  function onKeydown(e) {
+    if (isOpen && e.key === 'Escape') close();
+  }
+
+  trigger.addEventListener('click', onTriggerClick);
+  document.addEventListener('keydown', onKeydown);
 
   return {
     open,
     close,
+    get isOpen() { return isOpen; },
     destroy() {
-      toggle.destroy();
+      clearCloseTimer();
+      trigger.removeEventListener('click', onTriggerClick);
+      document.removeEventListener('keydown', onKeydown);
+      modal.classList.remove('lk-modal--closing');
+      if (addedTabindex) dialog.removeAttribute('tabindex');
       trap.destroy();
     },
   };
 }
 
 // --- Form components ---
-export { lkTextbox, lkDropdown, lkCheckbox, lkRadio, lkSwitch } from './form.js';
+export { lkTextbox, lkCheckbox, lkRadio, lkSwitch } from './form.js';
+export { lkDropdown } from './dropdown.js';
 
 // --- Icon utility ---
-export { lkIcon }       from './icon.js';
+export { lkIcon, lkIcons, lkIcons as icons } from './icon.js';
 
 // --- Interactive components ---
 export { lkCarousel }   from './carousel.js';
@@ -69,5 +133,4 @@ export { lkList }       from './list.js';
 export { lkPagination } from './pagination.js';
 export { lkProgress }   from './progress.js';
 export { lkSplitter }   from './splitter.js';
-export { lkTable }      from './table.js';
 

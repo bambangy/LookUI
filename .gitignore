@@ -2,3 +2,4 @@ node_modules/
 dist/
 *.raw.css
 CLAUDE.md
+.claude/

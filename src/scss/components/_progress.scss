@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Linear progress component
 
 .lk-progress {
@@ -13,6 +15,7 @@
     border-radius: inherit;
     transition: width var(--lk-duration-base) var(--lk-easing-default);
     min-width: 0;
+    max-width: 100%;
   }
 
   // --- Color variants ---
@@ -64,7 +67,12 @@
 
   &--indeterminate &__bar {
     width: 30% !important;
+    transition: none;
     animation: lk-progress-indeterminate 1.5s var(--lk-easing-default) infinite;
+  }
+
+  &--indeterminate &__label {
+    display: none;
   }
 
   // --- With label ---
@@ -75,14 +83,20 @@
   }
 
   &__label {
+    // Small pill keeps the text legible whether it sits over the filled
+    // bar or the empty track.
     position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0.125rem var(--lk-space-2);
     font-size: var(--lk-text-xs);
     font-weight: var(--lk-weight-semibold);
+    line-height: 1;
     color: var(--lk-text);
+    background: color-mix(in srgb, var(--lk-bg) 85%, transparent);
+    border-radius: var(--lk-radius-full);
+    white-space: nowrap;
     pointer-events: none;
   }
 
@@ -97,7 +111,8 @@
   }
 
   &--dense &__label {
-    font-size: 0.5rem;
+    padding: 0 var(--lk-space-1);
+    font-size: 0.5625rem;
   }
 }
 

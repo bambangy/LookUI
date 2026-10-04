@@ -1,10 +1,15 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Toolbar component — MS Office-style toolbar
 // Toolbar-specific buttons: .lk-toolbar__btn  (do NOT use .lk-btn inside toolbar)
 // Variants: icon-only | text-only | icon+text (icon before label)
 // Grouping: .lk-toolbar__group joins buttons with shared border
+// Composable (lkToolbar) extras: __text, __check, __field (embedded inputs/dropdowns),
+//   __custom, --wrap / --scroll, --align-*, button colors, .lk-toolbar-menu (popup menu)
 
 // Shared button token
 $_btn-height: 1.875rem; // 30px — compact like Office ribbon
+$_btn-height-dense: 1.5rem;
 $_btn-color:  var(--lk-text-muted);
 
 .lk-toolbar {
@@ -53,7 +58,7 @@ $_btn-color:  var(--lk-text-muted);
 
     // Label text (optional — only present in text or icon+text buttons)
     &-label {
-      font-size: var(--lk-text-sm);
+      font-size: inherit; // follow the button (so --dense shrinks it too)
       line-height: 1;
     }
 
@@ -67,23 +72,46 @@ $_btn-color:  var(--lk-text-muted);
 
     &:active:not(:disabled),
     &.is-pressed {
-      background: rgba(0, 0, 0, 0.12);
+      background: rgb(var(--lk-shadow-color) / 0.12);
       border-color: var(--lk-border);
     }
 
     &--active {
-      background: rgba(var(--lk-primary-rgb, 92 107 192), 0.12);
-      border-color: rgba(var(--lk-primary-rgb, 92 107 192), 0.3);
+      background: color-mix(in srgb, var(--lk-primary) 12%, transparent);
+      border-color: color-mix(in srgb, var(--lk-primary) 30%, transparent);
       color: var(--lk-primary);
 
       &:hover:not(:disabled) {
-        background: rgba(var(--lk-primary-rgb, 92 107 192), 0.2);
+        background: color-mix(in srgb, var(--lk-primary) 20%, transparent);
       }
     }
 
     &:disabled {
       opacity: 0.4;
       cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--lk-primary);
+      outline-offset: 1px;
+    }
+
+    // --- Text colors (composable `color` option) ---
+    @each $c in primary, secondary, positive, negative, warning, info {
+      &--#{$c} {
+        color: var(--lk-#{$c});
+
+        &:hover:not(:disabled) {
+          color: var(--lk-#{$c});
+          background: color-mix(in srgb, var(--lk-#{$c}) 12%, transparent);
+          border-color: color-mix(in srgb, var(--lk-#{$c}) 25%, transparent);
+        }
+      }
+    }
+
+    // Date trigger without a value yet
+    &--placeholder {
+      font-style: italic;
     }
 
     // --- Icon-only: square ---
@@ -149,6 +177,123 @@ $_btn-color:  var(--lk-text-muted);
   }
 
   // =========================================================================
+  // Text label, inline check/switch, embedded fields, custom slot
+  // =========================================================================
+
+  &__text {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lk-space-1);
+    padding: 0 var(--lk-space-1);
+    font-size: var(--lk-text-sm);
+    color: var(--lk-text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  &__check {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lk-space-2);
+    height: $_btn-height;
+    padding: 0 var(--lk-space-1);
+    font-size: var(--lk-text-sm);
+    color: var(--lk-text);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    flex-shrink: 0;
+
+    &--disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  &__custom {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lk-space-1);
+    flex-shrink: 0;
+  }
+
+  &__field {
+    display: inline-flex;
+    align-items: center;
+    width: 12rem;
+    max-width: 100%;
+    flex-shrink: 0;
+
+    &--dropdown { width: 10rem; }
+    &--search   { width: 14rem; }
+
+    // Textbox / search (lkTextbox wraps the input in .lk-input-affix)
+    .lk-input-affix {
+      height: $_btn-height;
+      box-sizing: border-box;
+    }
+
+    .lk-input-affix__prepend,
+    .lk-input-affix__append {
+      padding: 0 var(--lk-space-2);
+      font-size: var(--lk-text-sm);
+
+      .lk-icon { font-size: 0.875rem; }
+    }
+
+    .lk-input-affix--has-prepend .lk-input-affix__prepend {
+      border-right: none;
+      padding-right: 0;
+    }
+
+    .lk-input.lk-input--affixed {
+      height: 100%;
+      min-width: 0;
+      padding: 0 var(--lk-space-2);
+      font-size: var(--lk-text-sm);
+      line-height: 1;
+    }
+
+    input[type='search'] {
+      appearance: none;
+    }
+
+    // Dropdown trigger (compound selector beats .lk-dropdown__trigger.lk-input)
+    .lk-dropdown__trigger.lk-input {
+      height: $_btn-height;
+      min-height: 0;
+      padding: 0 var(--lk-space-2);
+      font-size: var(--lk-text-sm);
+      line-height: 1;
+    }
+
+    .lk-dropdown__trigger-label {
+      font-size: inherit;
+      line-height: 1.2;
+    }
+  }
+
+  // =========================================================================
+  // Layout modifiers (composable options)
+  // =========================================================================
+
+  &--wrap {
+    flex-wrap: wrap;
+    row-gap: var(--lk-space-1);
+  }
+
+  &--scroll {
+    overflow-x: auto;
+    scrollbar-width: thin;
+
+    > * { flex-shrink: 0; }
+  }
+
+  &--align-center  { justify-content: center; }
+  &--align-end     { justify-content: flex-end; }
+  &--align-between { justify-content: space-between; }
+
+  // =========================================================================
   // Variants
   // =========================================================================
 
@@ -188,6 +333,17 @@ $_btn-color:  var(--lk-text-muted);
     .lk-toolbar__separator {
       background: rgba(255, 255, 255, 0.3);
     }
+
+    .lk-toolbar__text,
+    .lk-toolbar__check {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    // Tonal chips would vanish on the colored bar
+    .lk-chip:not(.lk-chip--filled):not(.lk-chip--outline) {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+    }
   }
 
   &--dark {
@@ -221,6 +377,16 @@ $_btn-color:  var(--lk-text-muted);
     .lk-toolbar__separator {
       background: rgba(255, 255, 255, 0.2);
     }
+
+    .lk-toolbar__text,
+    .lk-toolbar__check {
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .lk-chip:not(.lk-chip--filled):not(.lk-chip--outline) {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
   }
 
   // =========================================================================
@@ -248,5 +414,126 @@ $_btn-color:  var(--lk-text-muted);
       height: 1rem;
       margin: 0 2px;
     }
+
+    .lk-toolbar__text,
+    .lk-toolbar__check {
+      font-size: var(--lk-text-xs);
+    }
+
+    .lk-toolbar__check {
+      height: $_btn-height-dense;
+      gap: var(--lk-space-1);
+    }
+
+    // Embedded switch follows the dense switch size
+    .lk-switch {
+      width: 2rem;
+      height: 1.125rem;
+
+      &::after {
+        width: calc(1.125rem - 4px);
+        height: calc(1.125rem - 4px);
+      }
+
+      &:checked::after {
+        transform: translateX(calc(2rem - 1.125rem));
+      }
+    }
+
+    .lk-checkbox {
+      width: 0.9375rem;
+      height: 0.9375rem;
+    }
+
+    .lk-toolbar__field {
+      .lk-input-affix,
+      .lk-dropdown__trigger.lk-input {
+        height: $_btn-height-dense;
+      }
+
+      .lk-input.lk-input--affixed,
+      .lk-dropdown__trigger.lk-input,
+      .lk-input-affix__prepend,
+      .lk-input-affix__append {
+        font-size: var(--lk-text-xs);
+      }
+
+      .lk-input-affix__prepend .lk-icon { font-size: 0.75rem; }
+    }
   }
+}
+
+// =============================================================================
+// Toolbar menu (lkToolbar `menu` item — lives inside an lkPopupProxy panel)
+// =============================================================================
+
+.lk-toolbar-menu-panel.lk-popup-proxy__panel {
+  min-width: 10rem;
+  padding: var(--lk-space-1);
+  background: var(--lk-bg);
+  border-radius: var(--lk-radius-md);
+}
+
+.lk-toolbar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: var(--lk-text-sm);
+  color: var(--lk-text);
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: var(--lk-space-2);
+    width: 100%;
+    min-height: $_btn-height;
+    padding: var(--lk-space-1) var(--lk-space-2);
+    border: none;
+    border-radius: var(--lk-radius);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--lk-duration-fast) var(--lk-easing-default);
+
+    .lk-icon {
+      font-size: 1rem;
+      color: var(--lk-text-muted);
+      flex-shrink: 0;
+    }
+
+    &:hover:not(:disabled),
+    &:focus-visible {
+      background: color-mix(in srgb, var(--lk-primary) 8%, transparent);
+      outline: none;
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  }
+
+  &__label {
+    flex: 1 1 auto;
+  }
+
+  &__shortcut {
+    margin-left: var(--lk-space-4);
+    font-size: var(--lk-text-xs);
+    color: var(--lk-text-muted);
+  }
+
+  &__separator {
+    height: var(--lk-border-width);
+    margin: var(--lk-space-1) 0;
+    background: var(--lk-border);
+  }
+}
+
+.lk-toolbar-menu-panel--dense {
+  .lk-toolbar-menu { font-size: var(--lk-text-xs); }
+  .lk-toolbar-menu__item { min-height: $_btn-height-dense; }
 }

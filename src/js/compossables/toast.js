@@ -1,5 +1,7 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 import { lkIcon } from '../components/icon.js';
-import { createPresenceController } from '../helpers/motion.js';
+import { createPresenceController, readDurationMs } from '../helpers/motion.js';
 
 const CONTAINER_PREFIX = 'lk-toast-container';
 const EXIT_MS = 320;
@@ -31,7 +33,7 @@ function createContainer(position, zIndex) {
   container.style.flexDirection = 'column';
   container.style.gap = 'var(--lk-space-2)';
   container.style.pointerEvents = 'none';
-  container.style.zIndex = String(zIndex);
+  container.style.zIndex = zIndex == null ? 'var(--lk-z-toast)' : String(zIndex);
   container.style.maxWidth = 'min(28rem, calc(100vw - var(--lk-space-8)))';
   Object.assign(container.style, pos);
 
@@ -58,7 +60,7 @@ function getContainer(position, zIndex) {
  * @param {number} [opts.duration] - ms before auto-close; 0 = no auto-close (default 3000)
  * @param {string} [opts.position] - 'top-right' | 'top-left' | 'top-center' | 'bottom-*' (default 'top-right')
  * @param {boolean} [opts.dismissible] - show close button (default true)
- * @param {number} [opts.zIndex] - (default 110)
+ * @param {number} [opts.zIndex] - (default var(--lk-z-toast))
  * @param {string} [opts.actionText] - text for optional action link
  * @param {Function} [opts.onAction] - callback when action clicked
  * @param {Function} [opts.onClose] - callback(reason) on close
@@ -73,7 +75,7 @@ export function lkToast(opts = {}) {
     duration: 3000,
     position: 'top-right',
     dismissible: true,
-    zIndex: 110,
+    zIndex: null,
     actionText: '',
     onAction: null,
     onClose: null,
@@ -85,6 +87,11 @@ export function lkToast(opts = {}) {
   // --- Root element ---
   const toast = document.createElement('div');
   toast.className = 'lk-toast' + (options.type ? ` lk-toast--${options.type}` : '');
+  // Exit direction: toward the edge the stack sits on
+  const exitDir = options.position.endsWith('left') ? 'left'
+    : options.position.endsWith('right') ? 'right'
+      : (options.position.startsWith('bottom') ? 'down' : 'up');
+  toast.classList.add(`lk-toast--exit-${exitDir}`);
   if (options.position.startsWith('bottom')) {
     toast.classList.add('lk-toast--from-bottom');
   }
@@ -108,7 +115,7 @@ export function lkToast(opts = {}) {
   const titleEl = document.createElement('div');
   titleEl.className = 'lk-toast__title';
   titleEl.textContent = options.title;
-  if (!options.title) titleEl.style.display = 'none';
+  titleEl.hidden = !options.title;
 
   const messageEl = document.createElement('div');
   messageEl.className = 'lk-toast__message';
@@ -154,8 +161,14 @@ export function lkToast(opts = {}) {
     element: toast,
     visibleClass: 'lk-toast--open',
     closingClass: 'lk-toast--closing',
-    exitMs: EXIT_MS,
+    exitMs: () => readDurationMs(toast, '--lk-toast-slide-duration', EXIT_MS)
+      + readDurationMs(toast, '--lk-toast-collapse-duration', 0) + 20,
     hideWithHiddenAttr: false,
+    beforeHide() {
+      // Collapse animates from the real height, so pin it before the closing class lands
+      toast.style.maxHeight = `${toast.offsetHeight}px`;
+      void toast.offsetHeight;
+    },
     afterHide() {
       if (toast.parentNode) {
         toast.parentNode.removeChild(toast);
@@ -200,7 +213,7 @@ export function lkToast(opts = {}) {
     if (typeof next.title === 'string') {
       options.title = next.title;
       titleEl.textContent = next.title;
-      titleEl.style.display = next.title ? '' : 'none';
+      titleEl.hidden = !next.title;
     }
     if (typeof next.message === 'string') {
       options.message = next.message;

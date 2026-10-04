@@ -20,17 +20,17 @@
 
   <section class="demo-section">
     <p class="demo-section__title">Form Components</p>
-    <div class="lk-grid lk-grid--cols-2" style="gap: var(--lk-space-5); align-items: start;">
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
       <div class="lk-card">
-        <div class="lk-card__body" style="display: grid; gap: var(--lk-space-3);">
+        <div class="lk-card__body" style="display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--lk-space-3);">
           <input id="cb-textbox" type="text" placeholder="Name" />
           <select id="cb-dropdown"></select>
-          <label style="display:flex;align-items:center;gap:var(--lk-space-2);"><input id="cb-checkbox" type="checkbox" /> Subscribe</label>
-          <div style="display:flex;gap:var(--lk-space-4);">
-            <label style="display:flex;align-items:center;gap:var(--lk-space-2);"><input id="cb-radio-a" type="radio" name="cb-radio" checked /> A</label>
-            <label style="display:flex;align-items:center;gap:var(--lk-space-2);"><input id="cb-radio-b" type="radio" name="cb-radio" /> B</label>
+          <input id="cb-checkbox" type="checkbox" />
+          <div style="display:flex;flex-wrap:wrap;gap:var(--lk-space-4);">
+            <input id="cb-radio-a" type="radio" name="cb-radio" checked />
+            <input id="cb-radio-b" type="radio" name="cb-radio" />
           </div>
-          <label style="display:flex;align-items:center;gap:var(--lk-space-2);"><input id="cb-switch" type="checkbox" /> Enable alerts</label>
+          <input id="cb-switch" type="checkbox" />
         </div>
       </div>
       <div class="lk-card">
@@ -48,7 +48,7 @@
 
   <section class="demo-section">
     <p class="demo-section__title">Core UI Components</p>
-    <div class="lk-grid lk-grid--cols-2" style="gap: var(--lk-space-5); align-items: start;">
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
       <div class="lk-card">
         <div class="lk-card__body" style="display: flex; gap: var(--lk-space-3); align-items: center; flex-wrap: wrap;">
           <button id="cb-btn" class="lk-btn lk-btn--primary">Button Component</button>
@@ -88,9 +88,9 @@
 
   <section class="demo-section">
     <p class="demo-section__title">Interactive Components</p>
-    <div class="lk-grid lk-grid--cols-2" style="gap: var(--lk-space-5); align-items: start;">
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
       <div class="lk-card">
-        <div class="lk-card__body" style="display: grid; gap: var(--lk-space-5);">
+        <div class="lk-card__body" style="display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--lk-space-5);">
           <div>
             <p class="demo-sub">Carousel</p>
             <div id="cb-carousel" style="max-width: 420px; border-radius: var(--lk-radius-lg); overflow: hidden;">
@@ -135,7 +135,7 @@
       </div>
 
       <div class="lk-card">
-        <div class="lk-card__body" style="display: grid; gap: var(--lk-space-5);">
+        <div class="lk-card__body" style="display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--lk-space-5);">
           <div>
             <p class="demo-sub">Pagination + Progress</p>
             <ul id="cb-pagination"></ul>
@@ -178,10 +178,10 @@
 
   <section class="demo-section">
     <p class="demo-section__title">List Dynamic Manipulation</p>
-    <div class="lk-grid lk-grid--cols-2" style="gap: var(--lk-space-5); align-items: start;">
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
       <aside class="lk-card" style="max-width: 460px;">
         <div class="lk-card__body" style="padding: 0;">
-          <ul id="cb-list" class="lk-list lk-list--bordered lk-list--separated">
+          <ul id="cb-list" class="lk-list lk-list--separated">
             <li class="lk-list-header">Dynamic Menu</li>
             <li class="lk-list-item">
               <button class="lk-list-item__trigger" type="button" data-lk-submenu-trigger>
@@ -226,7 +226,7 @@
 
   <section class="demo-section">
     <p class="demo-section__title">Composables</p>
-    <div class="lk-grid lk-grid--cols-2" style="gap: var(--lk-space-5); align-items: start;">
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
       <div class="lk-card">
         <div class="lk-card__body">
           <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
@@ -299,9 +299,9 @@
   const dropdown = Look.lkDropdown('#cb-dropdown', {
     label: 'Plan',
     items: [
-      { value: 'starter', text: 'Starter' },
-      { value: 'pro', text: 'Pro' },
-      { value: 'enterprise', text: 'Enterprise' },
+      { value: 'starter', label: 'Starter' },
+      { value: 'pro', label: 'Pro' },
+      { value: 'enterprise', label: 'Enterprise' },
     ],
   });
   const checkbox = Look.lkCheckbox('#cb-checkbox', { label: 'Subscribe newsletter' });

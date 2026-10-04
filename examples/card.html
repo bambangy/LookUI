@@ -6,6 +6,7 @@
   <title>LookUI — Card</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
 </head>
 <body>
 
@@ -21,7 +22,7 @@
 
   <section class="demo-section">
     <p class="demo-section__title">Variants</p>
-    <div class="lk-grid lk-grid--cols-3" style="align-items:start;">
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="align-items:start;">
       <div class="lk-card">
         <div class="lk-card__header"><div><div class="lk-card__title">Default</div><div class="lk-card__subtitle">Bordered</div></div></div>
         <div class="lk-card__body">Standard bordered card.</div>
@@ -34,6 +35,18 @@
       <div class="lk-card lk-card--dense">
         <div class="lk-card__header"><div><div class="lk-card__title">Dense</div><div class="lk-card__subtitle">Compact</div></div></div>
         <div class="lk-card__body">Tighter padding.</div>
+      </div>
+      <div class="lk-card lk-card--hover">
+        <div class="lk-card__header"><div class="lk-card__title">Hover</div><div class="lk-card__subtitle">Shadow on hover</div></div>
+        <div class="lk-card__body">Point at me — <code>.lk-card--hover</code>.</div>
+      </div>
+      <div class="lk-card lk-card--primary">
+        <div class="lk-card__header"><div class="lk-card__title">Primary</div><div class="lk-card__subtitle">Filled</div></div>
+        <div class="lk-card__body">Brand-colored card.</div>
+        <div class="lk-card__footer"><button class="lk-btn lk-btn--ghost lk-btn--sm" style="color: inherit;">Details</button></div>
+      </div>
+      <div class="lk-card lk-card--flat" style="background: var(--lk-bg-subtle);">
+        <div class="lk-card__body"><strong>Flat</strong> — no border or shadow, sits on a tinted background.</div>
       </div>
     </div>
   </section>
@@ -50,6 +63,156 @@
 &lt;/div&gt;</pre>
   </div>
 
+  <div id="api"></div>
+
 </main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+// CSS-only live example: renders `markup` into the preview box.
+function live(title, markup) {
+  const lines = markup.replace(/^\n+|\s+$/g, '').split('\n');
+  const min = Math.min(...lines.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length));
+  return { title, run: true, code: 'container.innerHTML = `\n' + lines.map((l) => '  ' + l.slice(min)).join('\n') + '\n`;' };
+}
+
+const IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 6'%3E%3Cdefs%3E%3ClinearGradient id='g' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235c6bc0'/%3E%3Cstop offset='1' stop-color='%2300bcd4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='16' height='6' fill='url(%23g)'/%3E%3C/svg%3E";
+
+LookDocs.render('#api', {
+  name: '.lk-card',
+  kind: 'CSS',
+  signature: [
+    '<div class="lk-card [lk-card--flat|--raised] [lk-card--hover] [lk-card--primary] [lk-card--dense]">',
+    '  <div class="lk-card__media"><img src="…" alt="…"></div>',
+    '  <div class="lk-card__header">',
+    '    <div class="lk-card__title">Title</div>',
+    '    <div class="lk-card__subtitle">Subtitle</div>',
+    '  </div>',
+    '  <div class="lk-card__body">Content</div>',
+    '  <div class="lk-card__footer">Actions</div>',
+    '</div>',
+  ],
+  description: [
+    'A bordered surface that groups related content. Pure CSS. Every section is optional — use any subset of `__media`, `__header`, `__body` and `__footer` in that order. The card clips its children (`overflow: hidden`) to its `--lk-radius-lg` corners, so media images get rounded tops automatically.',
+    'Title and subtitle placed directly in `__header` stack vertically (the header switches to a column when it contains a `__subtitle`). To put an avatar or action next to them, wrap title+subtitle in a `<div>`.',
+  ],
+
+  classes: [
+    {
+      name: 'Markup',
+      description: 'A card with every section.',
+      examples: [live('Media, header, body, footer', `
+        <div class="lk-card" style="max-width:320px">
+          <div class="lk-card__media"><img src="${IMG}" alt="Gradient banner"></div>
+          <div class="lk-card__header">
+            <div class="lk-card__title">Mountain trip</div>
+            <div class="lk-card__subtitle">3 days · 4 people</div>
+          </div>
+          <div class="lk-card__body">Pack light, start early and keep an eye on the weather.</div>
+          <div class="lk-card__footer">
+            <button class="lk-btn lk-btn--primary lk-btn--sm">Book</button>
+            <button class="lk-btn lk-btn--ghost lk-btn--sm">Share</button>
+          </div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-card',
+      description: 'Container: `--lk-bg` background, 1 px `--lk-border` border, `--lk-radius-lg` corners, `overflow: hidden`.',
+      examples: [live('Body-only card', `
+        <div class="lk-card" style="max-width:320px"><div class="lk-card__body">Just a body — the simplest card.</div></div>
+      `)],
+    },
+    {
+      name: '.lk-card__media',
+      description: 'Full-width block for an image (`<img>` is `width: 100%`, `object-fit: cover`). Put it first for a top banner or last for a bottom image.',
+    },
+    {
+      name: '.lk-card__header',
+      description: 'Flex row with `--lk-space-3` gap, `space-4 / space-5` padding and a bottom divider. Becomes a column when it directly contains `.lk-card__subtitle`.',
+      examples: [live('Header with avatar and action', `
+        <div class="lk-card" style="max-width:360px">
+          <div class="lk-card__header">
+            <div class="lk-avatar lk-avatar--sm">JD</div>
+            <div style="flex:1">
+              <div class="lk-card__title">Jane Doe</div>
+              <div class="lk-card__subtitle">posted 2h ago</div>
+            </div>
+            <button class="lk-btn lk-btn--ghost lk-btn--sm">Follow</button>
+          </div>
+          <div class="lk-card__body">Shipped the new card docs today.</div>
+        </div>
+      `)],
+    },
+    { name: '.lk-card__title', description: '`--lk-text-md`, semibold, tight line height (`--lk-text-base` when dense).' },
+    { name: '.lk-card__subtitle', description: '`--lk-text-sm`, muted, `--lk-space-1` above (`--lk-text-xs` when dense).' },
+    { name: '.lk-card__body', description: 'Main content: `space-4 / space-5` padding, `--lk-text-base`, body line height.' },
+    {
+      name: '.lk-card__footer',
+      description: 'Flex row for actions (`--lk-space-3` gap, `space-3 / space-5` padding, top divider). Use `margin-left: auto` on an item to push it right.',
+      examples: [live('Footer with right-aligned action', `
+        <div class="lk-card" style="max-width:360px">
+          <div class="lk-card__body">Delete this project?</div>
+          <div class="lk-card__footer">
+            <span class="lk-badge lk-badge--warning">Irreversible</span>
+            <button class="lk-btn lk-btn--negative lk-btn--sm" style="margin-left:auto">Delete</button>
+          </div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-card--{elevation}',
+      description: 'Border / shadow treatment.',
+      values: [
+        ['(default)', '1 px border, no shadow.'],
+        ['flat', 'No border, no shadow — for cards on a tinted background.'],
+        ['raised', 'No border, `--lk-shadow` drop shadow.'],
+        ['hover', 'Adds a `--lk-shadow-md` shadow on hover (combine with any of the above) — for clickable cards.'],
+      ],
+      examples: [live('Default, flat, raised, hover', `
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:12px; background:var(--lk-bg-subtle); padding:12px">
+          <div class="lk-card"><div class="lk-card__body">Default</div></div>
+          <div class="lk-card lk-card--flat"><div class="lk-card__body">Flat</div></div>
+          <div class="lk-card lk-card--raised"><div class="lk-card__body">Raised</div></div>
+          <div class="lk-card lk-card--hover"><div class="lk-card__body">Hover me</div></div>
+          <div class="lk-card lk-card--raised lk-card--hover"><div class="lk-card__body">Raised + hover</div></div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-card--primary',
+      description: 'Filled with `--lk-primary` and contrast text. Header/footer dividers become a translucent `currentColor` and the subtitle inherits the text color at 80 % opacity.',
+      examples: [live('Primary card', `
+        <div class="lk-card lk-card--primary" style="max-width:300px">
+          <div class="lk-card__header"><div class="lk-card__title">Pro plan</div><div class="lk-card__subtitle">Billed yearly</div></div>
+          <div class="lk-card__body" style="font-size:var(--lk-text-2xl); font-weight:700">$99</div>
+          <div class="lk-card__footer"><button class="lk-btn lk-btn--secondary lk-btn--sm" style="color:inherit; border-color:currentColor">Upgrade</button></div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-card--dense',
+      description: 'Compact: header, body and footer padding `space-2 / space-3`, smaller body, title and subtitle text.',
+      examples: [live('Dense vs. default', `
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; align-items:start">
+          <div class="lk-card"><div class="lk-card__header"><div class="lk-card__title">Default</div><div class="lk-card__subtitle">Subtitle</div></div><div class="lk-card__body">Body</div><div class="lk-card__footer"><button class="lk-btn lk-btn--sm lk-btn--secondary">OK</button></div></div>
+          <div class="lk-card lk-card--dense"><div class="lk-card__header"><div class="lk-card__title">Dense</div><div class="lk-card__subtitle">Subtitle</div></div><div class="lk-card__body">Body</div><div class="lk-card__footer"><button class="lk-btn lk-btn--dense lk-btn--secondary">OK</button></div></div>
+        </div>
+      `)],
+    },
+  ],
+
+  tokens: [
+    { name: '--lk-bg / --lk-border', default: '#ffffff / #d0d0d8', description: 'Card background, border and section dividers.' },
+    { name: '--lk-radius-lg', default: '0.5rem', description: 'Corner radius.' },
+    { name: '--lk-shadow', default: '0 4px 6px -1px rgb(0 0 0 / .08), …', description: '`--raised` shadow.' },
+    { name: '--lk-shadow-md', default: '0 6px 12px -2px rgb(0 0 0 / .1), …', description: '`--hover` shadow.' },
+    { name: '--lk-duration-fast', default: '180ms', description: '`--hover` shadow transition.' },
+    { name: '--lk-primary / --lk-primary-dark', default: '#5c6bc0 / #3949ab', description: '`--primary` background and border.' },
+    { name: '--lk-text-muted', default: '#757575', description: 'Subtitle color.' },
+  ],
+});
+</script>
 </body>
 </html>

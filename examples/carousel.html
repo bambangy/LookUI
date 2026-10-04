@@ -6,6 +6,19 @@
   <title>LookUI — Carousel</title>
   <link rel="stylesheet" href="../dist/look.css" />
   <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+  <style>
+    .demo-slides { max-width: 500px; border-radius: var(--lk-radius-lg); }
+    .demo-slides .lk-carousel__slide {
+      display: flex; align-items: center; justify-content: center;
+      height: 220px; color: #fff; font-size: var(--lk-text-2xl);
+    }
+    .demo-slides--mini .lk-carousel__slide { height: 120px; font-size: var(--lk-text-lg); }
+    .demo-slides .lk-carousel__slide:nth-child(4n + 1) { background: var(--lk-primary); color: var(--lk-primary-contrast); }
+    .demo-slides .lk-carousel__slide:nth-child(4n + 2) { background: var(--lk-accent); }
+    .demo-slides .lk-carousel__slide:nth-child(4n + 3) { background: var(--lk-positive); }
+    .demo-slides .lk-carousel__slide:nth-child(4n + 4) { background: var(--lk-warning); }
+  </style>
 </head>
 <body>
 
@@ -13,7 +26,7 @@
   <div class="demo-container">
     <a href="index.html" class="demo-back">&larr; All Components</a>
     <h1 style="font-size: var(--lk-text-2xl);">Carousel</h1>
-    <p style="opacity: 0.85;">lkCarousel(el, opts) — slide navigation with autoplay</p>
+    <p style="opacity: 0.85;">lkCarousel(el, opts) — slide navigation with autoplay, swipe and seamless loop</p>
   </div>
 </header>
 
@@ -22,28 +35,51 @@
   <section class="demo-section">
     <p class="demo-section__title">Live Demo</p>
 
-    <div id="demo-carousel" style="max-width: 500px; border-radius: var(--lk-radius-lg); overflow: hidden;">
+    <div id="demo-carousel" class="demo-slides" style="overflow: hidden;">
       <div class="lk-carousel__track">
-        <div class="lk-carousel__slide" style="display:flex;align-items:center;justify-content:center;height:220px;background:var(--lk-primary);color:var(--lk-primary-contrast);font-size:var(--lk-text-2xl);">Slide 1</div>
-        <div class="lk-carousel__slide" style="display:flex;align-items:center;justify-content:center;height:220px;background:var(--lk-accent);color:#fff;font-size:var(--lk-text-2xl);">Slide 2</div>
-        <div class="lk-carousel__slide" style="display:flex;align-items:center;justify-content:center;height:220px;background:var(--lk-positive);color:#fff;font-size:var(--lk-text-2xl);">Slide 3</div>
+        <div class="lk-carousel__slide">Slide 1</div>
+        <div class="lk-carousel__slide">Slide 2</div>
+        <div class="lk-carousel__slide">Slide 3</div>
       </div>
-      <button class="lk-carousel__prev lk-btn lk-btn--ghost"><span class="lk-icon lk-icon--chevron-left" aria-hidden="true"></span></button>
-      <button class="lk-carousel__next lk-btn lk-btn--ghost"><span class="lk-icon lk-icon--chevron-right" aria-hidden="true"></span></button>
+      <button class="lk-carousel__prev lk-btn lk-btn--ghost" aria-label="Previous slide"><span class="lk-icon lk-icon--chevron-left" aria-hidden="true"></span></button>
+      <button class="lk-carousel__next lk-btn lk-btn--ghost" aria-label="Next slide"><span class="lk-icon lk-icon--chevron-right" aria-hidden="true"></span></button>
       <div class="lk-carousel__indicators">
-        <button class="lk-carousel__dot"></button>
-        <button class="lk-carousel__dot"></button>
-        <button class="lk-carousel__dot"></button>
+        <button class="lk-carousel__dot" aria-label="Slide 1"></button>
+        <button class="lk-carousel__dot" aria-label="Slide 2"></button>
+        <button class="lk-carousel__dot" aria-label="Slide 3"></button>
       </div>
     </div>
 
-    <div style="margin-top: var(--lk-space-4);">
+    <div class="demo-row" style="margin-top: var(--lk-space-4);">
       <button id="btn-prev" class="lk-btn lk-btn--secondary lk-btn--sm">Prev</button>
       <button id="btn-next" class="lk-btn lk-btn--secondary lk-btn--sm">Next</button>
       <button id="btn-goto" class="lk-btn lk-btn--primary lk-btn--sm">Go to slide 3</button>
+      <button id="btn-pause" class="lk-btn lk-btn--secondary lk-btn--sm">Pause autoplay</button>
     </div>
 
     <div id="output" class="demo-output"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">No loop, dense, starting index</p>
+    <p class="demo-sub">loop: false disables the arrow at each end; dragging past the ends resists.</p>
+    <div id="demo-carousel-2" class="lk-carousel lk-carousel--dense demo-slides demo-slides--mini">
+      <div class="lk-carousel__track">
+        <div class="lk-carousel__slide">First</div>
+        <div class="lk-carousel__slide">Second</div>
+        <div class="lk-carousel__slide">Third</div>
+        <div class="lk-carousel__slide">Last</div>
+      </div>
+      <button class="lk-carousel__prev" aria-label="Previous slide"><span class="lk-icon lk-icon--chevron-left" aria-hidden="true"></span></button>
+      <button class="lk-carousel__next" aria-label="Next slide"><span class="lk-icon lk-icon--chevron-right" aria-hidden="true"></span></button>
+      <div class="lk-carousel__indicators">
+        <button class="lk-carousel__dot" aria-label="Slide 1"></button>
+        <button class="lk-carousel__dot" aria-label="Slide 2"></button>
+        <button class="lk-carousel__dot" aria-label="Slide 3"></button>
+        <button class="lk-carousel__dot" aria-label="Slide 4"></button>
+      </div>
+    </div>
+    <div id="output-2" class="demo-output"></div>
   </section>
 
   <div class="demo-usage">
@@ -63,28 +99,338 @@
 
     <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
     <pre>const carousel = Look.lkCarousel('#my-carousel', {
+  index: 0,            // starting slide
   autoplay: true,
   interval: 3000,
-  loop: true,
+  loop: true,          // seamless wrap (no rewind)
+  swipe: true,         // pointer / touch drag
+  keyboard: true,      // ←/→ when focus is inside
+  pauseOnHover: true,  // autoplay also stops while the tab is hidden
+  onChange(index) {},
 });
 
+// Tune motion per carousel in CSS:
+// #my-carousel { --lk-carousel-duration: 600ms; --lk-carousel-easing: ease-in-out; }
+
 carousel.activeIndex;    // 0
+carousel.count;          // 2
 carousel.next();
 carousel.prev();
-carousel.goTo(2);
+carousel.goTo(1);
+carousel.pause();  carousel.resume();
 carousel.destroy();</pre>
   </div>
+
+  <div id="api"></div>
 
 </main>
 
 <script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
 <script>
-  const carousel = Look.lkCarousel('#demo-carousel', { loop: true });
-  const out = document.getElementById('output');
+  // Page helpers used by the live examples below.
+  // makeCarousel writes the carousel markup (see "Markup" under CSS classes)
+  // into `container` and returns the root element.
+  function makeCarousel(container, labels, extraClass) {
+    labels = labels || ['One', 'Two', 'Three'];
+    const root = document.createElement('div');
+    root.className = 'lk-carousel demo-slides demo-slides--mini' + (extraClass ? ' ' + extraClass : '');
+    root.innerHTML =
+      '<div class="lk-carousel__track">'
+      + labels.map((t) => '<div class="lk-carousel__slide">' + t + '</div>').join('')
+      + '</div>'
+      + '<button class="lk-carousel__prev" aria-label="Previous slide"><span class="lk-icon lk-icon--chevron-left" aria-hidden="true"></span></button>'
+      + '<button class="lk-carousel__next" aria-label="Next slide"><span class="lk-icon lk-icon--chevron-right" aria-hidden="true"></span></button>'
+      + '<div class="lk-carousel__indicators">'
+      + labels.map((t, i) => '<button class="lk-carousel__dot" aria-label="Slide ' + (i + 1) + '"></button>').join('')
+      + '</div>';
+    container.appendChild(root);
+    return root;
+  }
 
-  document.getElementById('btn-prev').onclick = () => { carousel.prev(); out.textContent = 'activeIndex = ' + carousel.activeIndex; };
-  document.getElementById('btn-next').onclick = () => { carousel.next(); out.textContent = 'activeIndex = ' + carousel.activeIndex; };
-  document.getElementById('btn-goto').onclick = () => { carousel.goTo(2); out.textContent = 'activeIndex = ' + carousel.activeIndex; };
+  // demoButton appends a small button that runs `onClick`.
+  function demoButton(container, text, onClick) {
+    const b = document.createElement('button');
+    b.className = 'lk-btn lk-btn--secondary lk-btn--sm';
+    b.style.margin = '8px 6px 0 0';
+    b.textContent = text;
+    b.onclick = onClick;
+    container.appendChild(b);
+    return b;
+  }
+
+LookDocs.render('#api', {
+  name: 'lkCarousel',
+  kind: 'Component',
+  signature: 'const carousel = Look.lkCarousel(element, options);',
+  description: [
+    'Turns a container with a `.lk-carousel__track` of `.lk-carousel__slide` children into a sliding carousel. Optional `.lk-carousel__prev` / `.lk-carousel__next` buttons and `.lk-carousel__dot` indicators found inside the root are wired automatically. The root receives `.lk-carousel` if it does not have it yet.',
+    'Supports autoplay (paused on hover, focus and while the tab is hidden), pointer/touch swipe with flick detection, ←/→ keys and a seamless loop. The required HTML is shown under [CSS classes](#api-section-classes) (`.lk-carousel` → Markup).',
+    'The live examples call two page helpers: `makeCarousel(container, labels?, extraClass?)` writes exactly that markup into `container` and returns the root element; `demoButton(container, text, onClick)` adds a small button.',
+  ],
+  params: [
+    { name: 'element', type: 'Element | string', description: 'The carousel root or a CSS selector. Must contain the track/slides markup.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The carousel instance with the properties and methods below.' },
+
+  options: [
+    {
+      name: 'index', type: 'number', default: '0',
+      description: 'Slide shown on init (0-based). Truncated and clamped to `0 … count-1`. It is applied instantly, without animation, and does not fire `onChange`.',
+      examples: [
+        { title: 'Start on the third slide', run: true, code: `
+          const c = Look.lkCarousel(makeCarousel(container, ['A', 'B', 'C', 'D']), { index: 2 });
+          log('activeIndex:', c.activeIndex);` },
+        { title: 'Out-of-range values are clamped', run: true, code: `
+          const c = Look.lkCarousel(makeCarousel(container), { index: 99 });
+          log('index 99 → activeIndex', c.activeIndex);` },
+      ],
+    },
+    {
+      name: 'autoplay', type: 'boolean', default: 'false',
+      description: 'Advance to the next slide every `interval` ms. Ignored when there is only one slide. Clicking an arrow/dot, swiping or pressing ←/→ restarts the timer.',
+      values: [['false', 'Manual navigation only (default).'], ['true', 'Auto-advance; pauses as described in `pauseOnHover` and while the tab is hidden.']],
+      examples: [
+        { title: 'Autoplay every 2 seconds', run: true, code: `
+          Look.lkCarousel(makeCarousel(container), {
+            autoplay: true,
+            interval: 2000,
+            onChange: (i) => log('autoplay →', i),
+          });` },
+      ],
+    },
+    {
+      name: 'interval', type: 'number', default: '5000',
+      description: 'Autoplay delay in milliseconds. Only used with `autoplay: true`. A falsy value (`0`) falls back to `5000`.',
+      examples: [
+        { title: 'Fast ticker (1200 ms)', run: true, code: `
+          Look.lkCarousel(makeCarousel(container, ['Sale', 'New', 'Hot', 'Free shipping']), {
+            autoplay: true, interval: 1200, pauseOnHover: false,
+          });` },
+        { title: 'Slow hero banner', code: `Look.lkCarousel('#hero', { autoplay: true, interval: 8000 });` },
+      ],
+    },
+    {
+      name: 'loop', type: 'boolean', default: 'true',
+      description: 'Wrap around at the ends. With `true`, clones of the first and last slide (`.lk-carousel__slide--clone`, `aria-hidden`, `inert`, ids stripped) are added to the track so last → first keeps sliding forward instead of rewinding. With `false`, the prev/next buttons get `disabled` at the ends (hidden by CSS) and dragging past an end is resisted.',
+      values: [['true', 'Seamless infinite loop (default).'], ['false', 'Stops at the first/last slide; arrows disable at the ends.']],
+      examples: [
+        { title: 'loop: true — next() from the last slide slides forward to the first', run: true, code: `
+          const c = Look.lkCarousel(makeCarousel(container), { loop: true, index: 2 });
+          demoButton(container, 'next()', () => { c.next(); log('activeIndex', c.activeIndex); });` },
+        { title: 'loop: false — arrows disable at the ends', run: true, code: `
+          const root = makeCarousel(container);
+          const c = Look.lkCarousel(root, { loop: false });
+          log('prev disabled:', root.querySelector('.lk-carousel__prev').disabled);
+          demoButton(container, 'next()', () => { c.next(); log('activeIndex', c.activeIndex); });` },
+      ],
+    },
+    {
+      name: 'swipe', type: 'boolean', default: 'true',
+      description: 'Drag the track with mouse, pen or touch. A swipe commits when it moves more than 18% of the carousel width or is flicked faster than 0.4 px/ms; otherwise the track snaps back. Mostly-vertical gestures are left to page scrolling. A drag never also clicks a link/button inside the slide.',
+      values: [['true', 'Pointer/touch drag enabled (default).'], ['false', 'Only arrows, dots, keys and the API change slides.']],
+      examples: [
+        { title: 'Swipe disabled', run: true, code: `
+          Look.lkCarousel(makeCarousel(container), { swipe: false, onChange: (i) => log('changed to', i) });
+          log('Try dragging — nothing happens; use the arrows.');` },
+      ],
+    },
+    {
+      name: 'keyboard', type: 'boolean', default: 'true',
+      description: '**ArrowLeft / ArrowRight** go to the previous / next slide while focus is inside the carousel (e.g. on an arrow or a dot). Ignored when focus is in an input, textarea, select or contenteditable element. The root itself is not made focusable — add `tabindex="0"` if you want it to be.',
+      values: [['true', '←/→ navigate (default).'], ['false', 'No key handling.']],
+      examples: [
+        { title: 'Focusable root with keyboard navigation', run: true, code: `
+          const root = makeCarousel(container);
+          root.tabIndex = 0;
+          Look.lkCarousel(root, { keyboard: true, onChange: (i) => log('→', i) });
+          log('Click the carousel, then press ← / →');` },
+        { title: 'Keyboard off', code: `Look.lkCarousel('#gallery', { keyboard: false });` },
+      ],
+    },
+    {
+      name: 'pauseOnHover', type: 'boolean', default: 'true',
+      description: 'Pause autoplay while the pointer is over the carousel or focus is inside it; resume when both leave. Has no effect without `autoplay`. Independently of this option, autoplay always stops while the browser tab is hidden.',
+      values: [['true', 'Pause on hover / focus (default).'], ['false', 'Keep advancing even while hovered.']],
+      examples: [
+        { title: 'Keeps playing under the mouse', run: true, code: `
+          Look.lkCarousel(makeCarousel(container), {
+            autoplay: true, interval: 1500, pauseOnHover: false,
+            onChange: (i) => log('tick', i),
+          });` },
+      ],
+    },
+  ],
+
+  properties: [
+    {
+      name: 'activeIndex', type: 'number',
+      description: 'Get the current slide (0-based) or set it to navigate — setting is the same as calling `goTo(value)` (wraps with `loop`, clamps without) and fires `onChange`.',
+      examples: [{ run: true, code: `
+        const c = Look.lkCarousel(makeCarousel(container));
+        log('initial', c.activeIndex);
+        demoButton(container, 'activeIndex = 2', () => { c.activeIndex = 2; log('now', c.activeIndex); });
+        demoButton(container, 'activeIndex = -1', () => { c.activeIndex = -1; log('now', c.activeIndex); });` }],
+    },
+    {
+      name: 'count', type: 'number', readonly: true,
+      description: 'Number of real slides (loop clones are not counted).',
+      examples: [{ run: true, code: `
+        const c = Look.lkCarousel(makeCarousel(container, ['1', '2', '3', '4', '5']));
+        log('count:', c.count);` }],
+    },
+    { name: 'el', type: 'Element', readonly: true, description: 'The carousel root element.' },
+    { name: 'id', type: 'string', description: 'Get or set the root element id.' },
+    { name: 'hidden', type: 'boolean', description: 'Show/hide the carousel (toggles `.lk-hidden` on the root).', examples: [`carousel.hidden = true;`] },
+    { name: 'enabled', type: 'boolean', description: 'Toggles `.lk-disabled`, `disabled` and `aria-disabled` on the root. **Note:** this is the shared base property; the carousel does not check it, so arrows, dots, swipe and autoplay keep working. Use `pause()` / `swipe: false` to restrict interaction.' },
+  ],
+
+  methods: [
+    {
+      name: 'next', signature: 'next() → void',
+      description: 'Go to the next slide. On the last slide it wraps to the first (`loop: true`, sliding forward over the clone) or does nothing (`loop: false`). Programmatic calls do not restart the autoplay timer.',
+      examples: [{ run: true, code: `
+        const c = Look.lkCarousel(makeCarousel(container), { onChange: (i) => log('onChange', i) });
+        demoButton(container, 'next()', () => c.next());` }],
+    },
+    {
+      name: 'prev', signature: 'prev() → void',
+      description: 'Go to the previous slide. On the first slide it wraps to the last (`loop: true`) or does nothing (`loop: false`).',
+      examples: [{ run: true, code: `
+        const c = Look.lkCarousel(makeCarousel(container), { onChange: (i) => log('onChange', i) });
+        demoButton(container, 'prev()', () => c.prev());` }],
+    },
+    {
+      name: 'goTo', signature: 'goTo(index) → void',
+      description: 'Jump to a slide. The index is truncated to an integer; with `loop` it wraps (`-1` → last, `count` → first), without `loop` it is clamped. The track animates directly to the target (it does not pass through the clones).',
+      params: [{ name: 'index', type: 'number', description: '0-based slide index.' }],
+      examples: [{ run: true, code: `
+        const c = Look.lkCarousel(makeCarousel(container, ['0', '1', '2', '3']));
+        [0, 3, -1, 6].forEach((i) => demoButton(container, 'goTo(' + i + ')', () => {
+          c.goTo(i);
+          log('goTo(' + i + ') → activeIndex', c.activeIndex);
+        }));` }],
+    },
+    {
+      name: 'pause', signature: 'pause() → void',
+      description: 'Stop autoplay until `resume()` is called. With `pauseOnHover`, the pointer/focus leaving the carousel also resumes it.',
+      examples: [{ run: true, code: `
+        const c = Look.lkCarousel(makeCarousel(container), {
+          autoplay: true, interval: 1200, pauseOnHover: false,
+          onChange: (i) => log('tick', i),
+        });
+        demoButton(container, 'pause()', () => { c.pause(); log('paused'); });
+        demoButton(container, 'resume()', () => { c.resume(); log('resumed'); });` }],
+    },
+    { name: 'resume', signature: 'resume() → void', description: 'Restart autoplay after `pause()`. Does nothing unless the carousel was created with `autoplay: true`.' },
+    {
+      name: 'destroy', signature: 'destroy() → void',
+      description: 'Stops autoplay and timers, removes every listener, the loop clones, the inline track transform, active-dot state and `aria-hidden` on slides, re-enables arrows disabled by `loop: false`, and removes `.lk-carousel` if lkCarousel added it.',
+      examples: [{ run: true, code: `
+        const root = makeCarousel(container);
+        const c = Look.lkCarousel(root);
+        log('slides in track:', root.querySelectorAll('.lk-carousel__slide').length);
+        demoButton(container, 'destroy()', () => {
+          c.destroy();
+          log('after destroy:', root.querySelectorAll('.lk-carousel__slide').length);
+        });` }],
+    },
+  ],
+
+  events: [
+    {
+      name: 'onChange', signature: 'onChange(index)',
+      description: 'Called after the active slide changes — from arrows, dots, keys, swipe, autoplay or the API (`next`, `prev`, `goTo`, `activeIndex`). Not called for the initial `index` or when the target equals the current slide.',
+      args: [{ name: 'index', type: 'number', description: 'The new active slide (0-based, a real slide — never a clone).' }],
+      examples: [{ title: 'Caption synced to the slide', run: true, code: `
+        const captions = ['Mountains', 'Ocean', 'Forest'];
+        const cap = document.createElement('p');
+        const c = Look.lkCarousel(makeCarousel(container, captions), {
+          onChange: (i) => { cap.textContent = 'Now showing: ' + captions[i]; log('onChange', i); },
+        });
+        cap.textContent = 'Now showing: ' + captions[c.activeIndex];
+        container.appendChild(cap);` }],
+    },
+  ],
+
+  classes: [
+    {
+      name: '.lk-carousel', description: 'Root: relative, `overflow: hidden`, full width. Added by lkCarousel when missing.',
+      examples: [{ title: 'Markup', code: `
+        <div class="lk-carousel" id="gallery">
+          <div class="lk-carousel__track">            <!-- required -->
+            <div class="lk-carousel__slide">…</div>   <!-- direct children of the track -->
+            <div class="lk-carousel__slide"><img src="a.jpg" alt=""></div>
+          </div>
+          <!-- optional controls, anywhere inside the root -->
+          <button class="lk-carousel__prev" aria-label="Previous">‹</button>
+          <button class="lk-carousel__next" aria-label="Next">›</button>
+          <div class="lk-carousel__indicators">
+            <button class="lk-carousel__dot" aria-label="Slide 1"></button>
+            <button class="lk-carousel__dot" aria-label="Slide 2"></button>
+          </div>
+        </div>` }],
+    },
+    { name: '.lk-carousel__track', description: 'Flex row moved with `translate3d`; its transition uses `--lk-carousel-duration` / `--lk-carousel-easing`. Without a track there is no sliding, swipe or loop clones.' },
+    { name: '.lk-carousel__slide', description: 'One slide (`flex: 0 0 100%`). A direct `<img>` child fills the width and cannot be natively dragged.' },
+    { name: '.lk-carousel__slide--clone', description: 'Added by JS to the two loop clones. Style hook only; do not create these yourself.' },
+    { name: '.lk-carousel__prev / __next', description: 'Round translucent arrow buttons, vertically centered at the left/right edge. Hidden (`opacity: 0`) while `:disabled`. Safe to combine with `.lk-btn`.' },
+    { name: '.lk-carousel__indicators', description: 'Dot container overlaid at the bottom of the slides.' },
+    { name: '.lk-carousel__dot', description: 'Indicator button; the n-th dot goes to slide n.' },
+    { name: '.lk-carousel__dot--active', description: 'Set by JS on the current dot (stretches into a pill) together with `aria-current="true"`.' },
+    { name: '.lk-carousel--dragging', description: 'Set while a swipe is in progress (no transition, `grabbing` cursor).' },
+    { name: '.lk-carousel__track--instant', description: 'Set momentarily by JS to jump without animation (loop wrap, initial index).' },
+    {
+      name: '.lk-carousel--dense', description: 'Smaller arrows (1.75 rem) and dots.',
+      examples: [{ title: 'Dense', run: true, code: `Look.lkCarousel(makeCarousel(container, ['A', 'B', 'C'], 'lk-carousel--dense'));` }],
+    },
+  ],
+
+  tokens: [
+    { name: '--lk-carousel-duration', default: 'var(--lk-duration-slower)', description: 'Slide (and active-dot) transition duration. Forced to `1ms` under `prefers-reduced-motion`.' },
+    { name: '--lk-carousel-easing', default: 'var(--lk-easing-out)', description: 'Slide transition timing function.' },
+    { name: '--lk-carousel-arrow-size', default: '2.5rem', description: 'Prev/next button size (`1.75rem` when dense).' },
+  ],
+
+  notes: [
+    '**Keyboard:** ←/→ work only while focus is inside the root (arrows and dots are buttons, so Tab reaches them). Add `tabindex="0"` to the root to make the whole carousel focusable.',
+    '**Loop clones:** with `loop: true` and 2+ slides, two extra `.lk-carousel__slide--clone` nodes live in the track. `count` and `onChange` only ever report real slides. Clones lose their `id` attributes so ids stay unique, and are `inert` and `aria-hidden`.',
+    '**Accessibility:** non-active slides get `aria-hidden="true"`. Give arrows and dots an `aria-label` — lkCarousel does not add one.',
+    '**Motion tuning:** set `--lk-carousel-duration` / `--lk-carousel-easing` on the root, e.g. `#hero { --lk-carousel-duration: 600ms; }`. JS reads the computed track transition duration to time the silent loop jump.',
+    '**Dynamic slides:** slides, arrows and dots are collected once at init. After adding/removing slides call `destroy()` and create the carousel again.',
+  ],
+});
+</script>
+<script>
+  const out = document.getElementById('output');
+  const carousel = Look.lkCarousel('#demo-carousel', {
+    loop: true,
+    autoplay: true,
+    interval: 4000,
+    onChange: (i) => { out.textContent = 'activeIndex = ' + i; },
+  });
+  out.textContent = 'activeIndex = ' + carousel.activeIndex + '  (drag/swipe, ←/→ keys, autoplay pauses on hover)';
+
+  document.getElementById('btn-prev').onclick = () => carousel.prev();
+  document.getElementById('btn-next').onclick = () => carousel.next();
+  document.getElementById('btn-goto').onclick = () => carousel.goTo(2);
+  let paused = false;
+  const pauseBtn = document.getElementById('btn-pause');
+  pauseBtn.onclick = () => {
+    paused = !paused;
+    if (paused) carousel.pause(); else carousel.resume();
+    pauseBtn.textContent = paused ? 'Resume autoplay' : 'Pause autoplay';
+    out.textContent = paused ? 'pause() called' : 'resume() called';
+  };
+
+  const out2 = document.getElementById('output-2');
+  const c2 = Look.lkCarousel('#demo-carousel-2', {
+    loop: false,
+    index: 1,
+    onChange: (i) => { out2.textContent = 'activeIndex = ' + i + ' of ' + (c2.count - 1); },
+  });
+  out2.textContent = 'activeIndex = ' + c2.activeIndex + ' (started with index: 1)';
 </script>
 </body>
 </html>

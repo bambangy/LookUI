@@ -136,11 +136,11 @@
   });
 
   // lkTooltip on author avatar
-  Look.lkTooltip(document.querySelector('.lk-card .lk-avatar'), { text: 'View author profile', position: 'top' });
+  Look.lkTooltip(document.querySelector('.lk-card .lk-avatar'), { content: 'View author profile', position: 'top' });
 
   // lkTooltip on nav links
   document.querySelectorAll('.lk-bar__end .lk-btn').forEach(btn => {
-    Look.lkTooltip(btn, { text: btn.textContent.trim(), position: 'bottom' });
+    Look.lkTooltip(btn, { content: btn.textContent.trim(), position: 'bottom' });
   });
 </script>
 </body>

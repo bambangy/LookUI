@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 function toB64(str) {
   const bytes = new TextEncoder().encode(str);
   let binary = '';

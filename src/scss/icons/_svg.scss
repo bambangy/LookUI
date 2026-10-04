@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// SVG → data URI helpers for mask-image icons
+@use 'sass:string';
+
+@function _replace($string, $search, $replace) {
+  $index: string.index($string, $search);
+  @if $index {
+    @return string.slice($string, 1, $index - 1) + $replace
+      + _replace(string.slice($string, $index + string.length($search)), $search, $replace);
+  }
+  @return $string;
+}
+
+// Raw SVG markup (or an already-encoded "%3Csvg…" string) → url("data:image/svg+xml,…")
+@function uri($svg) {
+  @if string.index($svg, '%3C') == 1 {
+    @return url('data:image/svg+xml,#{$svg}');
+  }
+  $s: $svg;
+  @if not string.index($s, 'xmlns') {
+    $s: _replace($s, '<svg', "<svg xmlns='http://www.w3.org/2000/svg'");
+  }
+  $s: _replace($s, '%', '%25');
+  $s: _replace($s, '"', "'");
+  $s: _replace($s, '<', '%3C');
+  $s: _replace($s, '>', '%3E');
+  $s: _replace($s, '#', '%23');
+  $s: _replace($s, '{', '%7B');
+  $s: _replace($s, '}', '%7D');
+  @return url('data:image/svg+xml,#{$s}');
+}

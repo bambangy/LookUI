@@ -1,19 +1,41 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Slider component (range input)
 
 .lk-slider {
+  --lk-slider-color: var(--lk-primary);
+
   position: relative;
   display: flex;
   align-items: center;
   width: 100%;
   min-height: 2rem;
+  user-select: none;
+  touch-action: none;
+
+  &:focus-visible {
+    outline: none;
+  }
 
   &__track {
     position: relative;
     width: 100%;
     height: 0.25rem;
-    background: var(--lk-surface);
+    background: var(--lk-border);
     border-radius: var(--lk-radius-full);
     cursor: pointer;
+    touch-action: none;
+
+    // Enlarge the hit area vertically without changing the visual track
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1.25rem;
+      transform: translateY(-50%);
+    }
   }
 
   &__fill {
@@ -21,7 +43,7 @@
     top: 0;
     left: 0;
     height: 100%;
-    background: var(--lk-primary);
+    background: var(--lk-slider-color);
     border-radius: inherit;
     pointer-events: none;
   }
@@ -32,22 +54,33 @@
     transform: translate(-50%, -50%);
     width: 1rem;
     height: 1rem;
-    background: var(--lk-primary);
+    background: var(--lk-slider-color);
     border: 2px solid var(--lk-bg);
     border-radius: var(--lk-radius-full);
     box-shadow: var(--lk-shadow-sm);
     cursor: grab;
     z-index: 1;
+    touch-action: none;
     transition: box-shadow var(--lk-duration-fast) var(--lk-easing-default);
 
     &:hover {
-      box-shadow: 0 0 0 4px color-mix(in srgb, var(--lk-primary) 20%, transparent);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--lk-slider-color) 20%, transparent);
     }
 
     &:active {
       cursor: grabbing;
-      box-shadow: 0 0 0 6px color-mix(in srgb, var(--lk-primary) 25%, transparent);
+      box-shadow: 0 0 0 6px color-mix(in srgb, var(--lk-slider-color) 25%, transparent);
     }
+  }
+
+  // Keyboard focus and active dragging (pointer may leave the thumb)
+  &:focus-visible &__thumb {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--lk-slider-color) 30%, transparent);
+  }
+
+  &--dragging &__thumb {
+    cursor: grabbing;
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--lk-slider-color) 25%, transparent);
   }
 
   // --- Label (tooltip-style value above thumb) ---
@@ -59,6 +92,7 @@
     transform: translateX(-50%);
     padding: var(--lk-space-1) var(--lk-space-2);
     font-size: var(--lk-text-xs);
+    line-height: 1;
     color: var(--lk-text-on-dark);
     background: var(--lk-secondary-dark);
     border-radius: var(--lk-radius);
@@ -69,7 +103,9 @@
   }
 
   &__thumb:hover &__label,
-  &__thumb:active &__label {
+  &__thumb:active &__label,
+  &:focus-visible &__label,
+  &--dragging &__label {
     opacity: 1;
   }
 
@@ -96,26 +132,20 @@
 
   // --- Color variants ---
 
-  &--positive &__fill,
-  &--positive &__thumb { background: var(--lk-positive); }
-  &--positive &__thumb:hover {
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--lk-positive) 20%, transparent);
-  }
-
-  &--negative &__fill,
-  &--negative &__thumb { background: var(--lk-negative); }
-
-  &--accent &__fill,
-  &--accent &__thumb { background: var(--lk-accent); }
+  &--positive { --lk-slider-color: var(--lk-positive); }
+  &--negative { --lk-slider-color: var(--lk-negative); }
+  &--accent   { --lk-slider-color: var(--lk-accent); }
 
   // --- Disabled ---
 
-  &--disabled {
+  &--disabled,
+  &.lk-disabled {
     opacity: 0.5;
     pointer-events: none;
   }
 
-  &--disabled &__thumb {
+  &--disabled &__thumb,
+  &.lk-disabled &__thumb {
     cursor: not-allowed;
   }
 

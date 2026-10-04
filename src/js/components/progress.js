@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Progress component factory
 
 import { resolveEl, applyBase } from '../helpers/base.js';
@@ -19,8 +21,8 @@ export function lkProgress(el, opts = {}) {
   const bar   = qs('.lk-progress__bar', node);
   const label = qs('.lk-progress__label', node);
 
-  let value          = opts.value ?? 0;
-  let max            = opts.max ?? 100;
+  let max            = Math.max(0, opts.max ?? 100);
+  let value          = Math.max(0, Math.min(max, Number(opts.value) || 0));
   let indeterminate  = opts.indeterminate ?? false;
 
   function updateView() {
@@ -34,7 +36,7 @@ export function lkProgress(el, opts = {}) {
       node.removeAttribute('aria-valuemax');
     } else {
       node.classList.remove('lk-progress--indeterminate');
-      const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
+      const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
       if (bar) bar.style.width = pct + '%';
       if (label) label.textContent = Math.round(pct) + '%';
       node.setAttribute('aria-valuenow', value);

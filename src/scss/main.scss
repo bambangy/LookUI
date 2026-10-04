@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+/*!
+ * LookUI (c) 2026 Bambang Yudhotomo | https://github.com/bambangy/LookUI
+ * Released under the MIT License. This notice must be retained in all copies.
+ */
+
 // LookUI — master SCSS entry
 // =============================================================================
 // Load order:
@@ -39,7 +46,9 @@
 @use 'components/checkbox';
 @use 'components/chip';
 @use 'components/composable';
+@use 'components/datagrid';
 @use 'components/date';
+@use 'components/dropdown';
 @use 'components/icon';
 @use 'components/input';
 @use 'components/list';

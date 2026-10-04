@@ -1,8 +1,12 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Tooltip component
 
 .lk-tooltip {
   position: relative;
-  display: inline-block;
+  // inline-flex so the host hugs its trigger (icons, buttons) instead of the
+  // taller text line box, keeping the arrow gap equal on every side.
+  display: inline-flex;
 
   &__content {
     position: absolute;
@@ -17,14 +21,18 @@
     border-radius: var(--lk-radius);
     pointer-events: none;
 
-    --lk-tip-transform-hidden: translateX(-50%) translateY(4px);
-    --lk-tip-transform-shown: translateX(-50%) translateY(0);
+    --lk-tip-transform-hidden: translateX(-50%) translateY(6px) scale(0.82);
+    --lk-tip-transform-shown:  translateX(-50%) translateY(0)   scale(1);
 
     opacity: 0;
+    // Hidden tips must not catch focus/AT nor extend the scrollable area.
+    visibility: hidden;
     transform: var(--lk-tip-transform-hidden);
+    transform-origin: bottom center;
     transition:
-      opacity var(--lk-duration-base) var(--lk-easing-out),
-      transform var(--lk-duration-base) var(--lk-easing-out);
+      opacity var(--lk-duration-fast) var(--lk-easing-out),
+      transform var(--lk-duration-base) var(--lk-easing-snap),
+      visibility 0s linear var(--lk-duration-fast);
 
     // Arrow
     &::after {
@@ -39,8 +47,9 @@
   &__content--top {
     bottom: calc(100% + 6px);
     left: 50%;
-    --lk-tip-transform-hidden: translateX(-50%) translateY(4px);
-    --lk-tip-transform-shown: translateX(-50%) translateY(0);
+    transform-origin: bottom center;
+    --lk-tip-transform-hidden: translateX(-50%) translateY(6px)  scale(0.82);
+    --lk-tip-transform-shown:  translateX(-50%) translateY(0)    scale(1);
 
     &::after {
       top: 100%;
@@ -53,8 +62,9 @@
   &__content--bottom {
     top: calc(100% + 6px);
     left: 50%;
-    --lk-tip-transform-hidden: translateX(-50%) translateY(-4px);
-    --lk-tip-transform-shown: translateX(-50%) translateY(0);
+    transform-origin: top center;
+    --lk-tip-transform-hidden: translateX(-50%) translateY(-6px) scale(0.82);
+    --lk-tip-transform-shown:  translateX(-50%) translateY(0)    scale(1);
 
     &::after {
       bottom: 100%;
@@ -67,8 +77,9 @@
   &__content--left {
     right: calc(100% + 6px);
     top: 50%;
-    --lk-tip-transform-hidden: translateY(-50%) translateX(4px);
-    --lk-tip-transform-shown: translateY(-50%) translateX(0);
+    transform-origin: center right;
+    --lk-tip-transform-hidden: translateY(-50%) translateX(6px)  scale(0.82);
+    --lk-tip-transform-shown:  translateY(-50%) translateX(0)    scale(1);
 
     &::after {
       left: 100%;
@@ -81,8 +92,9 @@
   &__content--right {
     left: calc(100% + 6px);
     top: 50%;
-    --lk-tip-transform-hidden: translateY(-50%) translateX(-4px);
-    --lk-tip-transform-shown: translateY(-50%) translateX(0);
+    transform-origin: center left;
+    --lk-tip-transform-hidden: translateY(-50%) translateX(-6px) scale(0.82);
+    --lk-tip-transform-shown:  translateY(-50%) translateX(0)    scale(1);
 
     &::after {
       right: 100%;
@@ -98,14 +110,19 @@
   &:hover &__content,
   &:focus-within &__content {
     opacity: 1;
+    visibility: visible;
     transform: var(--lk-tip-transform-shown);
+    transition:
+      opacity var(--lk-duration-fast) var(--lk-easing-out),
+      transform var(--lk-duration-base) var(--lk-easing-snap),
+      visibility 0s;
   }
 
   // --- Dense ---
 
   &--dense &__content {
+    // Tighter box only; text stays at the smallest readable size token.
     padding: calc(var(--lk-space-1) * 0.5) var(--lk-space-1);
-    font-size: 0.5625rem;
   }
 }
 

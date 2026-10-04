@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Display, visibility, and overflow utilities
 
 .lk-block        { display: block; }
@@ -69,4 +71,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+// --- Disabled state (set by applyBase when `comp.enabled = false`) ---
+// Native form controls are skipped: they receive the `disabled` attribute and
+// their field wrappers already dim them, so applying opacity here would fade
+// them twice. Components with their own `.lk-disabled` rule (slider, rating)
+// set the same values on the same element, so nothing compounds.
+.lk-disabled:where(:not(input, select, textarea, button)) {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
 }
