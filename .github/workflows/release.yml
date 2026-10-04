@@ -1,6 +1,9 @@
 name: Release
 
-# Publishes to npm with provenance when a GitHub Release is published.
+# Stages a publish to npm (with provenance) when a GitHub Release is published.
+# Nothing goes live until a maintainer approves it with 2FA:
+#   npmjs.com -> @lookui/core -> Staged Packages -> Approve
+#   or: npm stage list @lookui/core && npm stage approve <stage-id>
 # Tag the release as v<version>, matching "version" in package.json.
 
 on:
@@ -11,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  publish:
+  stage:
     runs-on: ubuntu-latest
     environment: npm
     permissions:
@@ -35,12 +38,28 @@ jobs:
             exit 1
           fi
 
+      # npm stage needs npm CLI >= 11.15.0
+      - name: Upgrade npm CLI
+        run: |
+          npm install -g npm@^11.15.0
+          npm --version
+
       - run: npm ci
       - run: npm run build
       - run: npm run test:smoke
 
-      - run: npm publish --provenance --access public
+      - name: Stage publish (approve on npmjs.com with 2FA)
+        run: npm stage publish --provenance --access public
         env:
-          # Needed for the first publish. Once trusted publishing is configured
-          # on npmjs.com, delete the NPM_TOKEN secret; npm then uses OIDC.
+          # Stage-only token. Once trusted publishing is configured on
+          # npmjs.com, delete the NPM_TOKEN secret; npm then uses OIDC.
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Summary
+        run: |
+          {
+            echo "### Staged \`$(node -p "require('./package.json').name")@${GITHUB_REF_NAME#v}\`"
+            echo
+            echo "Not live yet. Approve with 2FA on npmjs.com (Staged Packages tab),"
+            echo "or run \`npm stage list\` then \`npm stage approve <stage-id>\`."
+          } >> "$GITHUB_STEP_SUMMARY"
