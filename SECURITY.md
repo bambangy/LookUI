@@ -16,7 +16,7 @@ get a response within 7 days.
 
 ## Verifying a release
 
-Official releases are published to npm only as `@bambangy_/look-ui`, from this
+Official releases are published to npm only as `@lookui/core`, from this
 repository via GitHub Actions, with npm provenance. On the npm package page,
 check that the release shows a provenance link back to
 `github.com/bambangy/LookUI`. Copies published under other names or without

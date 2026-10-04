@@ -3,7 +3,7 @@
 [![CI](https://github.com/bambangy/LookUI/actions/workflows/ci.yml/badge.svg)](https://github.com/bambangy/LookUI/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/bambangy/LookUI/actions/workflows/codeql.yml/badge.svg)](https://github.com/bambangy/LookUI/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/bambangy/LookUI/badge)](https://scorecard.dev/viewer/?uri=github.com/bambangy/LookUI)
-[![npm](https://img.shields.io/npm/v/@bambangy_/look-ui)](https://www.npmjs.com/package/@bambangy_/look-ui)
+[![npm](https://img.shields.io/npm/v/@lookui/core)](https://www.npmjs.com/package/@lookui/core)
 [![dependencies](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](package.json)
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
@@ -15,8 +15,8 @@ Imperative, predictable, and MVC-friendly. Zero runtime dependencies.
 **CDN** (no build step):
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@bambangy_/look-ui@0.1.0/dist/look.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/@bambangy_/look-ui@0.1.0/dist/look.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lookui/core@0.1.0/dist/look.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/@lookui/core@0.1.0/dist/look.min.js"></script>
 <script>
   const btn = Look.lkButton("#my-btn");
 </script>
@@ -25,16 +25,16 @@ Imperative, predictable, and MVC-friendly. Zero runtime dependencies.
 **npm:**
 
 ```bash
-npm install @bambangy_/look-ui
+npm install @lookui/core
 ```
 
 ```js
-import { lkButton, lkDialog, lkDataSource } from "@bambangy_/look-ui";
-import "@bambangy_/look-ui/look.css";
+import { lkButton, lkDialog, lkDataSource } from "@lookui/core";
+import "@lookui/core/look.css";
 ```
 
 Pin an exact version in CDN URLs. Official releases are published only as
-`@bambangy_/look-ui` from https://github.com/bambangy/LookUI.
+`@lookui/core` from https://github.com/bambangy/LookUI.
 
 ---
 
