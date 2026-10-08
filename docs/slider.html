@@ -250,9 +250,14 @@ LookDocs.render('#api', {
 
   events: [
     {
-      name: 'onChange', signature: 'onChange(value)',
+      name: 'onChange', signature: 'onChange(value, { source, component, prev })',
       description: 'Called whenever user input changes the value: pointer down on the track, each move while dragging (only when the snapped value actually changes) and keyboard. Not called when setting `value`, `min`, `max` or `step` from code.',
-      args: [{ name: 'value', type: 'number', description: 'The new snapped value.' }],
+      args: [
+        { name: 'value', type: 'number', description: 'The new snapped value.' },
+        { name: 'ctx.source', type: "'pointer' | 'key'", description: 'Pointer (track/drag) or keyboard.' },
+        { name: 'ctx.component', type: 'Object', description: 'The slider instance.' },
+        { name: 'ctx.prev', type: 'number', description: 'The value before the change.' },
+      ],
       examples: [
         { title: 'Live readout', run: true, code: `
           const out = document.createElement('p');
@@ -263,7 +268,7 @@ LookDocs.render('#api', {
           out.textContent = 'Volume: 50%';
           container.appendChild(out);` },
         { title: 'Log every change', run: true, code: `
-          Look.lkSlider(makeSlider(container, 'lk-slider--accent'), { max: 10, onChange: (v) => log('onChange', v) });` },
+          Look.lkSlider(makeSlider(container, 'lk-slider--accent'), { max: 10, onChange: (v, { source, prev }) => log('onChange', prev, '→', v, '(' + source + ')') });` },
       ],
     },
   ],

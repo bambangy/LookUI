@@ -147,7 +147,7 @@
     { value: 'editor', label: 'Editor' },
     { value: 'viewer', label: 'Viewer', disabled: true },
   ],
-  onChange(value, item) {
+  onChange(value, { item }) {
     console.log(value, item);
   },
 });
@@ -591,7 +591,7 @@ dd.destroy();</pre>
   <!-- ===================================================================== -->
   <section class="demo-section">
     <p class="demo-section__title">11 — onChange Event Log</p>
-    <p class="demo-sub">Every selection triggers <code>onChange(value, item)</code>. Use it to drive form logic, reactive state, or API calls.</p>
+    <p class="demo-sub">Every selection triggers <code>onChange(value, { source, component, item })</code>. Use it to drive form logic, reactive state, or API calls.</p>
 
     <div style="max-width: 480px;">
       <div id="onchange-dd"></div>
@@ -618,8 +618,8 @@ dd.destroy();</pre>
   label: 'Priority',
   clearable: true,
   items: PRIORITIES,
-  onChange(value, item) {
-    console.log('selected:', value, item);
+  onChange(value, { source, item }) {
+    console.log('selected:', value, source, item);
     // update another field, fire API, etc.
   },
 });</pre>
@@ -679,7 +679,7 @@ dd.destroy();</pre>
   closeOnSelect: false,     // default in multiple mode
   items: SKILLS,
   value: ['design', 'sales'],
-  onChange(values, items) { console.log(values); },
+  onChange(values, { items }) { console.log(values, items); },
 });
 
 skills.value;               // ['design', 'sales']
@@ -811,7 +811,7 @@ skills.selectedItems;       // [{ value, label }, …]</pre>
           const dd = Look.lkDropdown(el, {
             label: 'Department', valueField: 'id', labelField: 'name',
             items: [{ id: 10, name: 'Engineering' }, { id: 20, name: 'Design' }, { id: 30, name: 'Finance' }],
-            onChange: (v, item) => log('value =', v, 'item =', item),
+            onChange: (v, { item }) => log('value =', v, 'item =', item),
           });` }],
       },
       { name: 'labelField', type: 'string', default: "'label'", description: 'Property of an item that holds its display text (falls back to `label`, `text`, then the value).' },
@@ -1173,29 +1173,33 @@ skills.selectedItems;       // [{ value, label }, …]</pre>
 
     events: [
       {
-        name: 'onChange (single)', signature: 'onChange(value, item)',
-        description: 'Fired when the user picks an option or clears with ×. Not fired for programmatic `value` / `items` changes.',
+        name: 'onChange (single)', signature: 'onChange(value, { source, component, item })',
+        description: 'Fired when the user picks an option or clears with ×. Not fired for programmatic `value` / `items` changes. Changed in 0.3.0: the second argument is a context object (was the item).',
         args: [
           { name: 'value', type: 'any', description: 'The picked item\'s value, or `null` after clearing.' },
-          { name: 'item', type: 'Object | null', description: 'The picked item object (as given, not a copy), or `null` after clearing.' },
+          { name: 'ctx.source', type: "'select' | 'clear'", description: '`select` when an option was picked, `clear` after the × button.' },
+          { name: 'ctx.component', type: 'Object', description: 'The dropdown instance.' },
+          { name: 'ctx.item', type: 'Object | null', description: 'The picked item object (as given, not a copy), or `null` after clearing.' },
         ],
         examples: [{ run: true, code: `
           ${MK}
           ${FRUITS}
-          Look.lkDropdown(el, { label: 'Fruit', items, clearable: true, onChange: (value, item) => log('onChange', value, item) });` }],
+          Look.lkDropdown(el, { label: 'Fruit', items, clearable: true, onChange: (value, { source, item }) => log('onChange', value, source, item) });` }],
       },
       {
-        name: 'onChange (multiple)', signature: 'onChange(values, items)',
+        name: 'onChange (multiple)', signature: 'onChange(values, { source, component, items })',
         description: 'Fired on every pick/unpick in the panel, chip ×, Backspace on the trigger and the clear button.',
         args: [
           { name: 'values', type: 'any[]', description: 'Copy of all selected values, in selection order.' },
-          { name: 'items', type: 'Array<Object | null>', description: 'Matching item objects (`null` for values whose item is unknown).' },
+          { name: 'ctx.source', type: "'select' | 'remove' | 'clear'", description: '`select` for a pick/unpick in the panel, `remove` for chip × / Backspace, `clear` for the clear button.' },
+          { name: 'ctx.component', type: 'Object', description: 'The dropdown instance.' },
+          { name: 'ctx.items', type: 'Array<Object | null>', description: 'Matching item objects (`null` for values whose item is unknown).' },
         ],
         examples: [{ run: true, code: `
           ${MK}
           ${FRUITS}
           Look.lkDropdown(el, { label: 'Fruits', items, multiple: true, clearable: true,
-            onChange: (values, picked) => log(values, picked.map((i) => i && i.label)) });` }],
+            onChange: (values, { source, items: picked }) => log(source, values, picked.map((i) => i && i.label)) });` }],
       },
     ],
 
@@ -1409,7 +1413,7 @@ const preselectDd = Look.lkDropdown('#basic-preselect', {
   value: 'au',
   clearable: true,
   items: COUNTRIES.slice(0, 12),
-  onChange(v, item) {
+  onChange(v, { item }) {
     const out = document.getElementById('out-preselect');
     out.textContent = item ? `${item.label} (${v})` : '(cleared)';
     out.classList.toggle('has-value', v != null);
@@ -1656,7 +1660,7 @@ const progDd = Look.lkDropdown('#prog-dd', {
   clearable: true,
   useInput: true,
   items: progItems1,
-  onChange(v, item) {
+  onChange(v, { item }) {
     document.getElementById('out-prog').textContent = `onChange → value="${v}" label="${item?.label}"`;
     document.getElementById('out-prog').classList.toggle('has-value', v != null);
   },
@@ -1714,7 +1718,7 @@ Look.lkDropdown('#onchange-dd', {
   clearable: true,
   useInput: true,
   items: FRAMEWORKS,
-  onChange(value, item) {
+  onChange(value, { source, item }) {
     const em = logEl.querySelector('em');
     if (em) em.remove();
     const line = document.createElement('div');
@@ -1724,7 +1728,8 @@ Look.lkDropdown('#onchange-dd', {
     line.style.marginBottom  = '2px';
     line.innerHTML = `<span style="color:#475569">${t}</span>  `
       + `onChange(<span style="color:#7dd3fc">${JSON.stringify(value)}</span>, `
-      + `<span style="color:#86efac">${JSON.stringify(item)}</span>)`;
+      + `{ source: <span style="color:#fcd34d">${JSON.stringify(source)}</span>, `
+      + `item: <span style="color:#86efac">${JSON.stringify(item)}</span> })`;
     logEl.appendChild(line);
     logEl.scrollTop = logEl.scrollHeight;
   },

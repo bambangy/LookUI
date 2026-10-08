@@ -17,7 +17,7 @@
   <div class="demo-container">
     <a href="index.html" class="demo-back">&larr; All Components</a>
     <h1 style="font-size: var(--lk-text-2xl);">Modal</h1>
-    <p style="opacity: 0.85;">lkModal(triggerEl, modalEl) — dialog with focus trap</p>
+    <p style="opacity: 0.85;">lkModal(modalEl, { trigger, onOpen, onClose }) — dialog with focus trap</p>
   </div>
 </header>
 
@@ -99,9 +99,14 @@
 &lt;/div&gt;</pre>
 
     <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
-    <pre>const modal = Look.lkModal('#trigger', '#modal-container');
+    <pre>const modal = Look.lkModal('#modal-container', {
+  trigger: '#trigger',
+  onOpen(modal) {},
+  onClose(reason, modal) {},   // 'close' | 'escape' | 'toggle' | custom
+});
 modal.open();
 modal.close();
+modal.toggle();
 modal.destroy();</pre>
   </div>
 
@@ -115,24 +120,31 @@ modal.destroy();</pre>
 LookDocs.render('#api', {
   name: 'lkModal',
   kind: 'Component',
-  signature: 'const modal = Look.lkModal(triggerElement, modalElement);',
+  signature: 'const modal = Look.lkModal(modalElement, options);',
   description: [
-    'Wires an existing modal markup block to a trigger button. Clicking the trigger **toggles** the modal, **Escape** closes it, a focus trap keeps **Tab** inside it, and focus returns to the previously focused element on close. The trigger\'s `aria-expanded` mirrors the state.',
-    'lkModal takes **no options and no callbacks**: it only toggles classes on `modalElement`. Close buttons and overlay clicks are yours to wire (`btn.onclick = () => modal.close()`). For dialogs built from options — with confirm/cancel callbacks, status icons and auto-destroy — use [lkDialog](composable-dialog.html).',
+    'Wires an existing modal markup block. With a `trigger`, clicking it **toggles** the modal; **Escape** closes it, a focus trap keeps **Tab** inside it, and focus returns to the previously focused element on close. The trigger\'s `aria-expanded` mirrors the state.',
+    'lkModal only toggles classes on `modalElement`. Close buttons and overlay clicks are yours to wire (`btn.onclick = () => modal.close()`). For dialogs built from options — with confirm/cancel callbacks, status icons and auto-destroy — use [lkDialog](composable-dialog.html).',
     'Expected markup: a wrapper (`modalElement`) containing `.lk-modal-overlay > .lk-modal` with `__header`, `__body`, `__footer`. The wrapper receives `.lk-modal--open` / `.lk-modal--closing`; all visuals come from CSS.',
+    'Changed in 0.3.0: the signature was `lkModal(triggerElement, modalElement)`. The old two-argument order still works but logs a deprecation warning (removed in 1.0).',
   ],
   params: [
-    { name: 'triggerElement', type: 'Element | string', description: 'Button (or selector) that toggles the modal on click.' },
     { name: 'modalElement', type: 'Element | string', description: 'Wrapper element (or selector) that contains `.lk-modal-overlay`. The focus trap is attached here; focus goes to the inner `.lk-modal` (given `tabindex="-1"` if it has none).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
   ],
-  returns: { type: 'Object', description: '`{ open, close, isOpen, destroy }`. Throws `Look.lkModal: trigger or modal element not found.` if either element is missing.' },
+  returns: { type: 'Object', description: '`{ el, id, hidden, enabled, open, close, toggle, isOpen, trigger, destroy }`. Throws if `modalElement` (or a given `trigger`) is not found.' },
   notes: [
     '**Motion contract.** Open adds `.lk-modal--open`: the overlay fades in over `--lk-modal-enter-duration` and the panel plays the SweetAlert2-style pop (`lk-modal-pop`, scale 0.7 → 1.05 → 0.95 → 1, 320 ms). Close swaps to `.lk-modal--closing`: the panel slides down 3rem while fading (`lk-modal-slide-out`) over `--lk-modal-exit-duration` (220 ms); lkModal removes `.lk-modal--closing` after that duration (read from CSS at close time, + 20 ms).',
     'Add `.lk-modal--calm` to the `.lk-modal` panel to opt out of pop/slide and use plain rise/fade transitions. `prefers-reduced-motion: reduce` shortens everything to 1 ms.',
     'The closed state is purely CSS (`opacity: 0; visibility: hidden; pointer-events: none` on the overlay), so the markup can stay in the page. Keep it outside containers with `transform`/`filter` so `position: fixed` covers the viewport.',
   ],
 
-  options: [],
+  options: [
+    { name: 'trigger', type: 'Element | string', default: '—', description: 'Button (or selector) that toggles the modal on click. Its `aria-expanded` follows the state. Optional — without it, open the modal from code.' },
+    { name: 'open', type: 'boolean', default: 'false', description: 'Open immediately after creation.' },
+    { name: 'closeOnEscape', type: 'boolean', default: 'true', description: 'Close on **Escape** (reason `"escape"`).' },
+    { name: 'onOpen', type: 'Function', default: '—', description: '`(modal)` — see [Events](#api-section-events).' },
+    { name: 'onClose', type: 'Function', default: '—', description: '`(reason, modal)` — see [Events](#api-section-events).' },
+  ],
 
   properties: [
     {
@@ -150,18 +162,20 @@ LookDocs.render('#api', {
         trigger.className = 'lk-btn lk-btn--secondary lk-btn--sm';
         trigger.textContent = 'Open';
         container.appendChild(trigger);
-        const modal = Look.lkModal(trigger, wrap);
+        const modal = Look.lkModal(wrap, { trigger });
         wrap.querySelector('[data-close]').onclick = () => modal.close();
         wrap.querySelector('.lk-modal-overlay').onclick = (e) => { if (e.target === e.currentTarget) modal.close(); };
         const obs = new MutationObserver(() => log('isOpen:', modal.isOpen));
         obs.observe(wrap, { attributes: true, attributeFilter: ['class'] });` }],
     },
+    { name: 'trigger', type: 'Element | null', readonly: true, description: 'The resolved `trigger` element, or `null`.' },
+    { name: 'el / id / hidden / enabled', type: '—', description: 'Standard component properties (`el` is `modalElement`).' },
   ],
 
   methods: [
     {
-      name: 'open', signature: 'open()',
-      description: 'Adds `.lk-modal--open`, sets `aria-expanded="true"` on the trigger, remembers the focused element and focuses the `.lk-modal` panel. No-op when already open.',
+      name: 'open', signature: 'open() → modal',
+      description: 'Adds `.lk-modal--open`, sets `aria-expanded="true"` on the trigger, remembers the focused element, focuses the `.lk-modal` panel and fires `onOpen(modal)`. No-op when already open.',
       examples: [{ title: 'Open from code (markup built in the example)', run: true, code: `
         const wrap = document.createElement('div');
         wrap.innerHTML =
@@ -179,15 +193,16 @@ LookDocs.render('#api', {
         opener.textContent = 'modal.open()';
         container.append(trigger, opener);
         document.body.appendChild(wrap); // keep fixed overlays outside transformed parents
-        const modal = Look.lkModal(trigger, wrap);
+        const modal = Look.lkModal(wrap, { trigger });
         opener.onclick = () => { modal.open(); log('isOpen:', modal.isOpen); };
         wrap.querySelector('[data-close]').onclick = () => { modal.close(); log('isOpen:', modal.isOpen); };` }],
     },
     {
-      name: 'close', signature: 'close()',
-      description: 'Swaps `.lk-modal--open` for `.lk-modal--closing`, sets `aria-expanded="false"`, and — if focus is inside the modal — returns focus to the element focused before `open()`. No-op when closed.',
+      name: 'close', signature: "close(reason = 'close') → modal",
+      description: 'Swaps `.lk-modal--open` for `.lk-modal--closing`, sets `aria-expanded="false"`, — if focus is inside the modal — returns focus to the element focused before `open()`, and fires `onClose(reason, modal)`. No-op when closed.',
+      params: [{ name: 'reason', type: 'string', optional: true, description: 'Forwarded to `onClose` (default `"close"`).' }],
       examples: [{ title: 'Wire close buttons and the overlay yourself', code: `
-        const modal = Look.lkModal('#trigger', '#modal-container');
+        const modal = Look.lkModal('#modal-container', { trigger: '#trigger' });
         const root = document.querySelector('#modal-container');
 
         root.querySelectorAll('[data-close]').forEach((btn) => { btn.onclick = () => modal.close(); });
@@ -207,11 +222,12 @@ LookDocs.render('#api', {
         trigger.className = 'lk-btn lk-btn--secondary lk-btn--sm';
         trigger.textContent = 'Open';
         container.appendChild(trigger);
-        const modal = Look.lkModal(trigger, wrap);
+        const modal = Look.lkModal(wrap, { trigger });
         wrap.querySelector('[data-close]').onclick = () => modal.close();
         wrap.querySelector('.lk-modal-overlay').onclick = (e) => { if (e.target === e.currentTarget) modal.close(); };
         wrap.style.setProperty('--lk-modal-exit-duration', '900ms');` }],
     },
+    { name: 'toggle', signature: 'toggle() → modal', description: 'Closes (reason `"toggle"`) when open, otherwise opens. The trigger click calls this.' },
     {
       name: 'destroy', signature: 'destroy()',
       description: 'Removes the trigger and Escape listeners, the focus trap, the pending close timer, `.lk-modal--closing` and the `tabindex` lkModal added. It does **not** close an open modal or reset `aria-expanded` — call `close()` first if needed.',
@@ -228,7 +244,7 @@ LookDocs.render('#api', {
         trigger.className = 'lk-btn lk-btn--secondary lk-btn--sm';
         trigger.textContent = 'Open';
         container.appendChild(trigger);
-        const modal = Look.lkModal(trigger, wrap);
+        const modal = Look.lkModal(wrap, { trigger });
         wrap.querySelector('[data-close]').onclick = () => modal.close();
         wrap.querySelector('.lk-modal-overlay').onclick = (e) => { if (e.target === e.currentTarget) modal.close(); };
         const kill = document.createElement('button');
@@ -240,7 +256,41 @@ LookDocs.render('#api', {
     },
   ],
 
-  events: [],
+  events: [
+    {
+      name: 'onOpen', signature: 'onOpen(modal)',
+      description: 'Fires after the modal opens (trigger click, `open()` or `toggle()`).',
+      args: [{ name: 'modal', type: 'Object', description: 'The modal instance.' }],
+    },
+    {
+      name: 'onClose', signature: 'onClose(reason, modal)',
+      description: 'Fires when the modal starts closing.',
+      args: [
+        { name: 'reason', type: 'string', description: '`"close"` (default of `close()`), `"escape"`, `"toggle"` (trigger click / `toggle()`), or a custom string passed to `close(reason)`.' },
+        { name: 'modal', type: 'Object', description: 'The modal instance.' },
+      ],
+      examples: [{ title: 'Open / close reasons', run: true, code: `
+        const wrap = document.createElement('div');
+        wrap.innerHTML =
+          '<div class="lk-modal-overlay"><div class="lk-modal" role="dialog" aria-modal="true">' +
+          '<div class="lk-modal__header"><span class="lk-modal__title">Close me any way you like</span></div>' +
+          '<div class="lk-modal__body">Escape, the button, or the overlay.</div>' +
+          '<div class="lk-modal__footer"><button class="lk-btn lk-btn--primary" data-close>Done</button></div>' +
+          '</div></div>';
+        document.body.appendChild(wrap);
+        const trigger = document.createElement('button');
+        trigger.className = 'lk-btn lk-btn--secondary lk-btn--sm';
+        trigger.textContent = 'Open';
+        container.appendChild(trigger);
+        const modal = Look.lkModal(wrap, {
+          trigger,
+          onOpen: () => log('onOpen'),
+          onClose: (reason) => log('onClose:', reason),
+        });
+        wrap.querySelector('[data-close]').onclick = () => modal.close('done');
+        wrap.querySelector('.lk-modal-overlay').onclick = (e) => { if (e.target === e.currentTarget) modal.close('overlay'); };` }],
+    },
+  ],
 
   classes: [
     { name: '.lk-modal--open', description: 'On the wrapper: shows overlay and panel (toggled by lkModal).' },
@@ -266,7 +316,7 @@ LookDocs.render('#api', {
         trigger.className = 'lk-btn lk-btn--secondary lk-btn--sm';
         trigger.textContent = 'Open';
         container.appendChild(trigger);
-        const modal = Look.lkModal(trigger, wrap);
+        const modal = Look.lkModal(wrap, { trigger });
         wrap.querySelector('[data-close]').onclick = () => modal.close();
         wrap.querySelector('.lk-modal-overlay').onclick = (e) => { if (e.target === e.currentTarget) modal.close(); };` },
       ],
@@ -286,7 +336,7 @@ LookDocs.render('#api', {
         trigger.className = 'lk-btn lk-btn--secondary lk-btn--sm';
         trigger.textContent = 'Open';
         container.appendChild(trigger);
-        const modal = Look.lkModal(trigger, wrap);
+        const modal = Look.lkModal(wrap, { trigger });
         wrap.querySelector('[data-close]').onclick = () => modal.close();
         wrap.querySelector('.lk-modal-overlay').onclick = (e) => { if (e.target === e.currentTarget) modal.close(); };` }],
     },
@@ -306,7 +356,7 @@ LookDocs.render('#api', {
   const container = document.getElementById('modal-container');
   container.style.display = '';
 
-  const modal = Look.lkModal('#modal-trigger', container);
+  const modal = Look.lkModal(container, { trigger: '#modal-trigger' });
   const input = Look.lkTextbox('#demo-input', { label: 'Field inside modal' });
 
   document.getElementById('modal-close').onclick = () => modal.close();
@@ -317,7 +367,7 @@ LookDocs.render('#api', {
 
   [['#dense-trigger', '#dense-container'], ['#calm-trigger', '#calm-container']].forEach(([t, m]) => {
     const root = document.querySelector(m);
-    const instance = Look.lkModal(t, root);
+    const instance = Look.lkModal(root, { trigger: t });
     root.querySelectorAll('[data-close]').forEach((b) => { b.onclick = () => instance.close(); });
     root.querySelector('.lk-modal-overlay').onclick = (e) => { if (e.target === e.currentTarget) instance.close(); };
   });

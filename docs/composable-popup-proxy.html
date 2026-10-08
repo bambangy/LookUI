@@ -200,7 +200,7 @@ LookDocs.render('#api', {
           Look.lkPopupProxy(btn, {
             content: 'Scroll this button to the top of the window and reopen: it flips below.',
             placement: 'top-left',
-            onShow: (info) => log('used placement:', info.placement),
+            onShow: (popup, info) => log('used placement:', info.placement),
           });` },
       ],
     },
@@ -323,7 +323,7 @@ LookDocs.render('#api', {
         container.append(target, btn);
         const popup = Look.lkPopupProxy(btn, {
           content: 'One popup, two anchors.',
-          onShow: (info) => log('anchored to', info.anchor.textContent),
+          onShow: (p, { anchor }) => log('anchored to', anchor.textContent),
         });
         // The trigger opens it under itself; the chip opens it under the chip:
         target.style.cursor = 'pointer';
@@ -331,7 +331,7 @@ LookDocs.render('#api', {
     },
     {
       name: 'hide', signature: "hide(reason = 'hide')",
-      description: 'Closes the popup and calls `onHide(reason)`. No-op if closed.',
+      description: 'Closes the popup and calls `onHide(reason, popup)`. No-op if closed.',
       params: [{ name: 'reason', type: 'string', optional: true, description: 'Forwarded to `onHide` (default `"hide"`).' }],
     },
     {
@@ -388,9 +388,10 @@ LookDocs.render('#api', {
 
   events: [
     {
-      name: 'onShow', signature: 'onShow(info)',
-      description: 'Fires when the popup opens.',
+      name: 'onShow', signature: 'onShow(popup, { anchor, placement })',
+      description: 'Fires when the popup opens. Changed in 0.3.0: the instance comes first and the info object moved to the second argument.',
       args: [
+        { name: 'popup', type: 'Object', description: 'The popup instance.' },
         { name: 'info.anchor', type: 'Element', description: 'Element the popup is positioned against.' },
         { name: 'info.placement', type: 'string', description: 'Placement used at open time (after auto-placement).' },
       ],
@@ -399,12 +400,15 @@ LookDocs.render('#api', {
         btn.className = 'lk-btn lk-btn--secondary';
         btn.textContent = 'Open';
         container.appendChild(btn);
-        Look.lkPopupProxy(btn, { content: 'Hello', onShow: (info) => log('onShow', info.placement, info.anchor.tagName) });` }],
+        Look.lkPopupProxy(btn, { content: 'Hello', onShow: (popup, { placement, anchor }) => log('onShow', placement, anchor.tagName) });` }],
     },
     {
-      name: 'onHide', signature: 'onHide(reason)',
+      name: 'onHide', signature: 'onHide(reason, popup)',
       description: 'Fires when the popup starts closing.',
-      args: [{ name: 'reason', type: 'string', description: '`"outside"`, `"escape"`, `"toggle"` (trigger click / `toggle()`), `"hide"` (default of `hide()`), `"destroy"`, or any custom string passed to `hide(reason)`.' }],
+      args: [
+        { name: 'reason', type: 'string', description: '`"outside"`, `"escape"`, `"toggle"` (trigger click / `toggle()`), `"hide"` (default of `hide()`), `"destroy"`, or any custom string passed to `hide(reason)`.' },
+        { name: 'popup', type: 'Object', description: 'The popup instance.' },
+      ],
       examples: [{ title: 'Close reasons', run: true, code: `
         const btn = document.createElement('button');
         btn.className = 'lk-btn lk-btn--secondary';
@@ -434,7 +438,7 @@ LookDocs.render('#api', {
     content: '#popup-source',
     placement: 'bottom-left',
     autoPlacement: true,
-    onShow(info) {
+    onShow(popup, info) {
       output.textContent = `Opened (${info.placement || 'bottom-left'})`;
     },
     onHide(reason) {

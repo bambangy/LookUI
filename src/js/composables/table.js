@@ -525,7 +525,7 @@ function createGrid(root, opts) {
     syncRemote('filter');
     updateHeaderState();
     if (typeof options.onFilter === 'function') {
-      options.onFilter({ filters: { ...columnFilters }, search: searchTerm, filter, grid: api });
+      options.onFilter({ filters: { ...columnFilters }, search: searchTerm, filter, grid: api, component: api });
     }
   }
 
@@ -580,7 +580,7 @@ function createGrid(root, opts) {
     ds.setSort(next.length ? (sortCfg.mode === 'multiple' ? next : next[0]) : null);
     syncRemote('sort');
     updateHeaderState();
-    if (typeof options.onSort === 'function') options.onSort({ sort: next, grid: api });
+    if (typeof options.onSort === 'function') options.onSort({ sort: next, grid: api, component: api });
   }
 
   function toggleSort(field) {
@@ -1137,7 +1137,7 @@ function createGrid(root, opts) {
       saving: false,
       focus: true,
     };
-    if (typeof options.onEdit === 'function') options.onEdit({ row: editState.row, values: draft, isNew, grid: api });
+    if (typeof options.onEdit === 'function') options.onEdit({ row: editState.row, values: draft, isNew, grid: api, component: api });
 
     if (editCfg.mode === 'popup') openPopup();
     else renderBody(false);
@@ -1153,7 +1153,7 @@ function createGrid(root, opts) {
       dlg.close('cancel');
     }
     renderBody(false);
-    if (!silent && typeof options.onCancel === 'function') options.onCancel({ row: prev.row, isNew: prev.isNew, grid: api });
+    if (!silent && typeof options.onCancel === 'function') options.onCancel({ row: prev.row, isNew: prev.isNew, grid: api, component: api });
   }
 
   async function saveEdit() {
@@ -1174,7 +1174,7 @@ function createGrid(root, opts) {
       });
     }
     if (typeof options.onSave === 'function'
-      && options.onSave({ row: state.row, values, changes: state.isNew ? values : changes, isNew: state.isNew, grid: api }) === false) {
+      && options.onSave({ row: state.row, values, changes: state.isNew ? values : changes, isNew: state.isNew, grid: api, component: api }) === false) {
       return false;
     }
 
@@ -1199,7 +1199,7 @@ function createGrid(root, opts) {
       editState = state;
       if (editCfg.mode === 'popup') showPopupErrors();
       else renderBody(false);
-      if (typeof options.onError === 'function') options.onError({ error: err, action: state.isNew ? 'create' : 'update', grid: api });
+      if (typeof options.onError === 'function') options.onError({ error: err, action: state.isNew ? 'create' : 'update', grid: api, component: api });
       return false;
     }
   }
@@ -1292,7 +1292,7 @@ function createGrid(root, opts) {
           popupDialog = null;
           const prev = editState;
           editState = null;
-          if (prev && typeof options.onCancel === 'function') options.onCancel({ row: prev.row, isNew: prev.isNew, grid: api });
+          if (prev && typeof options.onCancel === 'function') options.onCancel({ row: prev.row, isNew: prev.isNew, grid: api, component: api });
         }
       },
     });
@@ -1531,12 +1531,12 @@ function createGrid(root, opts) {
         totalPages: ds.totalPages,
         page: ds.page,
         maxVisible: pageCfg.maxVisible,
-        onPageChange(p) {
+        onChange(p) {
           if (syncingPager) return;
           if (editState && editCfg.mode === 'inline') cancelEdit();
           ds.setPage(p);
           syncRemote('paging');
-          if (typeof options.onPage === 'function') options.onPage({ page: p, grid: api });
+          if (typeof options.onPage === 'function') options.onPage({ page: p, grid: api, component: api });
         },
       });
 
@@ -1588,7 +1588,7 @@ function createGrid(root, opts) {
 
   function emitSelection() {
     if (typeof options.onChange === 'function') {
-      options.onChange({ selectedRows: api.selectedRows, selectedKeys: api.selectedKeys, grid: api });
+      options.onChange({ selectedRows: api.selectedRows, selectedKeys: api.selectedKeys, grid: api, component: api });
     }
   }
 
@@ -1704,7 +1704,7 @@ function createGrid(root, opts) {
 
     activeRowIndex = index;
     if (selectMode) handleRowSelect(index, e, false);
-    if (typeof options.onRowClick === 'function') options.onRowClick({ row, index, event: e, grid: api });
+    if (typeof options.onRowClick === 'function') options.onRowClick({ row, index, event: e, grid: api, component: api });
   }
 
   function focusRow(index) {
@@ -1740,7 +1740,7 @@ function createGrid(root, opts) {
       selected.delete(key);
       if (editState && editState.key === key) cancelEdit(true);
       ds.remove((r) => r === row || rowKey(r) === key).catch((err) => {
-        if (typeof options.onError === 'function') options.onError({ error: err, action: 'delete', grid: api });
+        if (typeof options.onError === 'function') options.onError({ error: err, action: 'delete', grid: api, component: api });
       });
     };
     if (!options.confirmDelete) { doRemove(); return; }
@@ -1776,7 +1776,7 @@ function createGrid(root, opts) {
       const animate = pendingAnimate && (reason === 'sort' ? !isRemote('sort') : reason === 'load');
       if (animate) pendingAnimate = false;
       renderBody(animate);
-      if (typeof options.onDataBound === 'function') options.onDataBound({ items: ds.view.slice(), reason, grid: api });
+      if (typeof options.onDataBound === 'function') options.onDataBound({ items: ds.view.slice(), reason, grid: api, component: api });
     }
     renderPager();
   }
@@ -1907,7 +1907,7 @@ function createGrid(root, opts) {
 
   const unsubscribe = ds.subscribe((state, payload) => render(payload?.reason));
   const stopError = ds.on('error', (e) => {
-    if (typeof options.onError === 'function') options.onError({ error: e.error, action: e.action, grid: api });
+    if (typeof options.onError === 'function') options.onError({ error: e.error, action: e.action, grid: api, component: api });
   });
 
   if (options.autoBind && ds.canRead && !ds.loading && !ds.items.length) {
@@ -1989,7 +1989,7 @@ function enhanceTable(node, opts = {}) {
     });
 
     applySortMotion(rows);
-    if (opts.onSort) opts.onSort({ column: colIndex, order: sortOrder });
+    if (opts.onSort) opts.onSort({ column: colIndex, order: sortOrder, component: comp });
   }
 
   function onHeaderClick(e) {

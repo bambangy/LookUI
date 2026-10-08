@@ -14,7 +14,7 @@ import { lkIcon } from './icon.js';
  * @param {number}  [opts.value]    — initial value (default 0)
  * @param {boolean} [opts.readonly] — disable interaction
  * @param {string}  [opts.symbol]   — star character (default '★')
- * @param {Function} [opts.onChange] — callback(value)
+ * @param {Function} [opts.onChange] — (value, { source, component, prev }) after a user click
  * @returns {Object}
  */
 export function lkRating(el, opts = {}) {
@@ -62,9 +62,10 @@ export function lkRating(el, opts = {}) {
     if (!item) return;
     const idx = items.indexOf(item);
     if (idx >= 0) {
+      const prev = value;
       value = idx + 1;
       updateView();
-      if (opts.onChange) opts.onChange(value);
+      if (opts.onChange) opts.onChange(value, { source: 'click', component: comp, prev });
     }
   }
 

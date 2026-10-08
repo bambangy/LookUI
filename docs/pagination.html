@@ -52,7 +52,7 @@
   totalPages: 20,
   page: 1,
   maxVisible: 7,
-  onPageChange(p) { console.log('Page:', p); },
+  onChange(p, { source }) { console.log('Page:', p, source); },
 });
 
 pager.page = 5;
@@ -103,7 +103,7 @@ LookDocs.render('#api', {
     },
     {
       name: 'page', type: 'number', default: '1',
-      description: 'Initially selected page (1-based), clamped to `1…totalPages`. Setting it at creation does **not** fire `onPageChange`.',
+      description: 'Initially selected page (1-based), clamped to `1…totalPages`. Setting it at creation does **not** fire `onChange`.',
       examples: [
         { title: 'Start on the last page', run: true, code: `
           const ul = document.createElement('ul');
@@ -140,11 +140,11 @@ LookDocs.render('#api', {
   properties: [
     {
       name: 'page', type: 'number',
-      description: 'Get or set the current page. Setting it clamps the value, re-renders with the change animation and **fires `onPageChange`** when the page actually changes (setting the same page is a no-op).',
+      description: 'Get or set the current page. Setting it clamps the value, re-renders with the change animation and **fires `onChange`** (`source: \'api\'`) when the page actually changes (setting the same page is a no-op).',
       examples: [{ title: 'Drive the pager from code', run: true, code: `
         const ul = document.createElement('ul');
         container.appendChild(ul);
-        const pager = Look.lkPagination(ul, { totalPages: 10, onPageChange: (p) => log('onPageChange', p) });
+        const pager = Look.lkPagination(ul, { totalPages: 10, onChange: (p, { source, prev }) => log('onChange', prev, '->', p, source) });
         [['First', () => 1], ['-1', () => pager.page - 1], ['+1', () => pager.page + 1], ['Last', () => pager.totalPages]].forEach(([text, next]) => {
           const b = document.createElement('button');
           b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
@@ -156,7 +156,7 @@ LookDocs.render('#api', {
     },
     {
       name: 'totalPages', type: 'number',
-      description: 'Get or set the page count (minimum 1). When the count shrinks below the current page, `page` is clamped to the new last page — note that this clamp does **not** fire `onPageChange`.',
+      description: 'Get or set the page count (minimum 1). When the count shrinks below the current page, `page` is clamped to the new last page — note that this clamp does **not** fire `onChange`.',
       examples: [{ title: 'Resize the page count', run: true, code: `
         const ul = document.createElement('ul');
         container.appendChild(ul);
@@ -211,14 +211,19 @@ LookDocs.render('#api', {
 
   events: [
     {
-      name: 'onPageChange', signature: 'onPageChange(page)',
-      description: 'Called after the page changes — from a click on a number or arrow, or from setting `pager.page`. Not called for the initial `page` option, for clicking the already-active page, or when shrinking `totalPages` clamps the page.',
-      args: [{ name: 'page', type: 'number', description: 'The new 1-based page.' }],
+      name: 'onChange', signature: 'onChange(page, { source, component, prev })',
+      description: 'Called after the page changes — from a click on a number or arrow, or from setting `pager.page`. Not called for the initial `page` option, for clicking the already-active page, or when shrinking `totalPages` clamps the page. `onPageChange(page, ctx)` is a deprecated alias (logs a console warning, removed in 1.0).',
+      args: [
+        { name: 'page', type: 'number', description: 'The new 1-based page.' },
+        { name: 'ctx.source', type: "'click' | 'api'", description: '`click` for a number/arrow click, `api` for the `page` setter.' },
+        { name: 'ctx.component', type: 'Object', description: 'The pager instance.' },
+        { name: 'ctx.prev', type: 'number', description: 'The page before the change.' },
+      ],
       examples: [
         { title: 'Log page changes', run: true, code: `
           const ul = document.createElement('ul');
           container.appendChild(ul);
-          Look.lkPagination(ul, { totalPages: 12, onPageChange: (p) => log('page ->', p) });` },
+          Look.lkPagination(ul, { totalPages: 12, onChange: (p) => log('page ->', p) });` },
         { title: 'Page a local array', run: true, code: `
           const items = Array.from({ length: 23 }, (_, i) => 'Item ' + (i + 1));
           const size = 5;
@@ -227,12 +232,12 @@ LookDocs.render('#api', {
           const ul = document.createElement('ul');
           container.append(list, ul);
           const show = (p) => { list.textContent = items.slice((p - 1) * size, p * size).join(' · '); };
-          Look.lkPagination(ul, { totalPages: Math.ceil(items.length / size), onPageChange: show });
+          Look.lkPagination(ul, { totalPages: Math.ceil(items.length / size), onChange: show });
           show(1);` },
         { title: 'Server paging', code: `
           const pager = Look.lkPagination('#pages', {
             totalPages: 1,
-            async onPageChange(p) {
+            async onChange(p) {
               const res = await fetch('/api/orders?page=' + p).then((r) => r.json());
               renderRows(res.rows);
               pager.totalPages = res.pageCount;
@@ -302,7 +307,7 @@ LookDocs.render('#api', {
   const pager = Look.lkPagination('#demo-pages', {
     totalPages: 20,
     page: 1,
-    onPageChange(p) { out.textContent = 'Page changed to: ' + p; },
+    onChange(p) { out.textContent = 'Page changed to: ' + p; },
   });
 
   Look.lkPagination('#demo-pages-b', { totalPages: 20, page: 10 });

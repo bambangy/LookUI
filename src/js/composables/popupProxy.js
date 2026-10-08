@@ -393,7 +393,7 @@ export function lkPopupProxy(target, opts = {}) {
     scheduleUpdatePosition();
 
     if (typeof options.onShow === 'function') {
-      options.onShow({ anchor: anchorEl, placement: panel.dataset.placement || placement });
+      options.onShow(instance, { anchor: anchorEl, placement: panel.dataset.placement || placement });
     }
   }
 
@@ -412,7 +412,7 @@ export function lkPopupProxy(target, opts = {}) {
     presence.hide();
 
     if (typeof options.onHide === 'function') {
-      options.onHide(reason);
+      options.onHide(reason, instance);
     }
   }
 
@@ -475,7 +475,7 @@ export function lkPopupProxy(target, opts = {}) {
     trigger.setAttribute('aria-haspopup', 'dialog');
   }
 
-  return {
+  const instance = {
     el: layer,
     panelEl: panel,
     show,
@@ -489,6 +489,8 @@ export function lkPopupProxy(target, opts = {}) {
       return open;
     },
   };
+
+  return instance;
 }
 
 

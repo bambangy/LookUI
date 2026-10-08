@@ -392,9 +392,9 @@ LookDocs.render('#api', {
 
   properties: [
     {
-      name: 'value', type: 'Date | null | [Date|null, Date|null]', readonly: true,
-      description: 'Current committed value (a copy — mutating it has no effect). Range mode always returns a two-item array. In time mode the value changes only after **OK**. Use `setValue()` to change it.',
-      examples: [`const due = picker.value; // Date | null`],
+      name: 'value', type: 'Date | null | [Date|null, Date|null]',
+      description: 'Current committed value (a copy — mutating it has no effect). Range mode always returns a two-item array. In time mode the value changes only after **OK**. Setting it (same parsing as `setValue()`) is **silent** — it does not fire `onChange`; use `setValue()` when you want the event.',
+      examples: [`const due = picker.value; // Date | null\npicker.value = '2026-12-25'; // no onChange`],
     },
     { name: 'isOpen', type: 'boolean', readonly: true, description: 'Whether the panel is open.' },
     { name: 'el', type: 'Element', readonly: true, description: 'The popup layer (`.lk-popup-proxy`) — **not** the trigger. It is appended to `<body>` the first time the picker opens.' },
@@ -501,11 +501,12 @@ LookDocs.render('#api', {
   events: [
     {
       name: 'onChange', signature: 'onChange(value, meta)',
-      description: 'Fires whenever the value changes — including the first click of a range and `setValue()` calls. In time mode it fires only on **OK** (`source: "confirm"`) or `setValue()`.',
+      description: 'Fires whenever the value changes — including the first click of a range and `setValue()` calls (not when assigning `picker.value`). In time mode it fires only on **OK** (`source: "confirm"`) or `setValue()`.',
       args: [
         { name: 'value', type: 'Date | null | [Date|null, Date|null]', description: 'New value (copies).' },
         { name: 'meta.source', type: 'string', description: '`"pick"` (single day clicked), `"range-start"`, `"range-end"`, `"confirm"` (time OK), `"api"` or the source passed to `setValue()`.' },
         { name: 'meta.display / meta.iso', type: 'string | Array', description: 'Same as `display()` / `iso()` for the new value.' },
+        { name: 'meta.component', type: 'Object', description: 'The picker instance.' },
       ],
       examples: [{ title: 'Watch every source', run: true, code: `
         const btn = document.createElement('button');
@@ -520,11 +521,12 @@ LookDocs.render('#api', {
         picker.setValue(['2026-10-01', '2026-10-03']); // logs "api"` }],
     },
     {
-      name: 'onConfirm', signature: 'onConfirm(value, picker)',
-      description: 'Fires when the user completes a selection: a day click (single), the end click (range) or **OK** (time). The panel closes right after with reason `"select"`. Not fired by `setValue()`.',
+      name: 'onConfirm', signature: 'onConfirm(value, { component, display, iso })',
+      description: 'Fires when the user completes a selection: a day click (single), the end click (range) or **OK** (time). The panel closes right after with reason `"select"`. Not fired by `setValue()`. Changed in 0.3.0: the second argument is a context object (was the picker).',
       args: [
         { name: 'value', type: 'Date | [Date, Date]', description: 'The committed value.' },
-        { name: 'picker', type: 'Object', description: 'The picker instance.' },
+        { name: 'ctx.component', type: 'Object', description: 'The picker instance.' },
+        { name: 'ctx.display / ctx.iso', type: 'string | Array', description: 'Same as `display()` / `iso()` for the committed value.' },
       ],
       examples: [{ title: 'Write into an input', run: true, code: `
         const input = document.createElement('input');

@@ -145,6 +145,16 @@ function checkableDocs(FN, MK, noun) {
         name: 'readonly', type: 'boolean', default: 'false',
         description: 'Adds the `readonly` attribute. **Browsers ignore `readonly` on checkboxes and radios** — the user can still toggle it. To lock the control use `enabled = false` (note: disabled controls are not submitted).',
       },
+      {
+        name: 'onChange', type: 'Function', default: '—',
+        description: (noun === 'radio'
+          ? '`(value, { source: \'change\', component, event })` — called when the user selects this radio; `value` is its `value` attribute.'
+          : '`(checked, { source: \'change\', component, event })` — called when the user toggles the ' + noun + '.')
+          + ' Programmatic changes (`checked`, `value`' + (noun === 'radio' ? '' : ', `toggle()`') + ') do not fire it.',
+        examples: [{ run: true, code: `
+          ${MK}
+          ${noun === 'radio' ? "el.value = 'a'; " : ''}Look.${FN}(el, { label: 'Click me'${noun === 'radio' ? ", name: 'ronchg'" : ''}, onChange: (v, { source }) => log(source, v) });` }],
+      },
     ],
 
     properties: [
@@ -203,7 +213,7 @@ function checkableDocs(FN, MK, noun) {
     events: [
       {
         name: 'change', signature: "c.el.addEventListener('change', (event) => …)",
-        description: 'Native DOM event fired when the user toggles the control. ' + FN + ' has no callback options — subscribe on `c.el`. Programmatic changes (`checked`, `value`' + (noun === 'radio' ? '' : ', `toggle()`') + ') do not fire it.',
+        description: 'Native DOM event fired when the user toggles the control. Use the `onChange` option, or subscribe on `c.el`. Programmatic changes (`checked`, `value`' + (noun === 'radio' ? '' : ', `toggle()`') + ') do not fire it.',
         args: [{ name: 'event', type: 'Event', description: 'Native change event; read the state from `c.checked`.' }],
         examples: [{ run: true, code: `
           ['Email', 'SMS'].forEach((label) => {
@@ -234,7 +244,7 @@ function checkableDocs(FN, MK, noun) {
     signature: 'const cb = Look.lkCheckbox(element, options);',
     description: [
       'Styles a native `<input type="checkbox">` (`.lk-checkbox`), optionally wraps it with a clickable label and an error slot, and keeps external labels in sync (text + required asterisk).',
-      'The input stays a real checkbox: it submits `name=value` only while checked, supports native `required` validation and fires native `change` events — lkCheckbox adds no callback options.',
+      'The input stays a real checkbox: it submits `name=value` only while checked, supports native `required` validation and fires native `change` events; the `onChange` option is called for user toggles.',
     ],
     params: [
       { name: 'element', type: 'HTMLInputElement | string', description: 'An `<input type="checkbox">` or a CSS selector. Insert it into the page first — the label wrapper is only created for an attached element.' },

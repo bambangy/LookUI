@@ -17,7 +17,7 @@
   <div class="demo-container">
     <a href="index.html" class="demo-back">&larr; All Components</a>
     <h1 style="font-size: var(--lk-text-2xl);">Button</h1>
-    <p style="opacity: 0.85;">lkButton(el) — .lk-btn variants, groups, dropdowns</p>
+    <p style="opacity: 0.85;">lkButton(el, { onClick }) — .lk-btn variants, groups, dropdowns</p>
   </div>
 </header>
 
@@ -120,9 +120,12 @@
 
   <div class="demo-usage">
     <p class="demo-usage__title">JavaScript</p>
-    <pre>const btn = Look.lkButton('#my-button');
-btn.el;        // DOM element
-btn.destroy(); // removes lk-btn class
+    <pre>const btn = Look.lkButton('#my-button', {
+  onClick(event, { component }) { console.log('clicked'); }, // not called while disabled
+});
+btn.el;              // DOM element
+btn.enabled = false; // disable
+btn.destroy();       // removes the listener (and lk-btn, if lkButton added it)
 
 // Dropdown toggle (add lk-btn-dropdown--open)
 const dd = document.querySelector('.lk-btn-dropdown');
@@ -149,17 +152,18 @@ LookDocs.render('#api', {
   name: 'lkButton',
   kind: 'Component',
   signature: [
-    'const btn = Look.lkButton(element);',
+    'const btn = Look.lkButton(element, options);',
     '<button class="lk-btn lk-btn--primary">Save</button>',
   ],
   description: [
     'Buttons are primarily a **CSS component**: any `<button>`, `<a>` or `<input type="button">` with the `.lk-btn` class gets the LookUI button look, and modifier classes pick the variant, size and density. No JavaScript is required.',
-    '`lkButton()` is a thin helper that adds `.lk-btn` to an element and returns a handle whose `destroy()` removes it again — useful when buttons are created by code that otherwise owns the element. Groups (`.lk-btn-group`) and the button dropdown (`.lk-btn-dropdown`) are also pure CSS; the dropdown is opened by toggling `.lk-btn-dropdown--open` (see [the dropdown classes](#api-classes-.lk-btn-dropdown)).',
+    '`lkButton()` is a thin helper that adds `.lk-btn` to an element, optionally wires an `onClick` handler that is skipped while the button is disabled, and returns a handle with the shared `el` / `id` / `hidden` / `enabled` properties and a `destroy()` — useful when buttons are created by code that otherwise owns the element. Groups (`.lk-btn-group`) and the button dropdown (`.lk-btn-dropdown`) are also pure CSS; the dropdown is opened by toggling `.lk-btn-dropdown--open` (see [the dropdown classes](#api-classes-.lk-btn-dropdown)).',
   ],
   params: [
     { name: 'element', type: 'Element | string', description: 'The element or a CSS selector. Throws `Look.lkButton: element not found` when nothing matches.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
   ],
-  returns: { type: 'Object', description: '`{ el, destroy }` — see below.' },
+  returns: { type: 'Object', description: '`{ el, id, hidden, enabled, destroy }` — see below.' },
   notes: [
     'Hover lifts the button by 1 px with a small shadow, press scales it to 97 %; both are skipped for `:disabled` / `[aria-disabled="true"]` buttons. With `prefers-reduced-motion: reduce` all button transitions collapse to 1 ms.',
   ],
@@ -176,12 +180,33 @@ LookDocs.render('#api', {
         btn.el.classList.add('lk-btn--primary');
         log('className:', btn.el.className);` }],
     },
+    { name: 'id', type: 'string', description: 'Get or set the element id.' },
+    { name: 'hidden', type: 'boolean', description: 'Show/hide the button (toggles `.lk-hidden`).' },
+    { name: 'enabled', type: 'boolean', description: 'Enable/disable the button. `onClick` is not called while it is disabled.' },
+  ],
+
+  options: [
+    {
+      name: 'onClick', type: 'Function', default: '—',
+      description: '`(event, { component })` — called on click, but not while the button is disabled.',
+      examples: [{ title: 'Click handler + enabled toggle', run: true, code: `
+        const b = document.createElement('button');
+        b.className = 'lk-btn--primary';
+        b.textContent = 'Click me';
+        const t = document.createElement('button');
+        t.className = 'lk-btn lk-btn--secondary';
+        t.style.marginLeft = '8px';
+        t.textContent = 'Toggle enabled';
+        container.append(b, t);
+        const btn = Look.lkButton(b, { onClick: (e, { component }) => log('clicked', component.el.textContent) });
+        t.onclick = () => { btn.enabled = !btn.enabled; log('enabled =', btn.enabled); };` }],
+    },
   ],
 
   methods: [
     {
       name: 'destroy', signature: 'destroy()',
-      description: 'Removes the `.lk-btn` class that `lkButton()` added. Modifier classes you added yourself are left alone.',
+      description: 'Removes the click listener and — only if `lkButton()` added it — the `.lk-btn` class. Modifier classes you added yourself are left alone.',
       examples: [{ title: 'Toggle the base class', run: true, code: `
         const b = document.createElement('button');
         b.textContent = 'Click to destroy';

@@ -63,9 +63,9 @@ function specFromSlide(slide) {
  * @param {boolean} [opts.arrows]            — build prev/next buttons when missing (default true with `slides`)
  * @param {boolean} [opts.indicators]        — build dots when missing (default true with `slides`)
  * @param {string}  [opts.loadingText]       — text beside the spinner while content loads
- * @param {Function} [opts.onChange]         — (index) => void after the active slide changes
- * @param {Function} [opts.onLoad]           — (slideEl, index) after a slide's content is in place
- * @param {Function} [opts.onError]          — (error, slideEl, index) when a slide fails to load
+ * @param {Function} [opts.onChange]         — (index, { source, component, prev, slide }) after the active slide changes
+ * @param {Function} [opts.onLoad]           — (slideEl, { index, component }) after a slide's content is in place
+ * @param {Function} [opts.onError]          — (error, { slide, index, component }) when a slide (or the slide list: slide null, index -1) fails to load
  * @returns {Object}
  */
 export function lkCarousel(el, opts = {}) {
@@ -183,8 +183,8 @@ export function lkCarousel(el, opts = {}) {
     const handle = renderContent(slide, spec, {
       ctx: { index: i, carousel: comp },
       loadingText: opts.loadingText,
-      onLoad: () => { refreshClone(slides.indexOf(slide)); opts.onLoad?.(slide, slides.indexOf(slide)); },
-      onError: (err) => { refreshClone(slides.indexOf(slide)); opts.onError?.(err, slide, slides.indexOf(slide)); },
+      onLoad: () => { refreshClone(slides.indexOf(slide)); opts.onLoad?.(slide, { index: slides.indexOf(slide), component: comp }); },
+      onError: (err) => { refreshClone(slides.indexOf(slide)); opts.onError?.(err, { slide, index: slides.indexOf(slide), component: comp }); },
     });
     loaded.set(slide, handle);
   }
@@ -272,7 +272,7 @@ export function lkCarousel(el, opts = {}) {
       try {
         value = await value;
       } catch (err) {
-        if (my === listToken && !destroyed) { showListStatus(err); opts.onError?.(err, null, -1); }
+        if (my === listToken && !destroyed) { showListStatus(err); opts.onError?.(err, { slide: null, index: -1, component: comp }); }
         return;
       }
       if (my !== listToken || destroyed) return;
@@ -330,6 +330,13 @@ export function lkCarousel(el, opts = {}) {
     if (e.target === track && e.propertyName === 'transform') settle();
   }
 
+  // Who moved the carousel, reported as onChange ctx.source; public methods report 'api'
+  let changeSource = 'api';
+  function via(source, fn) {
+    changeSource = source;
+    try { fn(); } finally { changeSource = 'api'; }
+  }
+
   function moveTo(pos, logical) {
     if (!count) return;
     // Finish any pending clone jump first so rapid clicks never drift.
@@ -347,7 +354,9 @@ export function lkCarousel(el, opts = {}) {
       settleTimer = setTimeout(settle, transitionMs() + 50);
     }
 
-    if (prevIndex !== current && typeof opts.onChange === 'function') opts.onChange(current);
+    if (prevIndex !== current && typeof opts.onChange === 'function') {
+      opts.onChange(current, { source: changeSource, component: comp, prev: prevIndex, slide: slides[current] });
+    }
   }
 
   function goTo(index) {
@@ -386,7 +395,7 @@ export function lkCarousel(el, opts = {}) {
 
   function startAutoplay() {
     if (opts.autoplay && !timer && !paused && count > 1 && !destroyed) {
-      timer = setInterval(next, interval);
+      timer = setInterval(() => via('autoplay', next), interval);
     }
   }
 
@@ -415,20 +424,22 @@ export function lkCarousel(el, opts = {}) {
 
   // --- Controls ------------------------------------------------------------------
 
-  function onPrev() { prev(); resetAutoplay(); }
-  function onNext() { next(); resetAutoplay(); }
+  function onPrev(source) { via(source, prev); resetAutoplay(); }
+  function onNext(source) { via(source, next); resetAutoplay(); }
+  const onPrevClick = () => onPrev('arrow');
+  const onNextClick = () => onNext('arrow');
   function onDot(e) {
     const dot = e.target.closest?.('.lk-carousel__dot');
     const idx = dot ? dots.indexOf(dot) : -1;
-    if (idx >= 0) { goTo(idx); resetAutoplay(); }
+    if (idx >= 0) { via('dot', () => goTo(idx)); resetAutoplay(); }
   }
 
   function onKeydown(e) {
     if (!keyboard || e.defaultPrevented) return;
     const tag = e.target?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target?.isContentEditable) return;
-    if (e.key === 'ArrowLeft')  { e.preventDefault(); onPrev(); }
-    if (e.key === 'ArrowRight') { e.preventDefault(); onNext(); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); onPrev('key'); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); onNext('key'); }
   }
 
   // --- Swipe / drag ----------------------------------------------------------------
@@ -487,8 +498,8 @@ export function lkCarousel(el, opts = {}) {
 
     const velocity = Math.abs(dx) / Math.max(1, performance.now() - t);
     const commit = Math.abs(dx) > width * SWIPE_RATIO || velocity > SWIPE_VELOCITY;
-    if (commit && dx < 0 && (loop || current < count - 1)) next();
-    else if (commit && dx > 0 && (loop || current > 0)) prev();
+    if (commit && dx < 0 && (loop || current < count - 1)) via('swipe', next);
+    else if (commit && dx > 0 && (loop || current > 0)) via('swipe', prev);
     else setTrack(position, false); // snap back
 
     if (!(pauseOnHover && node.matches(':hover'))) resetAutoplay();
@@ -505,8 +516,8 @@ export function lkCarousel(el, opts = {}) {
 
   // --- Bind ----------------------------------------------------------------------
 
-  if (prevBtn) prevBtn.addEventListener('click', onPrev);
-  if (nextBtn) nextBtn.addEventListener('click', onNext);
+  if (prevBtn) prevBtn.addEventListener('click', onPrevClick);
+  if (nextBtn) nextBtn.addEventListener('click', onNextClick);
   node.addEventListener('click', onDot);
   node.addEventListener('keydown', onKeydown);
   node.addEventListener('mouseenter', onMouseEnter);
@@ -563,11 +574,11 @@ export function lkCarousel(el, opts = {}) {
     stopAutoplay();
     clearTimeout(settleTimer);
     if (prevBtn) {
-      prevBtn.removeEventListener('click', onPrev);
+      prevBtn.removeEventListener('click', onPrevClick);
       prevBtn.disabled = false;
     }
     if (nextBtn) {
-      nextBtn.removeEventListener('click', onNext);
+      nextBtn.removeEventListener('click', onNextClick);
       nextBtn.disabled = false;
     }
     node.removeEventListener('click', onDot);

@@ -34,7 +34,7 @@
  * @param {number}  [opts.popupWidth=560] — px (capped to the viewport)
  * @param {Object}  [opts.table]          — extra lkTable options
  * @param {boolean} [opts.required] [opts.readonly] [opts.disabled] [opts.dense]
- * @param {Function} [opts.onChange]      — single: (value, row); multiple: (values[], rows[])
+ * @param {Function} [opts.onChange]      — single: (value, { source, component, item }); multiple: (values[], { source, component, items })
  * @param {Array}   [opts.rules]          — validation rules (multiple: minLength / maxLength count the picks)
  * @param {boolean} [opts.validate]       — validate when focus leaves the field (popup closed)
  * @param {Function} [opts.onOpen] [opts.onClose]
@@ -44,8 +44,8 @@
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { wrapField } from '../helpers/field.js';
 import { lkDataSource } from '../helpers/dataSource.js';
-import { lkTable } from '../compossables/table.js';
-import { lkPopupProxy } from '../compossables/popupProxy.js';
+import { lkTable } from '../composables/table.js';
+import { lkPopupProxy } from '../composables/popupProxy.js';
 import { lkTextbox } from './form.js';
 import { lkChip } from './chip.js';
 import { lkIcon } from './icon.js';
@@ -290,19 +290,20 @@ export function lkTextPop(el, opts = {}) {
 
   let validation = null; // set once the component object exists
 
-  function emitChange() {
+  // source: 'select' | 'remove' | 'clear'
+  function emitChange(source) {
     validation?.changed();
     if (typeof options.onChange !== 'function') return;
     const list = keys.map((k) => rows.get(String(k)) || null);
-    if (multiple) options.onChange(keys.slice(), list);
-    else options.onChange(keys.length ? keys[0] : null, list[0] || null);
+    if (multiple) options.onChange(keys.slice(), { source, component: comp, items: list });
+    else options.onChange(keys.length ? keys[0] : null, { source, component: comp, item: list[0] || null });
   }
 
-  function commit() {
+  function commit(source = 'select') {
     syncInputs();
     renderTrigger();
     updateFoot();
-    emitChange();
+    emitChange(source);
   }
 
   function removeValue(k) {
@@ -310,7 +311,7 @@ export function lkTextPop(el, opts = {}) {
     rows.delete(String(k));
     keys = keys.filter((x) => !same(x, k));
     if (grid) syncGridSelection();
-    commit();
+    commit('remove');
   }
 
   function clearAll() {
@@ -318,7 +319,7 @@ export function lkTextPop(el, opts = {}) {
     keys = [];
     rows.clear();
     if (grid) syncGridSelection();
-    commit();
+    commit('clear');
   }
 
   // --- Popup ----------------------------------------------------------------
@@ -468,7 +469,7 @@ export function lkTextPop(el, opts = {}) {
         trigger.setAttribute('aria-expanded', 'false');
         trigger.classList.remove('lk-textpop--open');
         if (reason !== 'destroy' && reason !== 'outside') trigger.focus({ preventScroll: true });
-        if (typeof options.onClose === 'function') options.onClose(reason);
+        if (typeof options.onClose === 'function') options.onClose(reason, comp);
       },
     });
     // Build live DOM straight into the panel (setContent would clone and drop listeners)

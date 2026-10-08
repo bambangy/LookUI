@@ -42,7 +42,7 @@ function createBranch(item, submenu, trigger, depth) {
  * @param {Object} [opts]
  * @param {boolean} [opts.accordion=true] - only one submenu open per nesting level
  * @param {boolean} [opts.collapseSiblings=true] - alias for accordion behavior
- * @param {Function} [opts.onToggle] - callback({ item, open, depth, origin })
+ * @param {Function} [opts.onToggle] - callback({ item, open, depth, origin, component })
  * @returns {Object}
  */
 export function lkList(el, opts = {}) {
@@ -54,6 +54,10 @@ export function lkList(el, opts = {}) {
     collapseSiblings: opts.collapseSiblings !== false,
     onToggle: typeof opts.onToggle === 'function' ? opts.onToggle : null,
   };
+
+  // Created up front: onToggle (origin 'init') can fire while branches are set up
+  const comp = {};
+  applyBase(comp, node);
 
   const branches = [];
   const branchByItem = new Map();
@@ -137,7 +141,7 @@ export function lkList(el, opts = {}) {
     }
 
     if (options.onToggle && origin !== 'accordion') {
-      options.onToggle({ item: branch.item, open: branch.open, depth: branch.depth, origin });
+      options.onToggle({ item: branch.item, open: branch.open, depth: branch.depth, origin, component: comp });
     }
   }
 
@@ -273,9 +277,6 @@ export function lkList(el, opts = {}) {
       trigger.removeEventListener('keydown', onKeydown);
     });
   });
-
-  const comp = {};
-  applyBase(comp, node);
 
   Object.defineProperties(comp, {
     branches: {

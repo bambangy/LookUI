@@ -71,7 +71,7 @@
   preferred: ['ID', 'SG', 'MY'],
   flag: 'image',             // 'image' (flagcdn.com) | 'emoji' | 'code' | false
   required: true,
-  onChange(value, info) { console.log(value, info.country, info.number, info.valid); },
+  onChange(value, ctx) { console.log(value, ctx.source, ctx.country, ctx.number, ctx.valid); },
 });
 
 phone.value = '+6281234567890';   // detects Indonesia, fills 81234567890
@@ -141,7 +141,7 @@ LookDocs.render('#api', {
     { name: 'minDigits / maxDigits', type: 'number', default: '6 / 15 − dial length', description: 'Bounds for `valid`. `maxDigits` also limits typing.' },
     { name: 'placeholder', type: 'string', default: '—', description: 'Placeholder of the number box.' },
     { name: 'required / readonly / disabled / dense', type: 'boolean', default: 'false', description: 'Initial states; `dense` uses the compact size.' },
-    { name: 'onChange', type: 'Function', default: '—', description: '`(value, { country, dial, number, valid })` — after typing, pasting or picking a country.' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(value, { source, component, country, dial, number, valid })` — after typing, pasting (`source: \'input\'`) or picking a country (`source: \'country\'`).' },
   ],
   properties: [
     { name: 'value', type: 'string', description: 'E.164 value (`\'\'` while the number is empty). Setting it parses `+…` strings.' },
@@ -168,7 +168,7 @@ LookDocs.render('#api', {
 </script>
 <script>
   const basicOut = document.getElementById('ph-basic-out');
-  const show = (v, info) => {
+  const show = (v, { component, ...info }) => {
     basicOut.textContent = JSON.stringify({ value: v, ...info }, null, 2);
   };
   const basic = Look.lkPhone('#ph-basic', { label: 'Phone number', onChange: show });

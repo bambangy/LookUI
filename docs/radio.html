@@ -145,6 +145,16 @@ function checkableDocs(FN, MK, noun) {
         name: 'readonly', type: 'boolean', default: 'false',
         description: 'Adds the `readonly` attribute. **Browsers ignore `readonly` on checkboxes and radios** — the user can still toggle it. To lock the control use `enabled = false` (note: disabled controls are not submitted).',
       },
+      {
+        name: 'onChange', type: 'Function', default: '—',
+        description: (noun === 'radio'
+          ? '`(value, { source: \'change\', component, event })` — called when the user selects this radio; `value` is its `value` attribute.'
+          : '`(checked, { source: \'change\', component, event })` — called when the user toggles the ' + noun + '.')
+          + ' Programmatic changes (`checked`, `value`' + (noun === 'radio' ? '' : ', `toggle()`') + ') do not fire it.',
+        examples: [{ run: true, code: `
+          ${MK}
+          ${noun === 'radio' ? "el.value = 'a'; " : ''}Look.${FN}(el, { label: 'Click me'${noun === 'radio' ? ", name: 'ronchg'" : ''}, onChange: (v, { source }) => log(source, v) });` }],
+      },
     ],
 
     properties: [
@@ -203,7 +213,7 @@ function checkableDocs(FN, MK, noun) {
     events: [
       {
         name: 'change', signature: "c.el.addEventListener('change', (event) => …)",
-        description: 'Native DOM event fired when the user toggles the control. ' + FN + ' has no callback options — subscribe on `c.el`. Programmatic changes (`checked`, `value`' + (noun === 'radio' ? '' : ', `toggle()`') + ') do not fire it.',
+        description: 'Native DOM event fired when the user toggles the control. Use the `onChange` option, or subscribe on `c.el`. Programmatic changes (`checked`, `value`' + (noun === 'radio' ? '' : ', `toggle()`') + ') do not fire it.',
         args: [{ name: 'event', type: 'Event', description: 'Native change event; read the state from `c.checked`.' }],
         examples: [{ run: true, code: `
           ['Email', 'SMS'].forEach((label) => {
@@ -235,7 +245,7 @@ function checkableDocs(FN, MK, noun) {
     signature: 'const radio = Look.lkRadio(element, options);',
     description: [
       'Styles a single native `<input type="radio">` (`.lk-radio`), optionally wraps it with a clickable label and an error slot, and keeps external labels in sync. Create one instance per radio; grouping is done the native way, by giving the radios the same `name`.',
-      'Checking a radio unchecks the others in its group (browser behavior). There is no group object and no callback option — read which one is checked from the instances (or `form.elements[name].value`) and listen to native `change` events.',
+      'Checking a radio unchecks the others in its group (browser behavior). There is no group object — read which one is checked from the instances (or `form.elements[name].value`), and use each radio\'s `onChange` option or native `change` events.',
     ],
     params: [
       { name: 'element', type: 'HTMLInputElement | string', description: 'An `<input type="radio">` or a CSS selector. Insert it into the page first.' },

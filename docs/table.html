@@ -1372,64 +1372,64 @@ LookDocs.render('#api', {
 
   events: [
     {
-      name: 'onDataBound', signature: 'onDataBound({ items, reason, grid })',
+      name: 'onDataBound', signature: 'onDataBound({ items, reason, grid, component })',
       description: 'After the body is rendered from the data source (initially and on every change except the transient `loading` state).',
       args: [
         { name: 'items', type: 'Array', description: 'Copy of the rendered view.' },
         { name: 'reason', type: 'string', description: 'The lkDataSource change reason: `init`, `load`, `sort`, `filter`, `page`, `pageSize`, `add`, `update`, `remove`, `idle` …' },
-        { name: 'grid', type: 'Object', description: 'The grid.' },
+        { name: 'grid', type: 'Object', description: 'The grid.' }, { name: 'component', type: 'Object', description: 'Same as `grid` (shared event shape).' },
       ],
       examples: [{ run: true, code: `
         const el = container.appendChild(document.createElement('div'));
         Look.lkTable(el, { dataSource: PEOPLE, columns: ['name', 'dept'], onDataBound: ({ items, reason }) => log(reason, '→', items.length, 'rows') });` }],
     },
     {
-      name: 'onChange', signature: 'onChange({ selectedRows, selectedKeys, grid })',
+      name: 'onChange', signature: 'onChange({ selectedRows, selectedKeys, grid, component })',
       description: 'Selection changed (row click, checkbox, header checkbox, keyboard, `select()`, `clearSelection()`).',
-      args: [{ name: 'selectedRows', type: 'Array<Object>', description: 'Selected records.' }, { name: 'selectedKeys', type: 'Array', description: 'Their keys.' }, { name: 'grid', type: 'Object', description: 'The grid.' }],
+      args: [{ name: 'selectedRows', type: 'Array<Object>', description: 'Selected records.' }, { name: 'selectedKeys', type: 'Array', description: 'Their keys.' }, { name: 'grid', type: 'Object', description: 'The grid.' }, { name: 'component', type: 'Object', description: 'Same as `grid` (shared event shape).' }],
     },
     {
-      name: 'onRowClick', signature: 'onRowClick({ row, index, event, grid })',
+      name: 'onRowClick', signature: 'onRowClick({ row, index, event, grid, component })',
       description: 'A data row was clicked (not on a command button, checkbox, or link/button/input inside the row; not while it is being edited). Fires with or without `selectable`.',
-      args: [{ name: 'row', type: 'Object', description: 'The record.' }, { name: 'index', type: 'number', description: 'Index within the current view.' }, { name: 'event', type: 'MouseEvent', description: 'The click.' }, { name: 'grid', type: 'Object', description: 'The grid.' }],
+      args: [{ name: 'row', type: 'Object', description: 'The record.' }, { name: 'index', type: 'number', description: 'Index within the current view.' }, { name: 'event', type: 'MouseEvent', description: 'The click.' }, { name: 'grid', type: 'Object', description: 'The grid.' }, { name: 'component', type: 'Object', description: 'Same as `grid` (shared event shape).' }],
       examples: [{ run: true, code: `
         const el = container.appendChild(document.createElement('div'));
         Look.lkTable(el, { dataSource: PEOPLE, columns: ['name', 'dept'], onRowClick: ({ row, index }) => log('row', index, row.name) });` }],
     },
     {
-      name: 'onSort', signature: 'onSort({ sort, grid })',
+      name: 'onSort', signature: 'onSort({ sort, grid, component })',
       description: 'Sort changed (header click, column menu, `sort()`).',
-      args: [{ name: 'sort', type: 'Array<{ field, dir }>', description: 'New sort levels (empty when unsorted).' }, { name: 'grid', type: 'Object', description: 'The grid.' }],
+      args: [{ name: 'sort', type: 'Array<{ field, dir }>', description: 'New sort levels (empty when unsorted).' }, { name: 'grid', type: 'Object', description: 'The grid.' }, { name: 'component', type: 'Object', description: 'Same as `grid` (shared event shape).' }],
     },
     {
-      name: 'onPage', signature: 'onPage({ page, grid })',
+      name: 'onPage', signature: 'onPage({ page, grid, component })',
       description: 'The user picked a page in the pager. Not fired for page-size changes or programmatic `dataSource.setPage()`.',
-      args: [{ name: 'page', type: 'number', description: 'New 1-based page.' }, { name: 'grid', type: 'Object', description: 'The grid.' }],
+      args: [{ name: 'page', type: 'number', description: 'New 1-based page.' }, { name: 'grid', type: 'Object', description: 'The grid.' }, { name: 'component', type: 'Object', description: 'Same as `grid` (shared event shape).' }],
     },
     {
-      name: 'onFilter', signature: 'onFilter({ filters, search, filter, grid })',
+      name: 'onFilter', signature: 'onFilter({ filters, search, filter, grid, component })',
       description: 'Column filters or the search term changed (menu, filter row, search box, `filter()`, `search()`, `clearFilters()`).',
       args: [
         { name: 'filters', type: 'Object', description: '`{ [field]: { op, value } }` copy of the column filters.' },
         { name: 'search', type: 'string', description: 'Current search term.' },
         { name: 'filter', type: 'Function | Object | null', description: 'What was passed to `dataSource.setFilter()`: a predicate (local) or a rule object (server filtering).' },
-        { name: 'grid', type: 'Object', description: 'The grid.' },
+        { name: 'grid', type: 'Object', description: 'The grid.' }, { name: 'component', type: 'Object', description: 'Same as `grid` (shared event shape).' },
       ],
     },
     {
-      name: 'onEdit', signature: 'onEdit({ row, values, isNew, grid })',
+      name: 'onEdit', signature: 'onEdit({ row, values, isNew, grid, component })',
       description: 'A record entered edit mode. `values` is the live draft object — you may pre-fill fields by mutating it.',
-      args: [{ name: 'row', type: 'Object | null', description: 'Original record (`null` for new).' }, { name: 'values', type: 'Object', description: 'Draft (deep copy of the record, or defaults).' }, { name: 'isNew', type: 'boolean', description: 'Creating a record.' }, { name: 'grid', type: 'Object', description: 'The grid.' }],
+      args: [{ name: 'row', type: 'Object | null', description: 'Original record (`null` for new).' }, { name: 'values', type: 'Object', description: 'Draft (deep copy of the record, or defaults).' }, { name: 'isNew', type: 'boolean', description: 'Creating a record.' }, { name: 'grid', type: 'Object', description: 'The grid.' }, { name: 'component', type: 'Object', description: 'Same as `grid` (shared event shape).' }],
     },
     {
-      name: 'onSave', signature: 'onSave({ row, values, changes, isNew, grid }) → false | void',
+      name: 'onSave', signature: 'onSave({ row, values, changes, isNew, grid, component }) → false | void',
       description: 'After validation passed, before the data source is written. **Return `false` to veto** (the editor stays open). Only changed fields are sent to `dataSource.update()`; if nothing changed, the editor just closes.',
       args: [
         { name: 'row', type: 'Object | null', description: 'Original record (`null` for new).' },
         { name: 'values', type: 'Object', description: 'Full draft.' },
         { name: 'changes', type: 'Object', description: 'Changed fields only (all values for a new record).' },
         { name: 'isNew', type: 'boolean', description: 'Creating a record.' },
-        { name: 'grid', type: 'Object', description: 'The grid.' },
+        { name: 'grid', type: 'Object', description: 'The grid.' }, { name: 'component', type: 'Object', description: 'Same as `grid` (shared event shape).' },
       ],
       examples: [{ title: 'Veto: names must not contain digits', run: true, code: `
         const el = container.appendChild(document.createElement('div'));
@@ -1442,14 +1442,14 @@ LookDocs.render('#api', {
         });` }],
     },
     {
-      name: 'onCancel', signature: 'onCancel({ row, isNew, grid })',
+      name: 'onCancel', signature: 'onCancel({ row, isNew, grid, component })',
       description: 'Edit mode was left without saving (Cancel, **Esc**, closing the popup, `cancelEdit()`, paging away from an inline edit).',
-      args: [{ name: 'row', type: 'Object | null', description: 'Original record (`null` for new).' }, { name: 'isNew', type: 'boolean', description: 'Was a new record.' }, { name: 'grid', type: 'Object', description: 'The grid.' }],
+      args: [{ name: 'row', type: 'Object | null', description: 'Original record (`null` for new).' }, { name: 'isNew', type: 'boolean', description: 'Was a new record.' }, { name: 'grid', type: 'Object', description: 'The grid.' }, { name: 'component', type: 'Object', description: 'Same as `grid` (shared event shape).' }],
     },
     {
-      name: 'onError', signature: 'onError({ error, action, grid })',
+      name: 'onError', signature: 'onError({ error, action, grid, component })',
       description: 'A data-source transport failed. Emitted from the data source `error` event and again by the grid for failed saves and deletes (so a failed save/delete can report twice).',
-      args: [{ name: 'error', type: 'Error', description: 'The rejection.' }, { name: 'action', type: 'string', description: "`'read'`, `'create'`, `'update'` or `'delete'`." }, { name: 'grid', type: 'Object', description: 'The grid.' }],
+      args: [{ name: 'error', type: 'Error', description: 'The rejection.' }, { name: 'action', type: 'string', description: "`'read'`, `'create'`, `'update'` or `'delete'`." }, { name: 'grid', type: 'Object', description: 'The grid.' }, { name: 'component', type: 'Object', description: 'Same as `grid` (shared event shape).' }],
       examples: [{ title: 'Failing server — edit and save', run: true, code: `
         const el = container.appendChild(document.createElement('div'));
         Look.lkTable(el, {
@@ -1459,9 +1459,9 @@ LookDocs.render('#api', {
         });` }],
     },
     {
-      name: 'onSort (legacy)', signature: 'onSort({ column, order })',
+      name: 'onSort (legacy)', signature: 'onSort({ column, order, component })',
       description: 'Legacy enhance mode: a header sorted the table.',
-      args: [{ name: 'column', type: 'number', description: 'Column index.' }, { name: 'order', type: "'asc' | 'desc'", description: 'Direction.' }],
+      args: [{ name: 'column', type: 'number', description: 'Column index.' }, { name: 'order', type: "'asc' | 'desc'", description: 'Direction.' }, { name: 'component', type: 'Object', description: 'The table instance.' }],
     },
   ],
 

@@ -39,10 +39,10 @@ function resolveContainer(ref) {
  * @param {boolean} [opts.fill]         — stretch tabs over the full width
  * @param {boolean} [opts.dense]
  * @param {string}  [opts.loadingText]
- * @param {Function} [opts.beforeChange] — (next, prev) => false to cancel
- * @param {Function} [opts.onChange]    — (name, prevName, tab)
- * @param {Function} [opts.onLoad]      — (name, panel, tab) after a tab's content is in place
- * @param {Function} [opts.onError]     — (error, name, panel, tab)
+ * @param {Function} [opts.beforeChange] — (next, { prev, source, component }) => false to cancel
+ * @param {Function} [opts.onChange]    — (name, { source, component, prev, tab }); prev = previous tab name
+ * @param {Function} [opts.onLoad]      — (panel, { name, tab, component }) after a tab's content is in place
+ * @param {Function} [opts.onError]     — (error, { name, panel, tab, component })
  * @returns {Object}
  */
 export function lkTabs(el, opts = {}) {
@@ -249,10 +249,11 @@ export function lkTabs(el, opts = {}) {
       ctx: { name: t.name, tab: publicTab(t), tabs: comp },
       loadingText: opts.loadingText,
       onLoad: () => {
-        t.options.onLoad?.(t.panel, publicTab(t));
-        opts.onLoad?.(t.name, t.panel, publicTab(t));
+        const ctx = { name: t.name, tab: publicTab(t), component: comp };
+        t.options.onLoad?.(t.panel, ctx);
+        opts.onLoad?.(t.panel, ctx);
       },
-      onError: (err) => opts.onError?.(err, t.name, t.panel, publicTab(t)),
+      onError: (err) => opts.onError?.(err, { name: t.name, panel: t.panel, tab: publicTab(t), component: comp }),
     });
   }
 
@@ -289,7 +290,8 @@ export function lkTabs(el, opts = {}) {
     else if (li.offsetLeft + li.offsetWidth > list.scrollLeft + list.clientWidth) list.scrollLeft = li.offsetLeft + li.offsetWidth - list.clientWidth;
   }
 
-  function select(ref, { focus = false, silent = false } = {}) {
+  // source: 'click' | 'key' | 'api' | 'disable' (removing the active tab moves silently)
+  function select(ref, { focus = false, silent = false, source = 'api' } = {}) {
     const t = find(ref);
     if (!t || t.disabled || destroyed) return false;
     if (t === active) {
@@ -298,7 +300,7 @@ export function lkTabs(el, opts = {}) {
     }
     const prev = active;
     if (!silent && typeof opts.beforeChange === 'function'
-      && opts.beforeChange(publicTab(t), publicTab(prev)) === false) return false;
+      && opts.beforeChange(publicTab(t), { prev: publicTab(prev), source, component: comp }) === false) return false;
 
     if (prev) {
       prev.li.classList.remove('lk-tabs__tab--active');
@@ -323,7 +325,7 @@ export function lkTabs(el, opts = {}) {
     placeIndicator();
     revealTab(t.li);
     if (focus) t.li.focus({ preventScroll: true });
-    if (!silent && prev) opts.onChange?.(t.name, prev.name, publicTab(t));
+    if (!silent && prev) opts.onChange?.(t.name, { source, component: comp, prev: prev.name, tab: publicTab(t) });
     return true;
   }
 
@@ -338,7 +340,7 @@ export function lkTabs(el, opts = {}) {
     const t = tabOf(e.target);
     if (!t) return;
     if (e.target.closest('a[href]')) e.preventDefault();
-    select(t, { focus: true });
+    select(t, { focus: true, source: 'click' });
   }
 
   function onKeydown(e) {
@@ -355,12 +357,12 @@ export function lkTabs(el, opts = {}) {
     else if (e.key === 'End') target = enabled[enabled.length - 1];
     else if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      select(t, { focus: true });
+      select(t, { focus: true, source: 'key' });
       return;
     } else return;
     e.preventDefault();
     if (!target) return;
-    if (activation === 'auto') select(target, { focus: true });
+    if (activation === 'auto') select(target, { focus: true, source: 'key' });
     else target.li.focus({ preventScroll: true });
   }
 
@@ -426,7 +428,7 @@ export function lkTabs(el, opts = {}) {
     applyDisabled(t);
     if (t === active) {
       const next = tabs.find((x) => !x.disabled);
-      if (next) select(next);
+      if (next) select(next, { source: 'disable' });
     }
     return comp;
   };

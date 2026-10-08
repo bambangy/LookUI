@@ -5,6 +5,34 @@ The project follows [Semantic Versioning](https://semver.org/); while the versio
 
 Documentation: https://bambangy.github.io/LookUI/docs/
 
+## [0.3.0] — 2026-10-08
+
+One callback convention across the library before the 1.0 API freeze. Upgrade guide: https://bambangy.github.io/LookUI/docs/migration.html
+
+### Breaking changes
+
+- **Value callbacks are `onChange(value, ctx)`** with `ctx = { source, component, …extras }`: lkDropdown (`item` / `items`), lkTextPop (`item` / `items`), lkPhone (info fields kept on ctx), lkRating and lkSlider (`prev`), lkCarousel (`prev`, `slide`), lkTabs (`prev`, `tab`), lkChip, lkPagination (`prev`).
+- **lkTabs**: `beforeChange(next, { prev, source, component })`, `onLoad(panel, { name, tab, component })`, `onError(error, { name, panel, tab, component })`.
+- **lkCarousel**: `onLoad(slide, { index, component })`, `onError(error, { slide, index, component })`.
+- **lkDate**: `onConfirm(value, { component, display, iso })`.
+- **Open/close callbacks receive the instance**: lkTextPop `onClose(reason, component)`, lkLoading `onShow(loading)` / `onHide(reason, loading)`, lkPopupProxy `onShow(popup, { anchor, placement })` / `onHide(reason, popup)`, lkToast `onAction(toast)` / `onClose(reason, toast)`.
+- **Clicks are `onClick(event, ctx)`**: lkChip `onClick(event, { component })`; lkToolbar items `onClick(event, { item, component })`.
+- **lkToolbar**: item `onChange` / `onInput` / `onSearch` are `(value, { source, item, component, control, event, detail })`; `onAction(item, { type, value, event, detail, component })`.
+- **lkModal** is `lkModal(modal, { trigger, open, closeOnEscape, onOpen, onClose })` with the shared `el` / `id` / `hidden` / `enabled` properties, `toggle()` and `close(reason)`.
+
+### Deprecated (still working, one console warning, removed in 1.0)
+
+- lkPagination `onPageChange` → `onChange`.
+- lkChip `onSelect` → `onChange` (also lkToolbar chip `options.onSelect`).
+- `lkModal(trigger, modal)` argument order.
+
+### Added
+
+- `onChange` for lkTextbox (plus `onInput`), lkCheckbox, lkRadio and lkSwitch.
+- `lkButton(el, { onClick })` with the shared `el` / `id` / `hidden` / `enabled` properties.
+- `lkDate.value` can be set (silently, like every other component).
+- lkTable event objects (and legacy `onSort`) and lkList `onToggle` include `component`.
+
 ## [0.2.0] — 2026-10-08
 
 ### Breaking changes
@@ -43,5 +71,6 @@ Documentation: https://bambangy.github.io/LookUI/docs/
 
 - First public release.
 
+[0.3.0]: https://github.com/bambangy/LookUI/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bambangy/LookUI/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bambangy/LookUI/releases/tag/v0.1.0

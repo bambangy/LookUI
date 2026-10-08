@@ -175,7 +175,7 @@ LookDocs.render('#api', {
     },
     {
       name: 'hide', signature: 'hide(reason = \'hide\')',
-      description: 'Fades the overlay out (it stays in the DOM for the next `show()`), releases the scroll lock and fires `onHide(reason)`. No-op when hidden.',
+      description: 'Fades the overlay out (it stays in the DOM for the next `show()`), releases the scroll lock and fires `onHide(reason, loading)`. No-op when hidden.',
       params: [{ name: 'reason', type: 'string', optional: true, default: "'hide'", description: 'Passed to `onHide`.' }],
       examples: [{ title: 'Reusable instance', run: true, code: `
         const loading = Look.lkLoading({ open: false, text: 'Working…', onShow: () => log('onShow'), onHide: (r) => log('onHide:', r) });
@@ -208,11 +208,14 @@ LookDocs.render('#api', {
   ],
 
   events: [
-    { name: 'onShow', signature: 'onShow()', description: 'Called with no arguments at the end of `show()`.' },
+    { name: 'onShow', signature: 'onShow(loading)', description: 'Called at the end of `show()` with the loading instance.' },
     {
-      name: 'onHide', signature: 'onHide(reason)',
+      name: 'onHide', signature: 'onHide(reason, loading)',
       description: 'Called when hiding starts.',
-      args: [{ name: 'reason', type: 'string', description: "`'hide'` (default `hide()`), `'backdrop'` (closeOnClick), `'destroy'` (destroy while visible), or the string passed to `hide(reason)`." }],
+      args: [
+        { name: 'reason', type: 'string', description: "`'hide'` (default `hide()`), `'backdrop'` (closeOnClick), `'destroy'` (destroy while visible), or the string passed to `hide(reason)`." },
+        { name: 'loading', type: 'Object', description: 'The loading instance.' },
+      ],
     },
   ],
 

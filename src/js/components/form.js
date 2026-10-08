@@ -55,6 +55,24 @@ function attachCheckableValidation(comp, node, field, opts) {
   });
 }
 
+/**
+ * User-driven change callbacks (programmatic `value` / `checked` changes are silent).
+ *   onInput(value, { source: 'input', component, event })   — textbox, every keystroke
+ *   onChange(value, { source: 'change', component, event }) — committed change
+ * @param {Function} read — current value for the callback (value, checked, …)
+ * @returns {Function} cleanup
+ */
+function bindChangeCallbacks(comp, node, opts, read) {
+  const onInput = (event) => opts.onInput(read(), { source: 'input', component: comp, event });
+  const onChange = (event) => opts.onChange(read(), { source: 'change', component: comp, event });
+  if (typeof opts.onInput === 'function') node.addEventListener('input', onInput);
+  if (typeof opts.onChange === 'function') node.addEventListener('change', onChange);
+  return () => {
+    node.removeEventListener('input', onInput);
+    node.removeEventListener('change', onChange);
+  };
+}
+
 function radioGroup(node) {
   if (!node.name) return [node];
   const scope = node.form || node.getRootNode?.() || document;
@@ -78,6 +96,8 @@ function radioGroup(node) {
  * @param {string} [opts.type]     — input type (text, email, password, etc.)
  * @param {Array}   [opts.rules]   — validation rules
  * @param {boolean} [opts.validate] — validate when focus leaves the field
+ * @param {Function} [opts.onInput]  — (value, { source: 'input', component, event }) on every keystroke
+ * @param {Function} [opts.onChange] — (value, { source: 'change', component, event }) when the change is committed (blur / Enter)
  * @returns {Object}
  */
 export function lkTextbox(el, opts = {}) {
@@ -156,7 +176,9 @@ export function lkTextbox(el, opts = {}) {
     setError: field.setError,
     clearError: field.clearError,
   });
+  const unbindChange = bindChangeCallbacks(comp, node, opts, () => node.value);
   comp.destroy = function () {
+    unbindChange();
     validation.destroy();
     node.classList.remove('lk-input', 'lk-input--error', 'lk-input--affixed');
     node.removeAttribute('aria-invalid');
@@ -183,6 +205,7 @@ export function lkTextbox(el, opts = {}) {
  * @param {string}  [opts.name]
  * @param {boolean} [opts.required]
  * @param {boolean} [opts.checked]
+ * @param {Function} [opts.onChange] — (checked, { source: 'change', component, event }) when the user toggles it
  * @returns {Object}
  */
 export function lkCheckbox(el, opts = {}) {
@@ -207,8 +230,10 @@ export function lkCheckbox(el, opts = {}) {
   comp.focus = (o) => node.focus(o);
 
   const validation = attachCheckableValidation(comp, node, field, opts);
+  const unbindChange = bindChangeCallbacks(comp, node, opts, () => node.checked);
 
   comp.destroy = function () {
+    unbindChange();
     validation.destroy();
     node.classList.remove('lk-checkbox', 'lk-input--error');
     node.removeAttribute('aria-invalid');
@@ -230,6 +255,7 @@ export function lkCheckbox(el, opts = {}) {
  * @param {string}  [opts.name]
  * @param {boolean} [opts.required]
  * @param {boolean} [opts.checked]
+ * @param {Function} [opts.onChange] — (value, { source: 'change', component, event }) when the user selects this radio
  * @returns {Object}
  */
 export function lkRadio(el, opts = {}) {
@@ -266,7 +292,10 @@ export function lkRadio(el, opts = {}) {
     clearError: field.clearError,
   });
 
+  const unbindChange = bindChangeCallbacks(comp, node, opts, () => node.value);
+
   comp.destroy = function () {
+    unbindChange();
     validation.destroy();
     node.classList.remove('lk-radio', 'lk-input--error');
     node.removeAttribute('aria-invalid');
@@ -288,6 +317,7 @@ export function lkRadio(el, opts = {}) {
  * @param {string}  [opts.name]
  * @param {boolean} [opts.required]
  * @param {boolean} [opts.checked]
+ * @param {Function} [opts.onChange] — (checked, { source: 'change', component, event }) when the user toggles it
  * @returns {Object}
  */
 export function lkSwitch(el, opts = {}) {
@@ -326,8 +356,10 @@ export function lkSwitch(el, opts = {}) {
   comp.focus = (o) => node.focus(o);
 
   const validation = attachCheckableValidation(comp, node, field, opts);
+  const unbindChange = bindChangeCallbacks(comp, node, opts, () => node.checked);
 
   comp.destroy = function () {
+    unbindChange();
     validation.destroy();
     node.removeEventListener('change', onToggle);
     node.classList.remove('lk-switch', 'lk-input--error');

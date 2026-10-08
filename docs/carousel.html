@@ -155,7 +155,7 @@
   swipe: true,         // pointer / touch drag
   keyboard: true,      // ←/→ when focus is inside
   pauseOnHover: true,  // autoplay also stops while the tab is hidden
-  onChange(index) {},
+  onChange(index, { source, prev }) {},
 });
 
 // Tune motion per carousel in CSS:
@@ -179,7 +179,7 @@ const news = Look.lkCarousel('#news', {
     { content: async (slide) =&gt; renderCard(await api.latest()) },
   ],
   lazy: true,          // load near the active slide only (preload: 1)
-  onLoad(slide, i) { /* enhance loaded markup */ },
+  onLoad(slide, { index }) { /* enhance loaded markup */ },
 });
 
 // …or the whole list from the server
@@ -344,7 +344,7 @@ LookDocs.render('#api', {
             { html: '<strong>HTML</strong>&nbsp;slide' },
             { content: () => new Promise((r) => setTimeout(() => r('Loaded after 1 s'), 1000)) },
           ],
-          onLoad: (slide, i) => log('onLoad', i),
+          onLoad: (slide, { index }) => log('onLoad', index),
         });` }],
     },
     { name: 'lazy', type: 'boolean', default: 'true', description: 'Load content slides only around the active slide (see `preload`). `false` loads every slide at once.' },
@@ -448,17 +448,23 @@ LookDocs.render('#api', {
   ],
 
   events: [
-    { name: 'onLoad', signature: 'onLoad(slide, index)', description: 'A content slide finished rendering (URL fetched, function resolved). Enhance the new markup here.' },
-    { name: 'onError', signature: 'onError(error, slide, index)', description: 'A slide failed to load (`error.status` for HTTP errors) — or the async `slides` list itself failed (`slide` is `null`, `index` is `-1`).' },
+    { name: 'onLoad', signature: 'onLoad(slide, { index, component })', description: 'A content slide finished rendering (URL fetched, function resolved). Enhance the new markup here.' },
+    { name: 'onError', signature: 'onError(error, { slide, index, component })', description: 'A slide failed to load (`error.status` for HTTP errors) — or the async `slides` list itself failed (`slide` is `null`, `index` is `-1`).' },
     {
-      name: 'onChange', signature: 'onChange(index)',
+      name: 'onChange', signature: 'onChange(index, { source, component, prev, slide })',
       description: 'Called after the active slide changes — from arrows, dots, keys, swipe, autoplay or the API (`next`, `prev`, `goTo`, `activeIndex`). Not called for the initial `index` or when the target equals the current slide.',
-      args: [{ name: 'index', type: 'number', description: 'The new active slide (0-based, a real slide — never a clone).' }],
+      args: [
+        { name: 'index', type: 'number', description: 'The new active slide (0-based, a real slide — never a clone).' },
+        { name: 'ctx.source', type: "'arrow' | 'dot' | 'key' | 'swipe' | 'autoplay' | 'api'", description: 'What caused the change.' },
+        { name: 'ctx.component', type: 'Object', description: 'The carousel instance.' },
+        { name: 'ctx.prev', type: 'number', description: 'The previously active slide.' },
+        { name: 'ctx.slide', type: 'HTMLElement', description: 'The new active slide element.' },
+      ],
       examples: [{ title: 'Caption synced to the slide', run: true, code: `
         const captions = ['Mountains', 'Ocean', 'Forest'];
         const cap = document.createElement('p');
         const c = Look.lkCarousel(makeCarousel(container, captions), {
-          onChange: (i) => { cap.textContent = 'Now showing: ' + captions[i]; log('onChange', i); },
+          onChange: (i, { source }) => { cap.textContent = 'Now showing: ' + captions[i]; log('onChange', i, source); },
         });
         cap.textContent = 'Now showing: ' + captions[c.activeIndex];
         container.appendChild(cap);` }],
@@ -565,8 +571,8 @@ LookDocs.render('#api', {
       },
     ],
     onChange: (i) => { outAsync.textContent = 'activeIndex = ' + i; },
-    onLoad: (slide, i) => { outAsync.textContent += '\nonLoad ' + i; },
-    onError: (err, slide, i) => { outAsync.textContent += '\nonError ' + i + ': ' + err.message; },
+    onLoad: (slide, { index }) => { outAsync.textContent += '\nonLoad ' + index; },
+    onError: (err, { index }) => { outAsync.textContent += '\nonError ' + index + ': ' + err.message; },
   });
   document.getElementById('btn-async-reload').onclick = () => {
     asyncCarousel.reload().then((ok) => { outAsync.textContent = 'reload(' + asyncCarousel.activeIndex + ') → ' + ok; });

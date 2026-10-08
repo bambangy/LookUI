@@ -373,7 +373,7 @@ ds.toJSON();                          // full snapshot</pre
       const pagination = Look.lkPagination("#ds-pagination", {
         totalPages: ds.totalPages,
         page: ds.page,
-        onPageChange(p) {
+        onChange(p) {
           ds.setPage(p);
         },
       });
@@ -907,7 +907,7 @@ ds.toJSON();                          // full snapshot</pre
               });
               showView(ds, container);
               const pager = container.appendChild(document.createElement('ul'));
-              const p = Look.lkPagination(pager, { totalPages: 1, onPageChange: (n) => { ds.setPage(n); ds.load(); } });
+              const p = Look.lkPagination(pager, { totalPages: 1, onChange: (n) => { ds.setPage(n); ds.load(); } });
               ds.subscribe((s) => { p.totalPages = s.totalPages; });
               ds.load().then(() => log('total', ds.total, '— pages', ds.totalPages));` },
               { title: 'Server filter: rules are sent, not applied locally', run: true, code: `

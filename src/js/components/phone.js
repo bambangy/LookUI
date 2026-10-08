@@ -29,7 +29,7 @@
  * @param {Array}   [opts.rules]           — validation rules; a filled but too short/long number always fails
  * @param {boolean} [opts.validate]        — validate when focus leaves the field
  * @param {string}  [opts.invalidMessage='Enter a valid phone number']
- * @param {Function} [opts.onChange]       — (value, { country, dial, number, valid }) => void
+ * @param {Function} [opts.onChange]       — (value, { source, component, country, dial, number, valid }) => void
  * @returns {Object}
  */
 
@@ -238,7 +238,7 @@ export function lkPhone(el, opts = {}) {
       if (!next || next === country) return;
       country = next;
       applyLimits();
-      sync(true);
+      sync(true, 'country');
       input.focus();
     },
   });
@@ -275,12 +275,13 @@ export function lkPhone(el, opts = {}) {
 
   let lastValue = null;
   let validation = null; // set once the component object exists
-  function sync(emit) {
+  // source: 'input' (typing / paste) | 'country' (picked in the dropdown)
+  function sync(emit, source = 'input') {
     const v = e164();
     hidden.value = v;
     group.dataset.country = country?.code ?? '';
     if (emit) validation?.changed();
-    if (emit && v !== lastValue && typeof options.onChange === 'function') options.onChange(v, info());
+    if (emit && v !== lastValue && typeof options.onChange === 'function') options.onChange(v, { source, component: comp, ...info() });
     lastValue = v;
   }
 

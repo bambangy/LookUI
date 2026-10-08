@@ -106,7 +106,7 @@
   filled: false, outline: false, square: false, dense: false,
   removable: true,
   onRemove(chip) { return confirm('Remove?'); }, // return false to keep it
-  onSelect(selected) { console.log(selected); },  // makes it a toggle chip
+  onChange(selected) { console.log(selected); },  // makes it a toggle chip
 });
 
 tag.label = 'TypeScript';
@@ -213,7 +213,7 @@ LookDocs.render('#api', {
 
   properties: [
     { name: 'label', type: 'string', description: 'Get or set the chip text.', examples: [`chip.label = 'TypeScript';`] },
-    { name: 'selected', type: 'boolean', description: 'Get or set the selected state (does not fire `onSelect`).' },
+    { name: 'selected', type: 'boolean', description: 'Get or set the selected state (does not fire `onChange`).' },
     { name: 'removable', type: 'boolean', readonly: true, description: 'Whether the chip has a close button.' },
     { name: 'enabled', type: 'boolean', description: 'Enable/disable the chip (adds `.lk-disabled` and `aria-disabled`).' },
     { name: 'hidden', type: 'boolean', description: 'Show/hide the chip (`.lk-hidden`).' },
@@ -237,21 +237,25 @@ LookDocs.render('#api', {
         btn.onclick = () => log('removed:', chip.remove());
         container.appendChild(btn);` }],
     },
-    { name: 'toggle', signature: 'toggle()', description: 'Flips `selected` and fires `onSelect` (only for chips created with `onSelect`).' },
+    { name: 'toggle', signature: 'toggle()', description: 'Flips `selected` and fires `onChange` with `source: \'api\'` (only for chips created with `onChange`).' },
     { name: 'destroy', signature: 'destroy()', description: 'Removes listeners and everything lkChip added (label span, icon, avatar, close button, classes it set). Text is put back as a plain text node.' },
   ],
 
   events: [
     {
-      name: 'onSelect', signature: 'onSelect(selected, chip)',
-      description: 'Makes the chip a toggle button (`role="button"`, `aria-pressed`, focusable). Fires on click, **Enter** or **Space**.',
-      args: [{ name: 'selected', type: 'boolean', description: 'New state.' }, { name: 'chip', type: 'Object', description: 'The chip instance.' }],
+      name: 'onChange', signature: 'onChange(selected, { source, component })',
+      description: 'Makes the chip a toggle button (`role="button"`, `aria-pressed`, focusable). Fires on click, **Enter** or **Space** (`source: \'click\'`) and on `toggle()` (`source: \'api\'`). `onSelect(selected, ctx)` is a deprecated alias (removed in 1.0).',
+      args: [
+        { name: 'selected', type: 'boolean', description: 'New state.' },
+        { name: 'ctx.source', type: "'click' | 'api'", description: 'User activation or `toggle()`.' },
+        { name: 'ctx.component', type: 'Object', description: 'The chip instance.' },
+      ],
       examples: [{ title: 'Filter chips', run: true, code: `
         ['Design', 'Engineering', 'Sales'].forEach((name) => {
           const el = document.createElement('span');
           el.style.marginRight = '6px';
           container.appendChild(el);
-          Look.lkChip(el, { label: name, color: 'primary', outline: true, onSelect: (on) => log(name, on) });
+          Look.lkChip(el, { label: name, color: 'primary', outline: true, onChange: (on) => log(name, on) });
         });` }],
     },
     {
@@ -266,7 +270,7 @@ LookDocs.render('#api', {
           Look.lkChip(el, { label, removable: true, onRemove: () => { log('onRemove', label); return label !== 'keep me'; } });
         });` }],
     },
-    { name: 'onClick', signature: 'onClick(event, chip)', description: 'Plain click handler. Makes the chip focusable and clickable without toggle semantics.' },
+    { name: 'onClick', signature: 'onClick(event, { component })', description: 'Plain click handler. Makes the chip focusable and clickable without toggle semantics.' },
   ],
 
   classes: [
@@ -318,7 +322,7 @@ LookDocs.render('#api', {
     filters.appendChild(el);
     Look.lkChip(el, {
       label: name, color: 'primary', outline: true, selected: i === 1,
-      onSelect(sel) { out.textContent = name + ' selected = ' + sel; },
+      onChange(sel) { out.textContent = name + ' selected = ' + sel; },
     });
   });
 
