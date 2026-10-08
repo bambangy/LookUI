@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI - Composable Popup Proxy</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Popup Proxy</h1>
+    <p style="opacity: 0.85;">Look.lkPopupProxy(target, opts) - adaptive popup placement with proxy content</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <section class="demo-section">
+    <p class="demo-section__title">Trigger + Placement</p>
+    <div class="demo-row">
+      <button id="popup-trigger" class="lk-btn lk-btn--primary">Open Popup</button>
+      <button id="popup-left" class="lk-btn lk-btn--secondary">Place Left</button>
+      <button id="popup-right" class="lk-btn lk-btn--secondary">Place Right</button>
+      <button id="popup-template" class="lk-btn lk-btn--info">Template Content</button>
+      <button id="popup-text" class="lk-btn lk-btn--warning">Plain Text</button>
+    </div>
+    <div id="popup-output" class="demo-output">Ready</div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Source Content</p>
+    <p style="margin-top: 0;">This source block will be moved into hidden proxy stash and rendered via clone.</p>
+    <div id="popup-source" class="lk-card lk-card--dense" style="max-width: 22rem;">
+      <div class="lk-card__body">
+        <strong style="display: block; margin-bottom: var(--lk-space-2);">Profile Actions</strong>
+        <button class="lk-btn lk-btn--secondary lk-btn--sm" type="button">View Profile</button>
+        <button class="lk-btn lk-btn--secondary lk-btn--sm" type="button">Settings</button>
+      </div>
+    </div>
+
+    <template id="popup-template-content">
+      <div>
+        <strong style="display:block; margin-bottom: var(--lk-space-2);">Template Popup</strong>
+        <p style="margin:0;">Rendered from &lt;template&gt; and positioned automatically.</p>
+      </div>
+    </template>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const popup = Look.lkPopupProxy('#popup-trigger', {
+  content: '#popup-source',
+  placement: 'bottom-left',
+  autoPlacement: true,
+  closeOnOutside: true,
+  closeOnEscape: true,
+});
+
+popup.setContent('#popup-template-content');
+popup.setPlacement('right-top');</pre>
+  </div>
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkPopupProxy',
+  kind: 'Composable',
+  signature: 'const popup = Look.lkPopupProxy(target, options);',
+  description: [
+    'Anchored popup panel attached to a trigger element. Clicking the trigger toggles it; it positions itself next to the trigger (or another anchor), flips to a side that fits the viewport, follows scroll/resize, and closes on outside click or **Escape**.',
+    'It is the popup engine behind [lkDate](composable-date.html), the [lkToolbar](toolbar.html) menus and similar overlays. The panel is a `.lk-popup-proxy__panel` inside a fixed, full-viewport `.lk-popup-proxy` layer that is appended to `mount` the first time it opens.',
+  ],
+  params: [
+    { name: 'target', type: 'Element | string', description: 'Trigger element or CSS selector (required). Its clicks open/close the popup and it gets `aria-haspopup="dialog"` / `aria-expanded`.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The popup instance with the properties and methods below.' },
+  notes: [
+    '**Content is rendered once, and Node content is cloned.** `content` is turned into DOM when the popup is created and again on every `setContent()` — not on each open. Element and `<template>` content is **cloned** (`cloneNode(true)`), so event listeners attached to the original element do not exist in the popup. Wire interactive content on `popup.panelEl` (event delegation), or append live nodes to `panelEl` yourself.',
+    '**Source elements are moved.** When content is an element that is in the document (e.g. `\'#profile-menu\'`), the original is moved into a hidden stash `<div id="lk-popup-proxy-stash">` so it no longer shows in the page, and is put back in its original place on `destroy()`. A `<template>` is never moved.',
+    '**Transitions.** `show()`/`hide()` animate (enter scale/fade, ~280 ms exit). `onHide` fires when closing starts, before the layer is hidden.',
+  ],
+
+  options: [
+    {
+      name: 'content', type: 'string | Node | HTMLTemplateElement | Function', default: "''",
+      description: 'What the panel shows. Resolution order:',
+      values: [
+        ["'#id' (selector string)", 'If it matches an element, that element is used (see Node / template). If nothing matches, the string is shown as text.'],
+        ['HTML string', 'A string containing a tag is parsed as HTML into a wrapper `<div>` (when `allowHtml` is `true`).'],
+        ['plain string', 'Shown as text in a wrapper `<div>`.'],
+        ['HTMLTemplateElement', '`template.content` is cloned.'],
+        ['Node / Element', 'Cloned. If it is attached to the document the original is moved to the hidden stash first.'],
+        ['Function', 'Called once (at creation / `setContent`); its return value is resolved with these same rules.'],
+        ['null / undefined', 'Empty panel.'],
+      ],
+      examples: [
+        { title: 'Plain text', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Text popup';
+          container.appendChild(btn);
+          Look.lkPopupProxy(btn, { content: 'Saved 2 minutes ago by Rina.' });` },
+        { title: 'HTML string', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'HTML popup';
+          container.appendChild(btn);
+          Look.lkPopupProxy(btn, {
+            content: '<strong>Shortcuts</strong><p style="margin:4px 0 0">Press <kbd>Ctrl</kbd> + <kbd>K</kbd> to search.</p>',
+          });` },
+        { title: 'Template element', run: true, code: `
+          const tpl = document.createElement('template');
+          tpl.innerHTML = '<div><strong>From a template</strong><p style="margin:4px 0 0">The template itself stays in place.</p></div>';
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Template popup';
+          container.append(tpl, btn);
+          Look.lkPopupProxy(btn, { content: tpl });` },
+        { title: 'Function returning a Node', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Function popup';
+          container.appendChild(btn);
+          Look.lkPopupProxy(btn, {
+            content: () => {
+              const ul = document.createElement('ul');
+              ul.style.margin = '0';
+              ['Alpha', 'Beta', 'Gamma'].forEach((t) => ul.appendChild(Object.assign(document.createElement('li'), { textContent: t })));
+              return ul;
+            },
+          });` },
+        { title: 'Element content is cloned — use panelEl for listeners', run: true, code: `
+          const menu = document.createElement('div');
+          menu.innerHTML = '<button class="lk-btn lk-btn--sm lk-btn--ghost" data-act="rename">Rename</button>'
+            + '<button class="lk-btn lk-btn--sm lk-btn--ghost" data-act="archive">Archive</button>';
+          // This listener is on the ORIGINAL node and never fires inside the popup:
+          menu.addEventListener('click', () => log('never logged'));
+
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Actions';
+          container.appendChild(btn);
+          const popup = Look.lkPopupProxy(btn, { content: menu });
+
+          // Delegate on the live panel instead:
+          popup.panelEl.addEventListener('click', (e) => {
+            const item = e.target.closest('[data-act]');
+            if (!item) return;
+            log('action:', item.dataset.act);
+            popup.hide('select');
+          });` },
+      ],
+    },
+    {
+      name: 'placement', type: 'string', default: "'bottom-left'",
+      description: 'Preferred position: `side-alignment`. Unknown values fall back to `bottom-left`.',
+      values: [
+        ['bottom-left', 'Below, left edges aligned (default).'],
+        ['bottom-right', 'Below, right edges aligned.'],
+        ['top-left', 'Above, left edges aligned.'],
+        ['top-right', 'Above, right edges aligned.'],
+        ['left-top', 'Left of the trigger, top edges aligned.'],
+        ['left-bottom', 'Left of the trigger, bottom edges aligned.'],
+        ['right-top', 'Right of the trigger, top edges aligned.'],
+        ['right-bottom', 'Right of the trigger, bottom edges aligned.'],
+        ['bottom / top / left / right', 'Aliases of `bottom-left`, `top-left`, `left-top`, `right-top`.'],
+      ],
+      examples: [
+        { title: 'Every placement (autoPlacement off)', run: true, code: `
+          container.style.cssText += 'display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:96px 16px;';
+          ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'left-top', 'left-bottom', 'right-top', 'right-bottom'].forEach((placement) => {
+            const btn = document.createElement('button');
+            btn.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+            btn.textContent = placement;
+            container.appendChild(btn);
+            Look.lkPopupProxy(btn, { content: placement, placement, autoPlacement: false });
+          });` },
+      ],
+    },
+    {
+      name: 'autoPlacement', type: 'boolean', default: 'true',
+      description: 'When the preferred placement overflows the viewport, try the other placements (same side with the other alignment first, then the opposite side, then the cross sides) and use the first that fits — or the one that overflows least. With `false` only `placement` is used. Either way the final position is clamped inside the viewport (`viewportMargin`). The placement actually used is in `panelEl.dataset.placement` and in `onShow`.',
+      examples: [
+        { title: 'Flip when there is no room', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Prefers top-left';
+          container.appendChild(btn);
+          Look.lkPopupProxy(btn, {
+            content: 'Scroll this button to the top of the window and reopen: it flips below.',
+            placement: 'top-left',
+            onShow: (info) => log('used placement:', info.placement),
+          });` },
+      ],
+    },
+    {
+      name: 'gap', type: 'number', default: '8',
+      description: 'Distance in px between the trigger and the panel.',
+      examples: [
+        { title: 'gap 0 / 8 / 24', run: true, code: `
+          [0, 8, 24].forEach((gap) => {
+            const btn = document.createElement('button');
+            btn.className = 'lk-btn lk-btn--secondary';
+            btn.style.marginRight = '8px';
+            btn.textContent = 'gap: ' + gap;
+            container.appendChild(btn);
+            Look.lkPopupProxy(btn, { content: 'gap = ' + gap + 'px', gap });
+          });` },
+      ],
+    },
+    {
+      name: 'offsetX', type: 'number', default: '0',
+      description: 'Extra horizontal shift in px (positive = right), applied after placement.',
+    },
+    {
+      name: 'offsetY', type: 'number', default: '0',
+      description: 'Extra vertical shift in px (positive = down).',
+      examples: [
+        { title: 'Nudged panel', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'offsetX: 40, offsetY: -4';
+          container.appendChild(btn);
+          Look.lkPopupProxy(btn, { content: 'Shifted 40px right, 4px up.', offsetX: 40, offsetY: -4 });` },
+      ],
+    },
+    { name: 'viewportMargin', type: 'number', default: '8', description: 'Minimum distance in px kept between the panel and the viewport edges (used for flipping and clamping).' },
+    {
+      name: 'closeOnOutside', type: 'boolean', default: 'true',
+      description: 'Close on a click outside the panel, the trigger and the current anchor (reason `"outside"`).',
+      examples: [
+        { title: 'Sticky popup', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Only the trigger or Esc closes me';
+          container.appendChild(btn);
+          Look.lkPopupProxy(btn, { content: 'Click elsewhere — I stay open.', closeOnOutside: false,
+            onHide: (reason) => log('closed:', reason) });` },
+      ],
+    },
+    { name: 'closeOnEscape', type: 'boolean', default: 'true', description: 'Close on **Escape** (reason `"escape"`). Note that every open popup listens, so one Escape closes all of them.' },
+    {
+      name: 'toggleOnTrigger', type: 'boolean', default: 'true',
+      description: 'A trigger click closes an open popup (reason `"toggle"`). With `false` trigger clicks only open it; close it from inside, by outside click, Escape or `hide()`.',
+      examples: [
+        { title: 'Open-only trigger', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Open (clicking again keeps it open)';
+          container.appendChild(btn);
+          Look.lkPopupProxy(btn, { content: 'Click outside or press Esc to close.', toggleOnTrigger: false,
+            onShow: () => log('shown'), onHide: (r) => log('hidden:', r) });` },
+      ],
+    },
+    {
+      name: 'allowHtml', type: 'boolean', default: 'true',
+      description: 'Parse string content that contains tags as HTML. Set `false` for untrusted strings — they are then always shown as text.',
+      examples: [
+        { title: 'Untrusted text', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'allowHtml: false';
+          container.appendChild(btn);
+          Look.lkPopupProxy(btn, { content: '<img src=x onerror=alert(1)> shown literally', allowHtml: false });` },
+      ],
+    },
+    {
+      name: 'className', type: 'string', default: "''",
+      description: 'Extra class(es) for the panel, e.g. to change its width or padding.',
+      examples: [
+        { title: 'Custom panel class', run: true, code: `
+          const style = document.createElement('style');
+          style.textContent = '.doc-wide-popup.lk-popup-proxy__panel { min-width: 20rem; background: var(--lk-bg-subtle); }';
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'className: doc-wide-popup';
+          container.append(style, btn);
+          Look.lkPopupProxy(btn, { content: 'Wider, tinted panel.', className: 'doc-wide-popup' });` },
+      ],
+    },
+    { name: 'zIndex', type: 'number', default: '95', description: 'z-index of the popup layer.' },
+    { name: 'mount', type: 'Element', default: 'document.body', description: 'Element the layer is appended to on first open. The layer is `position: fixed`, so a different mount mainly matters for stacking contexts / scoped styles.' },
+    {
+      name: 'open', type: 'boolean', default: 'false',
+      description: 'Show the popup immediately after creation.',
+      examples: [{ title: 'Not run on this page', code: `Look.lkPopupProxy('#tour-step', { content: 'Start here!', open: true });` }],
+    },
+  ],
+
+  properties: [
+    { name: 'isOpen', type: 'boolean', readonly: true, description: 'Whether the popup is open (becomes `false` as soon as closing starts).' },
+    { name: 'el', type: 'Element', readonly: true, description: 'The fixed full-viewport layer `.lk-popup-proxy` (pointer-events: none). Not in the DOM until the first open.' },
+    {
+      name: 'panelEl', type: 'Element', readonly: true,
+      description: 'The panel `.lk-popup-proxy__panel` holding the rendered content — the place for event delegation and live nodes. Carries `data-placement` (resolved placement) and `data-side` (`top|bottom|left|right`) after positioning.',
+    },
+  ],
+
+  methods: [
+    {
+      name: 'show', signature: 'show(anchor = target)',
+      description: 'Opens the popup positioned against `anchor`. No-op if already open — to move an open popup, call `updatePosition(anchor)`.',
+      params: [{ name: 'anchor', type: 'Element', optional: true, description: 'Element to position against (default: the trigger). Clicks inside the anchor do not count as outside clicks.' }],
+      examples: [{ title: 'Anchor to a different element', run: true, code: `
+        const target = document.createElement('span');
+        target.className = 'lk-chip lk-chip--primary';
+        target.textContent = 'I am the anchor';
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--secondary';
+        btn.style.marginLeft = '24px';
+        btn.textContent = 'trigger';
+        container.append(target, btn);
+        const popup = Look.lkPopupProxy(btn, {
+          content: 'One popup, two anchors.',
+          onShow: (info) => log('anchored to', info.anchor.textContent),
+        });
+        // The trigger opens it under itself; the chip opens it under the chip:
+        target.style.cursor = 'pointer';
+        target.onclick = () => popup.show(target);` }],
+    },
+    {
+      name: 'hide', signature: "hide(reason = 'hide')",
+      description: 'Closes the popup and calls `onHide(reason)`. No-op if closed.',
+      params: [{ name: 'reason', type: 'string', optional: true, description: 'Forwarded to `onHide` (default `"hide"`).' }],
+    },
+    {
+      name: 'toggle', signature: 'toggle(anchor = target)',
+      description: 'Hides (reason `"toggle"`) when open, otherwise `show(anchor)`.',
+      params: [{ name: 'anchor', type: 'Element', optional: true, description: 'Anchor used when opening.' }],
+    },
+    {
+      name: 'setContent', signature: 'setContent(content)',
+      description: 'Replaces the panel content (same forms as the `content` option) and repositions if open. Previous listeners attached inside the panel are lost with the old nodes; listeners on `panelEl` itself survive.',
+      params: [{ name: 'content', type: 'string | Node | HTMLTemplateElement | Function', description: 'New content.' }],
+      examples: [{ title: 'Change content between opens', run: true, code: `
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--secondary';
+        btn.textContent = 'Open (count updates)';
+        container.appendChild(btn);
+        let n = 0;
+        const popup = Look.lkPopupProxy(btn, {
+          content: 'Opened 0 times',
+          onShow: () => popup.setContent('Opened ' + (++n) + ' time(s) — rendered at ' + new Date().toLocaleTimeString()),
+        });` }],
+    },
+    {
+      name: 'setPlacement', signature: 'setPlacement(placement)',
+      description: 'Changes the preferred placement (normalized like the option) and repositions if open.',
+      params: [{ name: 'placement', type: 'string', description: 'One of the [placement values](#api-options-placement).' }],
+      examples: [{ title: 'Cycle placements while open', run: true, code: `
+        container.style.cssText += 'padding:80px 0;text-align:center;';
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--secondary';
+        btn.textContent = 'Open, then use the arrows';
+        container.appendChild(btn);
+        const popup = Look.lkPopupProxy(btn, { content: '', autoPlacement: false });
+        const order = ['bottom-left', 'right-top', 'top-left', 'left-top'];
+        let i = 0;
+        const panel = document.createElement('div');
+        panel.innerHTML = '<span></span> <button class="lk-btn lk-btn--sm lk-btn--ghost">next →</button>';
+        popup.panelEl.textContent = '';
+        popup.panelEl.appendChild(panel); // live node: keeps its listener
+        const paint = () => { panel.firstChild.textContent = order[i]; };
+        panel.querySelector('button').onclick = () => { i = (i + 1) % order.length; popup.setPlacement(order[i]); paint(); log('setPlacement', order[i]); };
+        paint();` }],
+    },
+    {
+      name: 'updatePosition', signature: 'updatePosition(anchor = currentAnchor)',
+      description: 'Recomputes the position now (synchronously). Scroll and resize are tracked automatically; call this after the panel content or the anchor changed size/position.',
+      params: [{ name: 'anchor', type: 'Element', optional: true, description: 'New anchor (also becomes the current anchor).' }],
+    },
+    {
+      name: 'destroy', signature: 'destroy()',
+      description: 'Hides the popup (reason `"destroy"`), removes the trigger listener and the layer, and moves stashed source elements back to their original place. The instance is unusable afterwards.',
+    },
+  ],
+
+  events: [
+    {
+      name: 'onShow', signature: 'onShow(info)',
+      description: 'Fires when the popup opens.',
+      args: [
+        { name: 'info.anchor', type: 'Element', description: 'Element the popup is positioned against.' },
+        { name: 'info.placement', type: 'string', description: 'Placement used at open time (after auto-placement).' },
+      ],
+      examples: [{ run: true, code: `
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--secondary';
+        btn.textContent = 'Open';
+        container.appendChild(btn);
+        Look.lkPopupProxy(btn, { content: 'Hello', onShow: (info) => log('onShow', info.placement, info.anchor.tagName) });` }],
+    },
+    {
+      name: 'onHide', signature: 'onHide(reason)',
+      description: 'Fires when the popup starts closing.',
+      args: [{ name: 'reason', type: 'string', description: '`"outside"`, `"escape"`, `"toggle"` (trigger click / `toggle()`), `"hide"` (default of `hide()`), `"destroy"`, or any custom string passed to `hide(reason)`.' }],
+      examples: [{ title: 'Close reasons', run: true, code: `
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--secondary';
+        btn.textContent = 'Open, then close it any way you like';
+        container.appendChild(btn);
+        const popup = Look.lkPopupProxy(btn, {
+          content: '<button class="lk-btn lk-btn--sm" data-done>Done</button>',
+          onHide: (reason) => log('onHide:', reason),
+        });
+        popup.panelEl.addEventListener('click', (e) => { if (e.target.closest('[data-done]')) popup.hide('done'); });` }],
+    },
+  ],
+
+  classes: [
+    { name: '.lk-popup-proxy', description: 'Fixed full-viewport layer (inline styles: `position: fixed; inset: 0; pointer-events: none; z-index`). Fades with opacity.' },
+    { name: '.lk-popup-proxy--open', description: 'On the layer while visible.' },
+    { name: '.lk-popup-proxy--closing', description: 'On the layer during the exit transition.' },
+    { name: '.lk-popup-proxy__panel', description: 'The panel: surface background, border, large radius, shadow, `padding: var(--lk-space-3)`, `min-width: 11rem`, `max-width: min(24rem, 100vw - …)`, `max-height: min(70vh, …)` with scroll. Enter/exit transform depends on `[data-side]`.' },
+    { name: '[data-side] / [data-placement]', description: 'Attributes on the panel describing the resolved position; use them to style arrows or side-specific motion.' },
+  ],
+});
+</script>
+<script>
+  const output = document.getElementById('popup-output');
+
+  const popup = Look.lkPopupProxy('#popup-trigger', {
+    content: '#popup-source',
+    placement: 'bottom-left',
+    autoPlacement: true,
+    onShow(info) {
+      output.textContent = `Opened (${info.placement || 'bottom-left'})`;
+    },
+    onHide(reason) {
+      output.textContent = `Closed: ${reason}`;
+    },
+  });
+
+  document.getElementById('popup-left').addEventListener('click', () => {
+    popup.setPlacement('left-top');
+    popup.show(document.getElementById('popup-trigger'));
+  });
+
+  document.getElementById('popup-right').addEventListener('click', () => {
+    popup.setPlacement('right-top');
+    popup.show(document.getElementById('popup-trigger'));
+  });
+
+  document.getElementById('popup-template').addEventListener('click', () => {
+    popup.setContent('#popup-template-content');
+    popup.setPlacement('bottom-left');
+    popup.show(document.getElementById('popup-trigger'));
+  });
+
+  document.getElementById('popup-text').addEventListener('click', () => {
+    popup.setContent('Quick text popup content from string.');
+    popup.setPlacement('bottom-left');
+    popup.show(document.getElementById('popup-trigger'));
+  });
+</script>
+</body>
+</html>

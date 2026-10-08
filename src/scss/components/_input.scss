@@ -91,6 +91,27 @@
   color: var(--lk-negative);
 }
 
+// Async validation rule running — small spinner at the end of the label row
+.lk-field--validating > .lk-label::before {
+  content: '';
+  float: inline-end;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-top: 0.2em;
+  border: 2px solid var(--lk-border);
+  border-top-color: var(--lk-primary);
+  border-radius: 50%;
+  animation: lk-field-validating 0.7s linear infinite;
+}
+
+@keyframes lk-field-validating {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-field--validating > .lk-label::before { animation-duration: 2s; }
+}
+
 .lk-input-affix {
   display: flex;
   align-items: center;

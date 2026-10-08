@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Textbox</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Textbox</h1>
+    <p style="opacity: 0.85;">lkTextbox(el, opts) — wraps &lt;input&gt; or &lt;textarea&gt;</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <!-- Live demo -->
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <div style="max-width: 400px; display: flex; flex-direction: column; gap: var(--lk-space-5);">
+      <input id="demo-email" type="email" placeholder="Enter email…" />
+      <textarea id="demo-notes" rows="3" placeholder="Enter notes…"></textarea>
+      <input id="demo-readonly" type="text" value="Read-only field" />
+    </div>
+
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-error" class="lk-btn lk-btn--negative lk-btn--sm">Set Error</button>
+      <button id="btn-clear" class="lk-btn lk-btn--positive lk-btn--sm">Clear Error</button>
+      <button id="btn-toggle" class="lk-btn lk-btn--secondary lk-btn--sm">Toggle Enabled</button>
+      <button id="btn-hide" class="lk-btn lk-btn--secondary lk-btn--sm">Toggle Hidden</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <!-- Usage -->
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;input id="email" type="email" /&gt;
+&lt;textarea id="notes"&gt;&lt;/textarea&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>// Basic — auto-creates .lk-field wrapper with label
+const email = Look.lkTextbox('#email', {
+  label: 'Email address',
+  name: 'email',
+  type: 'email',
+  required: true,
+});
+
+// Get / set value
+email.value;                  // current value
+email.value = 'user@example.com';
+
+// Validation
+email.setError('Invalid email format');
+email.clearError();
+
+// Properties
+email.label = 'Work email';  // update label text
+email.required = true;
+email.readonly = false;
+email.enabled = false;        // disable
+email.hidden = true;          // hide
+
+// Cleanup
+email.destroy();</pre>
+  </div>
+
+  <!-- External labels -->
+  <section class="demo-section">
+    <p class="demo-section__title">External labels &amp; required marker</p>
+    <p style="font-size: var(--lk-text-sm); color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      Every form component finds its existing <code>&lt;label for="…"&gt;</code> (or a wrapping <code>&lt;label&gt;</code>),
+      keeps its text in sync with <code>.label</code>, and adds a red asterisk while the field is required.
+      A label with <code>data-required</code> / <code>data-mandatory</code> makes the field required.
+    </p>
+
+    <div style="max-width: 400px; display: flex; flex-direction: column; gap: var(--lk-space-4);">
+      <div class="lk-field">
+        <label class="lk-label" for="ext-name">Full name</label>
+        <input id="ext-name" type="text" placeholder="Jane Doe" />
+      </div>
+      <div class="lk-field">
+        <label class="lk-label" for="ext-country" data-mandatory>Country</label>
+        <select id="ext-country">
+          <option value="id" selected>Indonesia</option>
+          <option value="jp">Japan</option>
+          <option value="sg">Singapore</option>
+        </select>
+      </div>
+      <label><input id="ext-terms" type="checkbox" /> I accept the terms</label>
+      <div style="display: flex; align-items: center; gap: var(--lk-space-2);">
+        <input id="ext-news" type="checkbox" />
+        <label for="ext-news">Subscribe to newsletter</label>
+      </div>
+    </div>
+
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-ext-required" class="lk-btn lk-btn--secondary lk-btn--sm">Toggle required (all)</button>
+      <button id="btn-ext-label" class="lk-btn lk-btn--secondary lk-btn--sm">Rename "Full name"</button>
+    </div>
+    <div id="ext-output" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;label for="name"&gt;Full name&lt;/label&gt;
+&lt;input id="name" /&gt;
+
+&lt;label for="country" data-mandatory&gt;Country&lt;/label&gt;
+&lt;select id="country"&gt;…&lt;/select&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>const name    = Look.lkTextbox('#name', { required: true }); // external label gets *
+const country = Look.lkDropdown('#country');                // required from data-mandatory
+
+name.required = false;   // asterisk removed (alias: name.mandatory)
+name.label = 'Legal name'; // updates every label pointing at the control
+name.labels;             // [HTMLLabelElement, …]
+name.refreshLabels();    // re-scan after labels are rendered later
+// opt out of the marker: Look.lkTextbox('#x', { required: true, requiredMark: false })</pre>
+  </div>
+
+  <!-- Affixes, types, dense -->
+  <section class="demo-section">
+    <p class="demo-section__title">Prepend / append, types &amp; dense</p>
+    <div style="max-width: 400px; display: flex; flex-direction: column; gap: var(--lk-space-4);">
+      <input id="aff-price" inputmode="decimal" placeholder="0.00" />
+      <input id="aff-site" placeholder="example" />
+      <input id="aff-pass" value="secret123" />
+      <input id="aff-dense" class="lk-input--dense" placeholder="Dense input" />
+    </div>
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-pass" class="lk-btn lk-btn--secondary lk-btn--sm">Toggle password type</button>
+      <button id="btn-currency" class="lk-btn lk-btn--secondary lk-btn--sm">Cycle currency (prepend)</button>
+    </div>
+    <div id="aff-output" class="demo-output"></div>
+  </section>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+const MK = "const el = document.createElement('input'); container.appendChild(el);";
+
+LookDocs.render('#api', {
+  name: 'lkTextbox',
+  validateable: true,
+  kind: 'Component',
+  signature: 'const box = Look.lkTextbox(element, options);',
+  description: [
+    'Enhances a native `<input>` or `<textarea>`: adds the `.lk-input` look, an optional label wrapper (`.lk-field`) with an error slot, prepend/append adornments, and keeps every label that points at the control in sync (text and required asterisk).',
+    'The element stays a real form control — it keeps its `name`, submits with its form, and fires the usual native `input` / `change` events. lkTextbox has no callback options; listen on `box.el` (see [Events](#api-section-events)).',
+  ],
+  params: [
+    { name: 'element', type: 'HTMLInputElement | HTMLTextAreaElement | string', description: 'The control or a CSS selector. It should already be in the document (see notes).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The textbox instance with the properties and methods below.' },
+  notes: [
+    '**Always insert the element into the page before calling `lkTextbox`.** The label wrapper is only created when the element has a parent, and the affix wrapper (`.lk-input-affix`) is always created around it — on a detached element the input ends up inside a detached wrapper, so appending the input later pulls it back out of its own wrapper.',
+    '**Layout:** with a `label` the DOM becomes `div.lk-field > label.lk-label + div.lk-input-affix > (prepend, input, append) + span.lk-field-error`. Without a label only the `.lk-input-affix` wrapper is added. If the element already sits directly inside a `.lk-field`, that wrapper is reused and its `> .lk-label` / `> .lk-field-error` children are adopted.',
+    '**Error messages need a field wrapper.** `setError(msg)` always paints the red border, but the message text is only shown when there is a `.lk-field-error` slot (i.e. you passed `label` or the markup already had one).',
+    '**Label `for` + id:** when `label` is given and the element has no id, a random id (`lk-xxxxxxx`) is assigned so the label can point at it. External labels (`<label for="id">` anywhere in the document, or a `<label>` wrapping the input) are discovered at creation time — call `refreshLabels()` if you render one later.',
+    '`hidden` hides the whole field (wrapper or affix box), not just the input. `enabled = false` sets the native `disabled` attribute, so a disabled textbox is **not** submitted with its form; `readonly` keeps it submittable.',
+  ],
+
+  options: [
+    {
+      name: 'label', type: 'string', default: '— (no wrapper)',
+      description: 'Creates the `.lk-field` wrapper with a `<label class="lk-label">` above the input and an (initially hidden) `.lk-field-error` slot below it. Omit it when the page already has its own label.',
+      examples: [
+        { title: 'With a label', run: true, code: `
+          ${MK}
+          Look.lkTextbox(el, { label: 'Full name' });` },
+        { title: 'Without (affix box only)', run: true, code: `
+          ${MK}
+          el.placeholder = 'No label — just the styled input';
+          Look.lkTextbox(el);` },
+        { title: 'On a <textarea>', run: true, code: `
+          const el = document.createElement('textarea'); el.rows = 3; container.appendChild(el);
+          Look.lkTextbox(el, { label: 'Notes' });` },
+      ],
+    },
+    {
+      name: 'name', type: 'string', default: '— (keeps existing)',
+      description: 'Sets the `name` attribute used for form submission.',
+      examples: [{ run: true, code: `
+        ${MK}
+        const box = Look.lkTextbox(el, { label: 'Email', name: 'email' });
+        log('el.name =', box.el.name);` }],
+    },
+    {
+      name: 'type', type: 'string', default: "existing type attribute, else 'text'",
+      description: 'Input type for `<input>` elements (ignored for `<textarea>`). Types the browser does not support fall back to `text`. Can be changed later through the `type` property.',
+      values: [['text', 'Plain text (default)'], ['email', 'Email address, mobile email keyboard'], ['password', 'Masked characters'], ['number', 'Numeric spinner'], ['search', 'Search field with clear affordance'], ['tel / url', 'Phone / URL keyboards'], ['date / time / datetime-local', 'Native pickers (for the custom picker see lkDate)']],
+      examples: [
+        { title: 'Several types', run: true, code: `
+          ['email', 'password', 'number', 'search', 'date'].forEach((type) => {
+            const el = document.createElement('input');
+            el.placeholder = type;
+            el.style.marginBottom = '6px';
+            container.appendChild(el);
+            Look.lkTextbox(el, { type });
+          });` },
+        { title: 'Unsupported type falls back', run: true, code: `
+          ${MK}
+          const box = Look.lkTextbox(el, { type: 'banana' });
+          log('box.type =', box.type);` },
+      ],
+    },
+    {
+      name: 'prepend', type: 'string | number | Node | Array', default: '—',
+      description: 'Content shown in a slot before the text (`.lk-input-affix__prepend`), separated by a border. Strings/numbers become a `<span>`, Nodes are inserted as-is, arrays may mix both. `null`, `false` or an empty string hide the slot.',
+      examples: [
+        { title: 'Text', run: true, code: `
+          ${MK}
+          el.placeholder = '0';
+          Look.lkTextbox(el, { label: 'Price', prepend: 'Rp' });` },
+        { title: 'Icon node', run: true, code: `
+          ${MK}
+          el.placeholder = 'Search…';
+          Look.lkTextbox(el, { type: 'search', prepend: Look.lkIcon('search') });` },
+        { title: 'Array (mixed)', run: true, code: `
+          ${MK}
+          Look.lkTextbox(el, { prepend: [Look.lkIcon('link', { size: 'sm' }), 'https://'] });` },
+      ],
+    },
+    {
+      name: 'append', type: 'string | number | Node | Array', default: '—',
+      description: 'Content shown after the text (`.lk-input-affix__append`). Same value rules as `prepend`; you can put interactive elements (buttons) in it.',
+      examples: [
+        { title: 'Unit suffix', run: true, code: `
+          ${MK}
+          Look.lkTextbox(el, { label: 'Weight', type: 'number', append: 'kg' });` },
+        { title: 'Prepend + append', run: true, code: `
+          ${MK}
+          Look.lkTextbox(el, { label: 'Website', prepend: 'https://', append: '.com' });` },
+        { title: 'Button in the slot', run: true, code: `
+          ${MK}
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          btn.textContent = 'Show';
+          const box = Look.lkTextbox(el, { label: 'Password', type: 'password', append: btn });
+          box.value = 'hunter2';
+          btn.onclick = () => { box.type = box.type === 'password' ? 'text' : 'password'; btn.textContent = box.type === 'password' ? 'Show' : 'Hide'; };` },
+      ],
+    },
+    {
+      name: 'required', type: 'boolean', default: 'from attribute / label flag',
+      description: 'Sets the native `required` attribute and adds a red asterisk (`.lk-label--required`) to every label of the control. When omitted, the initial state comes from an existing `required` attribute or from a label marked `data-required` / `data-mandatory`. An explicit `false` overrides both.',
+      examples: [
+        { title: 'required: true', run: true, code: `
+          ${MK}
+          Look.lkTextbox(el, { label: 'Username', required: true });` },
+        { title: 'From a flagged external label', run: true, code: `
+          container.innerHTML = '<label for="tb-req-demo" data-required>Company</label>';
+          const el = document.createElement('input'); el.id = 'tb-req-demo'; container.appendChild(el);
+          const box = Look.lkTextbox(el);
+          log('required =', box.required);` },
+        { title: 'Explicit false wins over the attribute', run: true, code: `
+          ${MK}
+          el.required = true;
+          const box = Look.lkTextbox(el, { label: 'Nickname', required: false });
+          log('required =', box.required);` },
+      ],
+    },
+    { name: 'mandatory', type: 'boolean', default: '—', description: 'Alias of `required` (used only when `required` is not given).',
+      examples: [{ run: true, code: `
+        ${MK}
+        Look.lkTextbox(el, { label: 'Tax ID', mandatory: true });` }] },
+    {
+      name: 'requiredMark', type: 'boolean', default: 'true',
+      description: 'Set to `false` to keep the field required (native validation still applies) without drawing the asterisk on its labels.',
+      examples: [{ run: true, code: `
+        ${MK}
+        Look.lkTextbox(el, { label: 'Required, no asterisk', required: true, requiredMark: false });` }],
+    },
+    {
+      name: 'readonly', type: 'boolean', default: 'false',
+      description: 'Adds the `readonly` attribute: the value can be selected and is submitted but not edited. The box gets the surface background.',
+      examples: [{ run: true, code: `
+        ${MK}
+        el.value = 'INV-2026-0042';
+        Look.lkTextbox(el, { label: 'Invoice number', readonly: true });` }],
+    },
+  ],
+
+  properties: [
+    { name: 'value', type: 'string', description: 'Get or set the text (the native `value`). Setting it does not fire `input`/`change`.',
+      examples: [{ run: true, code: `
+        ${MK}
+        const box = Look.lkTextbox(el, { label: 'City' });
+        box.value = 'Jakarta';
+        log('value =', box.value);` }] },
+    { name: 'type', type: 'string', description: 'Get or set the input type. Returns an empty string for a `<textarea>` (setting is ignored there). Unsupported types normalize to `text`.' },
+    { name: 'prepend', type: 'HTMLElement | null', description: 'Getter returns the prepend slot element (or `null` when empty). Setter accepts the same values as the `prepend` option.',
+      examples: [{ run: true, code: `
+        ${MK}
+        const box = Look.lkTextbox(el, { prepend: 'USD' });
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--sm lk-btn--secondary'; btn.style.marginTop = '6px';
+        btn.textContent = 'Switch to EUR';
+        btn.onclick = () => { box.prepend = 'EUR'; log('prepend text =', box.prepend.textContent); };
+        container.appendChild(btn);` }] },
+    { name: 'append', type: 'HTMLElement | null', description: 'Getter returns the append slot element or `null`; setter accepts the `append` option values (`null` removes it).' },
+    { name: 'label', type: 'string', description: 'Get the text of the primary label (the created one, else the first external label). Setting it updates **every** label of the control; text inside a wrapping `<label>` is replaced without removing the input.',
+      examples: [{ run: true, code: `
+        ${MK}
+        const box = Look.lkTextbox(el, { label: 'Email' });
+        box.label = 'Work email';
+        log('label =', box.label);` }] },
+    { name: 'labels', type: 'HTMLLabelElement[]', readonly: true, description: 'All labels managed for the control: the created label first, then external `<label for>` / wrapping labels.' },
+    { name: 'required', type: 'boolean', description: 'Get or set the required state; toggles the native attribute and the asterisk on all labels.',
+      examples: [{ run: true, code: `
+        ${MK}
+        const box = Look.lkTextbox(el, { label: 'Phone' });
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--sm lk-btn--secondary'; btn.style.marginTop = '6px';
+        btn.textContent = 'Toggle required';
+        btn.onclick = () => { box.required = !box.required; log('required =', box.required); };
+        container.appendChild(btn);` }] },
+    { name: 'mandatory', type: 'boolean', description: 'Alias of `required` (not enumerable).' },
+    { name: 'readonly', type: 'boolean', description: 'Get or set the native `readOnly` flag.' },
+    { name: 'name', type: 'string', description: 'Get or set the `name` attribute.' },
+    { name: 'enabled', type: 'boolean', description: 'Get or set enabled state. `false` sets `disabled`, `.lk-disabled` and `aria-disabled="true"` on the input; the affix box dims too.',
+      examples: [{ run: true, code: `
+        ${MK}
+        const box = Look.lkTextbox(el, { label: 'Disabled field', append: '%' });
+        box.value = '42';
+        box.enabled = false;` }] },
+    { name: 'hidden', type: 'boolean', description: 'Show/hide the field. Toggles `.lk-hidden` on the `.lk-field` wrapper when there is one, otherwise on the `.lk-input-affix` box.' },
+    { name: 'el', type: 'HTMLInputElement | HTMLTextAreaElement', readonly: true, description: 'The underlying control.' },
+    { name: 'id', type: 'string', description: 'Get or set the control id (auto-generated when a `label` was requested and the element had none).' },
+  ],
+
+  methods: [
+    {
+      name: 'setError', signature: 'setError(message?: string) → void',
+      description: 'Marks the field invalid: `.lk-field--error` on the wrapper (red label), `.lk-input--error` on the input (red border) and `aria-invalid="true"`. The message is written into `.lk-field-error` when the field has one.',
+      params: [{ name: 'message', type: 'string', optional: true, description: 'Text shown under the control. Omit to only paint the error state.' }],
+      examples: [
+        { title: 'With message (labelled field)', run: true, code: `
+          ${MK}
+          const box = Look.lkTextbox(el, { label: 'Email', type: 'email' });
+          box.value = 'not-an-email';
+          box.setError('Please enter a valid email address');` },
+        { title: 'No wrapper: border only', run: true, code: `
+          ${MK}
+          const box = Look.lkTextbox(el);
+          box.setError('This text is not shown — there is no error slot');` },
+      ],
+    },
+    {
+      name: 'clearError', signature: 'clearError() → void',
+      description: 'Removes the error classes, `aria-invalid` and hides/empties the message.',
+      examples: [{ title: 'Validate on input', run: true, code: `
+        ${MK}
+        const box = Look.lkTextbox(el, { label: 'Username (min 3 chars)' });
+        box.el.addEventListener('input', () => {
+          if (box.value.length < 3) box.setError('Too short'); else box.clearError();
+        });
+        box.setError('Too short');` }],
+    },
+    {
+      name: 'refreshLabels', signature: 'refreshLabels() → void',
+      description: 'Re-scans the document for external labels (e.g. one rendered after the component was created) and re-applies the label text sync and asterisk to them.',
+      examples: [{ run: true, code: `
+        const el = document.createElement('input'); el.id = 'tb-late-label'; container.appendChild(el);
+        const box = Look.lkTextbox(el, { required: true });
+        const label = document.createElement('label');
+        label.htmlFor = 'tb-late-label'; label.textContent = 'Rendered later';
+        container.prepend(label);
+        log('before:', box.labels.length);
+        box.refreshLabels();
+        log('after:', box.labels.length);` }],
+    },
+    {
+      name: 'destroy', signature: 'destroy() → void',
+      description: 'Removes the `.lk-input*` classes and error state, unwraps the affix box and (if it created one) the `.lk-field` wrapper, and restores label asterisks to how the author marked them.',
+    },
+  ],
+
+  events: [
+    {
+      name: 'input', signature: "box.el.addEventListener('input', (event) => …)",
+      description: 'Native DOM event, fired on every keystroke. lkTextbox does not add callback options; subscribe on `box.el`.',
+      args: [{ name: 'event', type: 'InputEvent', description: 'Native event; read the text from `box.value` or `event.target.value`.' }],
+      examples: [{ run: true, code: `
+        ${MK}
+        const box = Look.lkTextbox(el, { label: 'Type something' });
+        box.el.addEventListener('input', () => log('input:', box.value));` }],
+    },
+    {
+      name: 'change', signature: "box.el.addEventListener('change', (event) => …)",
+      description: 'Native DOM event, fired when the value is committed (blur / Enter).',
+      args: [{ name: 'event', type: 'Event', description: 'Native change event.' }],
+      examples: [{ run: true, code: `
+        ${MK}
+        const box = Look.lkTextbox(el, { label: 'Edit then press Tab' });
+        box.el.addEventListener('change', () => log('change:', box.value));` }],
+    },
+  ],
+
+  classes: [
+    { name: '.lk-input', description: 'Base input style (added by lkTextbox). Works on its own for plain inputs/textarea/select.' },
+    { name: '.lk-input--dense', description: 'Compact padding and smaller text. Put it on the element before enhancing; the affix box follows it.',
+      examples: [{ title: 'Dense', run: true, code: `
+        ${MK}
+        el.classList.add('lk-input--dense');
+        Look.lkTextbox(el, { prepend: '#', placeholder: 'tag' });` }] },
+    { name: '.lk-input--error', description: 'Red border + red focus ring; set by `setError()`.' },
+    { name: '.lk-input-affix', description: 'The visible box drawn around the input and its adornments (border, radius, focus ring). Also gets `--has-prepend` / `--has-append` state hooks.' },
+    { name: '.lk-input-affix__prepend / __append', description: 'Adornment slots, separated from the text by a border.' },
+    { name: '.lk-input--affixed', description: 'Added to the input inside the affix box; removes its own border/background.' },
+    { name: '.lk-field', description: 'Vertical label / control / error stack.' },
+    { name: '.lk-field--dense', description: 'Dense layout for every input inside the field.',
+      examples: [{ title: 'CSS only', code: `
+        <div class="lk-field lk-field--dense">
+          <label class="lk-label" for="q">Search</label>
+          <input id="q" class="lk-input" />
+        </div>` }] },
+    { name: '.lk-field--error', description: 'Error state of a field: red label and red affix border.' },
+    { name: '.lk-label', description: 'Label text style.' },
+    { name: '.lk-label--required', description: 'Adds the red `*` after any label (not tied to `.lk-label`).' },
+    { name: '.lk-field-error', description: 'Error message slot under the control.' },
+  ],
+
+  tokens: [
+    { name: '--lk-primary', default: 'theme', description: 'Focus border and focus ring color.' },
+    { name: '--lk-negative', default: 'theme', description: 'Error border, error text and the required asterisk.' },
+    { name: '--lk-border / --lk-radius', default: 'theme', description: 'Box border color and corner radius.' },
+    { name: '--lk-surface', default: 'theme', description: 'Background of readonly / disabled boxes.' },
+  ],
+});
+</script>
+<script>
+  const email = Look.lkTextbox('#demo-email', { label: 'Email', name: 'email', type: 'email' });
+  const notes = Look.lkTextbox('#demo-notes', { label: 'Notes', name: 'notes' });
+  const ro = Look.lkTextbox('#demo-readonly', { label: 'Read-only', readonly: true });
+  const out = document.getElementById('output');
+
+  document.getElementById('btn-error').onclick = () => {
+    email.setError('This email is invalid');
+    out.textContent = 'setError("This email is invalid") called';
+  };
+  document.getElementById('btn-clear').onclick = () => {
+    email.clearError();
+    out.textContent = 'clearError() called';
+  };
+  document.getElementById('btn-toggle').onclick = () => {
+    email.enabled = !email.enabled;
+    out.textContent = 'enabled = ' + email.enabled;
+  };
+  document.getElementById('btn-hide').onclick = () => {
+    email.hidden = !email.hidden;
+    out.textContent = 'hidden = ' + email.hidden;
+  };
+
+  // External labels
+  const extName    = Look.lkTextbox('#ext-name', { required: true });
+  const extCountry = Look.lkDropdown('#ext-country');
+  const extTerms   = Look.lkCheckbox('#ext-terms', { required: true });
+  const extNews    = Look.lkSwitch('#ext-news');
+  const extAll     = [extName, extCountry, extTerms, extNews];
+  const extOut     = document.getElementById('ext-output');
+
+  document.getElementById('btn-ext-required').onclick = () => {
+    const next = !extName.required;
+    extAll.forEach((c) => { c.required = next; });
+    extOut.textContent = 'required = ' + next + ' on all four fields';
+  };
+  document.getElementById('btn-ext-label').onclick = () => {
+    extName.label = extName.label === 'Full name' ? 'Legal name' : 'Full name';
+    extOut.textContent = 'label = "' + extName.label + '"';
+  };
+
+  // Affixes, types, dense
+  const affOut = document.getElementById('aff-output');
+  const price = Look.lkTextbox('#aff-price', { label: 'Price', prepend: 'Rp', append: '.00' });
+  Look.lkTextbox('#aff-site', { label: 'Website', type: 'url', prepend: [Look.lkIcon('link', { size: 'sm' }), 'https://'], append: '.com' });
+  const pass = Look.lkTextbox('#aff-pass', { label: 'Password', type: 'password', append: Look.lkIcon('lock', { size: 'sm' }) });
+  Look.lkTextbox('#aff-dense', { label: 'Dense', prepend: Look.lkIcon('search', { size: 'sm' }) });
+  const currencies = ['Rp', 'USD', 'EUR', null];
+  let ci = 0;
+  document.getElementById('btn-pass').onclick = () => {
+    pass.type = pass.type === 'password' ? 'text' : 'password';
+    affOut.textContent = 'pass.type = ' + pass.type;
+  };
+  document.getElementById('btn-currency').onclick = () => {
+    ci = (ci + 1) % currencies.length;
+    price.prepend = currencies[ci];
+    affOut.textContent = 'price.prepend = ' + (price.prepend ? '"' + price.prepend.textContent + '"' : 'null');
+  };
+</script>
+</body>
+</html>

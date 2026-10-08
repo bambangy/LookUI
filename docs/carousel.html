@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Carousel</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+  <style>
+    .demo-slides { max-width: 500px; border-radius: var(--lk-radius-lg); }
+    .demo-slides .lk-carousel__slide {
+      display: flex; align-items: center; justify-content: center;
+      height: 220px; color: #fff; font-size: var(--lk-text-2xl);
+    }
+    .demo-slides--mini .lk-carousel__slide { height: 120px; font-size: var(--lk-text-lg); }
+    .demo-slides .lk-carousel__slide:nth-child(4n + 1) { background: var(--lk-primary); color: var(--lk-primary-contrast); }
+    .demo-slides .lk-carousel__slide:nth-child(4n + 2) { background: var(--lk-accent); }
+    .demo-slides .lk-carousel__slide:nth-child(4n + 3) { background: var(--lk-positive); }
+    .demo-slides .lk-carousel__slide:nth-child(4n + 4) { background: var(--lk-warning); }
+    .demo-async { max-width: 640px; border: var(--lk-border-width) solid var(--lk-border); border-radius: var(--lk-radius-lg); background: var(--lk-bg); }
+    .demo-async .lk-carousel__slide { min-height: 13rem; display: flex; align-items: center; justify-content: center; padding: var(--lk-space-5) var(--lk-space-9) var(--lk-space-7); }
+    .demo-async .lk-carousel__dot { background: var(--lk-border-strong); }
+    .demo-async .lk-carousel__dot--active { background: var(--lk-primary); }
+    .demo-news { text-align: center; max-width: 26rem; }
+    .demo-news h3 { margin: var(--lk-space-2) 0; }
+    .demo-news p { color: var(--lk-text-muted); margin: 0 0 var(--lk-space-4); }
+    .demo-file-note { display: none; }
+    .is-file .demo-file-note { display: block; }
+  </style>
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Carousel</h1>
+    <p style="opacity: 0.85;">lkCarousel(el, opts) — slide navigation with autoplay, swipe and seamless loop</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <div id="demo-carousel" class="demo-slides" style="overflow: hidden;">
+      <div class="lk-carousel__track">
+        <div class="lk-carousel__slide">Slide 1</div>
+        <div class="lk-carousel__slide">Slide 2</div>
+        <div class="lk-carousel__slide">Slide 3</div>
+      </div>
+      <button class="lk-carousel__prev lk-btn lk-btn--ghost" aria-label="Previous slide"><span class="lk-icon lk-icon--chevron-left" aria-hidden="true"></span></button>
+      <button class="lk-carousel__next lk-btn lk-btn--ghost" aria-label="Next slide"><span class="lk-icon lk-icon--chevron-right" aria-hidden="true"></span></button>
+      <div class="lk-carousel__indicators">
+        <button class="lk-carousel__dot" aria-label="Slide 1"></button>
+        <button class="lk-carousel__dot" aria-label="Slide 2"></button>
+        <button class="lk-carousel__dot" aria-label="Slide 3"></button>
+      </div>
+    </div>
+
+    <div class="demo-row" style="margin-top: var(--lk-space-4);">
+      <button id="btn-prev" class="lk-btn lk-btn--secondary lk-btn--sm">Prev</button>
+      <button id="btn-next" class="lk-btn lk-btn--secondary lk-btn--sm">Next</button>
+      <button id="btn-goto" class="lk-btn lk-btn--primary lk-btn--sm">Go to slide 3</button>
+      <button id="btn-pause" class="lk-btn lk-btn--secondary lk-btn--sm">Pause autoplay</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">No loop, dense, starting index</p>
+    <p class="demo-sub">loop: false disables the arrow at each end; dragging past the ends resists.</p>
+    <div id="demo-carousel-2" class="lk-carousel lk-carousel--dense demo-slides demo-slides--mini">
+      <div class="lk-carousel__track">
+        <div class="lk-carousel__slide">First</div>
+        <div class="lk-carousel__slide">Second</div>
+        <div class="lk-carousel__slide">Third</div>
+        <div class="lk-carousel__slide">Last</div>
+      </div>
+      <button class="lk-carousel__prev" aria-label="Previous slide"><span class="lk-icon lk-icon--chevron-left" aria-hidden="true"></span></button>
+      <button class="lk-carousel__next" aria-label="Next slide"><span class="lk-icon lk-icon--chevron-right" aria-hidden="true"></span></button>
+      <div class="lk-carousel__indicators">
+        <button class="lk-carousel__dot" aria-label="Slide 1"></button>
+        <button class="lk-carousel__dot" aria-label="Slide 2"></button>
+        <button class="lk-carousel__dot" aria-label="Slide 3"></button>
+        <button class="lk-carousel__dot" aria-label="Slide 4"></button>
+      </div>
+    </div>
+    <div id="output-2" class="demo-output"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Async content — slides from a URL</p>
+    <p class="demo-sub">
+      Built from <code>slides</code>: each slide is a content spec. The first three fetch <code>partials/slides.html</code> and keep one
+      <code>&lt;article&gt;</code> each with <code>select</code>; the fourth is an async function. Content loads lazily (active slide ± 1),
+      with a spinner while it arrives and <em>Retry</em> when it fails.
+    </p>
+    <p class="demo-file-note demo-sub" style="color: var(--lk-warning);">
+      Opened from <code>file://</code>: browsers block <code>fetch()</code> there, so the URL slides show an error. Serve the folder (e.g. <code>npx serve .</code>) or use the GitHub Pages docs.
+    </p>
+    <div id="demo-async" class="demo-async"></div>
+    <div class="demo-row" style="margin-top: var(--lk-space-4);">
+      <button id="btn-async-reload" class="lk-btn lk-btn--secondary lk-btn--sm">reload()</button>
+      <button id="btn-async-list" class="lk-btn lk-btn--primary lk-btn--sm">setSlides(async list)</button>
+    </div>
+    <div id="output-async" class="demo-output"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Markup slides with data-url</p>
+    <p class="demo-sub">Existing markup works too: a slide with <code>data-url</code> (and optional <code>data-select</code>) loads its HTML when it comes near.</p>
+    <div id="demo-markup-async" class="demo-async">
+      <div class="lk-carousel__track">
+        <div class="lk-carousel__slide"><div class="demo-news"><h3>Static slide</h3><p>Already in the page.</p></div></div>
+        <div class="lk-carousel__slide" data-url="partials/slides.html" data-select="#slide-tabs"></div>
+        <div class="lk-carousel__slide" data-url="partials/team.html"></div>
+      </div>
+      <button class="lk-carousel__prev lk-btn lk-btn--ghost" aria-label="Previous slide"><span class="lk-icon lk-icon--chevron-left" aria-hidden="true"></span></button>
+      <button class="lk-carousel__next lk-btn lk-btn--ghost" aria-label="Next slide"><span class="lk-icon lk-icon--chevron-right" aria-hidden="true"></span></button>
+      <div class="lk-carousel__indicators">
+        <button class="lk-carousel__dot" aria-label="Slide 1"></button>
+        <button class="lk-carousel__dot" aria-label="Slide 2"></button>
+        <button class="lk-carousel__dot" aria-label="Slide 3"></button>
+      </div>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;div id="my-carousel"&gt;
+  &lt;div class="lk-carousel__track"&gt;
+    &lt;div class="lk-carousel__slide"&gt;Slide 1&lt;/div&gt;
+    &lt;div class="lk-carousel__slide"&gt;Slide 2&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;button class="lk-carousel__prev"&gt;&amp;lsaquo;&lt;/button&gt;
+  &lt;button class="lk-carousel__next"&gt;&amp;rsaquo;&lt;/button&gt;
+  &lt;div class="lk-carousel__indicators"&gt;
+    &lt;button class="lk-carousel__dot"&gt;&lt;/button&gt;
+    &lt;button class="lk-carousel__dot"&gt;&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>const carousel = Look.lkCarousel('#my-carousel', {
+  index: 0,            // starting slide
+  autoplay: true,
+  interval: 3000,
+  loop: true,          // seamless wrap (no rewind)
+  swipe: true,         // pointer / touch drag
+  keyboard: true,      // ←/→ when focus is inside
+  pauseOnHover: true,  // autoplay also stops while the tab is hidden
+  onChange(index) {},
+});
+
+// Tune motion per carousel in CSS:
+// #my-carousel { --lk-carousel-duration: 600ms; --lk-carousel-easing: ease-in-out; }
+
+carousel.activeIndex;    // 0
+carousel.count;          // 2
+carousel.next();
+carousel.prev();
+carousel.goTo(1);
+carousel.pause();  carousel.resume();
+carousel.destroy();</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">Async content</p>
+    <pre>// Slides from options — no markup needed (track, arrows and dots are built)
+const news = Look.lkCarousel('#news', {
+  slides: [
+    { url: '/promo/spring.html' },                       // fetched HTML
+    { url: '/promo/all.html', select: '#summer' },        // part of a page
+    { html: '&lt;h3&gt;Raw HTML&lt;/h3&gt;' },
+    { content: async (slide) =&gt; renderCard(await api.latest()) },
+  ],
+  lazy: true,          // load near the active slide only (preload: 1)
+  onLoad(slide, i) { /* enhance loaded markup */ },
+});
+
+// …or the whole list from the server
+Look.lkCarousel('#news', {
+  slides: async () =&gt; (await (await fetch('/api/promos')).json()).map((p) =&gt; ({ url: p.url, label: p.title })),
+});
+
+news.reload();             // fetch the active slide again
+news.setSlides([...]);     // replace every slide</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+  // Page helpers used by the live examples below.
+  // makeCarousel writes the carousel markup (see "Markup" under CSS classes)
+  // into `container` and returns the root element.
+  function makeCarousel(container, labels, extraClass) {
+    labels = labels || ['One', 'Two', 'Three'];
+    const root = document.createElement('div');
+    root.className = 'lk-carousel demo-slides demo-slides--mini' + (extraClass ? ' ' + extraClass : '');
+    root.innerHTML =
+      '<div class="lk-carousel__track">'
+      + labels.map((t) => '<div class="lk-carousel__slide">' + t + '</div>').join('')
+      + '</div>'
+      + '<button class="lk-carousel__prev" aria-label="Previous slide"><span class="lk-icon lk-icon--chevron-left" aria-hidden="true"></span></button>'
+      + '<button class="lk-carousel__next" aria-label="Next slide"><span class="lk-icon lk-icon--chevron-right" aria-hidden="true"></span></button>'
+      + '<div class="lk-carousel__indicators">'
+      + labels.map((t, i) => '<button class="lk-carousel__dot" aria-label="Slide ' + (i + 1) + '"></button>').join('')
+      + '</div>';
+    container.appendChild(root);
+    return root;
+  }
+
+  // demoButton appends a small button that runs `onClick`.
+  function demoButton(container, text, onClick) {
+    const b = document.createElement('button');
+    b.className = 'lk-btn lk-btn--secondary lk-btn--sm';
+    b.style.margin = '8px 6px 0 0';
+    b.textContent = text;
+    b.onclick = onClick;
+    container.appendChild(b);
+    return b;
+  }
+
+LookDocs.render('#api', {
+  name: 'lkCarousel',
+  kind: 'Component',
+  signature: 'const carousel = Look.lkCarousel(element, options);',
+  description: [
+    'Turns a container with a `.lk-carousel__track` of `.lk-carousel__slide` children into a sliding carousel. Optional `.lk-carousel__prev` / `.lk-carousel__next` buttons and `.lk-carousel__dot` indicators found inside the root are wired automatically. The root receives `.lk-carousel` if it does not have it yet.',
+    'Supports autoplay (paused on hover, focus and while the tab is hidden), pointer/touch swipe with flick detection, ←/→ keys and a seamless loop. The required HTML is shown under [CSS classes](#api-section-classes) (`.lk-carousel` → Markup).',
+    'The live examples call two page helpers: `makeCarousel(container, labels?, extraClass?)` writes exactly that markup into `container` and returns the root element; `demoButton(container, text, onClick)` adds a small button.',
+  ],
+  params: [
+    { name: 'element', type: 'Element | string', description: 'The carousel root or a CSS selector. Must contain the track/slides markup.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The carousel instance with the properties and methods below.' },
+
+  options: [
+    {
+      name: 'index', type: 'number', default: '0',
+      description: 'Slide shown on init (0-based). Truncated and clamped to `0 … count-1`. It is applied instantly, without animation, and does not fire `onChange`.',
+      examples: [
+        { title: 'Start on the third slide', run: true, code: `
+          const c = Look.lkCarousel(makeCarousel(container, ['A', 'B', 'C', 'D']), { index: 2 });
+          log('activeIndex:', c.activeIndex);` },
+        { title: 'Out-of-range values are clamped', run: true, code: `
+          const c = Look.lkCarousel(makeCarousel(container), { index: 99 });
+          log('index 99 → activeIndex', c.activeIndex);` },
+      ],
+    },
+    {
+      name: 'autoplay', type: 'boolean', default: 'false',
+      description: 'Advance to the next slide every `interval` ms. Ignored when there is only one slide. Clicking an arrow/dot, swiping or pressing ←/→ restarts the timer.',
+      values: [['false', 'Manual navigation only (default).'], ['true', 'Auto-advance; pauses as described in `pauseOnHover` and while the tab is hidden.']],
+      examples: [
+        { title: 'Autoplay every 2 seconds', run: true, code: `
+          Look.lkCarousel(makeCarousel(container), {
+            autoplay: true,
+            interval: 2000,
+            onChange: (i) => log('autoplay →', i),
+          });` },
+      ],
+    },
+    {
+      name: 'interval', type: 'number', default: '5000',
+      description: 'Autoplay delay in milliseconds. Only used with `autoplay: true`. A falsy value (`0`) falls back to `5000`.',
+      examples: [
+        { title: 'Fast ticker (1200 ms)', run: true, code: `
+          Look.lkCarousel(makeCarousel(container, ['Sale', 'New', 'Hot', 'Free shipping']), {
+            autoplay: true, interval: 1200, pauseOnHover: false,
+          });` },
+        { title: 'Slow hero banner', code: `Look.lkCarousel('#hero', { autoplay: true, interval: 8000 });` },
+      ],
+    },
+    {
+      name: 'loop', type: 'boolean', default: 'true',
+      description: 'Wrap around at the ends. With `true`, clones of the first and last slide (`.lk-carousel__slide--clone`, `aria-hidden`, `inert`, ids stripped) are added to the track so last → first keeps sliding forward instead of rewinding. With `false`, the prev/next buttons get `disabled` at the ends (hidden by CSS) and dragging past an end is resisted.',
+      values: [['true', 'Seamless infinite loop (default).'], ['false', 'Stops at the first/last slide; arrows disable at the ends.']],
+      examples: [
+        { title: 'loop: true — next() from the last slide slides forward to the first', run: true, code: `
+          const c = Look.lkCarousel(makeCarousel(container), { loop: true, index: 2 });
+          demoButton(container, 'next()', () => { c.next(); log('activeIndex', c.activeIndex); });` },
+        { title: 'loop: false — arrows disable at the ends', run: true, code: `
+          const root = makeCarousel(container);
+          const c = Look.lkCarousel(root, { loop: false });
+          log('prev disabled:', root.querySelector('.lk-carousel__prev').disabled);
+          demoButton(container, 'next()', () => { c.next(); log('activeIndex', c.activeIndex); });` },
+      ],
+    },
+    {
+      name: 'swipe', type: 'boolean', default: 'true',
+      description: 'Drag the track with mouse, pen or touch. A swipe commits when it moves more than 18% of the carousel width or is flicked faster than 0.4 px/ms; otherwise the track snaps back. Mostly-vertical gestures are left to page scrolling. A drag never also clicks a link/button inside the slide.',
+      values: [['true', 'Pointer/touch drag enabled (default).'], ['false', 'Only arrows, dots, keys and the API change slides.']],
+      examples: [
+        { title: 'Swipe disabled', run: true, code: `
+          Look.lkCarousel(makeCarousel(container), { swipe: false, onChange: (i) => log('changed to', i) });
+          log('Try dragging — nothing happens; use the arrows.');` },
+      ],
+    },
+    {
+      name: 'keyboard', type: 'boolean', default: 'true',
+      description: '**ArrowLeft / ArrowRight** go to the previous / next slide while focus is inside the carousel (e.g. on an arrow or a dot). Ignored when focus is in an input, textarea, select or contenteditable element. The root itself is not made focusable — add `tabindex="0"` if you want it to be.',
+      values: [['true', '←/→ navigate (default).'], ['false', 'No key handling.']],
+      examples: [
+        { title: 'Focusable root with keyboard navigation', run: true, code: `
+          const root = makeCarousel(container);
+          root.tabIndex = 0;
+          Look.lkCarousel(root, { keyboard: true, onChange: (i) => log('→', i) });
+          log('Click the carousel, then press ← / →');` },
+        { title: 'Keyboard off', code: `Look.lkCarousel('#gallery', { keyboard: false });` },
+      ],
+    },
+    {
+      name: 'pauseOnHover', type: 'boolean', default: 'true',
+      description: 'Pause autoplay while the pointer is over the carousel or focus is inside it; resume when both leave. Has no effect without `autoplay`. Independently of this option, autoplay always stops while the browser tab is hidden.',
+      values: [['true', 'Pause on hover / focus (default).'], ['false', 'Keep advancing even while hovered.']],
+      examples: [
+        { title: 'Keeps playing under the mouse', run: true, code: `
+          Look.lkCarousel(makeCarousel(container), {
+            autoplay: true, interval: 1500, pauseOnHover: false,
+            onChange: (i) => log('tick', i),
+          });` },
+      ],
+    },
+    {
+      name: 'slides', type: 'Array | Function | Promise', default: '—',
+      description: 'Build the slides from data instead of markup. Each item is a content spec — `{ url, select, fetchOptions, transform, scripts }` (fetched HTML), `{ html }`, `{ content }` (text, Node, or `(slide, { index, carousel }) => Node | text | { html } | Promise`), `{ template }` — plus optional `className` and `label` (dot / slide aria-label). Any other value is used as `content`. A function or Promise resolving to the array loads the list itself asynchronously. Missing track, arrows and dots are created.',
+      examples: [{ title: 'Mixed content', run: true, code: `
+        const root = document.createElement('div');
+        root.className = 'demo-async';
+        container.appendChild(root);
+        Look.lkCarousel(root, {
+          slides: [
+            'Plain text slide',
+            { html: '<strong>HTML</strong>&nbsp;slide' },
+            { content: () => new Promise((r) => setTimeout(() => r('Loaded after 1 s'), 1000)) },
+          ],
+          onLoad: (slide, i) => log('onLoad', i),
+        });` }],
+    },
+    { name: 'lazy', type: 'boolean', default: 'true', description: 'Load content slides only around the active slide (see `preload`). `false` loads every slide at once.' },
+    { name: 'preload', type: 'number', default: '1', description: 'With `lazy`, how many neighbours on each side of the active slide are loaded ahead.' },
+    { name: 'arrows / indicators', type: 'boolean', default: 'true', description: 'With `slides`, create prev/next buttons and dots when the markup has none.' },
+    { name: 'loadingText', type: 'string', default: "'Loading…'", description: 'Text beside the spinner while a slide (or the slide list) loads.' },
+  ],
+
+  properties: [
+    {
+      name: 'activeIndex', type: 'number',
+      description: 'Get the current slide (0-based) or set it to navigate — setting is the same as calling `goTo(value)` (wraps with `loop`, clamps without) and fires `onChange`.',
+      examples: [{ run: true, code: `
+        const c = Look.lkCarousel(makeCarousel(container));
+        log('initial', c.activeIndex);
+        demoButton(container, 'activeIndex = 2', () => { c.activeIndex = 2; log('now', c.activeIndex); });
+        demoButton(container, 'activeIndex = -1', () => { c.activeIndex = -1; log('now', c.activeIndex); });` }],
+    },
+    {
+      name: 'count', type: 'number', readonly: true,
+      description: 'Number of real slides (loop clones are not counted).',
+      examples: [{ run: true, code: `
+        const c = Look.lkCarousel(makeCarousel(container, ['1', '2', '3', '4', '5']));
+        log('count:', c.count);` }],
+    },
+    { name: 'slides', type: 'Element[]', readonly: true, description: 'The real slide elements (no clones).' },
+    { name: 'ready', type: 'Promise', readonly: true, description: 'Resolves once the slide list is in place — immediately for markup or arrays, after the function/Promise for async `slides`.' },
+    { name: 'el', type: 'Element', readonly: true, description: 'The carousel root element.' },
+    { name: 'id', type: 'string', description: 'Get or set the root element id.' },
+    { name: 'hidden', type: 'boolean', description: 'Show/hide the carousel (toggles `.lk-hidden` on the root).', examples: [`carousel.hidden = true;`] },
+    { name: 'enabled', type: 'boolean', description: 'Toggles `.lk-disabled`, `disabled` and `aria-disabled` on the root. **Note:** this is the shared base property; the carousel does not check it, so arrows, dots, swipe and autoplay keep working. Use `pause()` / `swipe: false` to restrict interaction.' },
+  ],
+
+  methods: [
+    {
+      name: 'next', signature: 'next() → void',
+      description: 'Go to the next slide. On the last slide it wraps to the first (`loop: true`, sliding forward over the clone) or does nothing (`loop: false`). Programmatic calls do not restart the autoplay timer.',
+      examples: [{ run: true, code: `
+        const c = Look.lkCarousel(makeCarousel(container), { onChange: (i) => log('onChange', i) });
+        demoButton(container, 'next()', () => c.next());` }],
+    },
+    {
+      name: 'prev', signature: 'prev() → void',
+      description: 'Go to the previous slide. On the first slide it wraps to the last (`loop: true`) or does nothing (`loop: false`).',
+      examples: [{ run: true, code: `
+        const c = Look.lkCarousel(makeCarousel(container), { onChange: (i) => log('onChange', i) });
+        demoButton(container, 'prev()', () => c.prev());` }],
+    },
+    {
+      name: 'goTo', signature: 'goTo(index) → void',
+      description: 'Jump to a slide. The index is truncated to an integer; with `loop` it wraps (`-1` → last, `count` → first), without `loop` it is clamped. The track animates directly to the target (it does not pass through the clones).',
+      params: [{ name: 'index', type: 'number', description: '0-based slide index.' }],
+      examples: [{ run: true, code: `
+        const c = Look.lkCarousel(makeCarousel(container, ['0', '1', '2', '3']));
+        [0, 3, -1, 6].forEach((i) => demoButton(container, 'goTo(' + i + ')', () => {
+          c.goTo(i);
+          log('goTo(' + i + ') → activeIndex', c.activeIndex);
+        }));` }],
+    },
+    {
+      name: 'pause', signature: 'pause() → void',
+      description: 'Stop autoplay until `resume()` is called. With `pauseOnHover`, the pointer/focus leaving the carousel also resumes it.',
+      examples: [{ run: true, code: `
+        const c = Look.lkCarousel(makeCarousel(container), {
+          autoplay: true, interval: 1200, pauseOnHover: false,
+          onChange: (i) => log('tick', i),
+        });
+        demoButton(container, 'pause()', () => { c.pause(); log('paused'); });
+        demoButton(container, 'resume()', () => { c.resume(); log('resumed'); });` }],
+    },
+    { name: 'resume', signature: 'resume() → void', description: 'Restart autoplay after `pause()`. Does nothing unless the carousel was created with `autoplay: true`.' },
+    {
+      name: 'reload', signature: 'reload(index?) → Promise<boolean>',
+      description: 'Render a content slide again (default: the active one). URL slides fetch again; resolves `false` when loading failed or the slide has no content spec.',
+    },
+    {
+      name: 'setSlides', signature: 'setSlides(list, index?) → Promise<void>',
+      description: 'Replace every slide. `list` is an array of slide specs, or a function / Promise resolving to one (a spinner slide shows meanwhile). Dots are rebuilt; markup slides are replaced too.',
+      examples: [{ run: true, code: `
+        const root = document.createElement('div');
+        root.className = 'demo-async';
+        container.appendChild(root);
+        const c = Look.lkCarousel(root, { slides: ['First', 'Second'] });
+        demoButton(container, 'setSlides(async)', () => {
+          c.setSlides(() => new Promise((r) => setTimeout(() => r(['A', 'B', 'C', 'D']), 800)))
+            .then(() => log('count:', c.count));
+        });` }],
+    },
+    {
+      name: 'destroy', signature: 'destroy() → void',
+      description: 'Stops autoplay and timers, removes every listener, the loop clones, the inline track transform, active-dot state and `aria-hidden` on slides, re-enables arrows disabled by `loop: false`, and removes `.lk-carousel` if lkCarousel added it.',
+      examples: [{ run: true, code: `
+        const root = makeCarousel(container);
+        const c = Look.lkCarousel(root);
+        log('slides in track:', root.querySelectorAll('.lk-carousel__slide').length);
+        demoButton(container, 'destroy()', () => {
+          c.destroy();
+          log('after destroy:', root.querySelectorAll('.lk-carousel__slide').length);
+        });` }],
+    },
+  ],
+
+  events: [
+    { name: 'onLoad', signature: 'onLoad(slide, index)', description: 'A content slide finished rendering (URL fetched, function resolved). Enhance the new markup here.' },
+    { name: 'onError', signature: 'onError(error, slide, index)', description: 'A slide failed to load (`error.status` for HTTP errors) — or the async `slides` list itself failed (`slide` is `null`, `index` is `-1`).' },
+    {
+      name: 'onChange', signature: 'onChange(index)',
+      description: 'Called after the active slide changes — from arrows, dots, keys, swipe, autoplay or the API (`next`, `prev`, `goTo`, `activeIndex`). Not called for the initial `index` or when the target equals the current slide.',
+      args: [{ name: 'index', type: 'number', description: 'The new active slide (0-based, a real slide — never a clone).' }],
+      examples: [{ title: 'Caption synced to the slide', run: true, code: `
+        const captions = ['Mountains', 'Ocean', 'Forest'];
+        const cap = document.createElement('p');
+        const c = Look.lkCarousel(makeCarousel(container, captions), {
+          onChange: (i) => { cap.textContent = 'Now showing: ' + captions[i]; log('onChange', i); },
+        });
+        cap.textContent = 'Now showing: ' + captions[c.activeIndex];
+        container.appendChild(cap);` }],
+    },
+  ],
+
+  classes: [
+    {
+      name: '.lk-carousel', description: 'Root: relative, `overflow: hidden`, full width. Added by lkCarousel when missing.',
+      examples: [{ title: 'Markup', code: `
+        <div class="lk-carousel" id="gallery">
+          <div class="lk-carousel__track">            <!-- required -->
+            <div class="lk-carousel__slide">…</div>   <!-- direct children of the track -->
+            <div class="lk-carousel__slide"><img src="a.jpg" alt=""></div>
+          </div>
+          <!-- optional controls, anywhere inside the root -->
+          <button class="lk-carousel__prev" aria-label="Previous">‹</button>
+          <button class="lk-carousel__next" aria-label="Next">›</button>
+          <div class="lk-carousel__indicators">
+            <button class="lk-carousel__dot" aria-label="Slide 1"></button>
+            <button class="lk-carousel__dot" aria-label="Slide 2"></button>
+          </div>
+        </div>` }],
+    },
+    { name: '.lk-carousel__track', description: 'Flex row moved with `translate3d`; its transition uses `--lk-carousel-duration` / `--lk-carousel-easing`. Without a track there is no sliding, swipe or loop clones.' },
+    { name: '.lk-carousel__slide', description: 'One slide (`flex: 0 0 100%`). A direct `<img>` child fills the width and cannot be natively dragged.' },
+    { name: '.lk-carousel__slide--clone', description: 'Added by JS to the two loop clones. Style hook only; do not create these yourself.' },
+    { name: '.lk-carousel__prev / __next', description: 'Round translucent arrow buttons, vertically centered at the left/right edge. Hidden (`opacity: 0`) while `:disabled`. Safe to combine with `.lk-btn`.' },
+    { name: '.lk-carousel__indicators', description: 'Dot container overlaid at the bottom of the slides.' },
+    { name: '.lk-carousel__dot', description: 'Indicator button; the n-th dot goes to slide n.' },
+    { name: '.lk-carousel__dot--active', description: 'Set by JS on the current dot (stretches into a pill) together with `aria-current="true"`.' },
+    { name: '.lk-carousel--dragging', description: 'Set while a swipe is in progress (no transition, `grabbing` cursor).' },
+    { name: '.lk-carousel__track--instant', description: 'Set momentarily by JS to jump without animation (loop wrap, initial index).' },
+    {
+      name: '.lk-carousel--dense', description: 'Smaller arrows (1.75 rem) and dots.',
+      examples: [{ title: 'Dense', run: true, code: `Look.lkCarousel(makeCarousel(container, ['A', 'B', 'C'], 'lk-carousel--dense'));` }],
+    },
+  ],
+
+  tokens: [
+    { name: '--lk-carousel-duration', default: 'var(--lk-duration-slower)', description: 'Slide (and active-dot) transition duration. Forced to `1ms` under `prefers-reduced-motion`.' },
+    { name: '--lk-carousel-easing', default: 'var(--lk-easing-out)', description: 'Slide transition timing function.' },
+    { name: '--lk-carousel-arrow-size', default: '2.5rem', description: 'Prev/next button size (`1.75rem` when dense).' },
+  ],
+
+  notes: [
+    '**Keyboard:** ←/→ work only while focus is inside the root (arrows and dots are buttons, so Tab reaches them). Add `tabindex="0"` to the root to make the whole carousel focusable.',
+    '**Loop clones:** with `loop: true` and 2+ slides, two extra `.lk-carousel__slide--clone` nodes live in the track. `count` and `onChange` only ever report real slides. Clones lose their `id` attributes so ids stay unique, and are `inert` and `aria-hidden`.',
+    '**Accessibility:** non-active slides get `aria-hidden="true"`. Give arrows and dots an `aria-label` — lkCarousel does not add one.',
+    '**Motion tuning:** set `--lk-carousel-duration` / `--lk-carousel-easing` on the root, e.g. `#hero { --lk-carousel-duration: 600ms; }`. JS reads the computed track transition duration to time the silent loop jump.',
+    '**Dynamic slides:** use `setSlides(list)` to replace the slides (dots are rebuilt). Arrows and the track are collected once at init.',
+    '**Async content:** markup slides with `data-url` (+ `data-select`) and `slides` specs with `url` load lazily. Loaded HTML is inserted as markup — use URLs you trust; `<script>` tags are dropped unless `scripts: true`, and relative links resolve against the current page. Loop clones are refreshed once their slide has loaded.',
+  ],
+});
+</script>
+<script>
+  const out = document.getElementById('output');
+  const carousel = Look.lkCarousel('#demo-carousel', {
+    loop: true,
+    autoplay: true,
+    interval: 4000,
+    onChange: (i) => { out.textContent = 'activeIndex = ' + i; },
+  });
+  out.textContent = 'activeIndex = ' + carousel.activeIndex + '  (drag/swipe, ←/→ keys, autoplay pauses on hover)';
+
+  document.getElementById('btn-prev').onclick = () => carousel.prev();
+  document.getElementById('btn-next').onclick = () => carousel.next();
+  document.getElementById('btn-goto').onclick = () => carousel.goTo(2);
+  let paused = false;
+  const pauseBtn = document.getElementById('btn-pause');
+  pauseBtn.onclick = () => {
+    paused = !paused;
+    if (paused) carousel.pause(); else carousel.resume();
+    pauseBtn.textContent = paused ? 'Resume autoplay' : 'Pause autoplay';
+    out.textContent = paused ? 'pause() called' : 'resume() called';
+  };
+
+  const out2 = document.getElementById('output-2');
+  const c2 = Look.lkCarousel('#demo-carousel-2', {
+    loop: false,
+    index: 1,
+    onChange: (i) => { out2.textContent = 'activeIndex = ' + i + ' of ' + (c2.count - 1); },
+  });
+  out2.textContent = 'activeIndex = ' + c2.activeIndex + ' (started with index: 1)';
+
+  // Async content
+  if (location.protocol === 'file:') document.body.classList.add('is-file');
+  const outAsync = document.getElementById('output-async');
+  const asyncCarousel = Look.lkCarousel('#demo-async', {
+    slides: [
+      { url: 'partials/slides.html', select: '#slide-release', label: 'Release' },
+      { url: 'partials/slides.html', select: '#slide-tabs', label: 'Tabs' },
+      { url: 'partials/slides.html', select: '#slide-validation', label: 'Validation' },
+      {
+        label: 'Stats',
+        content: async () => {
+          await new Promise((r) => setTimeout(r, 900));
+          const box = document.createElement('div');
+          box.className = 'demo-news';
+          box.innerHTML = '<span class="lk-badge lk-badge--warning">Live</span><h3></h3><p>Rendered by an async function.</p>';
+          box.querySelector('h3').textContent = `${Math.floor(Math.random() * 900) + 100} downloads today`;
+          return box;
+        },
+      },
+    ],
+    onChange: (i) => { outAsync.textContent = 'activeIndex = ' + i; },
+    onLoad: (slide, i) => { outAsync.textContent += '\nonLoad ' + i; },
+    onError: (err, slide, i) => { outAsync.textContent += '\nonError ' + i + ': ' + err.message; },
+  });
+  document.getElementById('btn-async-reload').onclick = () => {
+    asyncCarousel.reload().then((ok) => { outAsync.textContent = 'reload(' + asyncCarousel.activeIndex + ') → ' + ok; });
+  };
+  document.getElementById('btn-async-list').onclick = () => {
+    outAsync.textContent = 'setSlides(() => Promise) …';
+    asyncCarousel.setSlides(() => new Promise((resolve) => setTimeout(() => resolve(
+      ['#slide-validation', '#slide-tabs'].map((sel) => ({ url: 'partials/slides.html', select: sel })),
+    ), 800))).then(() => { outAsync.textContent += '\ncount = ' + asyncCarousel.count; });
+  };
+
+  Look.lkCarousel('#demo-markup-async');
+</script>
+</body>
+</html>

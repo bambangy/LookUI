@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Component Examples</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+
+<header class="demo-hero">
+  <div class="demo-container">
+    <h1 class="demo-hero__title">
+      <img src="../images/lookui.jpg" width="1967" height="544"
+           alt="LookUI — a no-frills JavaScript and CSS library for UI components and composable utilities. Imperative, predictable, and MVC-friendly. Zero runtime dependencies." />
+    </h1>
+    <nav class="demo-hero__links" aria-label="Get started">
+      <a class="lk-btn lk-btn--primary" href="#quick-start">Quick start</a>
+      <a class="lk-btn lk-btn--outline" href="interactive-cookbook.html">Interactive cookbook</a>
+      <a class="lk-btn lk-btn--ghost" href="https://github.com/bambangy/LookUI">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <!-- Quick start ------------------------------------------------------------------- -->
+  <section id="quick-start" style="margin-bottom: var(--lk-space-9);">
+    <h2 style="margin-bottom: var(--lk-space-2);">Quick start</h2>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-5);">
+      No build step and no dependencies: one CSS file, one JS file, then call factories on your own markup.
+    </p>
+
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div class="demo-usage" style="margin: 0;">
+        <p class="demo-usage__title">1 · Install</p>
+        <pre>npm install @lookui/core</pre>
+        <p>…or load it from a CDN (pin the version in production):</p>
+        <pre>&lt;link rel="stylesheet" href="https://unpkg.com/@lookui/core@0.2.0/dist/look.min.css"&gt;
+&lt;script src="https://unpkg.com/@lookui/core@0.2.0/dist/look.min.js"&gt;&lt;/script&gt;</pre>
+
+        <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">2 · Include</p>
+        <pre>&lt;!-- classic script: exposes window.Look --&gt;
+&lt;link rel="stylesheet" href="node_modules/@lookui/core/dist/look.css"&gt;
+&lt;script src="node_modules/@lookui/core/dist/look.js"&gt;&lt;/script&gt;</pre>
+        <pre>// bundlers / ES modules
+import '@lookui/core/look.css';
+import { lkTextbox, lkDropdown, lkValidation, lkToast } from '@lookui/core';</pre>
+
+        <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">3 · Markup + factories</p>
+        <pre>&lt;form id="signup"&gt;
+  &lt;input id="email"&gt;
+  &lt;select id="plan"&gt;&lt;/select&gt;
+  &lt;button class="lk-btn lk-btn--primary"&gt;Sign up&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;script&gt;
+  const email = Look.lkTextbox('#email', {
+    label: 'Email', name: 'email', rules: ['required', 'email'], validate: true,
+  });
+  const plan = Look.lkDropdown('#plan', {
+    label: 'Plan', name: 'plan', required: true,
+    items: [{ value: 'free', label: 'Free' }, { value: 'pro', label: 'Pro' }],
+  });
+  const form = Look.lkValidation(email, plan);
+
+  document.getElementById('signup').addEventListener('submit', (e) =&gt; {
+    e.preventDefault();
+    if (form.validate().hasError) return;
+    Look.lkToast({ type: 'positive', title: 'Welcome!', message: email.value });
+  });
+&lt;/script&gt;</pre>
+
+        <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">4 · Clean up</p>
+        <p style="margin: 0;">Every factory returns a plain object. Its owner (your controller / page script) calls
+          <code>destroy()</code> when the markup goes away; composables also have <code>close()</code> / <code>hide()</code>.</p>
+      </div>
+
+      <div>
+        <div class="lk-card">
+          <div class="lk-card__body">
+            <p class="demo-sub" style="margin-top: 0;">The snippet above, running</p>
+            <form id="qs-form" novalidate style="display: grid; gap: var(--lk-space-4);">
+              <input id="qs-email" placeholder="you@company.com" />
+              <select id="qs-plan"></select>
+              <div><button class="lk-btn lk-btn--primary" type="submit">Sign up</button></div>
+            </form>
+          </div>
+        </div>
+        <div class="lk-card" style="margin-top: var(--lk-space-4);">
+          <div class="lk-card__body" style="display: grid; gap: var(--lk-space-2);">
+            <strong>Next steps</strong>
+            <a href="validation.html">Validation guide — rules, validate-on-blur, lkValidation, server errors &rarr;</a>
+            <a href="interactive-cookbook.html">Interactive cookbook — end-to-end recipes &rarr;</a>
+            <a href="customize.html">Custom theme file — colors, spacing, sizes &rarr;</a>
+            <a href="datasource.html">lkDataSource — data, paging and remote transport &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <h2 style="margin-bottom: var(--lk-space-6);">Component Examples</h2>
+
+  <div class="lk-card" style="margin-bottom: var(--lk-space-7);">
+    <div class="lk-card__body" style="display:flex;align-items:center;justify-content:space-between;gap:var(--lk-space-3);flex-wrap:wrap;">
+      <div>
+        <strong style="display:block;">Interactive Cookbook</strong>
+        <span style="font-size: var(--lk-text-sm); color: var(--lk-text-muted);">Comprehensive manipulative demos for all JS components and composables</span>
+      </div>
+      <a href="interactive-cookbook.html" class="lk-btn lk-btn--primary">Open Cookbook</a>
+    </div>
+  </div>
+
+  <!-- Tokens & Layout -->
+  <p class="demo-section__title">Tokens &amp; Layout</p>
+  <div class="lk-grid lk-grid--cols-1 lk-grid--cols-sm-2 lk-grid--cols-md-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
+    <a href="tokens.html" class="demo-nav-card">
+      <strong>Design Tokens</strong>
+      <span>Color palette, typography, spacing, radius</span>
+    </a>
+    <a href="layout.html" class="demo-nav-card">
+      <strong>Layout &amp; Utilities</strong>
+      <span>Grid, flex, spacing, responsive</span>
+    </a>
+    <a href="customize.html" class="demo-nav-card">
+      <strong>Custom Theme File</strong>
+      <span>Your own CSS file: replace colors, spacing, sizes · where to include it</span>
+    </a>
+    <a href="theming.html" class="demo-nav-card">
+      <strong>Theming</strong>
+      <span>Runtime &amp; build-time overrides</span>
+    </a>
+  </div>
+
+  <!-- Form Components -->
+  <p class="demo-section__title">Form Components</p>
+  <div class="lk-grid lk-grid--cols-1 lk-grid--cols-sm-2 lk-grid--cols-md-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
+    <a href="textbox.html" class="demo-nav-card">
+      <strong>Textbox</strong>
+      <span>Input &amp; textarea with validation</span>
+    </a>
+    <a href="dropdown.html" class="demo-nav-card">
+      <strong>Dropdown</strong>
+      <span>Custom select — search, remote data, infinite scroll</span>
+    </a>
+    <a href="checkbox.html" class="demo-nav-card">
+      <strong>Checkbox</strong>
+      <span>Custom styled checkboxes</span>
+    </a>
+    <a href="radio.html" class="demo-nav-card">
+      <strong>Radio</strong>
+      <span>Custom styled radio buttons</span>
+    </a>
+    <a href="switch.html" class="demo-nav-card">
+      <strong>Switch</strong>
+      <span>Toggle switch component</span>
+    </a>
+    <a href="phone.html" class="demo-nav-card">
+      <strong>Phone</strong>
+      <span>Country flag + dial code dropdown joined to a numeric input</span>
+    </a>
+    <a href="textpop.html" class="demo-nav-card">
+      <strong>TextPop</strong>
+      <span>Lookup field — searchable grid popup, single or multi (chips)</span>
+    </a>
+    <a href="validation.html" class="demo-nav-card">
+      <strong>Validation</strong>
+      <span>Rules, validate on blur, lkValidation for forms, server errors</span>
+    </a>
+  </div>
+
+  <!-- UI Components -->
+  <p class="demo-section__title">UI Components</p>
+  <div class="lk-grid lk-grid--cols-1 lk-grid--cols-sm-2 lk-grid--cols-md-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
+    <a href="button.html" class="demo-nav-card">
+      <strong>Button</strong>
+      <span>Variants, sizes, groups, dropdown</span>
+    </a>
+    <a href="modal.html" class="demo-nav-card">
+      <strong>Modal</strong>
+      <span>Dialog with focus trap</span>
+    </a>
+    <a href="card.html" class="demo-nav-card">
+      <strong>Card</strong>
+      <span>Bordered, raised, dense</span>
+    </a>
+    <a href="avatar.html" class="demo-nav-card">
+      <strong>Avatar</strong>
+      <span>Sizes, shapes, groups</span>
+    </a>
+    <a href="badge.html" class="demo-nav-card">
+      <strong>Badge</strong>
+      <span>Colors, outline, dot</span>
+    </a>
+    <a href="bar.html" class="demo-nav-card">
+      <strong>Bar</strong>
+      <span>App bar, dense, variants</span>
+    </a>
+    <a href="breadcrumbs.html" class="demo-nav-card">
+      <strong>Breadcrumbs</strong>
+      <span>Separators, dense</span>
+    </a>
+    <a href="list.html" class="demo-nav-card">
+      <strong>List</strong>
+      <span>Nested submenu + accordion menu</span>
+    </a>
+    <a href="spinner.html" class="demo-nav-card">
+      <strong>Spinner</strong>
+      <span>Sizes, colors, on-dark</span>
+    </a>
+    <a href="timeline.html" class="demo-nav-card">
+      <strong>Timeline</strong>
+      <span>Event timeline, dense</span>
+    </a>
+    <a href="toolbar.html" class="demo-nav-card">
+      <strong>Toolbar</strong>
+      <span>Button groups, separators</span>
+    </a>
+    <a href="icon.html" class="demo-nav-card">
+      <strong>Icon</strong>
+      <span>SVG icon set, sizes, colors</span>
+    </a>
+  </div>
+
+  <!-- Interactive Components -->
+  <p class="demo-section__title">Interactive Components (JS)</p>
+  <div class="lk-grid lk-grid--cols-1 lk-grid--cols-sm-2 lk-grid--cols-md-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
+    <a href="tabs.html" class="demo-nav-card">
+      <strong>Tabs</strong>
+      <span>Line, pill, box · vertical · URL/HTML/text panels, render modes</span>
+    </a>
+    <a href="carousel.html" class="demo-nav-card">
+      <strong>Carousel</strong>
+      <span>Slide navigation, autoplay, async (URL) content</span>
+    </a>
+    <a href="slider.html" class="demo-nav-card">
+      <strong>Slider</strong>
+      <span>Drag value, min/max/step</span>
+    </a>
+    <a href="tooltip.html" class="demo-nav-card">
+      <strong>Tooltip</strong>
+      <span>Positions, show/hide</span>
+    </a>
+    <a href="rating.html" class="demo-nav-card">
+      <strong>Rating</strong>
+      <span>Click-to-rate, readonly</span>
+    </a>
+    <a href="chip.html" class="demo-nav-card">
+      <strong>Chip</strong>
+      <span>Removable, selectable</span>
+    </a>
+    <a href="pagination.html" class="demo-nav-card">
+      <strong>Pagination</strong>
+      <span>Auto-generated page nav</span>
+    </a>
+    <a href="progress.html" class="demo-nav-card">
+      <strong>Progress</strong>
+      <span>Determinate, indeterminate</span>
+    </a>
+    <a href="splitter.html" class="demo-nav-card">
+      <strong>Splitter</strong>
+      <span>Drag-to-resize panes</span>
+    </a>
+    <a href="table.html" class="demo-nav-card">
+      <strong>Table</strong>
+      <span>Sortable columns</span>
+    </a>
+  </div>
+
+  <!-- Composables & Data -->
+  <p class="demo-section__title">Composables &amp; Data</p>
+  <div class="lk-grid lk-grid--cols-1 lk-grid--cols-sm-2 lk-grid--cols-md-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
+    <a href="composables.html" class="demo-nav-card">
+      <strong>Composable Suite</strong>
+      <span>Launcher page for all composable demos</span>
+    </a>
+    <a href="composable-date.html" class="demo-nav-card">
+      <strong>Composable Date</strong>
+      <span>Programmatic date picker</span>
+    </a>
+    <a href="composable-dialog.html" class="demo-nav-card">
+      <strong>Composable Dialog</strong>
+      <span>Programmatic modal dialog</span>
+    </a>
+<a href="composable-toast.html" class="demo-nav-card">
+      <strong>Composable Toast</strong>
+      <span>Stacked top/bottom notifications</span>
+    </a>
+    <a href="composable-loading.html" class="demo-nav-card">
+      <strong>Composable Loading</strong>
+      <span>Fullscreen loading overlay</span>
+    </a>
+    <a href="composable-inner-loading.html" class="demo-nav-card">
+      <strong>Inner Loading</strong>
+      <span>Loading state scoped to target</span>
+    </a>
+    <a href="composable-ping-badge.html" class="demo-nav-card">
+      <strong>Ping Badge</strong>
+      <span>Pulse badge for notifications</span>
+    </a>
+    <a href="composable-shimmer.html" class="demo-nav-card">
+      <strong>Shimmer</strong>
+      <span>Animated shimmer overlay</span>
+    </a>
+    <a href="composable-storage.html" class="demo-nav-card">
+      <strong>Storage</strong>
+      <span>Namespaced async storage helper</span>
+    </a>
+    <a href="datasource.html" class="demo-nav-card">
+      <strong>DataSource</strong>
+      <span>Reactive data model demo</span>
+    </a>
+  </div>
+
+  <!-- Page Templates -->
+  <p class="demo-section__title">Page Templates</p>
+  <div class="lk-grid lk-grid--cols-1 lk-grid--cols-sm-2 lk-grid--cols-md-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
+    <a href="templates/index.html" class="demo-nav-card">
+      <strong>All Templates</strong>
+      <span>Single page, e-commerce, dashboard, article, about</span>
+    </a>
+  </div>
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  // Quick start demo (same code as the snippet)
+  const qsEmail = Look.lkTextbox('#qs-email', { label: 'Email', name: 'email', rules: ['required', 'email'], validate: true });
+  const qsPlan = Look.lkDropdown('#qs-plan', {
+    label: 'Plan', name: 'plan', required: true,
+    items: [{ value: 'free', label: 'Free' }, { value: 'pro', label: 'Pro' }],
+  });
+  const qsForm = Look.lkValidation(qsEmail, qsPlan);
+  document.getElementById('qs-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (qsForm.validate().hasError) return;
+    Look.lkToast({ type: 'positive', title: 'Welcome!', message: qsEmail.value });
+  });
+</script>
+</body>
+</html>
+
+
+
+
+
+

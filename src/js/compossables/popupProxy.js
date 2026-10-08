@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Bambang Yudhotomo — LookUI
-import { createPresenceController } from '../helpers/motion.js';
+import { createPresenceController, floatingZIndex } from '../helpers/motion.js';
 
 const LAYER_CLASS = 'lk-popup-proxy';
 const PANEL_CLASS = 'lk-popup-proxy__panel';
@@ -373,6 +373,9 @@ export function lkPopupProxy(target, opts = {}) {
     }
 
     anchorEl = anchor && anchor.getBoundingClientRect ? anchor : trigger;
+    // Anchored inside a dialog (or another popup): paint above it, never below the default
+    const baseZ = Number(options.zIndex) || 0;
+    layer.style.zIndex = String(Math.max(baseZ, floatingZIndex(anchorEl, baseZ) ?? baseZ));
     trigger.setAttribute('aria-expanded', 'true');
     trigger.setAttribute('aria-haspopup', 'dialog');
 

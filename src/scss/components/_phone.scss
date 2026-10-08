@@ -1,0 +1,137 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Phone field — country dropdown joined to a digits-only textbox
+// Structure:
+//   .lk-field > .lk-label
+//             + .lk-phone > .lk-dropdown__trigger.lk-phone__country + .lk-input.lk-phone__input
+//             + .lk-field-error
+//   (body) .lk-dropdown__panel.lk-phone__panel > options with .lk-phone__flag + name + dial
+
+.lk-phone {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+
+  // Country trigger: shrink to its content, square off the joined edge
+  > .lk-dropdown__trigger.lk-input.lk-phone__country {
+    flex: 0 0 auto;
+    width: auto;
+    gap: var(--lk-space-1);
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    background: var(--lk-bg-subtle);
+
+    .lk-dropdown__trigger-label {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--lk-space-2);
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  > .lk-input.lk-phone__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+    margin-left: calc(var(--lk-border-width) * -1);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  // The focused half draws its ring over the shared border
+  > :focus,
+  > .lk-dropdown__trigger--open {
+    position: relative;
+    z-index: 1;
+  }
+
+  &--error > .lk-input,
+  &--error > .lk-dropdown__trigger.lk-input {
+    border-color: var(--lk-negative);
+  }
+
+  &--readonly > .lk-input.lk-phone__input {
+    background: var(--lk-surface);
+  }
+}
+
+.lk-field--error .lk-phone > .lk-dropdown__trigger.lk-input {
+  border-color: var(--lk-negative);
+}
+
+// --- Flags --------------------------------------------------------------------
+
+.lk-phone__flag {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1rem;
+  overflow: hidden;
+  border-radius: calc(var(--lk-radius) * 0.5);
+  box-shadow: 0 0 0 var(--lk-border-width) var(--lk-border);
+  line-height: 1;
+
+  > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &--emoji {
+    box-shadow: none;
+    font-size: 1.1em;
+  }
+
+  &--code {
+    font-size: var(--lk-text-xs);
+    font-weight: var(--lk-weight-medium);
+    color: var(--lk-text-muted);
+    background: var(--lk-surface);
+    letter-spacing: 0.02em;
+  }
+}
+
+// --- Country options ------------------------------------------------------------
+
+.lk-dropdown__option--custom {
+  gap: var(--lk-space-2);
+}
+
+.lk-phone__panel {
+  .lk-dropdown__option {
+    gap: var(--lk-space-2);
+  }
+
+  .lk-dropdown__option--selected::after {
+    margin-left: var(--lk-space-1);
+  }
+}
+
+.lk-phone__option-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lk-phone__option-dial {
+  flex-shrink: 0;
+  color: var(--lk-text-muted);
+  font-size: var(--lk-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+// --- Dense ----------------------------------------------------------------------
+
+.lk-phone--dense .lk-phone__flag,
+.lk-field--dense .lk-phone__flag {
+  width: 1.125rem;
+  height: 0.8125rem;
+}

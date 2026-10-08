@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI - Interactive Cookbook</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Interactive Cookbook</h1>
+    <p style="opacity: 0.85;">Comprehensive manipulative examples for all JS components and composables</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <nav class="lk-card" aria-label="Recipes" style="margin-bottom: var(--lk-space-7);">
+    <div class="lk-card__body" style="display:flex; flex-wrap:wrap; gap: var(--lk-space-2); align-items:center;">
+      <strong style="margin-right: var(--lk-space-2);">End-to-end recipes:</strong>
+      <a class="lk-btn lk-btn--secondary lk-btn--sm" href="#recipe-signup">1 · Sign-up form</a>
+      <a class="lk-btn lk-btn--secondary lk-btn--sm" href="#recipe-orders">2 · Orders master–detail</a>
+      <a class="lk-btn lk-btn--secondary lk-btn--sm" href="#recipe-pipeline">3 · Bulk approval pipeline</a>
+      <a class="lk-btn lk-btn--ghost lk-btn--sm" href="#cb-basics">Component playground ↓</a>
+    </div>
+  </nav>
+
+  <!-- Recipe 1 ------------------------------------------------------------------------- -->
+  <section class="demo-section" id="recipe-signup">
+    <p class="demo-section__title">Recipe 1 — Customer sign-up form</p>
+    <p class="demo-sub">
+      lkTextbox · <strong>lkPhone</strong> (flag + dial code + digits) · lkDate on a read-only textbox ·
+      <strong>lkTextPop</strong> (pick the sales rep from a searchable grid) · lkDropdown <code>multiple</code> with <code>maxChips</code> ·
+      lkCheckbox. Submit validates every field with <code>setError()</code> and shows the payload in an lkDialog.
+    </p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <form id="rc1-form" class="lk-card" novalidate>
+        <div class="lk-card__body" style="display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--lk-space-4);">
+          <input id="rc1-name" placeholder="Jane Doe" />
+          <input id="rc1-email" placeholder="jane@company.com" />
+          <input id="rc1-phone" placeholder="812 3456 7890" />
+          <input id="rc1-birth" placeholder="YYYY-MM-DD" />
+          <input id="rc1-rep" />
+          <select id="rc1-interests"></select>
+          <input id="rc1-terms" type="checkbox" />
+          <div class="demo-row" style="margin-bottom: 0;">
+            <button class="lk-btn lk-btn--primary" type="submit">Create account</button>
+            <button id="rc1-fill" class="lk-btn lk-btn--secondary" type="button">Fill sample</button>
+            <button id="rc1-reset" class="lk-btn lk-btn--ghost" type="button">Reset</button>
+            <button id="rc1-lock" class="lk-btn lk-btn--ghost" type="button">Toggle readonly</button>
+          </div>
+        </div>
+      </form>
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <p class="demo-sub">Live value (updates as you type / pick)</p>
+          <pre id="rc1-out" class="demo-output" style="white-space: pre-wrap;"></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recipe 2 ------------------------------------------------------------------------- -->
+  <section class="demo-section" id="recipe-orders">
+    <p class="demo-section__title">Recipe 2 — Orders: master–detail on one lkDataSource</p>
+    <p class="demo-sub">
+      One data source feeds the grid, the status summary chips and the detail card. The grid edits in a popup whose fields
+      are LookUI components (<code>columns[].editor</code>): a <strong>lkTextPop</strong> customer lookup, a templated status dropdown,
+      <strong>lkPhone</strong>, a date picker, a number box and a switch. The status filter outside the grid calls <code>grid.filter()</code>.
+    </p>
+    <div class="demo-row" style="align-items: flex-end;">
+      <div style="min-width: 14rem;"><select id="rc2-status"></select></div>
+      <div id="rc2-summary" class="lk-chip-group" style="display:flex; flex-wrap:wrap; gap: var(--lk-space-2);"></div>
+    </div>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--lk-space-5);" class="rc2-layout">
+      <div id="rc2-grid"></div>
+      <aside class="lk-card">
+        <div class="lk-card__body" id="rc2-detail">
+          <p class="demo-sub" style="margin: 0;">Click an order to see its details.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Recipe 3 ------------------------------------------------------------------------- -->
+  <section class="demo-section" id="recipe-pipeline">
+    <p class="demo-section__title">Recipe 3 — Bulk approval pipeline</p>
+    <p class="demo-sub">
+      Select invoices (checkbox column) → the ping badge counts them → <code>lkDialog.question</code> confirms →
+      lkInnerLoading covers the card while lkProgress steps through each request (≈20% fail at random) →
+      rows are updated through the data source → an lkToast summarizes the result.
+    </p>
+    <div class="lk-card" id="rc3-card">
+      <div class="lk-card__body" style="display: grid; gap: var(--lk-space-3);">
+        <div class="demo-row" style="margin-bottom: 0; align-items: center;">
+          <button id="rc3-approve" class="lk-btn lk-btn--primary" type="button">Approve selected</button>
+          <button id="rc3-reset" class="lk-btn lk-btn--ghost" type="button">Reset statuses</button>
+          <div id="rc3-progress" class="lk-progress" style="flex: 1 1 12rem; min-width: 10rem;"><div class="lk-progress__bar"></div></div>
+        </div>
+        <div id="rc3-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section" id="cb-basics">
+    <p class="demo-section__title">Form Components</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div class="lk-card">
+        <div class="lk-card__body" style="display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--lk-space-3);">
+          <input id="cb-textbox" type="text" placeholder="Name" />
+          <select id="cb-dropdown"></select>
+          <input id="cb-checkbox" type="checkbox" />
+          <div style="display:flex;flex-wrap:wrap;gap:var(--lk-space-4);">
+            <input id="cb-radio-a" type="radio" name="cb-radio" checked />
+            <input id="cb-radio-b" type="radio" name="cb-radio" />
+          </div>
+          <input id="cb-switch" type="checkbox" />
+        </div>
+      </div>
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <div class="demo-row" style="margin-bottom: 0;">
+            <button id="cb-fill-form" class="lk-btn lk-btn--primary">Fill Random</button>
+            <button id="cb-toggle-readonly" class="lk-btn lk-btn--secondary">Toggle Readonly</button>
+            <button id="cb-read-form" class="lk-btn lk-btn--ghost">Read Values</button>
+          </div>
+          <div id="cb-form-output" class="demo-output">Ready</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Core UI Components</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div class="lk-card">
+        <div class="lk-card__body" style="display: flex; gap: var(--lk-space-3); align-items: center; flex-wrap: wrap;">
+          <button id="cb-btn" class="lk-btn lk-btn--primary">Button Component</button>
+          <span id="cb-tooltip"><button class="lk-btn lk-btn--secondary" type="button">Tooltip Target</button></span>
+          <button id="cb-open-modal" class="lk-btn lk-btn--info" type="button" aria-expanded="false">Open Modal</button>
+        </div>
+      </div>
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <div class="demo-row" style="margin-bottom: 0;">
+            <button id="cb-tooltip-show" class="lk-btn lk-btn--secondary">Show Tooltip</button>
+            <button id="cb-tooltip-hide" class="lk-btn lk-btn--secondary">Hide Tooltip</button>
+            <button id="cb-tooltip-pos" class="lk-btn lk-btn--ghost">Cycle Position</button>
+          </div>
+          <div id="cb-ui-output" class="demo-output">Ready</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="cb-modal-root" style="display:none;">
+      <div class="lk-modal-overlay">
+        <div class="lk-modal" role="dialog" aria-modal="true" aria-labelledby="cb-modal-title">
+          <div class="lk-modal__header">
+            <span class="lk-modal__title" id="cb-modal-title">Cookbook Modal</span>
+            <button id="cb-close-modal-x" class="lk-modal__close" type="button" aria-label="Close"><span class="lk-icon lk-icon--close" aria-hidden="true"></span></button>
+          </div>
+          <div class="lk-modal__body">
+            <p>Modal component demo with imperative open/close.</p>
+          </div>
+          <div class="lk-modal__footer">
+            <button id="cb-close-modal" class="lk-btn lk-btn--secondary" type="button">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Interactive Components</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div class="lk-card">
+        <div class="lk-card__body" style="display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--lk-space-5);">
+          <div>
+            <p class="demo-sub">Carousel</p>
+            <div id="cb-carousel" style="max-width: 420px; border-radius: var(--lk-radius-lg); overflow: hidden;">
+              <div class="lk-carousel__track">
+                <div class="lk-carousel__slide" style="display:flex;align-items:center;justify-content:center;height:140px;background:var(--lk-primary);color:var(--lk-primary-contrast);">Slide A</div>
+                <div class="lk-carousel__slide" style="display:flex;align-items:center;justify-content:center;height:140px;background:var(--lk-positive);color:#fff;">Slide B</div>
+                <div class="lk-carousel__slide" style="display:flex;align-items:center;justify-content:center;height:140px;background:var(--lk-warning);color:#fff;">Slide C</div>
+              </div>
+              <button class="lk-carousel__prev lk-btn lk-btn--ghost" type="button"><span class="lk-icon lk-icon--chevron-left" aria-hidden="true"></span></button>
+              <button class="lk-carousel__next lk-btn lk-btn--ghost" type="button"><span class="lk-icon lk-icon--chevron-right" aria-hidden="true"></span></button>
+              <div class="lk-carousel__indicators">
+                <button class="lk-carousel__dot" type="button"></button>
+                <button class="lk-carousel__dot" type="button"></button>
+                <button class="lk-carousel__dot" type="button"></button>
+              </div>
+            </div>
+            <div class="demo-row" style="margin-top: var(--lk-space-2); margin-bottom: 0;">
+              <button id="cb-carousel-next" class="lk-btn lk-btn--secondary lk-btn--sm">Next</button>
+              <button id="cb-carousel-goto" class="lk-btn lk-btn--ghost lk-btn--sm">Go To #2</button>
+            </div>
+          </div>
+
+          <div>
+            <p class="demo-sub">Slider + Rating + Chip</p>
+            <div id="cb-slider" class="lk-slider">
+              <div class="lk-slider__track">
+                <div class="lk-slider__fill"></div>
+                <div class="lk-slider__thumb"><span class="lk-slider__label"></span></div>
+              </div>
+            </div>
+            <div id="cb-rating" class="lk-rating" style="margin-top: var(--lk-space-3);"></div>
+            <div id="cb-chip-wrap" style="display:flex; gap: var(--lk-space-2); flex-wrap: wrap; margin-top: var(--lk-space-3);">
+              <span id="cb-chip" class="lk-chip">Alpha</span>
+            </div>
+            <div class="demo-row" style="margin-top: var(--lk-space-2); margin-bottom: 0;">
+              <button id="cb-slider-random" class="lk-btn lk-btn--secondary lk-btn--sm">Random Slider</button>
+              <button id="cb-rating-readonly" class="lk-btn lk-btn--secondary lk-btn--sm">Toggle Rating Readonly</button>
+              <button id="cb-chip-add" class="lk-btn lk-btn--ghost lk-btn--sm">Add Chip</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lk-card">
+        <div class="lk-card__body" style="display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--lk-space-5);">
+          <div>
+            <p class="demo-sub">Pagination + Progress</p>
+            <ul id="cb-pagination"></ul>
+            <div id="cb-progress" class="lk-progress" style="margin-top: var(--lk-space-3);"><div class="lk-progress__bar"></div></div>
+            <div class="demo-row" style="margin-top: var(--lk-space-2); margin-bottom: 0;">
+              <button id="cb-page-5" class="lk-btn lk-btn--secondary lk-btn--sm">Page 5</button>
+              <button id="cb-pages-30" class="lk-btn lk-btn--secondary lk-btn--sm">30 Pages</button>
+              <button id="cb-progress-step" class="lk-btn lk-btn--ghost lk-btn--sm">+15 Progress</button>
+            </div>
+          </div>
+
+          <div>
+            <p class="demo-sub">Splitter + Table</p>
+            <div id="cb-splitter" class="lk-splitter lk-splitter--bordered" style="height: 120px;">
+              <div class="lk-splitter__pane" style="padding: var(--lk-space-2);">Pane A</div>
+              <div class="lk-splitter__handle"></div>
+              <div class="lk-splitter__pane" style="padding: var(--lk-space-2);">Pane B</div>
+            </div>
+            <div class="lk-table-wrap" style="margin-top: var(--lk-space-3);">
+              <table id="cb-table" class="lk-table lk-table--bordered lk-table--striped lk-table--hover">
+                <thead><tr><th>Name</th><th>Score</th><th>Visits</th></tr></thead>
+                <tbody>
+                  <tr><td>Ana</td><td>91</td><td>12</td></tr>
+                  <tr><td>Bo</td><td>76</td><td>21</td></tr>
+                  <tr><td>Cy</td><td>88</td><td>16</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="demo-row" style="margin-top: var(--lk-space-2); margin-bottom: 0;">
+              <button id="cb-split-reset" class="lk-btn lk-btn--secondary lk-btn--sm">Reset Split</button>
+              <button id="cb-table-add" class="lk-btn lk-btn--secondary lk-btn--sm">Add Row</button>
+              <button id="cb-table-sort" class="lk-btn lk-btn--ghost lk-btn--sm">Sort Score</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="cb-interactive-output" class="demo-output">Ready</div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">List Dynamic Manipulation</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <aside class="lk-card" style="max-width: 460px;">
+        <div class="lk-card__body" style="padding: 0;">
+          <ul id="cb-list" class="lk-list lk-list--separated">
+            <li class="lk-list-header">Dynamic Menu</li>
+            <li class="lk-list-item">
+              <button class="lk-list-item__trigger" type="button" data-lk-submenu-trigger>
+                <div class="lk-list-item__content"><div class="lk-list-item__label">Actions</div></div>
+              </button>
+              <ul id="cb-list-actions" class="lk-list-submenu">
+                <li class="lk-list-item lk-list-item--clickable" data-kind="function" data-action="refresh_dashboard">
+                  <div class="lk-list-item__content"><div class="lk-list-item__label">Refresh Dashboard (function)</div></div>
+                </li>
+                <li class="lk-list-item lk-list-item--clickable" data-kind="link" data-link="#/reports/daily">
+                  <div class="lk-list-item__content"><div class="lk-list-item__label">Daily Report (link)</div></div>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
+            <input id="cb-list-label" class="lk-input" style="max-width: 12rem;" value="New Item" />
+            <select id="cb-list-kind" class="lk-input lk-select" style="max-width: 10rem;">
+              <option value="function">function</option>
+              <option value="link">link</option>
+            </select>
+            <input id="cb-list-value" class="lk-input" style="max-width: 14rem;" value="refresh_sales" />
+          </div>
+
+          <div class="demo-row" style="margin-bottom: 0;">
+            <button id="cb-list-add" class="lk-btn lk-btn--primary">Add Item</button>
+            <button id="cb-list-remove" class="lk-btn lk-btn--secondary">Remove Last</button>
+            <button id="cb-list-branch" class="lk-btn lk-btn--info">Add Nested Branch</button>
+            <button id="cb-list-open" class="lk-btn lk-btn--ghost">Open Actions</button>
+          </div>
+
+          <div id="cb-list-output" class="demo-output">Ready</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Composables</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
+            <button id="cb-dialog" class="lk-btn lk-btn--primary">Dialog</button>
+            <button id="cb-toast" class="lk-btn lk-btn--info">Toast</button>
+            <button id="cb-loading-show" class="lk-btn lk-btn--warning">Loading Show</button>
+            <button id="cb-loading-hide" class="lk-btn lk-btn--secondary">Loading Hide</button>
+          </div>
+
+          <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
+            <button id="cb-ping-target" class="lk-btn lk-btn--secondary" type="button">Inbox</button>
+            <button id="cb-ping-inc" class="lk-btn lk-btn--ghost">Ping +1</button>
+            <button id="cb-shimmer-show" class="lk-btn lk-btn--secondary">Shimmer Show</button>
+            <button id="cb-shimmer-hide" class="lk-btn lk-btn--secondary">Shimmer Hide</button>
+          </div>
+
+          <div class="demo-row" style="margin-bottom: 0;">
+            <button id="cb-popup-btn" class="lk-btn lk-btn--primary" type="button">Popup Proxy</button>
+            <button id="cb-popup-text" class="lk-btn lk-btn--secondary">Popup Text</button>
+            <button id="cb-popup-template" class="lk-btn lk-btn--secondary">Popup Template</button>
+          </div>
+
+          <template id="cb-popup-template-content">
+            <div>
+              <strong style="display:block; margin-bottom: var(--lk-space-2);">Popup Template</strong>
+              <div style="display:flex; gap: var(--lk-space-2);">
+                <button class="lk-btn lk-btn--secondary lk-btn--sm" type="button">Action A</button>
+                <button class="lk-btn lk-btn--secondary lk-btn--sm" type="button">Action B</button>
+              </div>
+            </div>
+          </template>
+
+          <div id="cb-compose-output" class="demo-output">Ready</div>
+        </div>
+      </div>
+
+      <div class="lk-card" id="cb-inner-box">
+        <div class="lk-card__body">
+          <p class="demo-sub">Inner loading target + storage playground</p>
+          <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
+            <button id="cb-inner-show" class="lk-btn lk-btn--secondary">Inner Show</button>
+            <button id="cb-inner-hide" class="lk-btn lk-btn--secondary">Inner Hide</button>
+          </div>
+
+          <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
+            <input id="cb-storage-key" class="lk-input" style="max-width: 10rem;" value="cookbook.user" />
+            <input id="cb-storage-value" class="lk-input" style="max-width: 14rem;" value='{"theme":"light"}' />
+          </div>
+
+          <div class="demo-row" style="margin-bottom: 0;">
+            <button id="cb-storage-set" class="lk-btn lk-btn--primary">Storage Set</button>
+            <button id="cb-storage-get" class="lk-btn lk-btn--secondary">Storage Get</button>
+            <button id="cb-storage-clear" class="lk-btn lk-btn--ghost">Storage Clear</button>
+          </div>
+
+          <div id="cb-storage-output" class="demo-output">Ready</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script>
+  const byId = (id) => document.getElementById(id);
+
+  // Form components
+  const textbox = Look.lkTextbox('#cb-textbox', { label: 'Name', name: 'name' });
+  const dropdown = Look.lkDropdown('#cb-dropdown', {
+    label: 'Plan',
+    items: [
+      { value: 'starter', label: 'Starter' },
+      { value: 'pro', label: 'Pro' },
+      { value: 'enterprise', label: 'Enterprise' },
+    ],
+  });
+  const checkbox = Look.lkCheckbox('#cb-checkbox', { label: 'Subscribe newsletter' });
+  const radioA = Look.lkRadio('#cb-radio-a', { label: 'Option A', name: 'cb-group' });
+  const radioB = Look.lkRadio('#cb-radio-b', { label: 'Option B', name: 'cb-group' });
+  const sw = Look.lkSwitch('#cb-switch', { label: 'Enable alerts' });
+
+  const formOutput = byId('cb-form-output');
+  let readonlyOn = false;
+
+  byId('cb-fill-form').addEventListener('click', () => {
+    const names = ['Ari', 'Bela', 'Cato', 'Dina'];
+    textbox.value = names[Math.floor(Math.random() * names.length)];
+    dropdown.value = ['starter', 'pro', 'enterprise'][Math.floor(Math.random() * 3)];
+    checkbox.checked = Math.random() > 0.5;
+    if (Math.random() > 0.5) radioA.checked = true;
+    else radioB.checked = true;
+    sw.checked = Math.random() > 0.5;
+    formOutput.textContent = 'Random values applied';
+  });
+
+  byId('cb-toggle-readonly').addEventListener('click', () => {
+    readonlyOn = !readonlyOn;
+    textbox.readonly = readonlyOn;
+    dropdown.enabled = !readonlyOn;
+    checkbox.enabled = !readonlyOn;
+    radioA.enabled = !readonlyOn;
+    radioB.enabled = !readonlyOn;
+    sw.enabled = !readonlyOn;
+    formOutput.textContent = 'Readonly/disabled = ' + readonlyOn;
+  });
+
+  byId('cb-read-form').addEventListener('click', () => {
+    formOutput.textContent = JSON.stringify({
+      name: textbox.value,
+      plan: dropdown.value,
+      subscribed: checkbox.checked,
+      radio: radioA.checked ? 'A' : 'B',
+      alerts: sw.checked,
+    });
+  });
+
+  // Core UI components
+  const uiOutput = byId('cb-ui-output');
+  Look.lkButton('#cb-btn');
+  const tooltip = Look.lkTooltip('#cb-tooltip', { content: 'Cookbook tooltip', position: 'top' });
+  const positions = ['top', 'right', 'bottom', 'left'];
+  let posIndex = 0;
+
+  byId('cb-tooltip-show').addEventListener('click', () => { tooltip.show(); uiOutput.textContent = 'tooltip.show()'; });
+  byId('cb-tooltip-hide').addEventListener('click', () => { tooltip.hide(); uiOutput.textContent = 'tooltip.hide()'; });
+  byId('cb-tooltip-pos').addEventListener('click', () => {
+    posIndex = (posIndex + 1) % positions.length;
+    tooltip.position = positions[posIndex];
+    uiOutput.textContent = 'tooltip.position = ' + tooltip.position;
+  });
+
+  byId('cb-modal-root').style.display = '';
+  const modal = Look.lkModal('#cb-open-modal', '#cb-modal-root');
+  byId('cb-close-modal').addEventListener('click', () => modal.close());
+  byId('cb-close-modal-x').addEventListener('click', () => modal.close());
+  byId('cb-modal-root').querySelector('.lk-modal-overlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) modal.close();
+  });
+
+  // Interactive components
+  const interactiveOutput = byId('cb-interactive-output');
+  const carousel = Look.lkCarousel('#cb-carousel', { loop: true });
+  const slider = Look.lkSlider('#cb-slider', {
+    min: 0,
+    max: 100,
+    value: 35,
+    step: 1,
+    onChange(v) { interactiveOutput.textContent = 'slider value = ' + v; },
+  });
+  const rating = Look.lkRating('#cb-rating', {
+    max: 5,
+    value: 3,
+    onChange(v) { interactiveOutput.textContent = 'rating = ' + v; },
+  });
+  const chips = [];
+  chips.push(Look.lkChip('#cb-chip', {
+    selected: false,
+    removable: true,
+    onSelect(sel) { interactiveOutput.textContent = 'chip selected = ' + sel; },
+    onRemove() { interactiveOutput.textContent = 'chip removed'; },
+  }));
+
+  const pager = Look.lkPagination('#cb-pagination', {
+    totalPages: 12,
+    page: 1,
+    onPageChange(p) { interactiveOutput.textContent = 'page = ' + p; },
+  });
+  const progress = Look.lkProgress('#cb-progress', { value: 30, max: 100 });
+  const splitter = Look.lkSplitter('#cb-splitter', { sizes: [50, 50], minSize: 60 });
+  const table = Look.lkTable('#cb-table', {
+    sortable: true,
+    onSort({ column, order }) { interactiveOutput.textContent = 'table sorted col ' + column + ' (' + order + ')'; },
+  });
+
+  let chipCount = 1;
+  byId('cb-carousel-next').addEventListener('click', () => {
+    carousel.next();
+    interactiveOutput.textContent = 'carousel index = ' + carousel.activeIndex;
+  });
+  byId('cb-carousel-goto').addEventListener('click', () => {
+    carousel.goTo(1);
+    interactiveOutput.textContent = 'carousel index = ' + carousel.activeIndex;
+  });
+  byId('cb-slider-random').addEventListener('click', () => {
+    slider.value = Math.floor(Math.random() * 101);
+    interactiveOutput.textContent = 'slider value = ' + slider.value;
+  });
+  byId('cb-rating-readonly').addEventListener('click', () => {
+    rating.readonly = !rating.readonly;
+    interactiveOutput.textContent = 'rating.readonly = ' + rating.readonly;
+  });
+  byId('cb-chip-add').addEventListener('click', () => {
+    chipCount += 1;
+    const el = document.createElement('span');
+    el.className = 'lk-chip';
+    el.textContent = 'Chip ' + chipCount;
+    byId('cb-chip-wrap').appendChild(el);
+    chips.push(Look.lkChip(el, {
+      removable: true,
+      onSelect(sel) { interactiveOutput.textContent = el.textContent + ' selected=' + sel; },
+      onRemove() { interactiveOutput.textContent = 'Removed ' + el.textContent; },
+    }));
+    interactiveOutput.textContent = 'Added chip ' + chipCount;
+  });
+
+  byId('cb-page-5').addEventListener('click', () => { pager.page = 5; });
+  byId('cb-pages-30').addEventListener('click', () => {
+    pager.totalPages = 30;
+    interactiveOutput.textContent = 'pagination.totalPages = 30';
+  });
+  byId('cb-progress-step').addEventListener('click', () => {
+    progress.value = (progress.value + 15) % 115;
+    if (progress.value > 100) progress.value = 0;
+    interactiveOutput.textContent = 'progress = ' + progress.value;
+  });
+  byId('cb-split-reset').addEventListener('click', () => {
+    splitter.sizes = [50, 50];
+    interactiveOutput.textContent = 'splitter.sizes reset to [50, 50]';
+  });
+  byId('cb-table-add').addEventListener('click', () => {
+    const names = ['Dae', 'Ena', 'Fio', 'Geo'];
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + names[Math.floor(Math.random() * names.length)] + '</td><td>' + (60 + Math.floor(Math.random() * 40)) + '</td><td>' + (5 + Math.floor(Math.random() * 40)) + '</td>';
+    byId('cb-table').querySelector('tbody').appendChild(tr);
+    interactiveOutput.textContent = 'Table row appended';
+  });
+  byId('cb-table-sort').addEventListener('click', () => {
+    table.sortBy = 1;
+  });
+
+  // Dynamic list demo
+  const listOutput = byId('cb-list-output');
+  const actionMap = {
+    refresh_dashboard() { listOutput.textContent = 'Function called: refresh_dashboard()'; },
+    refresh_sales() { listOutput.textContent = 'Function called: refresh_sales()'; },
+    export_csv() { listOutput.textContent = 'Function called: export_csv()'; },
+  };
+
+  let listComp = null;
+  let branchCount = 0;
+
+  function mountList() {
+    if (listComp) listComp.destroy();
+    listComp = Look.lkList('#cb-list', {
+      accordion: true,
+      onToggle({ item, open, depth }) {
+        const label = item.querySelector('.lk-list-item__label')?.textContent || 'branch';
+        listOutput.textContent = label + ' -> ' + (open ? 'open' : 'close') + ' (depth ' + depth + ')';
+      },
+    });
+  }
+
+  function createLeaf(label, kind, value) {
+    const li = document.createElement('li');
+    li.className = 'lk-list-item lk-list-item--clickable';
+    li.dataset.kind = kind;
+
+    if (kind === 'link') {
+      li.dataset.link = value;
+    } else {
+      li.dataset.action = value;
+      if (!actionMap[value]) {
+        actionMap[value] = () => {
+          listOutput.textContent = 'Function called: ' + value + '()';
+        };
+      }
+    }
+
+    li.innerHTML = '<div class="lk-list-item__content"><div class="lk-list-item__label">' + label + ' (' + kind + ')</div></div>';
+    return li;
+  }
+
+  byId('cb-list').addEventListener('click', (e) => {
+    const leaf = e.target.closest('.lk-list-item--clickable');
+    if (!leaf || leaf.classList.contains('lk-list-item--branch')) return;
+
+    if (leaf.dataset.kind === 'link') {
+      const link = leaf.dataset.link || '#';
+      window.location.hash = link.replace('#', '');
+      listOutput.textContent = 'Link navigated to: ' + link;
+      return;
+    }
+
+    const fnName = leaf.dataset.action;
+    const fn = actionMap[fnName];
+    if (typeof fn === 'function') fn();
+  });
+
+  byId('cb-list-add').addEventListener('click', () => {
+    const label = byId('cb-list-label').value.trim() || 'Untitled';
+    const kind = byId('cb-list-kind').value;
+    const value = byId('cb-list-value').value.trim() || (kind === 'link' ? '#/new' : 'refresh_dashboard');
+    byId('cb-list-actions').appendChild(createLeaf(label, kind, value));
+    listOutput.textContent = 'Item added: ' + label;
+  });
+
+  byId('cb-list-remove').addEventListener('click', () => {
+    const submenu = byId('cb-list-actions');
+    const items = Array.from(submenu.querySelectorAll(':scope > .lk-list-item--clickable'));
+    const last = items[items.length - 1];
+    if (last) {
+      last.remove();
+      listOutput.textContent = 'Last item removed';
+      return;
+    }
+    listOutput.textContent = 'No item to remove';
+  });
+
+  byId('cb-list-branch').addEventListener('click', () => {
+    branchCount += 1;
+    const li = document.createElement('li');
+    li.className = 'lk-list-item';
+    li.innerHTML = '' +
+      '<button class="lk-list-item__trigger" type="button" data-lk-submenu-trigger>' +
+      '<div class="lk-list-item__content"><div class="lk-list-item__label">Nested ' + branchCount + '</div></div>' +
+      '</button>' +
+      '<ul class="lk-list-submenu">' +
+      '  <li class="lk-list-item lk-list-item--clickable" data-kind="function" data-action="export_csv"><div class="lk-list-item__content"><div class="lk-list-item__label">Export CSV</div></div></li>' +
+      '  <li class="lk-list-item lk-list-item--clickable" data-kind="link" data-link="#/nested/' + branchCount + '"><div class="lk-list-item__content"><div class="lk-list-item__label">Open Nested Link</div></div></li>' +
+      '</ul>';
+
+    byId('cb-list-actions').appendChild(li);
+    mountList();
+    listOutput.textContent = 'Nested branch added and list remounted';
+  });
+
+  byId('cb-list-open').addEventListener('click', () => {
+    const branch = byId('cb-list').querySelector('.lk-list-item--branch');
+    if (branch) listComp.open(branch);
+  });
+
+  mountList();
+
+  // Composables
+  const composeOutput = byId('cb-compose-output');
+  const loading = Look.lkLoading({ open: false, text: 'Loading cookbook...' });
+  const innerLoading = Look.lkInnerLoading('#cb-inner-box', { open: false, text: 'Refreshing panel...' });
+  const shimmer = Look.lkShimmer('#cb-inner-box', { open: false });
+  const ping = Look.lkPingBadge('#cb-ping-target', { count: 2, open: true, position: 'top-right' });
+  const popup = Look.lkPopupProxy('#cb-popup-btn', {
+    content: '#cb-popup-template-content',
+    placement: 'bottom-left',
+    autoPlacement: true,
+    onShow(info) { composeOutput.textContent = 'Popup opened (' + (info.placement || 'bottom-left') + ')'; },
+    onHide(reason) { composeOutput.textContent = 'Popup closed: ' + reason; },
+  });
+
+  byId('cb-dialog').addEventListener('click', () => {
+    Look.lkDialog({
+      title: 'Cookbook Dialog',
+      content: 'This dialog is created from lkDialog composable.',
+      onConfirm() { composeOutput.textContent = 'Dialog confirmed'; },
+      onClose(reason) { composeOutput.textContent = 'Dialog closed: ' + reason; },
+    });
+  });
+
+  byId('cb-toast').addEventListener('click', () => {
+    Look.lkToast({ title: 'Cookbook Toast', message: 'Composable toast fired', type: 'info', duration: 1800 });
+    composeOutput.textContent = 'Toast fired';
+  });
+
+  byId('cb-loading-show').addEventListener('click', () => loading.show());
+  byId('cb-loading-hide').addEventListener('click', () => loading.hide('manual'));
+  byId('cb-inner-show').addEventListener('click', () => innerLoading.show());
+  byId('cb-inner-hide').addEventListener('click', () => innerLoading.hide());
+
+  byId('cb-ping-inc').addEventListener('click', () => {
+    const next = Math.min(99, (parseInt(byId('cb-ping-target').dataset.count || '2', 10) || 0) + 1);
+    byId('cb-ping-target').dataset.count = String(next);
+    ping.setCount(next);
+    composeOutput.textContent = 'Ping count = ' + next;
+  });
+
+  byId('cb-shimmer-show').addEventListener('click', () => shimmer.show());
+  byId('cb-shimmer-hide').addEventListener('click', () => shimmer.hide());
+
+  byId('cb-popup-text').addEventListener('click', () => {
+    popup.setContent('Popup from plain text content');
+    popup.show(byId('cb-popup-btn'));
+  });
+  byId('cb-popup-template').addEventListener('click', () => {
+    popup.setContent('#cb-popup-template-content');
+    popup.show(byId('cb-popup-btn'));
+  });
+
+  // Storage composable
+  const storage = Look.lkStorage({ namespace: 'cookbook', encrypted: false });
+  const storageOutput = byId('cb-storage-output');
+
+  byId('cb-storage-set').addEventListener('click', async () => {
+    const key = byId('cb-storage-key').value.trim();
+    const raw = byId('cb-storage-value').value;
+    let value = raw;
+    try { value = JSON.parse(raw); } catch (_e) {}
+    await storage.set(key, value);
+    storageOutput.textContent = 'Stored key: ' + key;
+  });
+
+  byId('cb-storage-get').addEventListener('click', async () => {
+    const key = byId('cb-storage-key').value.trim();
+    const value = await storage.get(key, null);
+    storageOutput.textContent = 'Value: ' + JSON.stringify(value);
+  });
+
+  byId('cb-storage-clear').addEventListener('click', () => {
+    storage.clear();
+    storageOutput.textContent = 'Storage cleared';
+  });
+</script>
+<style>
+  @media (min-width: 900px) {
+    .rc2-layout { grid-template-columns: minmax(0, 2.2fr) minmax(16rem, 1fr) !important; align-items: start; }
+  }
+  .rc-detail dl { display: grid; grid-template-columns: auto 1fr; gap: var(--lk-space-1) var(--lk-space-3); margin: 0; }
+  .rc-detail dt { color: var(--lk-text-muted); font-size: var(--lk-text-sm); }
+  .rc-detail dd { margin: 0; }
+</style>
+<script>
+  // ===================================================================================
+  // Shared sample data
+  // ===================================================================================
+  const RC_FIRST = ['Ayu', 'Budi', 'Citra', 'Dewi', 'Eko', 'Fajar', 'Gita', 'Hadi', 'Indah', 'Joko', 'Kartika', 'Lukman', 'Maya', 'Nanda'];
+  const RC_LAST = ['Santoso', 'Wijaya', 'Pratama', 'Lestari', 'Saputra', 'Hidayat', 'Kusuma'];
+  const RC_REGIONS = ['Jakarta', 'Bandung', 'Surabaya', 'Medan', 'Bali'];
+  const SALES_REPS = Array.from({ length: 24 }, (_, i) => ({
+    id: 100 + i,
+    name: `${RC_FIRST[i % RC_FIRST.length]} ${RC_LAST[(i * 3) % RC_LAST.length]}`,
+    region: RC_REGIONS[i % RC_REGIONS.length],
+    accounts: 5 + ((i * 7) % 30),
+  }));
+  const CUSTOMERS = ['PT Maju Jaya', 'CV Sinar Abadi', 'PT Nusantara Tech', 'Toko Berkah', 'PT Samudra Logistik',
+    'CV Kreasi Digital', 'PT Bumi Hijau', 'Koperasi Sejahtera', 'PT Andalas Foods', 'CV Lintas Media',
+    'PT Arunika', 'PT Cakra Energi'].map((name, i) => ({ id: i + 1, name, city: RC_REGIONS[(i * 2) % RC_REGIONS.length], tier: ['Gold', 'Silver', 'Bronze'][i % 3] }));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  // ===================================================================================
+  // Recipe 1 — sign-up form
+  // ===================================================================================
+  (function signupRecipe() {
+    const out = byId('rc1-out');
+    const name = Look.lkTextbox('#rc1-name', { label: 'Full name', name: 'name', required: true });
+    const email = Look.lkTextbox('#rc1-email', { label: 'Work email', name: 'email', type: 'email', required: true });
+    const phone = Look.lkPhone('#rc1-phone', {
+      label: 'Mobile', name: 'mobile', countryName: 'mobileCountry', required: true,
+      preferred: ['ID', 'SG', 'MY'], onChange: render,
+    });
+
+    const birth = Look.lkTextbox('#rc1-birth', { label: 'Date of birth', name: 'birthDate', readonly: true, required: true, append: Look.lkIcon('calendar', { size: 'sm' }) });
+    const birthPicker = Look.lkDate(birth.el, {
+      max: new Date(),
+      onChange(d) {
+        if (!(d instanceof Date)) return;
+        birth.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        birth.clearError();
+        render();
+      },
+    });
+
+    const rep = Look.lkTextPop('#rc1-rep', {
+      label: 'Sales representative', name: 'repId', required: true,
+      title: 'Pick a sales rep', dataSource: SALES_REPS, pageSize: 6, popupWidth: 480,
+      columns: [
+        { field: 'name', title: 'Name' },
+        { field: 'region', title: 'Region' },
+        { field: 'accounts', title: 'Accounts', type: 'number', width: 100 },
+      ],
+      onChange() { rep.clearError(); render(); },
+    });
+
+    const interests = Look.lkDropdown('#rc1-interests', {
+      label: 'Interests', name: 'interests', multiple: true, maxChips: 2, useInput: true, clearable: true,
+      placeholder: 'Pick a few…',
+      items: ['Payments', 'Lending', 'Savings', 'Insurance', 'Wealth', 'Payroll', 'Cards'].map((v) => ({ value: v.toLowerCase(), label: v })),
+      onChange: render,
+    });
+    const terms = Look.lkCheckbox('#rc1-terms', { label: 'I agree to the terms', name: 'terms' });
+
+    [name, email].forEach((f) => f.el.addEventListener('input', () => { f.clearError(); render(); }));
+    terms.el.addEventListener('change', () => { terms.clearError(); render(); });
+
+    function payload() {
+      return {
+        name: name.value, email: email.value, mobile: phone.value, mobileCountry: phone.country,
+        birthDate: birth.value || null, repId: rep.value, rep: rep.text,
+        interests: interests.value, terms: terms.checked,
+      };
+    }
+    function render() { out.textContent = JSON.stringify(payload(), null, 2); }
+
+    function validate() {
+      let ok = true;
+      const fail = (field, msg) => { field.setError(msg); ok = false; };
+      if (name.value.trim().length < 3) fail(name, 'Enter your full name');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) fail(email, 'Enter a valid email');
+      if (!phone.valid) fail(phone, phone.number ? 'Number looks too short' : 'Mobile number is required');
+      if (!birth.value) fail(birth, 'Pick your date of birth');
+      if (rep.value == null) fail(rep, 'Choose a sales representative');
+      if (!terms.checked) fail(terms, 'Please accept the terms');
+      return ok;
+    }
+
+    byId('rc1-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!validate()) {
+        Look.lkToast({ title: 'Check the form', message: 'Some fields need attention.', type: 'warning', duration: 2200 });
+        return;
+      }
+      const pre = document.createElement('pre');
+      pre.style.cssText = 'text-align:left;margin:0;white-space:pre-wrap;font-size:var(--lk-text-sm)';
+      pre.textContent = JSON.stringify(payload(), null, 2);
+      Look.lkDialog.success('Account created', pre);
+    });
+
+    byId('rc1-fill').addEventListener('click', () => {
+      name.value = 'Kartika Lestari';
+      email.value = 'kartika@arunika.co.id';
+      phone.value = '+6281234567890';
+      birth.value = '1994-08-17';
+      birthPicker.setValue('1994-08-17');
+      rep.value = 104;
+      interests.value = ['payments', 'lending', 'payroll'];
+      terms.checked = true;
+      [name, email, phone, birth, rep, terms].forEach((f) => f.clearError());
+      render();
+    });
+
+    byId('rc1-reset').addEventListener('click', () => {
+      byId('rc1-form').reset();
+      name.value = ''; email.value = ''; phone.value = ''; birth.value = '';
+      rep.value = null; interests.value = []; terms.checked = false;
+      [name, email, phone, birth, rep, terms].forEach((f) => f.clearError());
+      render();
+    });
+
+    let locked = false;
+    byId('rc1-lock').addEventListener('click', () => {
+      locked = !locked;
+      name.readonly = locked; email.readonly = locked; phone.readonly = locked;
+      rep.readonly = locked; interests.readonly = locked; terms.enabled = !locked;
+      birthPicker.close?.();
+    });
+
+    render();
+  })();
+
+  // ===================================================================================
+  // Recipe 2 — orders master–detail
+  // ===================================================================================
+  (function ordersRecipe() {
+    const STATUS = [
+      { value: 'new', label: 'New', color: 'info' },
+      { value: 'packing', label: 'Packing', color: 'warning' },
+      { value: 'shipped', label: 'Shipped', color: 'accent' },
+      { value: 'delivered', label: 'Delivered', color: 'positive' },
+      { value: 'cancelled', label: 'Cancelled', color: 'negative' },
+    ];
+    const statusOf = (v) => STATUS.find((s) => s.value === v);
+    const statusChip = (s) => {
+      const chip = document.createElement('span');
+      chip.className = `lk-chip lk-chip--dense lk-chip--${s.color}`;
+      chip.textContent = s.label;
+      return chip;
+    };
+    const customerName = (id) => (CUSTOMERS.find((c) => c.id === id) || {}).name || '—';
+    const money = (v) => 'Rp ' + Number(v || 0).toLocaleString('id-ID');
+
+    const ds = Look.lkDataSource({
+      keyField: 'id',
+      pageSize: 6,
+      data: Array.from({ length: 23 }, (_, i) => ({
+        id: 5001 + i,
+        customer: CUSTOMERS[(i * 5) % CUSTOMERS.length].id,
+        status: STATUS[(i * 3) % STATUS.length].value,
+        contact: ['+6281234500' + String(10 + i), '+6591234' + String(100 + i), '+60123456' + String(100 + i)][i % 3],
+        due: new Date(2026, 9, 1 + ((i * 4) % 28)).toISOString().slice(0, 10),
+        amount: 250000 + ((i * 7919) % 90) * 50000,
+        express: i % 4 === 0,
+      })),
+    });
+
+    const detail = byId('rc2-detail');
+    function showDetail(row) {
+      if (!row) {
+        detail.innerHTML = '<p class="demo-sub" style="margin:0">Click an order to see its details.</p>';
+        return;
+      }
+      const s = statusOf(row.status);
+      const customer = CUSTOMERS.find((c) => c.id === row.customer) || {};
+      detail.className = 'lk-card__body rc-detail';
+      detail.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--lk-space-3)">
+          <strong>Order #${row.id}</strong><span data-status></span>
+        </div>
+        <dl>
+          <dt>Customer</dt><dd>${esc(customer.name)} <small style="opacity:.7">(${esc(customer.tier)}, ${esc(customer.city)})</small></dd>
+          <dt>Contact</dt><dd>${esc(row.contact || '—')}</dd>
+          <dt>Due</dt><dd>${esc(row.due || '—')}</dd>
+          <dt>Amount</dt><dd>${money(row.amount)}</dd>
+          <dt>Shipping</dt><dd>${row.express ? 'Express' : 'Regular'}</dd>
+        </dl>
+        <div class="demo-row" style="margin:var(--lk-space-4) 0 0">
+          <button class="lk-btn lk-btn--primary lk-btn--sm" data-act="edit" type="button">Edit</button>
+          <button class="lk-btn lk-btn--secondary lk-btn--sm" data-act="next" type="button">Advance status</button>
+        </div>`;
+      if (s) detail.querySelector('[data-status]').appendChild(statusChip(s));
+      detail.querySelector('[data-act="edit"]').onclick = () => grid.editRow(row.id);
+      detail.querySelector('[data-act="next"]').onclick = () => {
+        const idx = STATUS.findIndex((x) => x.value === row.status);
+        const next = STATUS[Math.min(idx + 1, 3)].value;
+        ds.update((r) => r.id === row.id, { status: next });
+      };
+    }
+
+    const grid = Look.lkTable('#rc2-grid', {
+      dataSource: ds,
+      selectable: 'single',
+      pageable: true,
+      toolbar: ['create', 'search'],
+      editable: { mode: 'popup', title: ({ row, isNew }) => (isNew ? 'New order' : `Edit order #${row.id}`) },
+      columns: [
+        { field: 'id', title: '#', width: 80, editable: false },
+        {
+          field: 'customer', title: 'Customer', format: customerName,
+          editor: {
+            component: Look.lkTextPop,
+            options: {
+              dataSource: CUSTOMERS, title: 'Choose customer', popupWidth: 460, pageSize: 6,
+              columns: [{ field: 'name', title: 'Customer' }, { field: 'city', title: 'City' }, { field: 'tier', title: 'Tier', width: 90 }],
+            },
+          },
+          validation: { required: true },
+        },
+        {
+          field: 'status', title: 'Status', width: 130, defaultValue: 'new',
+          template: (row) => (statusOf(row.status) ? statusChip(statusOf(row.status)) : ''),
+          editor: { type: 'dropdown', options: { items: STATUS, template: statusChip, selectedTemplate: statusChip } },
+          validation: { required: true },
+        },
+        { field: 'contact', title: 'Contact', hidden: true, editor: { type: 'phone', options: { preferred: ['ID', 'SG', 'MY'] } } },
+        { field: 'due', title: 'Due', type: 'date', width: 130, editor: 'date' },
+        {
+          field: 'amount', title: 'Amount', type: 'number', align: 'right', width: 150, format: money,
+          editor: 'number', validation: { required: true, min: 10000, message: 'At least Rp 10.000' },
+        },
+        { field: 'express', title: 'Express', type: 'boolean', width: 100, editor: 'switch' },
+      ],
+      onChange({ selectedRows }) { showDetail(selectedRows[0] || null); },
+    });
+
+    const summary = byId('rc2-summary');
+
+    // Detail follows edits made in the popup / by "Advance status"
+    ds.subscribe(() => {
+      const key = grid.selectedKeys[0];
+      if (key != null) showDetail(ds.items.find((r) => r.id === key) || null);
+      renderSummary();
+    });
+
+    function renderSummary() {
+      summary.textContent = '';
+      STATUS.forEach((s) => {
+        const n = ds.items.filter((r) => r.status === s.value).length;
+        const chip = statusChip(s);
+        chip.textContent = `${s.label} · ${n}`;
+        chip.classList.remove('lk-chip--dense');
+        summary.appendChild(chip);
+      });
+    }
+    renderSummary();
+
+    Look.lkDropdown('#rc2-status', {
+      label: 'Filter by status', items: STATUS, clearable: true, placeholder: 'All statuses',
+      template: statusChip,
+      onChange(v) { grid.filter('status', v ? { op: 'eq', value: v } : null); },
+    });
+  })();
+
+  // ===================================================================================
+  // Recipe 3 — bulk approval pipeline
+  // ===================================================================================
+  (function pipelineRecipe() {
+    const seed = () => Array.from({ length: 8 }, (_, i) => ({
+      id: 'INV-' + (2401 + i),
+      vendor: CUSTOMERS[(i * 3) % CUSTOMERS.length].name,
+      amount: 1200000 + ((i * 6007) % 40) * 150000,
+      status: 'pending',
+    }));
+    const ds = Look.lkDataSource({ keyField: 'id', data: seed() });
+    const badge = Look.lkPingBadge('#rc3-approve', { count: 0, open: false, position: 'top-right' });
+    const progress = Look.lkProgress('#rc3-progress', { value: 0, max: 100 });
+    const cover = Look.lkInnerLoading('#rc3-card', { open: false, text: 'Approving…' });
+    const STATE = { pending: 'secondary', approved: 'positive', failed: 'negative' };
+
+    const grid = Look.lkTable('#rc3-grid', {
+      dataSource: ds,
+      dense: true,
+      columns: [
+        { selectable: true },
+        { field: 'id', title: 'Invoice', width: 120 },
+        { field: 'vendor', title: 'Vendor' },
+        { field: 'amount', title: 'Amount', type: 'number', align: 'right', format: (v) => 'Rp ' + Number(v).toLocaleString('id-ID') },
+        { field: 'status', title: 'Status', width: 120, template: (r) => `<span class="lk-chip lk-chip--dense lk-chip--${STATE[r.status]}">${r.status}</span>` },
+      ],
+      onChange({ selectedKeys }) {
+        badge.setCount(selectedKeys.length);
+        if (selectedKeys.length) badge.show(); else badge.hide();
+      },
+    });
+
+    async function run(keys) {
+      cover.show();
+      progress.value = 0;
+      let ok = 0;
+      for (let i = 0; i < keys.length; i += 1) {
+        await wait(350 + Math.random() * 250);              // the "request"
+        const failed = Math.random() < 0.2;
+        await ds.update((r) => r.id === keys[i], { status: failed ? 'failed' : 'approved' });
+        if (!failed) ok += 1;
+        progress.value = Math.round(((i + 1) / keys.length) * 100);
+      }
+      cover.hide();
+      grid.clearSelection();
+      const failed = keys.length - ok;
+      Look.lkToast(failed
+        ? { title: 'Partially approved', message: `${ok} approved, ${failed} failed — retry the red ones.`, type: 'warning', duration: 3500 }
+        : { title: 'All approved', message: `${ok} invoice(s) approved.`, type: 'positive', duration: 2500 });
+    }
+
+    byId('rc3-approve').addEventListener('click', () => {
+      const keys = grid.selectedKeys;
+      if (!keys.length) {
+        Look.lkToast({ title: 'Nothing selected', message: 'Tick one or more invoices first.', type: 'info', duration: 2000 });
+        return;
+      }
+      Look.lkDialog.question(`Approve ${keys.length} invoice(s)?`, 'Each one is sent to the server separately.', {
+        confirmText: 'Approve',
+        onConfirm() { run(keys); },
+      });
+    });
+    byId('rc3-reset').addEventListener('click', () => {
+      ds.set(seed());
+      progress.value = 0;
+      grid.clearSelection();
+    });
+  })();
+</script>
+</body>
+</html>

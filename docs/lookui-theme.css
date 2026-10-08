@@ -1,0 +1,222 @@
+/*
+ * LookUI theme template — every global design token with its default value.
+ *
+ * 1. Copy this file into your project (e.g. css/lookui-theme.css).
+ * 2. Uncomment and change only the keys you need; leave the rest commented so
+ *    they keep following LookUI's defaults when you upgrade.
+ * 3. Load it AFTER look.css:
+ *      <link rel="stylesheet" href="…/look.css">
+ *      <link rel="stylesheet" href="css/lookui-theme.css">
+ *
+ * Guide: https://bambangy.github.io/LookUI/docs/customize.html
+ */
+
+:root {
+
+  /* ===== Colors ============================================================ */
+
+  /* --- Brand / Action colors --- */
+  /* --lk-primary: #5c6bc0; */                        /* indigo-violet */
+  /* --lk-primary-light: #7986cb; */
+  /* --lk-primary-dark: #3949ab; */
+  /* --lk-primary-contrast: #ffffff; */
+  /* --lk-secondary: #546e7a; */                      /* blue-grey */
+  /* --lk-secondary-light: #78909c; */
+  /* --lk-secondary-dark: #37474f; */
+  /* --lk-secondary-contrast: #ffffff; */
+  /* --lk-accent: #00bcd4; */                         /* cyan accent */
+  /* --lk-accent-light: #4dd0e1; */
+  /* --lk-accent-dark: #0097a7; */
+  /* --lk-accent-contrast: #000000; */
+
+  /* --- Semantic / state colors --- */
+  /* --lk-positive: #2e7d32; */                       /* dark green (accessibility: 4.6:1 on white) */
+  /* --lk-positive-light: #4caf50; */
+  /* --lk-positive-dark: #1b5e20; */
+  /* --lk-positive-contrast: #ffffff; */
+  /* --lk-warning: #f57f17; */                        /* deep amber */
+  /* --lk-warning-light: #ffb300; */
+  /* --lk-warning-dark: #e65100; */
+  /* --lk-warning-contrast: #000000; */
+  /* --lk-negative: #c62828; */                       /* deep crimson */
+  /* --lk-negative-light: #ef5350; */
+  /* --lk-negative-dark: #b71c1c; */
+  /* --lk-negative-contrast: #ffffff; */
+  /* --lk-info: #0277bd; */                           /* ocean blue */
+  /* --lk-info-light: #039be5; */
+  /* --lk-info-dark: #01579b; */
+  /* --lk-info-contrast: #ffffff; */
+
+  /* --- Surface / background --- */
+  /* --lk-bg: #ffffff; */
+  /* --lk-bg-subtle: #f5f5f7; */                      /* warm near-white */
+  /* --lk-surface: #efefef; */
+  /* --lk-overlay: rgb(0 0 0 / 0.45); */
+
+  /* --- Text --- */
+  /* --lk-text: #1a1a2e; */                           /* very dark indigo-tinted */
+  /* --lk-text-muted: #757575; */
+  /* --lk-text-on-dark: #f5f5f7; */
+
+  /* --- Border --- */
+  /* --lk-border: #d0d0d8; */
+  /* --lk-border-strong: #9e9ea8; */
+
+  /* --- Shadow color (used as rgb triplet in box-shadow) --- */
+  /* --lk-shadow-color: 0 0 0; */
+
+  /* ===== Typography ======================================================== */
+
+  /* --- Font families --- */
+  /* --lk-font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; */
+  /* --lk-font-serif: Georgia, 'Times New Roman', Times, serif; */
+  /* --lk-font-mono: ui-monospace, 'Cascadia Code', 'Fira Mono', 'Roboto Mono', monospace; */
+  /* --lk-font-family: var(--lk-font-sans); */
+
+  /* --- Type scale (Major Third, 1.25×) --- */
+  /* --lk-text-xs: 0.64rem; */                        /* ~10px  — captions, badges */
+  /* --lk-text-sm: 0.8rem; */                         /* ~13px  — secondary text, labels */
+  /* --lk-text-base: 1rem; */                         /* 16px   — body */
+  /* --lk-text-md: 1.125rem; */                       /* ~18px  — lead / intro */
+  /* --lk-text-lg: 1.25rem; */                        /* 20px   — h5/subheading */
+  /* --lk-text-xl: 1.563rem; */                       /* 25px   — h4 */
+  /* --lk-text-2xl: 1.953rem; */                      /* 31px   — h3 */
+  /* --lk-text-3xl: 2.441rem; */                      /* 39px   — h2 */
+  /* --lk-text-4xl: 3.052rem; */                      /* 49px   — h1 */
+  /* --lk-text-5xl: 3.815rem; */                      /* 61px   — hero display (md+) */
+
+  /* --- Font weights --- */
+  /* --lk-weight-thin: 100; */
+  /* --lk-weight-light: 300; */
+  /* --lk-weight-regular: 400; */
+  /* --lk-weight-medium: 500; */
+  /* --lk-weight-semibold: 600; */
+  /* --lk-weight-bold: 700; */
+  /* --lk-weight-extrabold: 800; */
+
+  /* --- Line heights --- */
+  /* --lk-leading-none: 1; */
+  /* --lk-leading-tight: 1.25; */
+  /* --lk-leading-snug: 1.375; */
+  /* --lk-leading-normal: 1.5; */
+  /* --lk-leading-relaxed: 1.625; */
+  /* --lk-leading-loose: 2; */
+  /* --lk-line-height: var(--lk-leading-normal); */
+
+  /* --- Letter spacing --- */
+  /* --lk-tracking-tight: -0.025em; */
+  /* --lk-tracking-normal: 0em; */
+  /* --lk-tracking-wide: 0.025em; */
+  /* --lk-tracking-wider: 0.05em; */
+  /* --lk-tracking-widest: 0.1em; */
+
+  /* --- Paragraph / prose --- */
+  /* --lk-prose-max-width: 65ch; */
+
+  /* ===== Layout, shape, motion & layers ==================================== */
+
+  /* --- Spacing scale (4px root unit) --- */
+  /* --lk-space-1: 0.25rem; */                        /* 4px */
+  /* --lk-space-2: 0.5rem; */                         /* 8px */
+  /* --lk-space-3: 0.75rem; */                        /* 12px */
+  /* --lk-space-4: 1rem; */                           /* 16px */
+  /* --lk-space-5: 1.25rem; */                        /* 20px */
+  /* --lk-space-6: 1.5rem; */                         /* 24px */
+  /* --lk-space-7: 2rem; */                           /* 32px */
+  /* --lk-space-8: 2.5rem; */                         /* 40px */
+  /* --lk-space-9: 3rem; */                           /* 48px */
+  /* --lk-space-10: 4rem; */                          /* 64px */
+  /* --lk-space-12: 6rem; */                          /* 96px */
+  /* --lk-space-16: 8rem; */                          /* 128px */
+
+  /* --- Border radius --- */
+  /* --lk-radius-none: 0; */
+  /* --lk-radius-sm: 0.125rem; */                     /* 2px */
+  /* --lk-radius: 0.25rem; */                         /* 4px */
+  /* --lk-radius-md: 0.375rem; */                     /* 6px */
+  /* --lk-radius-lg: 0.5rem; */                       /* 8px */
+  /* --lk-radius-xl: 0.75rem; */                      /* 12px */
+  /* --lk-radius-2xl: 1rem; */                        /* 16px */
+  /* --lk-radius-full: 9999px; */                     /* pill */
+
+  /* --- Border --- */
+  /* --lk-border-width: 1px; */
+  /* --lk-border-width-md: 2px; */
+  /* --lk-border-width-lg: 4px; */
+
+  /* --- Shadows --- */
+  /* --lk-shadow-xs: 0 1px 2px 0 rgb(var(--lk-shadow-color) / 0.04); */
+  /* --lk-shadow-sm: 0 1px 3px 0 rgb(var(--lk-shadow-color) / 0.08), 0 1px 2px -1px rgb(var(--lk-shadow-color) / 0.06); */
+  /* --lk-shadow: 0 4px 6px -1px rgb(var(--lk-shadow-color) / 0.08), 0 2px 4px -2px rgb(var(--lk-shadow-color) / 0.06); */
+  /* --lk-shadow-md: 0 6px 12px -2px rgb(var(--lk-shadow-color) / 0.1), 0 3px 6px -3px rgb(var(--lk-shadow-color) / 0.07); */
+  /* --lk-shadow-lg: 0 10px 15px -3px rgb(var(--lk-shadow-color) / 0.1), 0 4px 6px -4px rgb(var(--lk-shadow-color) / 0.07); */
+  /* --lk-shadow-xl: 0 20px 25px -5px rgb(var(--lk-shadow-color) / 0.1), 0 8px 10px -6px rgb(var(--lk-shadow-color) / 0.07); */
+  /* --lk-shadow-inner: inset 0 2px 4px 0 rgb(var(--lk-shadow-color) / 0.06); */
+  /* --lk-shadow-none: none; */
+
+  /* --- Container widths --- */
+  /* --lk-container-sm: 540px; */
+  /* --lk-container-md: 720px; */
+  /* --lk-container-lg: 960px; */
+  /* --lk-container-xl: 1140px; */
+  /* --lk-container-2xl: 1320px; */
+  /* --lk-container-fluid: 100%; */
+
+  /* --- Grid --- */
+  /* --lk-grid-columns: 12; */
+  /* --lk-grid-gutter: var(--lk-space-4); */          /* 16px default gutter */
+
+  /* --- Transitions --- */
+  /* --lk-duration-instant: 0ms; */
+  /* --lk-duration-micro: 100ms; */                   /* micro: icon rotate, caret flip */
+  /* --lk-duration-fast: 180ms; */                    /* fast: hover tints, small state changes */
+  /* --lk-duration-base: 260ms; */                    /* base: overlays, fade, tooltip */
+  /* --lk-duration-slow: 380ms; */                    /* slow: panels sliding in/out */
+  /* --lk-duration-slower: 540ms; */                  /* slower: page-level entrances */
+  /* --lk-easing-default: cubic-bezier(0.25, 0.46, 0.45, 0.94); */ /* smooth ease-out */
+  /* --lk-easing-in: cubic-bezier(0.55, 0, 0.85, 0.15); */
+  /* --lk-easing-out: cubic-bezier(0.16, 1, 0.3, 1); */ /* decelerate: enters */
+  /* --lk-easing-in-out: cubic-bezier(0.45, 0, 0.15, 1); */ /* symmetric: slides */
+  /* --lk-easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1); */ /* light overshoot */
+  /* --lk-easing-bounce: cubic-bezier(0.22, 1.8, 0.36, 1); */ /* playful pop (ping-badge, chips) */
+  /* --lk-easing-snap: cubic-bezier(0.12, 0.8, 0.32, 1.2); */ /* snappy scale (tooltip, dropdown) */
+
+  /* --- Z-index layers --- */
+  /* --lk-z-below: -1; */
+  /* --lk-z-base: 0; */
+  /* --lk-z-raised: 10; */
+  /* --lk-z-dropdown: 50; */
+  /* --lk-z-sticky: 60; */
+  /* --lk-z-overlay: 90; */
+  /* --lk-z-modal: 100; */
+  /* --lk-z-toast: 110; */
+  /* --lk-z-tooltip: 120; */
+}
+
+/* ===== Component variables (optional) ==================================
+ * Set on :root for all instances, or on a selector for some of them.
+ *
+ * .lk-carousel { --lk-carousel-duration: 600ms; --lk-carousel-easing: ease-in-out; --lk-carousel-arrow-size: 2.5rem; }
+ * .lk-chip     { --lk-chip-height: 1.75rem; }
+ * .lk-tabs     { --lk-tabs-active: var(--lk-accent); --lk-tabs-pad-x: 1rem; --lk-tabs-pad-y: 0.5rem; }
+ * .lk-date     { --lk-date-holiday: #c62828; }
+ * .lk-slider   { --lk-slider-color: var(--lk-positive); }
+ * .lk-timeline { --lk-timeline-dot: var(--lk-accent); }
+ * .lk-modal    { --lk-modal-enter-duration: 320ms; --lk-modal-exit-duration: 200ms; }
+ */
+
+/* ===== Dark theme (optional) ===========================================
+ * LookUI has no built-in dark mode: a dark theme is a set of overrides.
+ *
+ * [data-theme="dark"] {
+ *   --lk-bg:            #121218;
+ *   --lk-bg-subtle:     #1b1b24;
+ *   --lk-surface:       #22222d;
+ *   --lk-text:          #ececf1;
+ *   --lk-text-muted:    #a0a0ad;
+ *   --lk-border:        #34343f;
+ *   --lk-border-strong: #4a4a57;
+ *   --lk-secondary-dark: #cfd8dc;
+ *   --lk-shadow-color:  0 0 0;
+ * }
+ */

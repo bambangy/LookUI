@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Validation</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+  <style>
+    .vd-table { width: 100%; border-collapse: collapse; font-size: var(--lk-text-sm); }
+    .vd-table th, .vd-table td { text-align: left; padding: var(--lk-space-2) var(--lk-space-3); border-bottom: var(--lk-border-width) solid var(--lk-border); vertical-align: top; }
+    .vd-table th { color: var(--lk-text-muted); font-weight: var(--lk-weight-medium); }
+    .vd-prose { max-width: 52rem; line-height: 1.6; }
+    .vd-prose p, .vd-prose ul, .vd-prose ol { margin: 0 0 var(--lk-space-3); }
+    .vd-prose li { margin-bottom: var(--lk-space-1); }
+    .vd-steps { counter-reset: s; list-style: none; padding: 0; }
+    .vd-steps > li { counter-increment: s; position: relative; padding-left: 2.25rem; margin-bottom: var(--lk-space-3); }
+    .vd-steps > li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--lk-primary); color: var(--lk-primary-contrast, #fff); display: grid; place-items: center; font-size: var(--lk-text-xs); font-weight: var(--lk-weight-semibold); }
+  </style>
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Validation</h1>
+    <p style="opacity: 0.85;">Rules on validateable components, validate-on-blur, lkValidation for whole forms, custom rules and server errors</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <!-- Overview ------------------------------------------------------------------------- -->
+  <section class="demo-section vd-prose">
+    <p class="demo-section__title">Validateable components</p>
+    <p>
+      These components accept a <code>rules</code> option and expose the same validation API:
+      <a href="textbox.html">lkTextbox</a>, <a href="dropdown.html">lkDropdown</a> (single &amp; multiple),
+      <a href="checkbox.html">lkCheckbox</a>, <a href="radio.html">lkRadio</a>, <a href="switch.html">lkSwitch</a>,
+      <a href="phone.html">lkPhone</a> and <a href="textpop.html">lkTextPop</a>.
+    </p>
+    <table class="vd-table">
+      <thead><tr><th>Member</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>rules</code> option / property</td><td>Array of rules checked in order; the first failing rule's message is shown.</td></tr>
+        <tr><td><code>validate: true</code> option</td><td>Run the rules automatically when focus leaves the component (alias <code>validateOnBlur</code>).</td></tr>
+        <tr><td><code>.validate()</code></td><td>Run the validation manually. Shows/clears the message and returns <code>true</code> when valid.</td></tr>
+        <tr><td><code>.validateAsync()</code></td><td>Same, but waits for async rules (e.g. “is this username free?”). Resolves <code>true</code> / <code>false</code>.</td></tr>
+        <tr><td><code>.setValidation(message)</code></td><td>Set a validation message manually (e.g. from the server).</td></tr>
+        <tr><td><code>.clearValidation()</code></td><td>Clear the validation manually and return the field to its initial, untouched state.</td></tr>
+        <tr><td><code>.error</code> / <code>.hasError</code> / <code>.validating</code></td><td>Current message (<code>null</code> when valid) / whether one is shown / whether an async rule is running.</td></tr>
+        <tr><td><code>Look.lkValidation(a, b, …)</code></td><td>Groups components: <code>validate()</code> / <code>validateAsync()</code> run every member and return <code>{ hasError, errors }</code>; <code>setErrors(map)</code> shows server messages; <code>submit(handler)</code> does validate → save → map 422 errors.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Live demo ------------------------------------------------------------------------- -->
+  <section class="demo-section">
+    <p class="demo-section__title">Live example</p>
+    <p class="demo-sub">
+      <strong>Username</strong>, <strong>Password</strong>, <strong>Role</strong> and <strong>Mobile</strong> use <code>validate: true</code> (checked when you leave them); the others are checked by <strong>Submit</strong> through
+      <code>lkValidation</code>. After a field has been validated it re-checks itself while you edit it.
+      Username also has an <strong>async rule</strong>: <em>root</em>, <em>jane</em> and <em>support</em> are “taken” (watch the spinner by the label).
+      <strong>Submit</strong> uses <code>form.submit()</code> with a fake server that answers 422 for the username <em>admin</em> and emails at <em>example.com</em>.
+    </p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <form id="vd-form" class="lk-card" novalidate>
+        <div class="lk-card__body" style="display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--lk-space-4);">
+          <input id="vd-username" placeholder="jane_doe" />
+          <input id="vd-email" placeholder="jane@company.com" />
+          <input id="vd-password" type="password" />
+          <input id="vd-confirm" type="password" />
+          <select id="vd-role"></select>
+          <select id="vd-skills"></select>
+          <input id="vd-phone" />
+          <input id="vd-manager" />
+          <div>
+            <p class="lk-label" style="margin-bottom: var(--lk-space-2);">Contract</p>
+            <div style="display:flex; gap: var(--lk-space-5); flex-wrap: wrap;">
+              <input id="vd-contract-full" type="radio" name="contract" value="full" />
+              <input id="vd-contract-part" type="radio" name="contract" value="part" />
+            </div>
+          </div>
+          <input id="vd-remote" type="checkbox" />
+          <input id="vd-terms" type="checkbox" />
+          <div class="demo-row" style="margin-bottom: 0;">
+            <button class="lk-btn lk-btn--primary" type="submit">Submit</button>
+            <button id="vd-check" class="lk-btn lk-btn--secondary" type="button">Validate only</button>
+            <button id="vd-clear" class="lk-btn lk-btn--ghost" type="button">Clear validation</button>
+            <button id="vd-fill" class="lk-btn lk-btn--ghost" type="button">Fill valid data</button>
+          </div>
+        </div>
+      </form>
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <p class="demo-sub">Result</p>
+          <pre id="vd-out" class="demo-output" style="white-space: pre-wrap;">Press Submit</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript (excerpt of the example above)</p>
+    <pre>const username = Look.lkTextbox('#username', {
+  label: 'Username',
+  validate: true,                                    // check on blur
+  rules: [
+    'required',
+    { minLength: 3, message: 'At least 3 characters' },
+    (v) =&gt; /^[a-z0-9_]+$/.test(v) || 'Lowercase letters, digits and _ only',
+  ],
+});
+const email   = Look.lkTextbox('#email', { label: 'Email', rules: ['required', 'email'] });
+const confirm = Look.lkTextbox('#confirm', {
+  label: 'Confirm password',
+  rules: ['required', (v) =&gt; v === password.value || 'Passwords do not match'],   // cross-field
+});
+const skills  = Look.lkDropdown('#skills', { multiple: true, items, rules: [{ minLength: 2, message: 'Pick at least 2' }] });
+const phone   = Look.lkPhone('#phone', { label: 'Mobile', required: true, validate: true });
+const manager = Look.lkTextPop('#manager', { label: 'Manager', dataSource: people, rules: ['required'] });
+const terms   = Look.lkCheckbox('#terms', { label: 'I accept the terms', rules: [{ required: true, message: 'Please accept the terms' }] });
+
+const form = Look.lkValidation(username, email, confirm, skills, phone, manager, terms, { loading: '#form' });
+
+formEl.addEventListener('submit', async (e) =&gt; {
+  e.preventDefault();
+  const res = await form.submit(async () =&gt; {           // validateAsync() first; stops if invalid
+    const r = await fetch('/api/users', { method: 'POST', body: new FormData(formEl) });
+    if (!r.ok) throw await r.json();                      // 422 { message, errors: { username: [...] } }
+    return r.json();
+  });
+  if (res.ok) Look.lkToast({ type: 'positive', title: 'Saved' });
+  else if (res.reason === 'error') Look.lkToast({ type: 'negative', title: 'Not saved', message: res.message });
+});</pre>
+  </div>
+
+  <!-- How it works ------------------------------------------------------------------- -->
+  <section class="demo-section vd-prose">
+    <p class="demo-section__title">How validation runs</p>
+    <ol class="vd-steps">
+      <li><strong>Untouched.</strong> A new field shows no message, even if it is empty.</li>
+      <li><strong>Validated.</strong> A field is validated by <code>.validate()</code>, by <code>lkValidation().validate()</code>, or—with <code>validate: true</code>—when focus leaves it. For pickers (dropdown, phone country list, text pop) leaving means the panel is closed and focus is outside the component.</li>
+      <li><strong>Touched.</strong> From then on, each change the user makes (typing, picking, ticking) re-runs the rules, so a message disappears as soon as the value is fixed. Setting <code>.value</code> from code does not re-run them—call <code>.validate()</code> or <code>.clearValidation()</code> yourself.</li>
+      <li><strong>Reset.</strong> <code>.clearValidation()</code> removes the message and returns the field to <em>untouched</em>.</li>
+    </ol>
+    <p><strong>Async rules.</strong> A function rule may return a Promise that resolves to <code>true</code> or a message:</p>
+    <ul>
+      <li>Results are cached per value, so checking the same value twice does not call the server again.</li>
+      <li>While the user edits a validated field, sync rules run at once and async rules wait for a pause in typing (<code>validateDebounce</code>, 400&nbsp;ms).</li>
+      <li>A result that arrives after the value changed, or after a newer validation, is ignored — a slow response never overwrites a newer one.</li>
+      <li>While one runs, <code>.validating</code> is <code>true</code>, the field gets <code>.lk-field--validating</code> (a spinner by the label) and <code>aria-busy</code>.</li>
+      <li><code>.validate()</code> does not wait: it uses cached results and lets uncached async rules finish in the background. Use <code>.validateAsync()</code>, <code>lkValidation().validateAsync()</code> or <code>submit()</code> before saving.</li>
+    </ul>
+    <p>
+      The <code>required</code> option (or a <code>required</code> attribute) counts as the first rule, with the message
+      “<em>Label</em> is required” (“This option is required” for checkbox / switch, “Please choose an option” for radios).
+      lkPhone also fails a filled number that is too short or too long (<code>invalidMessage</code> option).
+      lkValidation skips disabled and hidden components and clears their messages.
+    </p>
+  </section>
+
+  <!-- Rules reference -------------------------------------------------------------------- -->
+  <section class="demo-section vd-prose">
+    <p class="demo-section__title">Rules reference</p>
+    <table class="vd-table">
+      <thead><tr><th>Rule</th><th>Fails when</th><th>Default message</th></tr></thead>
+      <tbody>
+        <tr><td><code>'required'</code> / <code>{ required: true }</code></td><td>value is empty: <code>''</code>, <code>null</code>, <code>[]</code>, unchecked</td><td><em>Label</em> is required</td></tr>
+        <tr><td><code>'email'</code> / <code>{ email: true }</code></td><td>not <code>name@domain.tld</code></td><td>Enter a valid email address</td></tr>
+        <tr><td><code>{ min: n }</code> / <code>{ max: n }</code></td><td><code>Number(value)</code> outside the bound</td><td><em>Label</em> must be at least / at most n</td></tr>
+        <tr><td><code>{ minLength: n }</code> / <code>{ maxLength: n }</code></td><td>text length — or the <strong>number of picks</strong> for multiple dropdown / text pop</td><td>… at least n characters / Select at least n</td></tr>
+        <tr><td><code>{ pattern: /re/ }</code></td><td>regular expression does not match</td><td><em>Label</em> is not valid</td></tr>
+        <tr><td><code>(value, component) =&gt; true | 'message'</code></td><td>the function returns a string (or <code>false</code> → “Invalid value”; a thrown error's message)</td><td>your string</td></tr>
+        <tr><td><code>(value, component) =&gt; Promise&lt;true | 'message'&gt;</code></td><td>async rule: the promise resolves to a string (a rejection's message counts too)</td><td>your string</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top: var(--lk-space-3);">
+      Every object rule accepts <code>message</code> to replace its default text. Object keys can be combined
+      (<code>{ required: true, minLength: 8 }</code>) but share one <code>message</code>, so separate rules usually read better.
+      Except <code>required</code>, rules pass while the field is empty — an optional email field only checks the format once something is typed.
+    </p>
+  </section>
+
+  <!-- Customizing ---------------------------------------------------------------------- -->
+  <section class="demo-section vd-prose">
+    <p class="demo-section__title">Customizing validation</p>
+
+    <p class="demo-sub"><strong>Custom messages and translations</strong></p>
+    <pre class="demo-output">const t = (key) =&gt; i18n[key];   // your translation lookup
+Look.lkTextbox('#nik', {
+  label: 'NIK',
+  rules: [
+    { required: true, message: t('nik.required') },
+    { pattern: /^\d{16}$/, message: t('nik.format') },
+  ],
+});</pre>
+
+    <p class="demo-sub"><strong>Reusable rule factories</strong></p>
+    <pre class="demo-output">const rules = {
+  npwp: (v) =&gt; !v || /^\d{15,16}$/.test(v.replace(/\D/g, '')) || 'NPWP must have 15–16 digits',
+  notFuture: (v) =&gt; !v || new Date(v) &lt;= new Date() || 'Date cannot be in the future',
+  oneOf: (list, msg) =&gt; (v) =&gt; !v || list.includes(v) || msg,
+};
+Look.lkTextbox('#npwp', { label: 'NPWP', rules: [rules.npwp] });</pre>
+
+    <p class="demo-sub"><strong>Cross-field and conditional rules</strong> — a rule can read other components</p>
+    <pre class="demo-output">const endDate = Look.lkTextbox('#end', {
+  label: 'End date',
+  rules: [(v) =&gt; !v || !start.value || v &gt;= start.value || 'End must be after start'],
+});
+const company = Look.lkTextbox('#company', {
+  label: 'Company',
+  rules: [(v) =&gt; type.value !== 'business' || !!v || 'Company is required for business accounts'],
+});
+type.el.addEventListener('change', () =&gt; company.hasError &amp;&amp; company.validate()); // re-check dependants</pre>
+
+    <p class="demo-sub"><strong>Async rule</strong> — e.g. availability check against your API</p>
+    <pre class="demo-output">const isFree = async (v) =&gt; {
+  if (!v || v.length &lt; 3) return true;                 // let the sync rules report these
+  const r = await fetch('/api/users/available?u=' + encodeURIComponent(v));
+  const { available } = await r.json();
+  return available || 'This username is taken';
+};
+const username = Look.lkTextbox('#username', { label: 'Username', validate: true, validateDebounce: 500,
+  rules: ['required', { minLength: 3 }, isFree] });
+
+await username.validateAsync();   // true / false once the request is back</pre>
+
+    <p class="demo-sub"><strong>Changing rules at runtime</strong></p>
+    <pre class="demo-output">password.rules = [...password.rules, { minLength: 12, message: 'Admins need 12+ characters' }];
+password.validate();
+optionalField.rules = [];          // drop every rule
+optionalField.clearValidation();</pre>
+
+    <p class="demo-sub"><strong>Styling</strong></p>
+    <p>
+      An invalid field gets <code>.lk-field--error</code> on its <code>.lk-field</code> wrapper and <code>.lk-input--error</code> on the control;
+      the message is in <code>.lk-field-error</code>. Everything is colored by <code>--lk-negative</code>, so a theme override changes all of them.
+      The message element only exists when the component was created with a <code>label</code> (it builds the wrapper); without one, only the red border is shown.
+    </p>
+  </section>
+
+  <!-- Server side ------------------------------------------------------------------------ -->
+  <section class="demo-section vd-prose">
+    <p class="demo-section__title">Server-side validation</p>
+    <p>
+      Client rules are for fast feedback; the server stays the source of truth. LookUI expects the common HTTP <code>422</code>
+      shape — field messages keyed by the field <code>name</code>:
+      <code>{ "message": "…", "errors": { "username": ["Username is taken"], "email": ["Domain not allowed"] } }</code>
+      (a value can be a string or an array; the first message is shown). A server message stays until the user edits that field,
+      then the local rules take over again.
+    </p>
+    <p><strong>1 · Forms: <code>form.submit(handler)</code></strong></p>
+    <ul>
+      <li>Runs <code>validateAsync()</code>; if anything is invalid it stops with <code>{ ok: false, reason: 'invalid', errors }</code>.</li>
+      <li>Otherwise it shows <code>lkInnerLoading</code> over the <code>loading</code> element, calls your handler and resolves <code>{ ok: true, result }</code>.</li>
+      <li>If the handler throws, field errors are read from the error — <code>{ errors }</code> bodies (<code>throw await res.json()</code>),
+        <code>lkDataSource</code> request errors (<code>err.errors</code>), axios <code>err.response.data.errors</code> — and passed to <code>setErrors()</code>.
+        It resolves <code>{ ok: false, reason: 'error', message, unmatched, errors }</code>; show <code>message</code> / <code>unmatched</code> as a form-level notice.</li>
+      <li>A second submit while one is running resolves <code>{ ok: false, reason: 'busy' }</code> (no double posts).</li>
+    </ul>
+    <pre class="demo-output">// Keys that differ from component names: map them
+const form = Look.lkValidation(email, phone, { fields: { 'contact.mobile': phone } });
+
+// Without submit(): apply any error object yourself
+const unmatched = form.setErrors({ email: ['Already registered'], token: 'Expired' });
+// → email shows its message and gets focus; unmatched = [{ key: 'token', message: 'Expired' }]</pre>
+
+    <p><strong>2 · Grids: lkTable editing</strong></p>
+    <p>
+      When <code>dataSource.add()</code> / <code>update()</code> rejects with field errors, lkTable shows each message under the matching
+      inline or popup editor, keeps the row in edit mode and puts anything unmatched in the form-level message.
+      An <code>lkDataSource</code> URL transport does this automatically for a JSON error body
+      (the thrown error carries <code>status</code>, <code>body</code> and <code>errors</code>); a function transport can
+      <code>throw { message, errors }</code>. See <a href="table.html">lkTable — Popup editing</a> (try an existing SKU).
+    </p>
+
+    <p><strong>3 · Uniqueness and other remote checks while typing</strong></p>
+    <p>Use an async rule (above). Keep the server check on submit as well — the async rule is only a preview.</p>
+  </section>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkValidation',
+  kind: 'Composable',
+  signature: 'const form = Look.lkValidation(component, component, …[, options]);',
+  description: [
+    'Registers validateable components (anything with a `validate()` method) so a whole form can be validated at once. Arguments can be components, arrays of components (nested arrays are flattened), and optionally a trailing options object.',
+    '`validate()` calls every member\'s `.validate()` — all of them, so every message is shown in one pass — and returns `{ hasError }`. Disabled and hidden members are skipped and cleared.',
+  ],
+  params: [
+    { name: '...components', type: 'Object | Object[]', description: 'lkTextbox, lkDropdown, lkCheckbox, lkRadio, lkSwitch, lkPhone, lkTextPop instances (or your own objects with `validate()`).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Last argument; see below.' },
+  ],
+  returns: { type: 'Object', description: 'The validation group.' },
+  options: [
+    { name: 'focusFirst', type: 'boolean', default: 'true', description: 'Focus the first invalid component after `validate()`, `validateAsync()`, `setErrors()` and a failed `submit()`.' },
+    { name: 'scroll', type: 'boolean', default: 'true', description: 'Scroll that component into view.' },
+    { name: 'loading', type: 'Element | string', default: '—', description: 'Element (or selector) covered by an lkInnerLoading while `submit()` waits for the handler.' },
+    { name: 'loadingText', type: 'string', default: "'Saving…'", description: 'Text of that loading overlay.' },
+    { name: 'fields', type: 'Object', default: '—', description: 'Server key → component, for error keys that differ from `component.name` (e.g. `{ \'contact.mobile\': phone }`).' },
+  ],
+  properties: [
+    { name: 'submitting', type: 'boolean', readonly: true, description: '`true` while `submit()` runs.' },
+    { name: 'components', type: 'Object[]', readonly: true, description: 'Registered components, in registration order.' },
+    { name: 'hasError', type: 'boolean', readonly: true, description: 'Whether any (enabled, visible) member currently shows a message.' },
+    { name: 'errors', type: 'Object[]', readonly: true, description: '`[{ component, message }]` for members currently showing a message.' },
+  ],
+  methods: [
+    {
+      name: 'validate', signature: 'validate() → { hasError, valid, errors }',
+      description: 'Run `.validate()` on every member. `hasError` is `true` when any member has an error; `errors` lists `{ component, message }`.',
+      examples: [{ run: true, code: `
+        const mk = () => container.appendChild(document.createElement('input'));
+        const a = Look.lkTextbox(mk(), { label: 'Name', required: true });
+        const b = Look.lkTextbox(mk(), { label: 'Email', rules: ['email'] });
+        b.value = 'not-an-email';
+        const form = Look.lkValidation([a, b], { scroll: false, focusFirst: false });
+        const r = form.validate();
+        log('hasError =', r.hasError, '|', r.errors.map((e) => e.message).join(' / '));` }],
+    },
+    { name: 'validateAsync', signature: 'validateAsync() → Promise<{ hasError, valid, errors }>', description: 'Like `validate()`, but waits for every member\'s async rules.' },
+    {
+      name: 'setErrors', signature: 'setErrors(map) → Array<{ key, message }>',
+      description: 'Show messages from a server error object `{ key: \'message\' | [\'message\', …] }` on the components whose `name` (or `fields` alias, or element id) matches, via `setValidation()`. Focuses the first one. Returns the entries no component matched.',
+      examples: [{ run: true, code: `
+        const el = container.appendChild(document.createElement('input'));
+        const email = Look.lkTextbox(el, { label: 'Email', name: 'email' });
+        const form = Look.lkValidation(email, { scroll: false, focusFirst: false });
+        log(form.setErrors({ email: ['Already registered'], token: 'Expired' }));` }],
+    },
+    {
+      name: 'submit', signature: 'submit(handler) → Promise<{ ok, reason?, result?, errors?, unmatched?, message?, error? }>',
+      description: '`validateAsync()` → (if valid) show `loading`, `await handler(form)` → resolve `{ ok: true, result }`. A rejection is inspected for field errors (`{ errors }`, lkDataSource errors, axios responses) which go through `setErrors()`; it resolves `{ ok: false, reason: \'error\', message, unmatched, errors, error }`. Invalid input resolves `reason: \'invalid\'`; a call while another runs resolves `reason: \'busy\'`. Never rejects.',
+      examples: [{ run: true, code: `
+        const el = container.appendChild(document.createElement('input'));
+        const user = Look.lkTextbox(el, { label: 'Username', name: 'username', required: true });
+        user.value = 'admin';
+        const form = Look.lkValidation(user, { scroll: false, focusFirst: false });
+        form.submit(async () => {
+          await new Promise((r) => setTimeout(r, 300));
+          throw { message: 'Please fix the highlighted fields', errors: { username: ['This username is taken'] } };
+        }).then((res) => log(res.ok, res.reason, res.message));` }],
+    },
+    { name: 'clearValidation', signature: 'clearValidation() → group', description: 'Call `.clearValidation()` on every member (back to untouched).' },
+    { name: 'add', signature: 'add(...components) → group', description: 'Register more components (e.g. fields rendered later).' },
+    { name: 'remove', signature: 'remove(...components) → group', description: 'Unregister components (does not destroy them).' },
+    { name: 'destroy', signature: 'destroy()', description: 'Forget every member. The components themselves are left as they are.' },
+  ],
+});
+</script>
+<script>
+  const out = document.getElementById('vd-out');
+  const PEOPLE = ['Ayu Santoso', 'Budi Wijaya', 'Citra Lestari', 'Dewi Halim', 'Eko Saputra', 'Fajar Nugroho', 'Gita Pratama', 'Hadi Kusuma']
+    .map((name, i) => ({ id: i + 1, name, team: ['Engineering', 'Finance', 'Sales', 'HR'][i % 4] }));
+
+  // Async rule: a fake availability endpoint (700 ms)
+  const TAKEN = ['root', 'jane', 'support'];
+  const isFree = (v) => new Promise((resolve) => {
+    setTimeout(() => resolve(!TAKEN.includes(v) || `“${v}” is already taken`), 700);
+  });
+  const username = Look.lkTextbox('#vd-username', {
+    label: 'Username', name: 'username', validate: true,
+    rules: ['required', { minLength: 3, message: 'At least 3 characters' }, (v) => /^[a-z0-9_]+$/.test(v) || 'Lowercase letters, digits and _ only', isFree],
+  });
+  const email = Look.lkTextbox('#vd-email', { label: 'Email', name: 'email', rules: ['required', 'email'] });
+  const password = Look.lkTextbox('#vd-password', {
+    label: 'Password', name: 'password', validate: true,
+    rules: ['required', { minLength: 8, message: 'At least 8 characters' }, (v) => /\d/.test(v) || 'Include at least one digit'],
+  });
+  const confirm = Look.lkTextbox('#vd-confirm', {
+    label: 'Confirm password', name: 'confirm',
+    rules: ['required', (v) => v === password.value || 'Passwords do not match'],
+  });
+  // Re-check the confirmation when the password changes after it was validated
+  password.el.addEventListener('input', () => { if (confirm.hasError || confirm.value) confirm.validate(); });
+
+  const role = Look.lkDropdown('#vd-role', {
+    label: 'Role', name: 'role', required: true, validate: true, clearable: true,
+    items: [{ value: 'dev', label: 'Developer' }, { value: 'qa', label: 'QA' }, { value: 'pm', label: 'Product manager' }],
+  });
+  const skills = Look.lkDropdown('#vd-skills', {
+    label: 'Skills', name: 'skills', multiple: true, maxChips: 3, useInput: true,
+    items: ['JavaScript', 'CSS', 'SQL', 'Go', 'Testing', 'UX'].map((s) => ({ value: s.toLowerCase(), label: s })),
+    rules: [{ minLength: 2, message: 'Pick at least 2 skills' }, { maxLength: 4, message: 'Pick at most 4 skills' }],
+  });
+  const phone = Look.lkPhone('#vd-phone', { label: 'Mobile', name: 'mobile', required: true, validate: true, preferred: ['ID', 'SG'] });
+  const manager = Look.lkTextPop('#vd-manager', {
+    label: 'Manager', name: 'managerId', dataSource: PEOPLE, pageSize: 5, popupWidth: 420,
+    columns: [{ field: 'name', title: 'Name' }, { field: 'team', title: 'Team' }],
+    rules: [{ required: true, message: 'Choose a manager' }, (id) => id !== 3 || 'Citra is on leave — choose someone else'],
+  });
+  const contractFull = Look.lkRadio('#vd-contract-full', {
+    label: 'Full-time', name: 'contract', rules: [{ required: true, message: 'Choose a contract type' }],
+  });
+  Look.lkRadio('#vd-contract-part', { label: 'Part-time', name: 'contract' });
+  const remote = Look.lkSwitch('#vd-remote', {
+    label: 'Remote worker',
+    rules: [(on) => !on || phone.country === 'ID' || 'Remote workers need an Indonesian number'],
+  });
+  const terms = Look.lkCheckbox('#vd-terms', { label: 'I accept the terms', name: 'terms', rules: [{ required: true, message: 'Please accept the terms' }] });
+
+  const form = Look.lkValidation(username, email, password, confirm, role, skills, phone, manager, contractFull, remote, terms, { loading: '#vd-form' });
+
+  // Fake server: like `throw await res.json()` on an HTTP 422
+  async function fakeServer(data) {
+    await new Promise((r) => setTimeout(r, 600));
+    const errors = {};
+    if (data.username === 'admin') errors.username = ['This username is reserved'];
+    if (/@example\.com$/i.test(data.email)) errors.email = ['Addresses at example.com are not accepted'];
+    if (Object.keys(errors).length) throw { message: 'Please fix the highlighted fields', errors };
+    return { id: 42, ...data };
+  }
+
+  const formEl = document.getElementById('vd-form');
+  formEl.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    out.textContent = 'form.submit() — validating…';
+    const res = await form.submit(() => {
+      const data = Object.fromEntries(new FormData(formEl));
+      data.skills = skills.value;
+      return fakeServer(data);
+    });
+    if (res.ok) {
+      out.textContent = 'Saved ✓\n' + JSON.stringify(res.result, null, 2);
+      Look.lkToast({ type: 'positive', title: 'Saved', message: 'Account created', duration: 2000 });
+    } else if (res.reason === 'invalid') {
+      out.textContent = 'Client validation\nhasError: true\n' + res.errors.map((x) => '• ' + x.message).join('\n');
+    } else if (res.reason === 'error') {
+      out.textContent = 'Server rejected (422)\n' + res.message + '\n' + res.errors.map((x) => '• ' + x.component.name + ': ' + x.message).join('\n');
+      Look.lkToast({ type: 'negative', title: 'Not saved', message: res.message, duration: 2500 });
+    }
+  });
+
+  document.getElementById('vd-check').onclick = async () => {
+    out.textContent = 'form.validateAsync()…';
+    const { hasError, errors } = await form.validateAsync();
+    out.textContent = 'form.validateAsync()\nhasError: ' + hasError + (errors.length ? '\n' + errors.map((x) => '• ' + x.message).join('\n') : '');
+  };
+  document.getElementById('vd-clear').onclick = () => { form.clearValidation(); out.textContent = 'form.clearValidation()'; };
+  document.getElementById('vd-fill').onclick = () => {
+    username.value = 'admin';
+    email.value = 'jane@example.com';
+    password.value = 'secret123';
+    confirm.value = 'secret123';
+    role.value = 'dev';
+    skills.value = ['javascript', 'css'];
+    phone.value = '+6281234567890';
+    manager.value = 2;
+    contractFull.checked = true;
+    terms.checked = true;
+    form.clearValidation();
+    out.textContent = 'Filled. Submit → the fake server rejects "admin" and example.com (422).';
+  };
+</script>
+</body>
+</html>

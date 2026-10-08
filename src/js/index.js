@@ -9,7 +9,7 @@ export * from './components/index.js';
 export * from './compossables/index.js';
 export { lkDataSource, createDataSource } from './helpers/dataSource.js';
 
-export const version = '0.1.0';
+export const version = '0.2.0';
 export const author  = 'Bambang Yudhotomo';
 export const license = 'MIT';
 export const homepage = 'https://github.com/bambangy/LookUI';

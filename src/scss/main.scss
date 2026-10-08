@@ -36,6 +36,7 @@
 @use 'layout/page';
 
 // 5. Components
+@use 'components/async';
 @use 'components/avatar';
 @use 'components/badge';
 @use 'components/bar';
@@ -54,6 +55,7 @@
 @use 'components/list';
 @use 'components/modal';
 @use 'components/pagination';
+@use 'components/phone';
 @use 'components/progress';
 @use 'components/radio';
 @use 'components/rating';
@@ -63,6 +65,8 @@
 @use 'components/splitter';
 @use 'components/switch';
 @use 'components/table';
+@use 'components/tabs';
+@use 'components/textpop';
 @use 'components/timeline';
 @use 'components/toast';
 @use 'components/toolbar';

@@ -31,6 +31,7 @@ export function resolveEl(el, caller) {
 export function applyBase(target, node, opts) {
   const hiddenTarget = opts?.hiddenTarget || node;
 
+  // Configurable so composite components can specialize them (e.g. enabled toggling inner controls)
   Object.defineProperties(target, {
     el: { value: node, enumerable: true },
 
@@ -38,6 +39,7 @@ export function applyBase(target, node, opts) {
       get() { return node.id; },
       set(v) { node.id = v; },
       enumerable: true,
+      configurable: true,
     },
 
     hidden: {
@@ -47,6 +49,7 @@ export function applyBase(target, node, opts) {
         else hiddenTarget.classList.remove('lk-hidden');
       },
       enumerable: true,
+      configurable: true,
     },
 
     enabled: {
@@ -63,6 +66,7 @@ export function applyBase(target, node, opts) {
         }
       },
       enumerable: true,
+      configurable: true,
     },
   });
 

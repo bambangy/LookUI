@@ -17,9 +17,14 @@ import { qsa } from '../core/index.js';
 import { lkDataSource } from '../helpers/dataSource.js';
 import { lkPagination } from '../components/pagination.js';
 import { lkDropdown } from '../components/dropdown.js';
+import { lkTextbox, lkCheckbox, lkSwitch } from '../components/form.js';
+import { lkRating } from '../components/rating.js';
+import { lkPhone } from '../components/phone.js';
 import { lkIcon } from '../components/icon.js';
 import { lkDialog } from './dialog.js';
+import { lkDate } from './date.js';
 import { lkPopupProxy } from './popupProxy.js';
+import { extractFieldErrors, firstMessage } from '../helpers/validation.js';
 
 const SORT_ANIM_MS = 260;
 
@@ -133,6 +138,27 @@ function defaultFormat(value, type) {
   return String(value);
 }
 
+function toNumberOrNull(v) {
+  if (v == null || v === '') return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+// Component editors by name: column.editor = 'dropdown' | { type: 'dropdown', options }.
+// Any other factory with the (el, opts) → { value, destroy } contract works via { component, options }.
+const EDITOR_TYPES = {
+  textbox:  { factory: lkTextbox, tag: 'input' },
+  textarea: { factory: lkTextbox, tag: 'textarea' },
+  number:   { factory: lkTextbox, tag: 'input', inputType: 'number', parse: toNumberOrNull },
+  dropdown: { factory: lkDropdown, tag: 'select' },
+  checkbox: { factory: lkCheckbox, tag: 'input', inputType: 'checkbox', checkable: true },
+  switch:   { factory: lkSwitch, tag: 'input', inputType: 'checkbox', checkable: true },
+  rating:   { factory: lkRating, tag: 'div', className: 'lk-rating' },
+  phone:    { factory: lkPhone, tag: 'input' },
+};
+
+const FOCUSABLE = 'input:not([type="hidden"]), select, textarea, button, [tabindex]:not([tabindex="-1"])';
+
 function normalizeValues(values) {
   return (values || []).map((v) => (isObject(v) ? { value: v.value, label: String(v.label ?? v.text ?? v.value) } : { value: v, label: String(v) }));
 }
@@ -147,7 +173,10 @@ function normalizeValues(values) {
  *   { field, title, width, minWidth, align, type: 'string'|'number'|'date'|'boolean',
  *     sortable, filterable, menu, hidden, format(value, row), template(row, value) → string(HTML)|Node,
  *     headerTemplate, className, headerClassName,
- *     editable, editor(container, { value, row, column, setValue }), values: [{ value, label }],
+ *     editable, values: [{ value, label }],
+ *     editor: (container, { value, row, column, dense, setValue }) → Node | { destroy, focus } | cleanup fn
+ *           | 'textbox' | 'textarea' | 'number' | 'dropdown' | 'checkbox' | 'switch' | 'rating' | 'date' | 'phone'
+ *           | { type, options } | { component: lkTextPop, options, tag }   (options may be ({ value, row, column }) => ({…})),
  *     validation: { required, min, max, minLength, maxLength, pattern, message } | validate(value, row) → true|string,
  *     defaultValue }
  *   { selectable: true }                      — checkbox column (multiple selection)
@@ -341,6 +370,9 @@ function createGrid(root, opts) {
   let pendingAnimate = false;
   let editState = null;       // { key, isNew, row, draft, errors, saving, focus }
   let popupDialog = null;
+  // Component editors own floating layers in <body>: destroy them with the row / popup
+  const inlineEditors = [];
+  const popupEditors = [];
   const headerCache = new Map(); // colId -> { th, menuBtn, proxy, menu }
   const cleanups = [];
 
@@ -872,18 +904,123 @@ function createGrid(root, opts) {
     return str;
   }
 
-  function createEditor(c, row, value, { dense, onChange, onEnter, onEscape }) {
-    const id = uid('lk-dg-edit');
+  function flushEditors(bucket) {
+    while (bucket.length) {
+      try { bucket.pop()(); } catch (err) { console.error(err); } // eslint-disable-line no-console
+    }
+  }
+
+  function dateEditor(host, value, extra, dense, setValue) {
+    const { onChange: userChange, placeholder, ...rest } = extra;
+    const input = el('input', `lk-input${dense ? ' lk-input--dense' : ''} lk-datagrid__editor lk-datagrid__editor--date`);
+    input.type = 'text';
+    input.readOnly = true;
+    input.placeholder = placeholder || 'YYYY-MM-DD';
+    input.value = toInputDate(value);
+    host.appendChild(input);
+    const picker = lkDate(input, {
+      ...rest,
+      value: input.value || null,
+      onChange(v, meta) {
+        if (typeof userChange === 'function') userChange(v, meta);
+        if (v instanceof Date) {
+          input.value = dayKey(v);
+          setValue(fromInputDate(input.value, value));
+        }
+      },
+    });
+    const onKey = (e) => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        input.value = '';
+        setValue(null);
+      }
+    };
+    input.addEventListener('keydown', onKey);
+    return { focus: () => input.focus(), destroy: () => { input.removeEventListener('keydown', onKey); picker.destroy(); } };
+  }
+
+  function componentEditor(spec, host, ctx) {
+    const s = typeof spec === 'string' ? { type: spec } : spec;
+    const preset = s.component ? null : EDITOR_TYPES[s.type];
+    if (!s.component && !preset && s.type !== 'date') throw new Error(`Look.lkTable: unknown editor "${s.type}".`);
+    const { value, row, column, dense, setValue } = ctx;
+    const extra = (typeof s.options === 'function' ? s.options({ value, row, column }) : s.options) || {};
+    if (s.type === 'date') return dateEditor(host, value, extra, dense, setValue);
+
+    const node = document.createElement(s.tag || preset?.tag || 'input');
+    const inputType = s.inputType || preset?.inputType;
+    if (inputType) node.type = inputType;
+    if (preset?.className) node.className = preset.className;
+    if (dense && node.tagName !== 'DIV') node.classList.add('lk-input--dense');
+    if (preset?.checkable) node.checked = !!value;
+    else if ((node.tagName === 'INPUT' || node.tagName === 'TEXTAREA')) node.value = value == null ? '' : String(value);
+    host.appendChild(node);
+
+    let comp = null;
+    const read = () => (preset?.parse ? preset.parse(comp.value) : comp.value);
+    const push = () => { if (comp) setValue(read()); };
+    const userChange = extra.onChange;
+    comp = (s.component || preset.factory)(node, {
+      value,
+      dense,
+      ...(preset?.checkable ? { checked: !!value } : {}),
+      ...extra,
+      onChange(...args) {
+        if (typeof userChange === 'function') userChange(...args);
+        push();
+      },
+    });
+    // Native inputs inside (textbox, checkbox, switch, phone digits) report through events
+    host.addEventListener('input', push);
+    host.addEventListener('change', push);
+    return {
+      focus: () => (typeof comp.focus === 'function' ? comp.focus() : host.querySelector(FOCUSABLE)?.focus()),
+      destroy: () => {
+        host.removeEventListener('input', push);
+        host.removeEventListener('change', push);
+        comp.destroy?.();
+      },
+    };
+  }
+
+  function createEditor(c, row, value, { dense, onChange, onEnter, onEscape, bucket }) {
+    let id = uid('lk-dg-edit');
     const type = colType(c);
     const cls = `lk-input${dense ? ' lk-input--dense' : ''} lk-datagrid__editor`;
     let input;
     let getValue;
 
-    if (typeof c.editor === 'function') {
+    if (c.editor) {
       const host = el('div', 'lk-datagrid__editor-host');
-      const ret = c.editor(host, { value, row, column: c, setValue: (v) => onChange(v) });
-      if (ret instanceof Node && !host.contains(ret)) host.appendChild(ret);
-      return { el: host, id, focus: () => host.querySelector('input, select, textarea, button, [tabindex]')?.focus() };
+      const ctx = { value, row, column: c, dense, setValue: (v) => onChange(v) };
+      const ret = typeof c.editor === 'function' ? c.editor(host, ctx) : componentEditor(c.editor, host, ctx);
+      if (ret instanceof Node) {
+        if (!host.contains(ret)) host.appendChild(ret);
+      } else if (typeof ret === 'function') {
+        bucket?.push(ret);
+      } else if (ret && typeof ret.destroy === 'function') {
+        bucket?.push(() => ret.destroy());
+      }
+
+      // Enter saves from text inputs, Escape cancels — unless a picker inside is open (its keys)
+      host.addEventListener('keydown', (e) => {
+        if (host.querySelector('[aria-expanded="true"]')) return;
+        const t = e.target;
+        const texty = t.tagName === 'INPUT' && !['checkbox', 'radio', 'hidden'].includes(t.type);
+        if (e.key === 'Enter' && texty) { e.preventDefault(); onEnter?.(); }
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); onEscape?.(); }
+      }, true);
+
+      const focusEl = host.querySelector(FOCUSABLE);
+      if (focusEl) {
+        if (!focusEl.id) focusEl.id = id;
+        id = focusEl.id;
+      }
+      const focus = () => (ret && !(ret instanceof Node) && typeof ret.focus === 'function'
+        ? ret.focus()
+        : host.querySelector(FOCUSABLE)?.focus());
+      return { el: host, id, focus };
     }
 
     if (c.values) {
@@ -1058,13 +1195,31 @@ function createGrid(root, opts) {
       return true;
     } catch (err) {
       state.saving = false;
-      state.errors = { _form: err?.message || String(err) };
+      state.errors = serverErrors(err, state);
       editState = state;
       if (editCfg.mode === 'popup') showPopupErrors();
       else renderBody(false);
       if (typeof options.onError === 'function') options.onError({ error: err, action: state.isNew ? 'create' : 'update', grid: api });
       return false;
     }
+  }
+
+  // A rejected save may carry field errors ({ errors: { field: [msg] } }, e.g. an HTTP 422 body):
+  // show them under the matching editors; anything unmatched goes to the form-level message.
+  function serverErrors(err, state) {
+    const errors = {};
+    const leftover = [];
+    Object.entries(extractFieldErrors(err) || {}).forEach(([field, value]) => {
+      const msg = firstMessage(value);
+      if (!msg) return;
+      const col = columns.find((c) => c.field === field && isFieldEditable(c, state.isNew));
+      // Inline mode only draws visible columns
+      if (col && (editCfg.mode === 'popup' || !col.hidden)) errors[field] = msg;
+      else leftover.push(msg);
+    });
+    if (leftover.length) errors._form = leftover.join(' ');
+    else if (!Object.keys(errors).length) errors._form = err?.message || String(err);
+    return errors;
   }
 
   // Popup editor ---------------------------------------------------------------------------------
@@ -1089,6 +1244,7 @@ function createGrid(root, opts) {
         dense: false,
         onChange: (v) => { setField(state.draft, c.field, v); clearFieldError(c.field); },
         onEnter: () => submit(),
+        bucket: popupEditors,
       });
       const label = el('label', 'lk-label', c.title || titleCase(c.field));
       label.htmlFor = editor.id;
@@ -1129,6 +1285,7 @@ function createGrid(root, opts) {
       destroyOnClose: true,
       className: 'lk-datagrid-popup',
       onConfirm() { submit(); return false; }, // stays open until the save succeeds
+      onDestroy() { flushEditors(popupEditors); },
       onClose(reason) {
         if (reason === 'saved') return;
         if (popupDialog) {
@@ -1159,7 +1316,7 @@ function createGrid(root, opts) {
       f.wrap.classList.toggle('lk-field--error', !!msg);
       f.errorEl.hidden = !msg;
       f.errorEl.textContent = msg || '';
-      if (msg && !firstBad) firstBad = f.wrap.querySelector('input, select, textarea');
+      if (msg && !firstBad) firstBad = f.wrap.querySelector(FOCUSABLE);
     });
     popupFormError.hidden = !errors._form;
     popupFormError.textContent = errors._form || '';
@@ -1232,6 +1389,7 @@ function createGrid(root, opts) {
           },
           onEnter: () => saveEdit(),
           onEscape: () => cancelEdit(),
+          bucket: inlineEditors,
         });
         editor.el.setAttribute?.('aria-label', c.title || c.field);
         td.appendChild(editor.el);
@@ -1269,6 +1427,7 @@ function createGrid(root, opts) {
   }
 
   function renderBody(animate) {
+    flushEditors(inlineEditors);
     tbody.textContent = '';
     const rows = ds.view;
     const cols = visibleColumns();
@@ -1721,6 +1880,8 @@ function createGrid(root, opts) {
     if (destroyed) return;
     destroyed = true;
     if (popupDialog) { const dlg = popupDialog; popupDialog = null; dlg.destroy(); }
+    flushEditors(popupEditors);
+    flushEditors(inlineEditors);
     editState = null;
     unsubscribe();
     stopError();

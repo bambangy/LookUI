@@ -78,6 +78,7 @@ function callMaybe(fn, ...args) {
  * @param {string}  [opts.animation]     — 'sweet' (default) | 'calm'
  * @param {boolean} [opts.icon=true]     — show the status icon when a type is set
  * @param {string}  [opts.confirmColor]  — button variant for confirm (default 'primary', 'negative' for error)
+ * @param {Function} [opts.onDestroy]    — called once the dialog is torn down (after the exit animation with destroyOnClose)
  * @returns {{ el: Element, overlayEl: Element, dialogEl: Element, isOpen: boolean, open: Function, close: Function, setTitle: Function, setContent: Function, destroy: Function }}
  */
 export function lkDialog(opts = {}) {
@@ -98,6 +99,7 @@ export function lkDialog(opts = {}) {
     onClose: null,
     onConfirm: null,
     onCancel: null,
+    onDestroy: null,
     type: null,
     animation: undefined,
     icon: true,
@@ -326,6 +328,7 @@ export function lkDialog(opts = {}) {
     if (root.parentNode) {
       root.parentNode.removeChild(root);
     }
+    callMaybe(options.onDestroy, api);
 
     if (wasOpen && previousFocus && typeof previousFocus.focus === 'function' && previousFocus.isConnected) {
       previousFocus.focus({ preventScroll: true });

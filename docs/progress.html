@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Progress</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Progress</h1>
+    <p style="opacity: 0.85;">lkProgress(el, opts) — linear progress bar with value control</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <div style="max-width: 500px; display: flex; flex-direction: column; gap: var(--lk-space-5);">
+      <div>
+        <p class="demo-sub">JS-controlled</p>
+        <div id="demo-progress" class="lk-progress" aria-label="Upload">
+          <div class="lk-progress__bar"></div>
+        </div>
+      </div>
+
+      <div>
+        <p class="demo-sub">JS-controlled with label (max 250)</p>
+        <div id="demo-progress-l" class="lk-progress lk-progress--labeled lk-progress--positive" aria-label="Files">
+          <div class="lk-progress__bar"></div>
+          <span class="lk-progress__label"></span>
+        </div>
+      </div>
+
+      <div>
+        <p class="demo-sub">CSS-only variants</p>
+        <div style="display: flex; flex-direction: column; gap: var(--lk-space-4);">
+          <div class="lk-progress lk-progress--positive">
+            <div class="lk-progress__bar" style="width: 80%;"></div>
+          </div>
+          <div class="lk-progress lk-progress--warning">
+            <div class="lk-progress__bar" style="width: 50%;"></div>
+          </div>
+          <div class="lk-progress lk-progress--striped lk-progress--animated lk-progress--lg">
+            <div class="lk-progress__bar" style="width: 60%;"></div>
+          </div>
+          <div class="lk-progress lk-progress--labeled">
+            <div class="lk-progress__bar" style="width: 72%;"></div>
+            <span class="lk-progress__label">72%</span>
+          </div>
+          <div class="lk-progress lk-progress--dense lk-progress--info">
+            <div class="lk-progress__bar" style="width: 40%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-row" style="margin-top: var(--lk-space-4);">
+      <button id="btn-inc" class="lk-btn lk-btn--primary lk-btn--sm">+10</button>
+      <button id="btn-dec" class="lk-btn lk-btn--secondary lk-btn--sm">-10</button>
+      <button id="btn-indet" class="lk-btn lk-btn--secondary lk-btn--sm">Toggle Indeterminate</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;div id="upload" class="lk-progress lk-progress--labeled"&gt;
+  &lt;div class="lk-progress__bar"&gt;&lt;/div&gt;
+  &lt;span class="lk-progress__label"&gt;&lt;/span&gt;  &lt;!-- optional --&gt;
+&lt;/div&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>const loader = Look.lkProgress('#upload', {
+  value: 0, max: 100,
+});
+
+loader.value = 45;
+loader.indeterminate = true;
+loader.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+  // Page helpers used by the live examples.
+  // makeProgress writes the progress markup into `container` and returns the root.
+  function makeProgress(container, extraClass, withLabel) {
+    const root = document.createElement('div');
+    root.className = 'lk-progress' + (extraClass ? ' ' + extraClass : '');
+    root.style.marginBottom = '10px';
+    root.innerHTML = '<div class="lk-progress__bar"></div>' + (withLabel ? '<span class="lk-progress__label"></span>' : '');
+    container.appendChild(root);
+    return root;
+  }
+
+  function demoButton(container, text, onClick) {
+    const b = document.createElement('button');
+    b.className = 'lk-btn lk-btn--secondary lk-btn--sm';
+    b.style.margin = '8px 6px 0 0';
+    b.textContent = text;
+    b.onclick = onClick;
+    container.appendChild(b);
+    return b;
+  }
+
+LookDocs.render('#api', {
+  name: 'lkProgress',
+  kind: 'Component',
+  signature: 'const progress = Look.lkProgress(element, options);',
+  description: [
+    'Adds imperative control to a linear `.lk-progress` bar: set `value` / `max` and the `.lk-progress__bar` width, the optional `.lk-progress__label` text (rounded percentage) and the ARIA attributes follow. Switch to an animated indeterminate state while the total is unknown.',
+    'The root gets `.lk-progress` and `role="progressbar"`; in determinate mode also `aria-valuenow`, `aria-valuemin="0"` and `aria-valuemax`. Colors, sizes and stripes are CSS modifiers — see [CSS classes](#api-section-classes). All styles also work without JS (set the bar width inline).',
+    'Live examples use page helpers `makeProgress(container, extraClass?, withLabel?)` (writes the markup and returns the root) and `demoButton(container, text, onClick)`.',
+  ],
+  params: [
+    { name: 'element', type: 'Element | string', description: 'The progress root or a CSS selector. Should contain a `.lk-progress__bar`.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The progress instance with the properties and methods below.' },
+
+  options: [
+    {
+      name: 'value', type: 'number', default: '0',
+      description: 'Initial value, clamped to `0 … max`. Non-numeric values become `0`.',
+      examples: [
+        { title: 'Different values', run: true, code: `
+          [0, 25, 66, 100, 150].forEach((value) => {
+            const p = Look.lkProgress(makeProgress(container, 'lk-progress--labeled', true), { value });
+            log('value', value, '→', p.value);
+          });` },
+      ],
+    },
+    {
+      name: 'max', type: 'number', default: '100',
+      description: 'Value that represents 100%. Negative numbers become `0`; with `max: 0` the bar stays empty.',
+      examples: [
+        { title: 'Steps of a wizard (3 of 5)', run: true, code: `
+          Look.lkProgress(makeProgress(container, 'lk-progress--labeled lk-progress--info', true), { value: 3, max: 5 });` },
+        { title: 'Bytes (512 KB of 2 MB)', run: true, code: `
+          const p = Look.lkProgress(makeProgress(container, 'lk-progress--labeled lk-progress--accent', true), { value: 512, max: 2048 });
+          log(p.value + ' / ' + p.max + ' KB');` },
+      ],
+    },
+    {
+      name: 'indeterminate', type: 'boolean', default: 'false',
+      description: 'Show a looping animation instead of a value. Adds `.lk-progress--indeterminate`, clears the inline bar width, hides the label and removes `aria-valuenow/min/max`.',
+      values: [['false', 'Determinate bar showing `value / max` (default).'], ['true', 'Unknown duration — sliding bar animation.']],
+      examples: [
+        { title: 'Indeterminate', run: true, code: `Look.lkProgress(makeProgress(container), { indeterminate: true });` },
+        { title: 'Indeterminate, warning color, large', run: true, code: `Look.lkProgress(makeProgress(container, 'lk-progress--warning lk-progress--lg'), { indeterminate: true });` },
+      ],
+    },
+  ],
+
+  properties: [
+    {
+      name: 'value', type: 'number',
+      description: 'Get or set the value (clamped to `0 … max`). The bar width animates via CSS transition.',
+      examples: [{ title: 'Simulated upload', run: true, code: `
+        const p = Look.lkProgress(makeProgress(container, 'lk-progress--labeled', true));
+        demoButton(container, 'Start', () => {
+          p.value = 0;
+          const t = setInterval(() => {
+            p.value += 10;
+            if (p.value >= p.max) { clearInterval(t); log('done'); }
+          }, 200);
+        });` }],
+    },
+    {
+      name: 'max', type: 'number',
+      description: 'Get or set the maximum (negative → `0`). If the current value is larger it is reduced to the new max.',
+      examples: [{ run: true, code: `
+        const p = Look.lkProgress(makeProgress(container, 'lk-progress--labeled', true), { value: 40 });
+        demoButton(container, 'max = 200', () => { p.max = 200; log('value', p.value, 'max', p.max); });
+        demoButton(container, 'max = 20', () => { p.max = 20; log('value', p.value, 'max', p.max); });` }],
+    },
+    {
+      name: 'indeterminate', type: 'boolean',
+      description: 'Get or set the indeterminate state. Switching back to `false` restores the bar at the current `value`.',
+      examples: [{ run: true, code: `
+        const p = Look.lkProgress(makeProgress(container, 'lk-progress--labeled', true), { value: 60 });
+        demoButton(container, 'toggle indeterminate', () => { p.indeterminate = !p.indeterminate; log('indeterminate', p.indeterminate); });` }],
+    },
+    { name: 'enabled', type: 'boolean', description: 'Shared base property (toggles `.lk-disabled` / `aria-disabled`). It has no visual or functional effect on a progress bar.' },
+    { name: 'hidden', type: 'boolean', description: 'Show/hide the bar (`.lk-hidden`).', examples: [`progress.hidden = progress.value >= progress.max;`] },
+    { name: 'el', type: 'Element', readonly: true, description: 'The progress root element.' },
+    { name: 'id', type: 'string', description: 'Get or set the root element id.' },
+  ],
+
+  methods: [
+    {
+      name: 'destroy', signature: 'destroy() → void',
+      description: 'Removes `.lk-progress`, `.lk-progress--indeterminate`, `role` and the `aria-value*` attributes. The inline bar width and label text are left in place. There are no listeners or timers to release.',
+    },
+  ],
+
+  classes: [
+    {
+      name: '.lk-progress', description: 'Track (full width, 0.5 rem tall, rounded).',
+      examples: [{ title: 'Markup', code: `
+        <div class="lk-progress" aria-label="Upload progress">
+          <div class="lk-progress__bar"></div>        <!-- required -->
+          <span class="lk-progress__label"></span>   <!-- optional; use with --labeled -->
+        </div>` }],
+    },
+    { name: '.lk-progress__bar', description: 'Filled part; width set by JS (or inline style for CSS-only use).' },
+    { name: '.lk-progress__label', description: 'Centered pill with the rounded percentage (e.g. `45%`). JS fills it but does not create it. Hidden while indeterminate.' },
+    {
+      name: '.lk-progress--{color}', description: 'Bar color: `positive`, `warning`, `negative`, `info`, `accent` (default primary).',
+      examples: [{ title: 'Colors', run: true, code: `
+        ['', 'lk-progress--positive', 'lk-progress--warning', 'lk-progress--negative', 'lk-progress--info', 'lk-progress--accent']
+          .forEach((cls, i) => Look.lkProgress(makeProgress(container, cls), { value: 30 + i * 12 }));` }],
+    },
+    {
+      name: '.lk-progress--xs / --sm / --lg / --xl', description: 'Heights 0.125 / 0.25 / 0.75 / 1 rem.',
+      examples: [{ title: 'Sizes', run: true, code: `
+        ['lk-progress--xs', 'lk-progress--sm', '', 'lk-progress--lg', 'lk-progress--xl']
+          .forEach((cls) => Look.lkProgress(makeProgress(container, cls), { value: 65 }));` }],
+    },
+    { name: '.lk-progress--square', description: 'No rounded corners.' },
+    {
+      name: '.lk-progress--striped', description: 'Diagonal stripes on the bar. Add `.lk-progress--animated` to move them.',
+      examples: [{ title: 'Striped / animated', run: true, code: `
+        Look.lkProgress(makeProgress(container, 'lk-progress--striped lk-progress--lg'), { value: 50 });
+        Look.lkProgress(makeProgress(container, 'lk-progress--striped lk-progress--animated lk-progress--lg lk-progress--positive lk-progress--square'), { value: 75 });` }],
+    },
+    { name: '.lk-progress--animated', description: 'Animates the stripes (use with `--striped`).' },
+    { name: '.lk-progress--indeterminate', description: 'Looping 30%-wide bar. Toggled by the `indeterminate` option/property.' },
+    { name: '.lk-progress--labeled', description: 'Taller (1.25 rem) track that fits the label pill.' },
+    {
+      name: '.lk-progress--dense', description: 'Thin (0.25 rem) track; with `--labeled`, 0.875 rem and a smaller label.',
+      examples: [{ run: true, code: `
+        Look.lkProgress(makeProgress(container, 'lk-progress--dense'), { value: 40 });
+        Look.lkProgress(makeProgress(container, 'lk-progress--dense lk-progress--labeled', true), { value: 80 });` }],
+    },
+  ],
+
+  notes: [
+    '**No events:** progress is display-only; it has no callbacks.',
+    '**Accessibility:** add an `aria-label` (or `aria-labelledby`) on the root so screen readers announce what is progressing.',
+    '**Label text** is always the rounded percentage of `value / max`, not the raw value. For custom text (e.g. "3 of 5"), leave out `.lk-progress__label` and render your own.',
+  ],
+});
+</script>
+<script>
+  const out = document.getElementById('output');
+  const prog = Look.lkProgress('#demo-progress', { value: 30, max: 100 });
+  const progL = Look.lkProgress('#demo-progress-l', { value: 100, max: 250 });
+  out.textContent = 'value = ' + prog.value;
+
+  document.getElementById('btn-inc').onclick = () => {
+    prog.value += 10; progL.value += 25;
+    out.textContent = 'value = ' + prog.value + '  |  labeled: ' + progL.value + ' / ' + progL.max;
+  };
+  document.getElementById('btn-dec').onclick = () => {
+    prog.value -= 10; progL.value -= 25;
+    out.textContent = 'value = ' + prog.value + '  |  labeled: ' + progL.value + ' / ' + progL.max;
+  };
+  document.getElementById('btn-indet').onclick = () => { prog.indeterminate = !prog.indeterminate; out.textContent = 'indeterminate = ' + prog.indeterminate; };
+</script>
+</body>
+</html>

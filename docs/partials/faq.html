@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!-- A full page: lkTabs / lkCarousel take only what `select` matches (here: #faq) -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FAQ (partial)</title>
+  <script>document.title = 'scripts in loaded pages do not run unless scripts: true';</script>
+</head>
+<body>
+  <header>Site header — not loaded when select: '#faq' is used</header>
+  <section id="faq">
+    <h3 style="margin: 0 0 var(--lk-space-3);">Frequently asked</h3>
+    <details open style="margin-bottom: var(--lk-space-2);">
+      <summary><strong>Does LookUI need a build step?</strong></summary>
+      <p style="margin: var(--lk-space-2) 0;">No. One CSS file and one JS file; call the factories on your markup.</p>
+    </details>
+    <details style="margin-bottom: var(--lk-space-2);">
+      <summary><strong>Can tab content come from the server?</strong></summary>
+      <p style="margin: var(--lk-space-2) 0;">Yes — give the tab a <code>url</code>. This answer came from <code>partials/faq.html</code> (only <code>#faq</code>).</p>
+    </details>
+    <details>
+      <summary><strong>Are scripts in loaded HTML executed?</strong></summary>
+      <p style="margin: var(--lk-space-2) 0;">Not by default. Pass <code>scripts: true</code> for trusted pages.</p>
+    </details>
+  </section>
+  <footer>Site footer</footer>
+</body>
+</html>

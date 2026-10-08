@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Tabs</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+  <style>
+    .demo-file-note { display: none; }
+    .is-file .demo-file-note { display: block; }
+    .demo-variants { display: grid; gap: var(--lk-space-6); }
+    .demo-vertical { min-height: 12rem; }
+    .demo-counter { font-family: var(--lk-font-mono, monospace); font-size: var(--lk-text-sm); color: var(--lk-text-muted); }
+  </style>
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Tabs</h1>
+    <p style="opacity: 0.85;">lkTabs(el, opts) — tab list from options or &lt;ul&gt; markup; panels from text, HTML, a template or a URL</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <p class="demo-file-note lk-card" style="padding: var(--lk-space-4); margin-bottom: var(--lk-space-6); border-left: 4px solid var(--lk-warning);">
+    This page is opened from <code>file://</code>, where browsers block <code>fetch()</code>. The URL tabs show their error state — serve the folder (e.g. <code>npx serve .</code>) or open the GitHub Pages docs to see them load.
+  </p>
+
+  <!-- 1 ------------------------------------------------------------------------------------------ -->
+  <section class="demo-section">
+    <p class="demo-section__title">Built from options — every content type</p>
+    <p class="demo-sub">The tab list is built inside <code>#tabs-basic</code>; panels go into the container <code>#tabs-basic-panels</code>.</p>
+
+    <div id="tabs-basic"></div>
+    <div id="tabs-basic-panels"></div>
+
+    <template id="tpl-settings">
+      <div style="display: grid; gap: var(--lk-space-3); max-width: 24rem;">
+        <label class="lk-checkbox"><input type="checkbox" checked /> Email notifications</label>
+        <label class="lk-checkbox"><input type="checkbox" /> Weekly digest</label>
+      </div>
+    </template>
+
+    <div id="tabs-basic-out" class="demo-output"></div>
+  </section>
+
+  <!-- 2 ------------------------------------------------------------------------------------------ -->
+  <section class="demo-section">
+    <p class="demo-section__title">From existing &lt;ul&gt;&lt;li&gt; markup</p>
+    <p class="demo-sub">
+      Items keep their markup. <code>data-url</code>, <code>data-select</code>, <code>data-template</code>, <code>data-render</code>, <code>data-name</code>, <code>data-disabled</code>
+      and <code>&lt;a href="#panel"&gt;</code> are read; <code>opts.tabs[i]</code> adds to / overrides item <em>i</em>.
+    </p>
+
+    <ul id="tabs-markup">
+      <li data-name="intro">Intro</li>
+      <li data-name="team" data-url="partials/team.html">Team</li>
+      <li><a href="#existing-panel">Existing panel</a></li>
+      <li data-name="soon" data-disabled>Coming soon</li>
+    </ul>
+    <div id="tabs-markup-panels">
+      <div id="existing-panel">
+        <p style="margin: 0;">This element was already in the page. lkTabs only shows and hides it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 ------------------------------------------------------------------------------------------ -->
+  <section class="demo-section">
+    <p class="demo-section__title">Variants — line, pill, box · horizontal and vertical</p>
+
+    <div class="demo-variants">
+      <div>
+        <p class="demo-sub"><code>variant: 'line'</code> (default)</p>
+        <div id="v-line"></div>
+      </div>
+      <div>
+        <p class="demo-sub"><code>variant: 'pill'</code>, <code>dense: true</code></p>
+        <div id="v-pill"></div>
+      </div>
+      <div>
+        <p class="demo-sub"><code>variant: 'box'</code>, <code>fill: true</code></p>
+        <div id="v-box"></div>
+      </div>
+      <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="gap: var(--lk-space-5);">
+        <div><p class="demo-sub"><code>orientation: 'vertical'</code></p><div id="vv-line" class="demo-vertical"></div></div>
+        <div><p class="demo-sub">vertical pill</p><div id="vv-pill" class="demo-vertical"></div></div>
+        <div><p class="demo-sub">vertical box</p><div id="vv-box" class="demo-vertical"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 ------------------------------------------------------------------------------------------ -->
+  <section class="demo-section">
+    <p class="demo-section__title">Render modes</p>
+    <p class="demo-sub">
+      Each panel shows how many times its content function ran and keeps a text box so you can see whether state survives switching tabs.
+    </p>
+
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="gap: var(--lk-space-5); align-items: start;">
+      <div>
+        <p class="demo-sub"><strong><code>render: 'lazy'</code></strong> (default) — rendered on first activation, then kept.</p>
+        <div id="r-lazy"></div>
+      </div>
+      <div>
+        <p class="demo-sub"><strong><code>render: 'eager'</code></strong> — every panel rendered up front.</p>
+        <div id="r-eager"></div>
+      </div>
+      <div>
+        <p class="demo-sub"><strong><code>render: 'active'</code></strong> — rendered on every activation, destroyed on leave.</p>
+        <div id="r-active"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 ------------------------------------------------------------------------------------------ -->
+  <section class="demo-section">
+    <p class="demo-section__title">Dynamic tabs &amp; beforeChange</p>
+    <p class="demo-sub">Type in the <em>Draft</em> tab, then try to leave it: <code>beforeChange</code> asks first.</p>
+
+    <div class="demo-row">
+      <button id="dyn-add" class="lk-btn lk-btn--primary lk-btn--sm">add()</button>
+      <button id="dyn-remove" class="lk-btn lk-btn--secondary lk-btn--sm">remove(active)</button>
+      <button id="dyn-toggle" class="lk-btn lk-btn--secondary lk-btn--sm">disable / enable “Archive”</button>
+      <button id="dyn-reload" class="lk-btn lk-btn--ghost lk-btn--sm">reload()</button>
+    </div>
+    <div id="tabs-dyn"></div>
+    <div id="tabs-dyn-out" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const tabs = Look.lkTabs('#tabs', {          // a container (list is built) or an existing &lt;ul&gt;
+  container: 'tab-panels',                     // element id (or Element) receiving the panels
+  variant: 'line',                             // 'line' | 'pill' | 'box'
+  orientation: 'horizontal',                   // or 'vertical'
+  render: 'lazy',                              // 'lazy' | 'eager' | 'active'
+  tabs: [
+    { name: 'overview', title: 'Overview', content: 'Plain text, escaped' },
+    { name: 'details',  title: 'Details',  html: '&lt;b&gt;Raw&lt;/b&gt; HTML' },
+    { name: 'team',     title: 'Team',     url: '/partials/team', select: '#team' },
+    { name: 'stats',    title: 'Stats',    content: async (panel) =&gt; buildChart(await api.stats()) },
+  ],
+  onChange(name, prev) { console.log(prev, '→', name); },
+});
+tabs.select('team');
+tabs.reload('team');      // fetch again
+tabs.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+  if (location.protocol === 'file:') document.body.classList.add('is-file');
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  // 1 — every content type
+  const basicOut = document.getElementById('tabs-basic-out');
+  Look.lkTabs('#tabs-basic', {
+    container: 'tabs-basic-panels',
+    tabs: [
+      { name: 'text', title: 'Text', icon: 'circle-info', content: 'A plain string is shown as text — <b>tags</b> stay visible.' },
+      { name: 'html', title: 'HTML', html: '<p style="margin:0">Raw <strong>HTML</strong> with a <a href="#tabs-markup">link</a>. Use it for markup you trust.</p>' },
+      { name: 'url', title: 'URL', icon: 'link', url: 'partials/team.html' },
+      { name: 'faq', title: 'URL + select', url: 'partials/faq.html', select: '#faq' },
+      { name: 'template', title: 'Template', template: '#tpl-settings' },
+      {
+        name: 'async', title: 'Async function', badge: 3,
+        content: async () => {
+          await wait(900);
+          const ul = document.createElement('ul');
+          ['Invoice #1042 paid', 'New sign-up: Dewi', 'Backup finished'].forEach((t) => {
+            const li = document.createElement('li');
+            li.textContent = t;
+            ul.appendChild(li);
+          });
+          return ul;
+        },
+      },
+      { name: 'broken', title: 'Broken URL', url: 'partials/missing.html' },
+    ],
+    onChange: (name, prev) => { basicOut.textContent = `onChange: ${prev} → ${name}`; },
+    onLoad: (name) => { basicOut.textContent += `\nonLoad: ${name}`; },
+    onError: (err, name) => { basicOut.textContent += `\nonError: ${name} — ${err.message}`; },
+  });
+
+  // 2 — existing markup
+  Look.lkTabs('#tabs-markup', {
+    container: 'tabs-markup-panels',
+    tabs: [{ content: 'The first <li> got its content from opts.tabs[0].' }],
+  });
+
+  // 3 — variants
+  const sample = () => [
+    { title: 'Overview', icon: 'home', content: 'Overview panel.' },
+    { title: 'Activity', badge: 12, content: 'Activity panel.' },
+    { title: 'Settings', icon: 'settings', content: 'Settings panel.' },
+    { title: 'Disabled', disabled: true, content: '—' },
+  ];
+  Look.lkTabs('#v-line', { tabs: sample() });
+  Look.lkTabs('#v-pill', { tabs: sample(), variant: 'pill', dense: true });
+  Look.lkTabs('#v-box', { tabs: sample(), variant: 'box', fill: true });
+  Look.lkTabs('#vv-line', { tabs: sample(), orientation: 'vertical' });
+  Look.lkTabs('#vv-pill', { tabs: sample(), orientation: 'vertical', variant: 'pill' });
+  Look.lkTabs('#vv-box', { tabs: sample(), orientation: 'vertical', variant: 'box' });
+
+  // 4 — render modes
+  function counted(label) {
+    let runs = 0;
+    return (panel) => {
+      runs += 1;
+      const p = document.createElement('p');
+      p.className = 'demo-counter';
+      p.textContent = `${label}: rendered ${runs}× (last ${new Date().toLocaleTimeString()})`;
+      const input = document.createElement('input');
+      input.className = 'lk-input';
+      input.placeholder = 'Type, switch tabs, come back';
+      panel.append(p, input);
+    };
+  }
+  ['lazy', 'eager', 'active'].forEach((mode) => {
+    Look.lkTabs(`#r-${mode}`, {
+      render: mode,
+      variant: 'pill',
+      dense: true,
+      tabs: ['A', 'B', 'C'].map((t) => ({ title: `Tab ${t}`, content: counted(`Tab ${t}`) })),
+    });
+  });
+
+  // 5 — dynamic
+  const dynOut = document.getElementById('tabs-dyn-out');
+  let dirty = false;
+  let added = 0;
+  const dyn = Look.lkTabs('#tabs-dyn', {
+    variant: 'box',
+    tabs: [
+      {
+        name: 'draft', title: 'Draft',
+        content: (panel) => {
+          const ta = document.createElement('textarea');
+          ta.className = 'lk-input';
+          ta.rows = 3;
+          ta.placeholder = 'Unsaved text…';
+          ta.addEventListener('input', () => { dirty = ta.value.trim() !== ''; });
+          panel.appendChild(ta);
+        },
+      },
+      { name: 'feed', title: 'Feed', content: async () => { await wait(500); return `Loaded at ${new Date().toLocaleTimeString()}`; } },
+      { name: 'archive', title: 'Archive', content: 'Old items.' },
+    ],
+    beforeChange: (next, prev) => {
+      if (prev?.name === 'draft' && dirty && !window.confirm('Leave the draft? Your text stays, but is not saved.')) {
+        dynOut.textContent = 'beforeChange → false (stayed on Draft)';
+        return false;
+      }
+      return true;
+    },
+    onChange: (name, prev) => { dynOut.textContent = `onChange: ${prev} → ${name}`; },
+  });
+  document.getElementById('dyn-add').onclick = () => {
+    added += 1;
+    dyn.add({ name: `new-${added}`, title: `New ${added}`, content: `Tab added at ${new Date().toLocaleTimeString()}`, active: true });
+  };
+  document.getElementById('dyn-remove').onclick = () => { dynOut.textContent = `remove(${dyn.active}) → ${dyn.remove(dyn.active)}`; };
+  document.getElementById('dyn-toggle').onclick = () => {
+    const a = dyn.get('archive');
+    if (!a) return;
+    if (a.disabled) dyn.enable('archive'); else dyn.disable('archive');
+    dynOut.textContent = `archive disabled: ${dyn.get('archive').disabled}`;
+  };
+  document.getElementById('dyn-reload').onclick = () => {
+    dyn.reload().then((ok) => { dynOut.textContent = `reload(${dyn.active}) → ${ok}`; });
+  };
+</script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkTabs',
+  kind: 'Component',
+  signature: 'const tabs = Look.lkTabs(element, options);',
+  description: [
+    'Tabs with a tab list and one panel per tab. The list is either **an existing `<ul>`/`<ol>`** (its `<li>` items become tabs and keep their markup) or **built from `options.tabs`** inside a container element. Both can be combined: `options.tabs[i]` adds to / overrides `<li>` number *i*, and extra entries append new tabs.',
+    'Panels are created inside `options.container` (an element id or Element). A tab can also point at an existing element with `panel` (or `<a href="#id">` / `data-panel`), which is only shown and hidden.',
+    'Content per tab — use one: `content` (plain text, a Node, or a function), `html` (raw markup), `url` (fetched asynchronously, optionally narrowed with `select`) or `template` (a `<template>` to clone). While a URL or async function loads, the panel shows a spinner; a failed load shows the message with a **Retry** button.',
+    'Keyboard: ←/→ (↑/↓ when vertical), Home and End move between enabled tabs; with `activation: \'manual\'` Enter/Space select. Roles and `aria-selected` / `aria-controls` follow the WAI-ARIA tabs pattern.',
+  ],
+  params: [
+    { name: 'element', type: 'Element | string', description: 'A `<ul>`/`<ol>` to enhance, or a container element (the list is built inside it, or an existing direct `<ul>` child is used).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The tabs instance.' },
+  options: [
+    {
+      name: 'tabs', type: 'Array', default: '[]',
+      description: 'Tab definitions: `{ name, title, icon, badge, disabled, active, render, content | html | url | template | panel, select, fetchOptions, transform, scripts, onLoad }`. See **Tab options** below.',
+      examples: [{ run: true, code: `
+        Look.lkTabs(container, {
+          tabs: [
+            { name: 'a', title: 'Text', content: 'Hello <b>escaped</b>' },
+            { name: 'b', title: 'HTML', html: 'Hello <b>bold</b>' },
+            { name: 'c', title: 'Function', content: (panel) => { panel.textContent = 'Built by a function'; } },
+          ],
+          onChange: (name) => log('active:', name),
+        });` }],
+    },
+    { name: 'container', type: 'Element | string', default: 'created', description: 'Where panels go: an element id (`\'panels\'` or `\'#panels\'`) or an Element. Without it a container is created after the list (or inside the element when the list was built).' },
+    {
+      name: 'orientation', type: 'string', default: "'horizontal'",
+      description: 'Tab list direction. When the list is built inside a container, the container gets `.lk-tabs-layout--vertical` and shows list and panels side by side.',
+      values: [['horizontal', 'Tabs in a row (scrolls horizontally when they do not fit).'], ['vertical', 'Tabs stacked; ↑/↓ navigate.']],
+      examples: [{ run: true, code: `
+        Look.lkTabs(container, {
+          orientation: 'vertical',
+          tabs: [{ title: 'Profile', content: 'Profile' }, { title: 'Security', content: 'Security' }, { title: 'Billing', content: 'Billing' }],
+        });` }],
+    },
+    {
+      name: 'variant', type: 'string', default: "'line'",
+      values: [['line', 'Underline that slides to the active tab.'], ['pill', 'Rounded filled pill that slides to the active tab.'], ['box', 'Folder tabs joined to a bordered panel area.']],
+      description: 'Visual style.',
+      examples: [{ run: true, code: `
+        Look.lkTabs(container, {
+          variant: 'pill',
+          tabs: [{ title: 'Day', content: 'Day view' }, { title: 'Week', content: 'Week view' }, { title: 'Month', content: 'Month view' }],
+        });` }],
+    },
+    {
+      name: 'render', type: 'string', default: "'lazy'",
+      description: 'When panel content is rendered (also settable per tab). Aliases: `once` = lazy, `always` = eager, `each` = active.',
+      values: [
+        ['lazy', 'On the first activation; kept afterwards (state and loaded HTML survive).'],
+        ['eager', 'All panels at once when the tabs are created (URLs are fetched up front).'],
+        ['active', 'On every activation; the content is destroyed when the tab is left, so URLs load again and functions run again.'],
+      ],
+    },
+    { name: 'active', type: 'string | number', default: 'first enabled tab', description: 'Tab shown first (name or index). A tab option `active: true` does the same.' },
+    {
+      name: 'activation', type: 'string', default: "'auto'",
+      values: [['auto', 'Arrow keys select the tab they move to.'], ['manual', 'Arrow keys only move focus; Enter/Space select. Use it when panels are expensive (URLs).']],
+      description: 'Keyboard activation mode.',
+    },
+    { name: 'fill', type: 'boolean', default: 'false', description: 'Horizontal tabs share the full width equally.' },
+    { name: 'dense', type: 'boolean', default: 'false', description: 'Compact tabs and panel padding.' },
+    { name: 'loadingText', type: 'string', default: "'Loading…'", description: 'Text beside the spinner while a panel loads.' },
+    { name: 'beforeChange', type: 'Function', default: '—', description: '`(next, prev) => boolean` — return `false` to stay on the current tab. `next` / `prev` are tab descriptors (`{ name, index, title, el, panel, disabled }`).' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(name, prevName, tab)` after the user or `select()` changed the tab.' },
+    { name: 'onLoad', type: 'Function', default: '—', description: '`(name, panel, tab)` after a panel\'s content is in place — the place to enhance loaded HTML with LookUI components.' },
+    { name: 'onError', type: 'Function', default: '—', description: '`(error, name, panel, tab)` when a URL or async function fails. `error.status` is set for HTTP errors.' },
+  ],
+  properties: [
+    { name: 'active', type: 'string | number', description: 'Name of the active tab (its index when it has no name). Setting it selects a tab.' },
+    { name: 'activeIndex', type: 'number', description: 'Index of the active tab (`-1` when none). Settable.' },
+    { name: 'tabs', type: 'Object[]', readonly: true, description: 'Descriptors `{ name, index, title, el, panel, disabled, options }`.' },
+    { name: 'count', type: 'number', readonly: true, description: 'Number of tabs.' },
+    { name: 'list / container', type: 'Element', readonly: true, description: 'The tab list and the panel container.' },
+    { name: 'el / id / hidden / enabled', type: '—', description: 'Standard component properties.' },
+  ],
+  methods: [
+    { name: 'select', signature: 'select(nameOrIndex) → boolean', description: 'Activate a tab. Returns `false` for disabled/unknown tabs or when `beforeChange` refuses.' },
+    { name: 'get', signature: 'get(nameOrIndex) → Object | null', description: 'Tab descriptor.' },
+    { name: 'panel', signature: 'panel(nameOrIndex) → Element | null', description: 'The panel element of a tab.' },
+    { name: 'reload', signature: 'reload(nameOrIndex?) → Promise<boolean>', description: 'Render a tab\'s content again (default: the active tab). URL tabs fetch again. An inactive lazy tab renders again on its next activation.' },
+    {
+      name: 'add', signature: 'add(tab, index?) → Object',
+      description: 'Insert a tab (same shape as an `options.tabs` item) at `index` (default: end). `active: true` selects it.',
+      examples: [{ run: true, code: `
+        const t = Look.lkTabs(container, { tabs: [{ title: 'One', content: '1' }] });
+        let n = 1;
+        demoBtn(container, 'add()', () => t.add({ title: 'Tab ' + (++n), content: String(n), active: true }));` }],
+    },
+    { name: 'remove', signature: 'remove(nameOrIndex) → boolean', description: 'Remove a tab and the panel it created. Removing the active tab activates its neighbour.' },
+    { name: 'disable / enable', signature: 'disable(nameOrIndex) · enable(nameOrIndex)', description: 'Toggle a tab. Disabling the active tab moves to the first enabled one.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes listeners, created tabs/panels/containers and the indicator, aborts pending requests, and restores enhanced markup.' },
+  ],
+  classes: [
+    { name: '.lk-tabs', description: 'Tab list (`role="tablist"`). Modifiers: `--line`, `--pill`, `--box`, `--vertical`, `--fill`, `--dense`.' },
+    { name: '.lk-tabs__tab', description: 'A tab (`<li role="tab">`); `--active`, `--disabled`. Built tabs contain `.lk-icon`, `.lk-tabs__label` and `.lk-tabs__badge`.' },
+    { name: '.lk-tabs__indicator', description: 'The sliding underline / pill (line and pill variants).' },
+    { name: '.lk-tabs__panels', description: 'Panel container; `--box` (bordered, with box tabs), `--dense`.' },
+    { name: '.lk-tabs__panel', description: 'A panel (`role="tabpanel"`); `--enter` plays the fade-in.' },
+    { name: '.lk-tabs-layout', description: 'Wrapper for list + panels; `--vertical` puts them side by side. Added automatically when the list is built inside a container; add it yourself around a `<ul>` and its container.' },
+    { name: '.lk-async__status', description: 'Loading / error state inside a panel (`--loading`, `--error`, with `.lk-async__retry`). Shared with lkCarousel.' },
+  ],
+  tokens: [
+    { name: '--lk-tabs-active', default: 'var(--lk-primary)', description: 'Active color (text, underline, pill).' },
+    { name: '--lk-tabs-pad-x / --lk-tabs-pad-y', default: 'space-4 / space-2', description: 'Tab padding.' },
+    { name: '--lk-tabs-gap', default: 'space-1', description: 'Gap between tabs.' },
+    { name: '--lk-tabs-duration / --lk-tabs-easing', default: 'duration-base / easing-out', description: 'Indicator slide motion.' },
+  ],
+  notes: [
+    '**Tab options.** `name` (key for `select()` etc.), `title` (text or Node), `icon` (Look icon name), `badge`, `disabled`, `active`, `render` (overrides the global mode), and one content source: `content` — text, Node, or `(panel, { name, tab, tabs }) => Node | text | { html } | cleanup function | Promise of those`; `html`; `url` with `select` (CSS selector picked from the response), `fetchOptions` (passed to `fetch`), `transform(text, response)` (return HTML text or a Node) and `scripts` (run `<script>` tags of the response — off by default); `template`; or `panel` (existing element). Per-tab `onLoad(panel, tab)` is also called.',
+    '**Markup attributes.** On `<li>`: `data-name`, `data-url`, `data-select`, `data-template`, `data-render`, `data-panel`, `data-disabled` (or `aria-disabled="true"`); an `<a href="#id">` inside the item names an existing panel.',
+    '**Security.** `html` and `url` content are inserted as markup. Use them only with content you trust; scripts in fetched pages do not run unless `scripts: true`. Links in fetched HTML resolve against the current page, not the fetched file.',
+    '**Enhancing loaded HTML.** Use `onLoad` to call factories on the new markup (e.g. `Look.lkTextbox(panel.querySelector(\'#email\'))`). A function `content` can return a cleanup function, called when the content is destroyed (`render: \'active\'`, `reload()`, `remove()`, `destroy()`).',
+  ],
+});
+
+// Helper for the live examples above
+function demoBtn(container, text, onClick) {
+  const b = document.createElement('button');
+  b.className = 'lk-btn lk-btn--secondary lk-btn--sm';
+  b.style.marginTop = 'var(--lk-space-3)';
+  b.textContent = text;
+  b.onclick = onClick;
+  container.appendChild(b);
+  return b;
+}
+</script>
+</body>
+</html>

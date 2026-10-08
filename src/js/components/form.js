@@ -4,6 +4,11 @@
 
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { wrapField, applyFieldProps } from '../helpers/field.js';
+import { attachValidation } from '../helpers/validation.js';
+
+// Validation options shared by every form component (see helpers/validation.js):
+//   rules: [(value, comp) => true | 'message', 'required', { min, max, minLength, maxLength, pattern, email, message }]
+//   validate: true   — run the rules when focus leaves the field
 
 function createAffixSlot(className) {
   const slot = document.createElement('span');
@@ -34,6 +39,30 @@ function setAffixContent(slot, content) {
   };
   append(content);
 }
+// Checkbox / switch: the value is `checked`; "required" means it must be on
+function attachCheckableValidation(comp, node, field, opts) {
+  return attachValidation(comp, {
+    opts,
+    getValue: () => node.checked,
+    label: field.getLabel,
+    labels: () => field.labels,
+    required: () => node.required,
+    requiredMessage: () => 'This option is required',
+    roots: () => [field.wrapper || node],
+    changeTargets: [node],
+    setError: field.setError,
+    clearError: field.clearError,
+  });
+}
+
+function radioGroup(node) {
+  if (!node.name) return [node];
+  const scope = node.form || node.getRootNode?.() || document;
+  const name = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(node.name) : node.name;
+  const list = Array.from(scope.querySelectorAll(`input[type="radio"][name="${name}"]`));
+  return list.length ? list : [node];
+}
+
 // ---------------------------------------------------------------------------
 // Textbox — wraps <input> or <textarea>
 // ---------------------------------------------------------------------------
@@ -47,6 +76,8 @@ function setAffixContent(slot, content) {
  * @param {boolean} [opts.required]
  * @param {boolean} [opts.readonly]
  * @param {string} [opts.type]     — input type (text, email, password, etc.)
+ * @param {Array}   [opts.rules]   — validation rules
+ * @param {boolean} [opts.validate] — validate when focus leaves the field
  * @returns {Object}
  */
 export function lkTextbox(el, opts = {}) {
@@ -113,7 +144,20 @@ export function lkTextbox(el, opts = {}) {
       enumerable: true,
     },
   });
+  comp.focus = (o) => node.focus(o);
+  const validation = attachValidation(comp, {
+    opts,
+    getValue: () => node.value,
+    label: field.getLabel,
+    labels: () => field.labels,
+    required: () => node.required,
+    roots: () => [affixWrap],
+    changeTargets: [node],
+    setError: field.setError,
+    clearError: field.clearError,
+  });
   comp.destroy = function () {
+    validation.destroy();
     node.classList.remove('lk-input', 'lk-input--error', 'lk-input--affixed');
     node.removeAttribute('aria-invalid');
     if (affixWrap.parentNode) {
@@ -160,8 +204,12 @@ export function lkCheckbox(el, opts = {}) {
   });
 
   comp.toggle = function () { node.checked = !node.checked; };
+  comp.focus = (o) => node.focus(o);
+
+  const validation = attachCheckableValidation(comp, node, field, opts);
 
   comp.destroy = function () {
+    validation.destroy();
     node.classList.remove('lk-checkbox', 'lk-input--error');
     node.removeAttribute('aria-invalid');
     field.destroyField();
@@ -201,8 +249,25 @@ export function lkRadio(el, opts = {}) {
     set(v) { node.checked = !!v; },
     enumerable: true,
   });
+  comp.focus = (o) => node.focus(o);
+
+  // A radio validates its whole group (same name, same form): the value is the checked one
+  const group = () => radioGroup(node);
+  const validation = attachValidation(comp, {
+    opts,
+    getValue: () => group().find((r) => r.checked)?.value ?? null,
+    label: field.getLabel,
+    labels: () => field.labels,
+    required: () => group().some((r) => r.required),
+    requiredMessage: () => 'Please choose an option',
+    roots: () => group().map((r) => r.closest('.lk-field') || r),
+    changeTargets: group(),
+    setError: field.setError,
+    clearError: field.clearError,
+  });
 
   comp.destroy = function () {
+    validation.destroy();
     node.classList.remove('lk-radio', 'lk-input--error');
     node.removeAttribute('aria-invalid');
     field.destroyField();
@@ -258,8 +323,12 @@ export function lkSwitch(el, opts = {}) {
     node.checked = !node.checked;
     node.setAttribute('aria-checked', String(node.checked));
   };
+  comp.focus = (o) => node.focus(o);
+
+  const validation = attachCheckableValidation(comp, node, field, opts);
 
   comp.destroy = function () {
+    validation.destroy();
     node.removeEventListener('change', onToggle);
     node.classList.remove('lk-switch', 'lk-input--error');
     node.removeAttribute('role');
