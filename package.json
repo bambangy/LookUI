@@ -1,6 +1,6 @@
 {
   "name": "@lookui/core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A no-frills JavaScript & CSS library for UI components. Imperative, predictable, and MVC-friendly.",
   "author": {
     "name": "Bambang Yudhotomo",

@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Component registry — factory functions for each UI component
 
-import { qs } from '../core/index.js';
+import { resolveEl, applyBase, deprecate } from '../helpers/base.js';
 import { lkFocusTrap } from '../behaviors/index.js';
 import { readDurationMs } from '../helpers/motion.js';
 
@@ -11,34 +11,60 @@ import { readDurationMs } from '../helpers/motion.js';
 /**
  * Enhance a button element with Look behavior.
  * @param {Element|string} el  — element or CSS selector
- * @returns {{ el: Element, destroy: Function }}
+ * @param {Object}   [opts]
+ * @param {Function} [opts.onClick] — (event, { component }) on click (not called while disabled)
+ * @returns {{ el: Element, id: string, hidden: boolean, enabled: boolean, destroy: Function }}
  */
-export function lkButton(el) {
-  const node = typeof el === 'string' ? qs(el) : el;
-  if (!node) throw new Error(`Look.lkButton: element not found — "${el}"`);
-
+export function lkButton(el, opts = {}) {
+  const node = resolveEl(el, 'lkButton');
+  const addedClass = !node.classList.contains('lk-btn');
   node.classList.add('lk-btn');
 
-  return {
-    el: node,
-    destroy() {
-      node.classList.remove('lk-btn');
-    },
+  const comp = {};
+  applyBase(comp, node);
+
+  function onClick(event) {
+    if (!comp.enabled) return;
+    opts.onClick(event, { component: comp });
+  }
+  if (typeof opts.onClick === 'function') node.addEventListener('click', onClick);
+
+  comp.destroy = function () {
+    node.removeEventListener('click', onClick);
+    if (addedClass) node.classList.remove('lk-btn');
   };
+
+  return comp;
 }
 
 // --- Modal ---
 
 /**
- * Create and manage a modal dialog.
- * @param {Element|string} triggerEl  — element or selector for the open trigger
- * @param {Element|string} modalEl    — element or selector for the modal container
- * @returns {{ open: Function, close: Function, isOpen: boolean, destroy: Function }}
+ * Manage a modal dialog built from markup.
+ *
+ *   const modal = Look.lkModal('#modal-container', { trigger: '#open-btn', onClose: (reason) => {} });
+ *
+ * The 0.2 order `lkModal(trigger, modal)` still works (deprecated, removed in 1.0).
+ *
+ * @param {Element|string} modalEl — the modal container (.lk-modal-backdrop / wrapper holding .lk-modal)
+ * @param {Object}   [opts]
+ * @param {Element|string} [opts.trigger] — element that toggles the modal on click
+ * @param {boolean}  [opts.open]          — open immediately
+ * @param {boolean}  [opts.closeOnEscape] — default true
+ * @param {Function} [opts.onOpen]        — (component)
+ * @param {Function} [opts.onClose]       — (reason, component); reason 'close' | 'escape' | 'toggle' | custom
+ * @returns {Object}
  */
-export function lkModal(triggerEl, modalEl) {
-  const trigger = typeof triggerEl === 'string' ? qs(triggerEl) : triggerEl;
-  const modal   = typeof modalEl   === 'string' ? qs(modalEl)   : modalEl;
-  if (!trigger || !modal) throw new Error('Look.lkModal: trigger or modal element not found.');
+export function lkModal(modalEl, opts = {}) {
+  // Legacy signature: lkModal(triggerEl, modalEl)
+  if (typeof opts === 'string' || (typeof Element !== 'undefined' && opts instanceof Element)) {
+    deprecate('lkModal.signature', 'lkModal(trigger, modal) is now lkModal(modal, { trigger })');
+    return lkModal(opts, { trigger: modalEl });
+  }
+
+  const modal = resolveEl(modalEl, 'lkModal');
+  const trigger = opts.trigger != null ? resolveEl(opts.trigger, 'lkModal') : null;
+  const closeOnEscape = opts.closeOnEscape !== false;
 
   // Fallback for the exit timer; the real value is --lk-modal-exit-duration.
   const EXIT_MS = 180;
@@ -52,6 +78,9 @@ export function lkModal(triggerEl, modalEl) {
   let closeTimer = null;
   let previousFocus = null;
 
+  const comp = {};
+  applyBase(comp, modal);
+
   function clearCloseTimer() {
     if (closeTimer) {
       clearTimeout(closeTimer);
@@ -60,23 +89,25 @@ export function lkModal(triggerEl, modalEl) {
   }
 
   function open() {
-    if (isOpen) return;
+    if (isOpen) return comp;
     isOpen = true;
     clearCloseTimer();
     previousFocus = document.activeElement;
     modal.classList.remove('lk-modal--closing');
     modal.classList.add('lk-modal--open');
-    trigger.setAttribute('aria-expanded', 'true');
+    trigger?.setAttribute('aria-expanded', 'true');
     if (typeof dialog.focus === 'function') dialog.focus({ preventScroll: true });
+    if (typeof opts.onOpen === 'function') opts.onOpen(comp);
+    return comp;
   }
 
-  function close() {
-    if (!isOpen) return;
+  function close(reason = 'close') {
+    if (!isOpen) return comp;
     isOpen = false;
     clearCloseTimer();
     modal.classList.remove('lk-modal--open');
     modal.classList.add('lk-modal--closing');
-    trigger.setAttribute('aria-expanded', 'false');
+    trigger?.setAttribute('aria-expanded', 'false');
     closeTimer = setTimeout(() => {
       closeTimer = null;
       modal.classList.remove('lk-modal--closing');
@@ -87,33 +118,41 @@ export function lkModal(triggerEl, modalEl) {
       previousFocus.focus({ preventScroll: true });
     }
     previousFocus = null;
+    if (typeof opts.onClose === 'function') opts.onClose(reason, comp);
+    return comp;
+  }
+
+  function toggle() {
+    return isOpen ? close('toggle') : open();
   }
 
   function onTriggerClick() {
-    if (isOpen) close();
-    else open();
+    toggle();
   }
 
   function onKeydown(e) {
-    if (isOpen && e.key === 'Escape') close();
+    if (isOpen && closeOnEscape && e.key === 'Escape') close('escape');
   }
 
-  trigger.addEventListener('click', onTriggerClick);
+  trigger?.addEventListener('click', onTriggerClick);
   document.addEventListener('keydown', onKeydown);
 
-  return {
-    open,
-    close,
-    get isOpen() { return isOpen; },
-    destroy() {
-      clearCloseTimer();
-      trigger.removeEventListener('click', onTriggerClick);
-      document.removeEventListener('keydown', onKeydown);
-      modal.classList.remove('lk-modal--closing');
-      if (addedTabindex) dialog.removeAttribute('tabindex');
-      trap.destroy();
-    },
+  comp.open = open;
+  comp.close = close;
+  comp.toggle = toggle;
+  Object.defineProperty(comp, 'isOpen', { get() { return isOpen; }, enumerable: true });
+  Object.defineProperty(comp, 'trigger', { value: trigger, enumerable: true });
+  comp.destroy = function () {
+    clearCloseTimer();
+    trigger?.removeEventListener('click', onTriggerClick);
+    document.removeEventListener('keydown', onKeydown);
+    modal.classList.remove('lk-modal--closing');
+    if (addedTabindex) dialog.removeAttribute('tabindex');
+    trap.destroy();
   };
+
+  if (opts.open) open();
+  return comp;
 }
 
 // --- Form components ---

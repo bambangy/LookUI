@@ -450,7 +450,7 @@
   });
 
   byId('cb-modal-root').style.display = '';
-  const modal = Look.lkModal('#cb-open-modal', '#cb-modal-root');
+  const modal = Look.lkModal('#cb-modal-root', { trigger: '#cb-open-modal' });
   byId('cb-close-modal').addEventListener('click', () => modal.close());
   byId('cb-close-modal-x').addEventListener('click', () => modal.close());
   byId('cb-modal-root').querySelector('.lk-modal-overlay').addEventListener('click', (e) => {
@@ -476,14 +476,14 @@
   chips.push(Look.lkChip('#cb-chip', {
     selected: false,
     removable: true,
-    onSelect(sel) { interactiveOutput.textContent = 'chip selected = ' + sel; },
+    onChange(sel) { interactiveOutput.textContent = 'chip selected = ' + sel; },
     onRemove() { interactiveOutput.textContent = 'chip removed'; },
   }));
 
   const pager = Look.lkPagination('#cb-pagination', {
     totalPages: 12,
     page: 1,
-    onPageChange(p) { interactiveOutput.textContent = 'page = ' + p; },
+    onChange(p) { interactiveOutput.textContent = 'page = ' + p; },
   });
   const progress = Look.lkProgress('#cb-progress', { value: 30, max: 100 });
   const splitter = Look.lkSplitter('#cb-splitter', { sizes: [50, 50], minSize: 60 });
@@ -517,7 +517,7 @@
     byId('cb-chip-wrap').appendChild(el);
     chips.push(Look.lkChip(el, {
       removable: true,
-      onSelect(sel) { interactiveOutput.textContent = el.textContent + ' selected=' + sel; },
+      onChange(sel) { interactiveOutput.textContent = el.textContent + ' selected=' + sel; },
       onRemove() { interactiveOutput.textContent = 'Removed ' + el.textContent; },
     }));
     interactiveOutput.textContent = 'Added chip ' + chipCount;
@@ -661,7 +661,7 @@
     content: '#cb-popup-template-content',
     placement: 'bottom-left',
     autoPlacement: true,
-    onShow(info) { composeOutput.textContent = 'Popup opened (' + (info.placement || 'bottom-left') + ')'; },
+    onShow(popup, info) { composeOutput.textContent = 'Popup opened (' + (info.placement || 'bottom-left') + ')'; },
     onHide(reason) { composeOutput.textContent = 'Popup closed: ' + reason; },
   });
 

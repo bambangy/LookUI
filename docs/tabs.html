@@ -149,7 +149,7 @@
     { name: 'team',     title: 'Team',     url: '/partials/team', select: '#team' },
     { name: 'stats',    title: 'Stats',    content: async (panel) =&gt; buildChart(await api.stats()) },
   ],
-  onChange(name, prev) { console.log(prev, '→', name); },
+  onChange(name, { prev }) { console.log(prev, '→', name); },
 });
 tabs.select('team');
 tabs.reload('team');      // fetch again
@@ -191,9 +191,9 @@ tabs.destroy();</pre>
       },
       { name: 'broken', title: 'Broken URL', url: 'partials/missing.html' },
     ],
-    onChange: (name, prev) => { basicOut.textContent = `onChange: ${prev} → ${name}`; },
-    onLoad: (name) => { basicOut.textContent += `\nonLoad: ${name}`; },
-    onError: (err, name) => { basicOut.textContent += `\nonError: ${name} — ${err.message}`; },
+    onChange: (name, { prev, source }) => { basicOut.textContent = `onChange: ${prev} → ${name} (${source})`; },
+    onLoad: (panel, { name }) => { basicOut.textContent += `\nonLoad: ${name}`; },
+    onError: (err, { name }) => { basicOut.textContent += `\nonError: ${name} — ${err.message}`; },
   });
 
   // 2 — existing markup
@@ -260,14 +260,14 @@ tabs.destroy();</pre>
       { name: 'feed', title: 'Feed', content: async () => { await wait(500); return `Loaded at ${new Date().toLocaleTimeString()}`; } },
       { name: 'archive', title: 'Archive', content: 'Old items.' },
     ],
-    beforeChange: (next, prev) => {
+    beforeChange: (next, { prev }) => {
       if (prev?.name === 'draft' && dirty && !window.confirm('Leave the draft? Your text stays, but is not saved.')) {
         dynOut.textContent = 'beforeChange → false (stayed on Draft)';
         return false;
       }
       return true;
     },
-    onChange: (name, prev) => { dynOut.textContent = `onChange: ${prev} → ${name}`; },
+    onChange: (name, { prev }) => { dynOut.textContent = `onChange: ${prev} → ${name}`; },
   });
   document.getElementById('dyn-add').onclick = () => {
     added += 1;
@@ -353,10 +353,10 @@ LookDocs.render('#api', {
     { name: 'fill', type: 'boolean', default: 'false', description: 'Horizontal tabs share the full width equally.' },
     { name: 'dense', type: 'boolean', default: 'false', description: 'Compact tabs and panel padding.' },
     { name: 'loadingText', type: 'string', default: "'Loading…'", description: 'Text beside the spinner while a panel loads.' },
-    { name: 'beforeChange', type: 'Function', default: '—', description: '`(next, prev) => boolean` — return `false` to stay on the current tab. `next` / `prev` are tab descriptors (`{ name, index, title, el, panel, disabled }`).' },
-    { name: 'onChange', type: 'Function', default: '—', description: '`(name, prevName, tab)` after the user or `select()` changed the tab.' },
-    { name: 'onLoad', type: 'Function', default: '—', description: '`(name, panel, tab)` after a panel\'s content is in place — the place to enhance loaded HTML with LookUI components.' },
-    { name: 'onError', type: 'Function', default: '—', description: '`(error, name, panel, tab)` when a URL or async function fails. `error.status` is set for HTTP errors.' },
+    { name: 'beforeChange', type: 'Function', default: '—', description: '`(next, { prev, source, component }) => boolean` — return `false` to stay on the current tab. `next` / `ctx.prev` are tab descriptors (`{ name, index, title, el, panel, disabled }`).' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(name, { source, component, prev, tab })` after the user or `select()` changed the tab. `prev` is the previous tab name; `source` is `\'click\' | \'key\' | \'api\' | \'disable\'`. Changed in 0.3.0 (was `(name, prevName, tab)`).' },
+    { name: 'onLoad', type: 'Function', default: '—', description: '`(panel, { name, tab, component })` after a panel\'s content is in place — the place to enhance loaded HTML with LookUI components.' },
+    { name: 'onError', type: 'Function', default: '—', description: '`(error, { name, panel, tab, component })` when a URL or async function fails. `error.status` is set for HTTP errors.' },
   ],
   properties: [
     { name: 'active', type: 'string | number', description: 'Name of the active tab (its index when it has no name). Setting it selects a tab.' },
@@ -399,7 +399,7 @@ LookDocs.render('#api', {
     { name: '--lk-tabs-duration / --lk-tabs-easing', default: 'duration-base / easing-out', description: 'Indicator slide motion.' },
   ],
   notes: [
-    '**Tab options.** `name` (key for `select()` etc.), `title` (text or Node), `icon` (Look icon name), `badge`, `disabled`, `active`, `render` (overrides the global mode), and one content source: `content` — text, Node, or `(panel, { name, tab, tabs }) => Node | text | { html } | cleanup function | Promise of those`; `html`; `url` with `select` (CSS selector picked from the response), `fetchOptions` (passed to `fetch`), `transform(text, response)` (return HTML text or a Node) and `scripts` (run `<script>` tags of the response — off by default); `template`; or `panel` (existing element). Per-tab `onLoad(panel, tab)` is also called.',
+    '**Tab options.** `name` (key for `select()` etc.), `title` (text or Node), `icon` (Look icon name), `badge`, `disabled`, `active`, `render` (overrides the global mode), and one content source: `content` — text, Node, or `(panel, { name, tab, tabs }) => Node | text | { html } | cleanup function | Promise of those`; `html`; `url` with `select` (CSS selector picked from the response), `fetchOptions` (passed to `fetch`), `transform(text, response)` (return HTML text or a Node) and `scripts` (run `<script>` tags of the response — off by default); `template`; or `panel` (existing element). Per-tab `onLoad(panel, { name, tab, component })` is also called.',
     '**Markup attributes.** On `<li>`: `data-name`, `data-url`, `data-select`, `data-template`, `data-render`, `data-panel`, `data-disabled` (or `aria-disabled="true"`); an `<a href="#id">` inside the item names an existing panel.',
     '**Security.** `html` and `url` content are inserted as markup. Use them only with content you trust; scripts in fetched pages do not run unless `scripts: true`. Links in fetched HTML resolve against the current page, not the fetched file.',
     '**Enhancing loaded HTML.** Use `onLoad` to call factories on the new markup (e.g. `Look.lkTextbox(panel.querySelector(\'#email\'))`). A function `content` can return a cleanup function, called when the content is destroyed (`render: \'active\'`, `reload()`, `remove()`, `destroy()`).',

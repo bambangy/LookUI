@@ -521,16 +521,17 @@ export function lkDate(targetOrOpts, maybeOpts) {
     }
   }
 
-  function emitChange(value, source) {
-    syncBound(source !== 'init');
-    if (typeof options.onChange === 'function') {
-      options.onChange(value, { source, display: display(), iso: iso() });
+  // notify = false: programmatic `value =` (bound input is still updated, onChange is not called)
+  function emitChange(value, source, notify = true) {
+    syncBound(notify);
+    if (notify && typeof options.onChange === 'function') {
+      options.onChange(value, { source, component: api, display: display(), iso: iso() });
     }
   }
 
   function emitConfirm(value) {
     if (typeof options.onConfirm === 'function') {
-      options.onConfirm(value, api);
+      options.onConfirm(value, { component: api, display: display(), iso: iso() });
     }
   }
 
@@ -850,7 +851,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
     refreshDateView();
   }
 
-  function setValue(input, source = 'api') {
+  function setValue(input, source = 'api', notify = true) {
     if (options.range) {
       const [a, b] = parseInitialRange(input, minDate, maxDate);
       rangeStart = a;
@@ -862,7 +863,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
       }
 
       refreshDateView();
-      emitChange([rangeStart ? new Date(rangeStart) : null, rangeEnd ? new Date(rangeEnd) : null], source);
+      emitChange([rangeStart ? new Date(rangeStart) : null, rangeEnd ? new Date(rangeEnd) : null], source, notify);
       return;
     }
 
@@ -872,7 +873,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
       draftDay = null;
       hoverDate = null;
       refreshDateView();
-      emitChange(null, source);
+      emitChange(null, source, notify);
       return;
     }
 
@@ -883,7 +884,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
       timeDraft = createTimeState(singleValue);
       viewDate = new Date(singleValue.getFullYear(), singleValue.getMonth(), 1);
       refreshDateView();
-      emitChange(new Date(singleValue), source);
+      emitChange(new Date(singleValue), source, notify);
       return;
     }
 
@@ -893,7 +894,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
     }
 
     refreshDateView();
-    emitChange(singleValue ? new Date(singleValue) : null, source);
+    emitChange(singleValue ? new Date(singleValue) : null, source, notify);
   }
 
   function prevMonth() {
@@ -1114,6 +1115,10 @@ export function lkDate(targetOrOpts, maybeOpts) {
         return [rangeStart ? new Date(rangeStart) : null, rangeEnd ? new Date(rangeEnd) : null];
       }
       return singleValue ? new Date(singleValue) : null;
+    },
+    // Like every component: setting `value` is silent (use setValue() to fire onChange)
+    set value(v) {
+      setValue(v, 'api', false);
     },
   };
 

@@ -211,14 +211,19 @@ LookDocs.render('#api', {
 
   events: [
     {
-      name: 'onChange', signature: 'onChange(value)',
+      name: 'onChange', signature: 'onChange(value, { source, component, prev })',
       description: 'Called when the user clicks (or activates with Enter/Space) an item — even if it is the current value. Not called in read-only mode or when `value` is set from code.',
-      args: [{ name: 'value', type: 'number', description: 'The new rating (1 … max).' }],
+      args: [
+        { name: 'value', type: 'number', description: 'The new rating (1 … max).' },
+        { name: 'ctx.source', type: "'click'", description: 'What caused the change.' },
+        { name: 'ctx.component', type: 'Object', description: 'The rating instance.' },
+        { name: 'ctx.prev', type: 'number', description: 'The rating before the change.' },
+      ],
       examples: [{ title: 'Label per score', run: true, code: `
         const labels = ['', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'];
         const el = document.createElement('div');
         container.appendChild(el);
-        Look.lkRating(el, { onChange: (v) => log(v, '—', labels[v]) });` }],
+        Look.lkRating(el, { onChange: (v, { prev }) => log(prev, '→', v, '—', labels[v]) });` }],
     },
   ],
 

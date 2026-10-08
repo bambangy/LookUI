@@ -43,7 +43,7 @@
  * @param {string}  [opts.chipColor]           - chip color in multiple mode (default 'primary')
  * @param {number}  [opts.maxChips]            - show at most N chips, then a "+N" chip
  * @param {boolean} [opts.closeOnSelect]       - close after picking (default: true single, false multiple)
- * @param {Function} [opts.onChange]           - (value, item) => void; multiple: (values[], items[]) => void
+ * @param {Function} [opts.onChange]           - (value, { source, component, item }) => void; multiple: (values[], { source, component, items })
  * @param {string}  [opts.noResultsText]
  * @param {string}  [opts.loadingText]
  * @param {Function} [opts.template]          - (item) => Node|string — option content (string = text, never HTML)
@@ -660,14 +660,16 @@ export function lkDropdown(el, opts = {}) {
     });
   }
 
-  function emitChange() {
+  // User-driven changes only (programmatic `value =` is silent).
+  // source: 'select' | 'remove' | 'clear'
+  function emitChange(source) {
     validation?.changed();
     if (typeof options.onChange !== 'function') return;
-    if (multiple) options.onChange(selectedValues.slice(), selectedItemList());
-    else options.onChange(currentValue, currentItem);
+    if (multiple) options.onChange(selectedValues.slice(), { source, component: comp, items: selectedItemList() });
+    else options.onChange(currentValue, { source, component: comp, item: currentItem });
   }
 
-  function setValues(values, { emit = false } = {}) {
+  function setValues(values, { emit = false, source = 'clear' } = {}) {
     const list = Array.isArray(values) ? values : (values == null ? [] : [values]);
     selectedValues = [];
     selectedMap.clear();
@@ -679,7 +681,7 @@ export function lkDropdown(el, opts = {}) {
     syncHiddenInputs();
     updateTriggerLabel();
     if (open) refreshOptionStates();
-    if (emit) emitChange();
+    if (emit) emitChange(source);
   }
 
   function removeValue(val, { rerenderChips = true } = {}) {
@@ -691,7 +693,7 @@ export function lkDropdown(el, opts = {}) {
     if (rerenderChips) updateTriggerLabel();
     else updateClearAndPlaceholder();
     if (open) refreshOptionStates();
-    emitChange();
+    emitChange('remove');
   }
 
   function toggleItem(item) {
@@ -705,7 +707,7 @@ export function lkDropdown(el, opts = {}) {
       syncHiddenInputs();
       updateTriggerLabel();
       refreshOptionStates();
-      emitChange();
+      emitChange('select');
     }
     if (closeOnSelect) closePanel('select');
     else requestPositionUpdate();
@@ -720,8 +722,7 @@ export function lkDropdown(el, opts = {}) {
     updateTriggerLabel();
     refreshOptionStates();
     closePanel('select');
-    validation?.changed();
-    if (typeof options.onChange === 'function') options.onChange(val, item);
+    emitChange('select');
   }
 
   function clearValue() {
@@ -735,8 +736,7 @@ export function lkDropdown(el, opts = {}) {
     hiddenInput.value = '';
     updateTriggerLabel();
     refreshOptionStates();
-    validation?.changed();
-    if (typeof options.onChange === 'function') options.onChange(null, null);
+    emitChange('clear');
   }
 
   function isLocked() {

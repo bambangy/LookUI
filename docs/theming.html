@@ -252,7 +252,7 @@ LookDocs.render('#api', {
             const el = document.createElement('span');
             el.style.marginRight = '6px';
             wrap.appendChild(el);
-            Look.lkChip(el, { label, selected: i === 0, onSelect: (on) => log(label, on) });
+            Look.lkChip(el, { label, selected: i === 0, onChange: (on) => log(label, on) });
           });
           log('Selected border, check mark and focus ring use --lk-chip-tone');` },
       ],

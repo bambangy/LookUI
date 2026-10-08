@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Upgrading to 0.3</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    .mg-table { width: 100%; border-collapse: collapse; font-size: var(--lk-text-sm); }
+    .mg-table th, .mg-table td { padding: var(--lk-space-2) var(--lk-space-3); border-bottom: var(--lk-border-width) solid var(--lk-border); text-align: left; vertical-align: top; }
+    .mg-table th { background: var(--lk-bg-subtle); color: var(--lk-text-muted); font-weight: var(--lk-weight-semibold); }
+    .mg-table td:first-child { white-space: nowrap; font-weight: var(--lk-weight-semibold); }
+    .mg-table code { font-size: var(--lk-text-xs); }
+    .mg-pre { margin: 0; padding: var(--lk-space-4); border-radius: var(--lk-radius-lg); background: #263238; color: #eceff1; font-family: var(--lk-font-mono); font-size: var(--lk-text-sm); line-height: 1.6; overflow-x: auto; white-space: pre; }
+    .mg-pair { display: grid; gap: var(--lk-space-3); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    @media (max-width: 760px) { .mg-pair { grid-template-columns: minmax(0, 1fr); } }
+    .mg-pair p { margin: 0 0 var(--lk-space-1); font-size: var(--lk-text-xs); font-weight: var(--lk-weight-semibold); color: var(--lk-text-muted); text-transform: uppercase; letter-spacing: var(--lk-tracking-wider); }
+  </style>
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Upgrading to 0.3</h1>
+    <p style="opacity: 0.85;">One callback convention for every component — what changed and how to update your code</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">The convention</p>
+    <p style="margin-top: 0;">0.3 makes callbacks predictable before the 1.0 API freeze. Every component now follows the same four shapes:</p>
+    <table class="mg-table">
+      <thead><tr><th>Kind</th><th>Shape</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Value changes</td><td><code>onChange(value, ctx)</code></td><td><code>ctx</code> is always an object with <code>source</code> (what caused it: <code>'select'</code>, <code>'click'</code>, <code>'key'</code>, <code>'api'</code>, …), <code>component</code> (the instance) and component-specific extras (<code>item</code>, <code>prev</code>, <code>tab</code>, …).</td></tr>
+        <tr><td>Open / close</td><td><code>onOpen(component)</code> · <code>onClose(reason, component)</code><br><code>onShow(component)</code> · <code>onHide(reason, component)</code></td><td>The instance is always passed.</td></tr>
+        <tr><td>Load / error</td><td><code>onLoad(el, ctx)</code> · <code>onError(error, ctx)</code></td><td>Tabs and carousel content.</td></tr>
+        <tr><td>Clicks</td><td><code>onClick(event, { component, … })</code></td><td>Button, chip, toolbar items.</td></tr>
+      </tbody>
+    </table>
+    <p>Complex components (lkTable, lkToolbar's <code>onAction</code>) keep a single event object, which now also contains <code>component</code>.</p>
+    <p>
+      <strong><code>onChange</code> fires for user actions.</strong> Setting <code>value</code> / <code>checked</code> / <code>page</code> from code is silent,
+      except where a method says otherwise (<code>lkDate.setValue(v, source)</code>, the pagination <code>page</code> setter report <code>source: 'api'</code>).
+    </p>
+    <p>
+      <strong>Tip:</strong> use <code>ctx.component</code> instead of the variable you assigned the component to — some callbacks
+      (e.g. <code>lkList</code>'s <code>onToggle</code> with <code>origin: 'init'</code>, carousel/tab content loading) can run while the factory
+      is still returning, before your variable exists.
+    </p>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">What still works for now</p>
+    <p style="margin-top: 0;">
+      These renamed APIs keep working in 0.3 and log one console warning each. They will be removed in 1.0:
+    </p>
+    <ul>
+      <li><code>lkPagination</code> option <code>onPageChange</code> → <code>onChange</code></li>
+      <li><code>lkChip</code> option <code>onSelect</code> → <code>onChange</code> (also inside lkToolbar chip items)</li>
+      <li><code>lkModal(trigger, modal)</code> → <code>lkModal(modal, { trigger })</code></li>
+    </ul>
+    <p>Everything below whose <em>arguments</em> changed cannot be detected automatically — update those callbacks when you upgrade.</p>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Changes by component</p>
+    <div style="overflow-x: auto;">
+    <table class="mg-table">
+      <thead><tr><th>Component</th><th>0.2</th><th>0.3</th></tr></thead>
+      <tbody>
+        <tr><td>lkDropdown</td><td><code>onChange(value, item)</code><br><code>onChange(values, items)</code></td><td><code>onChange(value, { source, component, item })</code><br><code>onChange(values, { source, component, items })</code> — source <code>'select' | 'remove' | 'clear'</code></td></tr>
+        <tr><td>lkTextPop</td><td><code>onChange(value, row)</code> · <code>onClose(reason)</code></td><td><code>onChange(value, { source, component, item })</code> (multiple: <code>items</code>) · <code>onClose(reason, component)</code></td></tr>
+        <tr><td>lkPhone</td><td><code>onChange(value, info)</code></td><td><code>onChange(value, { source, component, country, dial, number, valid })</code> — the info fields are still there, so <code>ctx.country</code> keeps working</td></tr>
+        <tr><td>lkTextbox</td><td>—</td><td><strong>New:</strong> <code>onInput(value, ctx)</code> per keystroke, <code>onChange(value, ctx)</code> on commit</td></tr>
+        <tr><td>lkCheckbox / lkSwitch / lkRadio</td><td>—</td><td><strong>New:</strong> <code>onChange(checked, ctx)</code> (radio: <code>onChange(value, ctx)</code>)</td></tr>
+        <tr><td>lkRating / lkSlider</td><td><code>onChange(value)</code></td><td><code>onChange(value, { source, component, prev })</code></td></tr>
+        <tr><td>lkCarousel</td><td><code>onChange(index)</code><br><code>onLoad(slide, index)</code><br><code>onError(error, slide, index)</code></td><td><code>onChange(index, { source, component, prev, slide })</code> — source <code>'arrow' | 'dot' | 'key' | 'swipe' | 'autoplay' | 'api'</code><br><code>onLoad(slide, { index, component })</code><br><code>onError(error, { slide, index, component })</code></td></tr>
+        <tr><td>lkTabs</td><td><code>onChange(name, prevName, tab)</code><br><code>beforeChange(next, prev)</code><br><code>onLoad(name, panel, tab)</code><br><code>onError(error, name, panel, tab)</code></td><td><code>onChange(name, { source, component, prev, tab })</code><br><code>beforeChange(next, { prev, source, component })</code><br><code>onLoad(panel, { name, tab, component })</code><br><code>onError(error, { name, panel, tab, component })</code></td></tr>
+        <tr><td>lkPagination</td><td><code>onPageChange(page)</code></td><td><code>onChange(page, { source, component, prev })</code></td></tr>
+        <tr><td>lkChip</td><td><code>onSelect(selected, chip)</code> · <code>onClick(event, chip)</code></td><td><code>onChange(selected, { source, component })</code> · <code>onClick(event, { component })</code></td></tr>
+        <tr><td>lkList</td><td><code>onToggle({ item, open, depth, origin })</code></td><td>Same object, plus <code>component</code></td></tr>
+        <tr><td>lkDate</td><td><code>onConfirm(value, picker)</code><br><code>value</code> read-only</td><td><code>onConfirm(value, { component, display, iso })</code> · <code>onChange</code> ctx gains <code>component</code><br><code>value</code> can be set (silently; <code>setValue()</code> still fires <code>onChange</code>)</td></tr>
+        <tr><td>lkLoading</td><td><code>onShow()</code> · <code>onHide(reason)</code></td><td><code>onShow(loading)</code> · <code>onHide(reason, loading)</code></td></tr>
+        <tr><td>lkPopupProxy</td><td><code>onShow({ anchor, placement })</code> · <code>onHide(reason)</code></td><td><code>onShow(popup, { anchor, placement })</code> · <code>onHide(reason, popup)</code></td></tr>
+        <tr><td>lkToast</td><td><code>onAction()</code> · <code>onClose(reason)</code></td><td><code>onAction(toast)</code> · <code>onClose(reason, toast)</code></td></tr>
+        <tr><td>lkTable</td><td><code>onSave({ row, values, …, grid })</code> etc.</td><td>Every event object also has <code>component</code> (<code>grid</code> stays)</td></tr>
+        <tr><td>lkToolbar</td><td>items: <code>onClick(item, toolbar, event)</code>, <code>onChange(value, item, toolbar, event)</code>, <code>onInput</code>/<code>onSearch(value, item, toolbar)</code><br><code>onAction(item, event, toolbar)</code></td><td>items: <code>onClick(event, { item, component })</code>, <code>onChange(value, { source, item, component, control, event, detail })</code>, <code>onInput</code>/<code>onSearch(value, ctx)</code><br><code>onAction(item, { type, value, event, detail, component })</code><br><code>component</code> = the toolbar, <code>control</code> = the embedded component, <code>detail</code> = its own ctx</td></tr>
+        <tr><td>lkModal</td><td><code>lkModal(trigger, modal)</code></td><td><code>lkModal(modal, { trigger, open, closeOnEscape, onOpen, onClose })</code>, plus <code>el</code>/<code>id</code>/<code>hidden</code>/<code>enabled</code>, <code>toggle()</code>, <code>close(reason)</code></td></tr>
+        <tr><td>lkButton</td><td><code>lkButton(el)</code> → <code>{ el, destroy }</code></td><td><code>lkButton(el, { onClick })</code> → <code>{ el, id, hidden, enabled, destroy }</code>; <code>onClick(event, { component })</code> is skipped while disabled</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Before / after</p>
+    <div style="display: grid; gap: var(--lk-space-5);">
+      <div class="mg-pair">
+        <div><p>0.2</p><pre class="mg-pre">Look.lkDropdown('#city', {
+  items,
+  onChange(value, item) {
+    label.textContent = item.label;
+  },
+});</pre></div>
+        <div><p>0.3</p><pre class="mg-pre">Look.lkDropdown('#city', {
+  items,
+  onChange(value, { item, source }) {
+    label.textContent = item ? item.label : '';
+  },
+});</pre></div>
+      </div>
+      <div class="mg-pair">
+        <div><p>0.2</p><pre class="mg-pre">Look.lkTabs('#tabs', {
+  tabs,
+  onChange(name, prevName) {
+    track(prevName, name);
+  },
+});</pre></div>
+        <div><p>0.3</p><pre class="mg-pre">Look.lkTabs('#tabs', {
+  tabs,
+  onChange(name, { prev, source }) {
+    track(prev, name);
+  },
+});</pre></div>
+      </div>
+      <div class="mg-pair">
+        <div><p>0.2</p><pre class="mg-pre">const modal = Look.lkModal('#open', '#dialog');
+toolbar = Look.lkToolbar({
+  items: [{ id: 'save', type: 'button',
+    onClick(item, tb, e) { save(); } }],
+});</pre></div>
+        <div><p>0.3</p><pre class="mg-pre">const modal = Look.lkModal('#dialog', { trigger: '#open' });
+toolbar = Look.lkToolbar({
+  items: [{ id: 'save', type: 'button',
+    onClick(event, { item }) { save(); } }],
+});</pre></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Also in 0.3</p>
+    <p style="margin-top: 0;">See the <a href="https://github.com/bambangy/LookUI/blob/main/CHANGELOG.md">changelog</a> for the full list of changes.</p>
+  </section>
+
+</main>
+</body>
+</html>

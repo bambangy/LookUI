@@ -72,3 +72,32 @@ export function applyBase(target, node, opts) {
 
   return target;
 }
+
+const warned = new Set();
+
+/**
+ * Warn once per page about a deprecated API (kept working until 1.0).
+ * @param {string} key — unique id, e.g. 'lkPagination.onPageChange'
+ * @param {string} message
+ */
+export function deprecate(key, message) {
+  if (warned.has(key)) return;
+  warned.add(key);
+  // eslint-disable-next-line no-console
+  console.warn(`Look: ${message} (deprecated in 0.3.0, removed in 1.0)`);
+}
+
+/**
+ * Read a callback option that was renamed: returns `opts[name]`, or the old option
+ * (with a one-time deprecation warning) when only that one is given.
+ * @param {Object} opts
+ * @param {string} name     — current option name
+ * @param {string} oldName  — deprecated option name
+ * @param {string} caller   — factory name for the message
+ * @returns {*}
+ */
+export function renamedOption(opts, name, oldName, caller) {
+  if (opts[name] != null || opts[oldName] == null) return opts[name];
+  deprecate(`${caller}.${oldName}`, `${caller}: option "${oldName}" is now "${name}"`);
+  return opts[oldName];
+}

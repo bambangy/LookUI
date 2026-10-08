@@ -299,10 +299,24 @@ LookDocs.render('#api', {
         el.value = 'INV-2026-0042';
         Look.lkTextbox(el, { label: 'Invoice number', readonly: true });` }],
     },
+    {
+      name: 'onInput', type: 'Function', default: '—',
+      description: '`(value, { source: \'input\', component, event })` — called on every keystroke. Not called when `value` is set from code.',
+      examples: [{ run: true, code: `
+        ${MK}
+        Look.lkTextbox(el, { label: 'Type something', onInput: (v, { source }) => log(source, JSON.stringify(v)) });` }],
+    },
+    {
+      name: 'onChange', type: 'Function', default: '—',
+      description: '`(value, { source: \'change\', component, event })` — called when the value is committed (blur / Enter). Not called when `value` is set from code.',
+      examples: [{ run: true, code: `
+        ${MK}
+        Look.lkTextbox(el, { label: 'Edit then press Tab', onChange: (v, { source }) => log(source, JSON.stringify(v)) });` }],
+    },
   ],
 
   properties: [
-    { name: 'value', type: 'string', description: 'Get or set the text (the native `value`). Setting it does not fire `input`/`change`.',
+    { name: 'value', type: 'string', description: 'Get or set the text (the native `value`). Setting it does not fire `input`/`change` (nor `onInput`/`onChange`).',
       examples: [{ run: true, code: `
         ${MK}
         const box = Look.lkTextbox(el, { label: 'City' });
@@ -399,7 +413,7 @@ LookDocs.render('#api', {
   events: [
     {
       name: 'input', signature: "box.el.addEventListener('input', (event) => …)",
-      description: 'Native DOM event, fired on every keystroke. lkTextbox does not add callback options; subscribe on `box.el`.',
+      description: 'Native DOM event, fired on every keystroke. Use the `onInput` option, or subscribe on `box.el`.',
       args: [{ name: 'event', type: 'InputEvent', description: 'Native event; read the text from `box.value` or `event.target.value`.' }],
       examples: [{ run: true, code: `
         ${MK}
@@ -408,7 +422,7 @@ LookDocs.render('#api', {
     },
     {
       name: 'change', signature: "box.el.addEventListener('change', (event) => …)",
-      description: 'Native DOM event, fired when the value is committed (blur / Enter).',
+      description: 'Native DOM event, fired when the value is committed (blur / Enter). The `onChange` option is the callback form.',
       args: [{ name: 'event', type: 'Event', description: 'Native change event.' }],
       examples: [{ run: true, code: `
         ${MK}

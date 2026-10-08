@@ -62,8 +62,8 @@ function getContainer(position, zIndex) {
  * @param {boolean} [opts.dismissible] - show close button (default true)
  * @param {number} [opts.zIndex] - (default var(--lk-z-toast))
  * @param {string} [opts.actionText] - text for optional action link
- * @param {Function} [opts.onAction] - callback when action clicked
- * @param {Function} [opts.onClose] - callback(reason) on close
+ * @param {Function} [opts.onAction] - (toast) when the action button is clicked
+ * @param {Function} [opts.onClose] - (reason, toast) on close
  * @returns {{ el: Element, close: Function, update: Function, isOpen: boolean }}
  */
 export function lkToast(opts = {}) {
@@ -177,7 +177,7 @@ export function lkToast(opts = {}) {
       cleanupContainerIfEmpty();
 
       if (typeof options.onClose === 'function') {
-        options.onClose(closeReason);
+        options.onClose(closeReason, instance);
       }
     },
   });
@@ -205,7 +205,7 @@ export function lkToast(opts = {}) {
   function onCloseClick() { close('dismiss'); }
 
   function onActionClick() {
-    if (typeof options.onAction === 'function') options.onAction();
+    if (typeof options.onAction === 'function') options.onAction(instance);
     close('action');
   }
 
@@ -231,12 +231,14 @@ export function lkToast(opts = {}) {
     timer = setTimeout(() => close('timeout'), options.duration);
   }
 
-  return {
+  const instance = {
     el: toast,
     close,
     update,
     get isOpen() { return open; },
   };
+
+  return instance;
 }
 
 

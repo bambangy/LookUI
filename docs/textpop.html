@@ -71,7 +71,7 @@
     { field: 'name', title: 'Name' },
     { field: 'dept', title: 'Department' },
   ],
-  onChange(value, row) { console.log(value, row); },
+  onChange(value, { item }) { console.log(value, item); },
 });
 
 const reviewers = Look.lkTextPop('#reviewers', {
@@ -130,7 +130,7 @@ LookDocs.render('#api', {
         container.appendChild(el);
         Look.lkTextPop(el, {
           dataSource: [{ id: 'ID', name: 'Indonesia' }, { id: 'SG', name: 'Singapore' }, { id: 'MY', name: 'Malaysia' }],
-          onChange: (v, row) => log(v, row && row.name),
+          onChange: (v, { item }) => log(v, item && item.name),
         });` }],
     },
     { name: 'columns', type: 'Array', default: 'generated', description: 'lkTable column definitions (formatting, templates, widths…).' },
@@ -160,8 +160,8 @@ LookDocs.render('#api', {
     { name: 'popupWidth', type: 'number', default: '560', description: 'Popup width in px (capped to the viewport).' },
     { name: 'table', type: 'Object', default: '—', description: 'Extra lkTable options (e.g. `{ striped: true, sortable: false }`).' },
     { name: 'required / readonly / disabled / dense', type: 'boolean', default: 'false', description: 'Initial states.' },
-    { name: 'onChange', type: 'Function', default: '—', description: 'Single: `(value, row)`; multiple: `(values[], rows[])`.' },
-    { name: 'onOpen / onClose', type: 'Function', default: '—', description: 'Popup lifecycle callbacks; `onClose(reason)`.' },
+    { name: 'onChange', type: 'Function', default: '—', description: 'Single: `(value, { source, component, item })`; multiple: `(values[], { source, component, items })`. `source` is `\'select\' | \'remove\' | \'clear\'`; `item(s)` are the picked row records. Changed in 0.3.0 (the second argument was the row).' },
+    { name: 'onOpen / onClose', type: 'Function', default: '—', description: 'Popup lifecycle callbacks: `onOpen(component)`, `onClose(reason, component)`.' },
   ],
   properties: [
     { name: 'value', type: 'any | any[]', description: 'Current key(s).' },
@@ -199,7 +199,7 @@ LookDocs.render('#api', {
     dataSource: EMPLOYEES,
     columns: COLS,
     value: 4,
-    onChange(value, row) { singleOut.textContent = JSON.stringify({ value, row }, null, 2); },
+    onChange(value, { source, item }) { singleOut.textContent = JSON.stringify({ value, source, item }, null, 2); },
   });
   singleOut.textContent = 'Initial value: 4';
 
@@ -212,7 +212,7 @@ LookDocs.render('#api', {
     required: true,
     dataSource: EMPLOYEES,
     columns: COLS.slice(1),
-    onChange(values, rows) { multiOut.textContent = `${values.length} selected: ${rows.map((r) => r && r.name).join(', ')}`; },
+    onChange(values, { items: rows }) { multiOut.textContent = `${values.length} selected: ${rows.map((r) => r && r.name).join(', ')}`; },
   });
   document.getElementById('tp-multi-preset').onclick = () => { multi.value = [2, 5, 8, 13, 21]; multiOut.textContent = 'value = ' + JSON.stringify(multi.value); };
   document.getElementById('tp-multi-clear').onclick = () => multi.clear();

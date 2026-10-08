@@ -207,7 +207,7 @@ const tb = Look.lkToolbar({
     ] },
     { type: 'separator' },
     { id: 'insert', type: 'menu', text: 'Insert', icon: 'plus', items: [
-      { text: 'Image', icon: 'image', onClick: (mi, tb) =&gt; {} },
+      { text: 'Image', icon: 'image', onClick: (event, { item, component }) =&gt; {} },
       { separator: true },
       { text: 'Link', icon: 'link', shortcut: 'Ctrl+K' },
     ] },
@@ -219,7 +219,7 @@ const tb = Look.lkToolbar({
     { id: 'q', type: 'search', placeholder: 'Search…', debounce: 250, onSearch: (value) =&gt; {} },
     { type: 'custom', render: (container, tb) =&gt; myNode },   // or return { el, destroy }
   ],
-  onAction(item, event, tb) { console.log(item.id, event.type); },
+  onAction(item, { type, value }) { console.log(item.id, type, value); },
 });
 
 tb.get('font').value = 'Georgia';       // live lkDropdown instance
@@ -295,7 +295,7 @@ LookDocs.render('#api', {
     },
     {
       name: 'items[type=button]', type: 'Object',
-      description: 'A `.lk-toolbar__btn`. Fields: `text`, `icon` (lkIcon name or Node), `iconOnly` (hide the text — it becomes `aria-label` and the tooltip), `color`, `toggle` (on/off button with `aria-pressed`), `group` (name of an exclusive set — radio-like), `active` (initial pressed state), `onClick(item, toolbar, event)`. `get(id)` returns `{ el, item, active, enabled, hidden, text, click(), focus() }`.',
+      description: 'A `.lk-toolbar__btn`. Fields: `text`, `icon` (lkIcon name or Node), `iconOnly` (hide the text — it becomes `aria-label` and the tooltip), `color`, `toggle` (on/off button with `aria-pressed`), `group` (name of an exclusive set — radio-like), `active` (initial pressed state), `onClick(event, { item, component })` (`component` = the toolbar). `get(id)` returns `{ el, item, active, enabled, hidden, text, click(), focus() }`.',
       values: [
         ['color', '`primary`, `secondary`, `positive`, `negative`, `warning`, `info` — colors the text/icon.'],
         ['toggle: true', 'Each click flips `active`.'],
@@ -357,7 +357,7 @@ LookDocs.render('#api', {
         ['shortcut', 'Right-aligned hint text, e.g. `"Ctrl+K"` (display only).'],
         ['disabled', 'Disabled entry (skipped by the arrow keys).'],
         ['className', 'Extra class(es) for the entry.'],
-        ['onClick(entry, toolbar, event)', 'Called after the menu closes. `onAction(entry, event, toolbar)` fires too.'],
+        ['onClick(event, { item, component })', 'Called after the menu closes (`item` = the entry, `component` = the toolbar). `onAction(entry, { type: "click", event, component })` fires too.'],
         ["separator: true (or type: 'separator')", 'A divider line.'],
       ],
       examples: [
@@ -369,7 +369,7 @@ LookDocs.render('#api', {
                 { text: 'New', icon: 'plus', shortcut: 'Ctrl+N' },
                 { text: 'Open…', icon: 'folder', shortcut: 'Ctrl+O' },
                 { separator: true },
-                { text: 'Export', icon: 'download', onClick: (entry) => log('onClick:', entry.text) },
+                { text: 'Export', icon: 'download', onClick: (e, { item }) => log('onClick:', item.text) },
                 { text: 'Print', disabled: true },
               ] },
               { id: 'more', type: 'menu', icon: 'more-horizontal', text: 'More', iconOnly: true, placement: 'bottom-right', items: [
@@ -411,14 +411,14 @@ LookDocs.render('#api', {
             items: [
               { id: 'clock', type: 'text', icon: 'clock', text: new Date().toLocaleTimeString() },
               { type: 'spacer' },
-              { id: 'upd', text: 'Update', onClick: (item, tb) => tb.get('clock').setText(new Date().toLocaleTimeString()) },
+              { id: 'upd', text: 'Update', onClick: (e, { component }) => component.get('clock').setText(new Date().toLocaleTimeString()) },
             ],
           });` },
       ],
     },
     {
       name: 'items[type=dropdown]', type: 'Object',
-      description: 'An embedded [lkDropdown](dropdown.html). Fields: `options` (passed to lkDropdown — `items`, `value`, `multiple`, …), `width` (number = px, or CSS string; default `10rem`), `ariaLabel` / `text`, `onChange(value, item, toolbar)`. `onAction` receives `{ type: "change", value, item: pickedItem }`. `get(id)` returns the lkDropdown instance.',
+      description: 'An embedded [lkDropdown](dropdown.html). Fields: `options` (passed to lkDropdown — `items`, `value`, `multiple`, …), `width` (number = px, or CSS string; default `10rem`), `ariaLabel` / `text`, `onChange(value, { source, item, component, control, detail })` (`detail` is the dropdown\'s own ctx — the picked item is `detail.item`). `onAction` receives `{ type: "change", value, detail }`. `get(id)` returns the lkDropdown instance.',
       examples: [
         { title: 'Status filter', run: true, code: `
           const tb = Look.lkToolbar({
@@ -429,14 +429,14 @@ LookDocs.render('#api', {
                 items: [{ value: 'all', label: 'All' }, { value: 'open', label: 'Open' }, { value: 'closed', label: 'Closed' }],
                 value: 'all',
               }, onChange: (value) => log('status =', value) },
-              { text: 'Reset', onClick: (item, tb) => { tb.get('status').value = 'all'; } },
+              { text: 'Reset', onClick: (e, { component }) => { component.get('status').value = 'all'; } },
             ],
           });` },
       ],
     },
     {
       name: 'items[type=textbox]', type: 'Object',
-      description: 'An embedded [lkTextbox](textbox.html) input. Fields: `placeholder`, `value`, `icon` (shown as prefix), `width`, `ariaLabel` (defaults to `text` or `placeholder`), `options` (passed to lkTextbox, e.g. `{ type: \'email\', append }`), `onInput(value, item, toolbar, event)` on each keystroke, `onChange(value, item, toolbar, event)` on commit (blur / Enter). `onAction` gets the native `change` event. `get(id)` returns the lkTextbox instance.',
+      description: 'An embedded [lkTextbox](textbox.html) input. Fields: `placeholder`, `value`, `icon` (shown as prefix), `width`, `ariaLabel` (defaults to `text` or `placeholder`), `options` (passed to lkTextbox, e.g. `{ type: \'email\', append }`), `onInput(value, ctx)` on each keystroke, `onChange(value, ctx)` on commit (blur / Enter) — `ctx` is `{ source, item, component, control, event }`. `onAction` gets `{ type: "change", value, event }` with the native `change` event. `get(id)` returns the lkTextbox instance.',
       examples: [
         { title: 'Inline input', run: true, code: `
           Look.lkToolbar({
@@ -452,13 +452,13 @@ LookDocs.render('#api', {
     },
     {
       name: 'items[type=search]', type: 'Object',
-      description: 'A search input with a search icon (default width `14rem`). Fields: textbox fields plus `debounce` (ms, default `250`) and `onSearch(value, item, toolbar)` — called after typing pauses, or immediately on **Enter**. `onAction` receives `{ type: "search", value }`.',
+      description: 'A search input with a search icon (default width `14rem`). Fields: textbox fields plus `debounce` (ms, default `250`) and `onSearch(value, ctx)` — called after typing pauses (`ctx.source: \'debounce\'`), or immediately on **Enter** (`\'enter\'`). `onAction` receives `{ type: "search", value }`.',
       examples: [
         { title: 'Debounced search', run: true, code: `
           Look.lkToolbar({
             mount: container,
             items: [
-              { id: 'q', type: 'search', placeholder: 'Search orders…', debounce: 400, onSearch: (value) => log('search:', JSON.stringify(value)) },
+              { id: 'q', type: 'search', placeholder: 'Search orders…', debounce: 400, onSearch: (value, { source }) => log('search:', JSON.stringify(value), source) },
               { id: 'q2', type: 'search', placeholder: 'Instant (debounce 0)', debounce: 0, onSearch: (value) => log('instant:', value) },
             ],
           });` },
@@ -466,7 +466,7 @@ LookDocs.render('#api', {
     },
     {
       name: 'items[type=switch]', type: 'Object',
-      description: 'An inline [lkSwitch](switch.html) with a label. Fields: `label` (or `text`), `checked`, `options` (passed to lkSwitch), `onChange(checked, item, toolbar, event)`. `setActive(id, on)` sets `checked` (without firing `onChange`). `get(id)` returns the lkSwitch instance.',
+      description: 'An inline [lkSwitch](switch.html) with a label. Fields: `label` (or `text`), `checked`, `options` (passed to lkSwitch), `onChange(checked, { source, item, component, control, event })`. `setActive(id, on)` sets `checked` (without firing `onChange`). `get(id)` returns the lkSwitch instance.',
     },
     {
       name: 'items[type=checkbox]', type: 'Object',
@@ -485,7 +485,7 @@ LookDocs.render('#api', {
     },
     {
       name: 'items[type=chip]', type: 'Object',
-      description: 'An embedded [lkChip](chip.html). Fields: `text` (label), `toggle` (make it a filter chip; `onAction` gets `{ type: "select", selected }` and `item.active` follows), `options` (passed to lkChip — `color`, `outline`, `icon`, `selected`, `onSelect`, `onClick`, …). In a dense toolbar the chip is dense automatically. `get(id)` returns the lkChip instance.',
+      description: 'An embedded [lkChip](chip.html). Fields: `text` (label), `toggle` (make it a filter chip; `onAction` gets `{ type: "select", value: selected, detail }` and `item.active` follows), `onChange(selected, ctx)`, `options` (passed to lkChip — `color`, `outline`, `icon`, `selected`, `onChange`, `onClick`, …; `options.onSelect` still works but is deprecated). In a dense toolbar the chip is dense automatically. `get(id)` returns the lkChip instance.',
       examples: [
         { title: 'Filter chips', run: true, code: `
           Look.lkToolbar({
@@ -496,13 +496,13 @@ LookDocs.render('#api', {
               { id: 'feat', type: 'chip', text: 'Feature', toggle: true, options: { color: 'primary', outline: true, selected: true } },
               { id: 'v2', type: 'chip', text: 'v2.0', options: { icon: 'pin' } },
             ],
-            onAction: (item, e) => log(item.id, e.type, e.selected),
+            onAction: (item, { type, value }) => log(item.id, type, value),
           });` },
       ],
     },
     {
       name: 'items[type=date]', type: 'Object',
-      description: 'A toolbar button that opens an [lkDate](composable-date.html) picker and shows the picked value (`medium` date style, plus time with `time: true`; ranges as `start – end`). Fields: `placeholder` / `text` (label when empty, default `"Pick a date"`), `icon` (default `"calendar"`, `null` for none), `format(value)` (custom label), `options` (passed to lkDate: `range`, `time`, `min`, `max`, `locale`, …), `onChange(value, item, toolbar)`. In time mode `onChange`/`onAction` fire only on **OK**; in range mode they also fire after the first click with `[start, null]`. `get(id)` returns the lkDate instance.',
+      description: 'A toolbar button that opens an [lkDate](composable-date.html) picker and shows the picked value (`medium` date style, plus time with `time: true`; ranges as `start – end`). Fields: `placeholder` / `text` (label when empty, default `"Pick a date"`), `icon` (default `"calendar"`, `null` for none), `format(value)` (custom label), `options` (passed to lkDate: `range`, `time`, `min`, `max`, `locale`, …), `onChange(value, { source, item, component, control, detail })`. In time mode `onChange`/`onAction` fire only on **OK**; in range mode they also fire after the first click with `[start, null]`. `get(id)` returns the lkDate instance.',
       examples: [
         { title: 'Single, range and date-time', run: true, code: `
           Look.lkToolbar({
@@ -514,7 +514,7 @@ LookDocs.render('#api', {
               { id: 'iso', type: 'date', icon: null, placeholder: 'ISO label',
                 format: (d) => (d ? d.toLocaleDateString('sv-SE') : '') },
             ],
-            onAction: (item, e) => log(item.id, '→', Array.isArray(e.value) ? e.value.map((d) => d && d.toDateString()).join(' – ') : e.value.toLocaleString()),
+            onAction: (item, { value }) => log(item.id, '→', Array.isArray(value) ? value.map((d) => d && d.toDateString()).join(' – ') : value.toLocaleString()),
           });` },
       ],
     },
@@ -689,7 +689,7 @@ LookDocs.render('#api', {
       examples: [{ title: 'Add and remove at runtime', run: true, code: `
         let n = 0;
         const tb = Look.lkToolbar({ mount: container, items: [
-          { id: 'add', icon: 'plus', text: 'add(item, 1)', onClick: (item, tb) => {
+          { id: 'add', icon: 'plus', text: 'add(item, 1)', onClick: () => {
             const id = 'tag-' + (++n);
             tb.add({ id, type: 'chip', text: 'Tag ' + n, options: { removable: true, onRemove: () => { tb.remove(id); log('removed', id); return false; } } }, 1);
             log('added', id, '— items:', tb.items.length);
@@ -767,8 +767,8 @@ LookDocs.render('#api', {
           { id: 'edit', icon: 'edit', text: 'Edit' },
           { id: 'share', icon: 'share', text: 'Share' },
           { type: 'spacer' },
-          { id: 'tDis', text: 'setDisabled("edit")', onClick: (i, tb) => { const off = !tb.getItem('edit').disabled; tb.setDisabled('edit', off); log('edit disabled =', off); } },
-          { id: 'tHid', text: 'setHidden("share")', onClick: (i, tb) => { const h = !tb.getItem('share').hidden; tb.setHidden('share', h); log('share hidden =', h); } },
+          { id: 'tDis', text: 'setDisabled("edit")', onClick: (e, { component: tb }) => { const off = !tb.getItem('edit').disabled; tb.setDisabled('edit', off); log('edit disabled =', off); } },
+          { id: 'tHid', text: 'setHidden("share")', onClick: (e, { component: tb }) => { const h = !tb.getItem('share').hidden; tb.setHidden('share', h); log('share hidden =', h); } },
         ] });` }],
     },
     {
@@ -799,12 +799,15 @@ LookDocs.render('#api', {
 
   events: [
     {
-      name: 'onAction', signature: 'onAction(item, event, toolbar)',
-      description: 'One handler for every interaction: button and menu-entry clicks, dropdown/date changes, textbox commits, switch/checkbox changes, chip toggles and searches. Item-level callbacks run first.',
+      name: 'onAction', signature: 'onAction(item, { type, value, event, detail, component })',
+      description: 'One handler for every interaction: button and menu-entry clicks, dropdown/date changes, textbox commits, switch/checkbox changes, chip toggles and searches. Item-level callbacks run first. Changed in 0.3.0 (was `onAction(item, event, toolbar)`).',
       args: [
         { name: 'item', type: 'Object', description: 'The item descriptor (for menu entries: the entry object). Already updated (`active`, `checked`).' },
-        { name: 'event', type: 'Event | Object', description: 'Native `click` / `change` event for buttons, menu entries, textboxes, switches and checkboxes; `{ type: "change", value, item }` for dropdowns; `{ type: "change", value }` for dates; `{ type: "search", value }` for search; `{ type: "select", selected }` / `{ type: "click" }` for chips.' },
-        { name: 'toolbar', type: 'Object', description: 'The toolbar instance.' },
+        { name: 'ctx.type', type: "'click' | 'change' | 'input' | 'search' | 'select'", description: '`click` for buttons, menu entries and plain chips; `change` for dropdowns, dates, textbox commits, switches and checkboxes; `search` for search items; `select` for toggle chips.' },
+        { name: 'ctx.value', type: 'any', description: 'The new value (dropdown/date value, text, `checked`, chip `selected`, search text); `active` for toggle/group buttons; `undefined` for plain clicks.' },
+        { name: 'ctx.event', type: 'Event | null', description: 'Native event when there is one (button/menu clicks, textbox/switch/checkbox changes, Enter in a search box).' },
+        { name: 'ctx.detail', type: 'Object | undefined', description: 'The embedded component\'s own ctx (e.g. the dropdown\'s `{ source, item }`).' },
+        { name: 'ctx.component', type: 'Object', description: 'The toolbar instance.' },
       ],
       examples: [{ title: 'Single dispatcher', run: true, code: `
         Look.lkToolbar({
@@ -816,48 +819,47 @@ LookDocs.render('#api', {
             { id: 'ins', type: 'menu', text: 'Insert', items: [{ id: 'img', text: 'Image' }, { id: 'tbl', text: 'Table' }] },
             { id: 'find', type: 'search', placeholder: 'Find' },
           ],
-          onAction(item, e) {
-            const detail = e.value !== undefined ? e.value : item.active ?? item.checked ?? '';
-            log(item.id, e.type, detail);
+          onAction(item, { type, value }) {
+            log(item.id, type, value ?? '');
           },
         });` }],
     },
     {
-      name: 'item.onClick', signature: 'onClick(item, toolbar, event)',
-      description: 'Per-item click callback for `button` items and menu entries (note the argument order differs from `onAction`).',
+      name: 'item.onClick', signature: 'onClick(event, { item, component })',
+      description: 'Per-item click callback for `button` items and menu entries. Changed in 0.3.0 (was `onClick(item, toolbar, event)`).',
       args: [
-        { name: 'item', type: 'Object', description: 'The button descriptor / menu entry.' },
-        { name: 'toolbar', type: 'Object', description: 'The toolbar instance.' },
         { name: 'event', type: 'MouseEvent', description: 'The click event.' },
+        { name: 'ctx.item', type: 'Object', description: 'The button descriptor / menu entry.' },
+        { name: 'ctx.component', type: 'Object', description: 'The toolbar instance.' },
       ],
     },
     {
-      name: 'item.onChange', signature: 'onChange(value, item, toolbar, event?)',
-      description: 'Per-item change callback. `value` is the dropdown value, the date value, the textbox text (on commit) or the switch/checkbox `checked` state. `event` is passed for textbox/switch/checkbox only.',
+      name: 'item.onChange', signature: 'onChange(value, { source, item, component, control, event, detail })',
+      description: 'Per-item change callback. `value` is the dropdown value, the date value, the textbox text (on commit), the switch/checkbox `checked` state or the toggle chip\'s `selected` state.',
       args: [
         { name: 'value', type: 'any', description: 'New value.' },
-        { name: 'item', type: 'Object', description: 'The descriptor.' },
-        { name: 'toolbar', type: 'Object', description: 'The toolbar instance.' },
-        { name: 'event', type: 'Event', description: 'Native change event (textbox, switch, checkbox).' },
+        { name: 'ctx.source', type: 'string', description: 'What caused it: `\'change\'` for textbox/switch/checkbox, otherwise the embedded component\'s own source (e.g. `\'select\'`, `\'clear\'`, `\'confirm\'`).' },
+        { name: 'ctx.item', type: 'Object', description: 'The descriptor.' },
+        { name: 'ctx.component', type: 'Object', description: 'The toolbar instance.' },
+        { name: 'ctx.control', type: 'Object | null', description: 'The embedded LookUI component (lkDropdown, lkTextbox, lkSwitch, …).' },
+        { name: 'ctx.event', type: 'Event | null', description: 'Native change event (textbox, switch, checkbox).' },
+        { name: 'ctx.detail', type: 'Object | undefined', description: 'The embedded component\'s own ctx (dropdown, chip, date).' },
       ],
     },
     {
-      name: 'item.onInput', signature: 'onInput(value, item, toolbar, event)',
-      description: 'Every keystroke in a `textbox` or `search` item.',
+      name: 'item.onInput', signature: 'onInput(value, ctx)',
+      description: 'Every keystroke in a `textbox` or `search` item. `ctx` is `{ source: \'input\', item, component, control, event }`.',
       args: [
         { name: 'value', type: 'string', description: 'Current text.' },
-        { name: 'item', type: 'Object', description: 'The descriptor.' },
-        { name: 'toolbar', type: 'Object', description: 'The toolbar instance.' },
-        { name: 'event', type: 'InputEvent', description: 'Native input event.' },
+        { name: 'ctx', type: 'Object', description: '`{ source, item, component, control, event }` — `event` is the native input event.' },
       ],
     },
     {
-      name: 'item.onSearch', signature: 'onSearch(value, item, toolbar)',
+      name: 'item.onSearch', signature: 'onSearch(value, ctx)',
       description: '`search` items: after `debounce` ms without typing, or on **Enter**.',
       args: [
         { name: 'value', type: 'string', description: 'Search text.' },
-        { name: 'item', type: 'Object', description: 'The descriptor.' },
-        { name: 'toolbar', type: 'Object', description: 'The toolbar instance.' },
+        { name: 'ctx', type: 'Object', description: '`{ source, item, component, control, event }` — `source` is `\'enter\'` or `\'debounce\'`.' },
       ],
     },
   ],
@@ -913,9 +915,9 @@ LookDocs.render('#api', {
     log.prepend(line);
     while (log.childNodes.length > 8) log.lastChild.remove();
   }
-  function describe(item, e) {
-    let s = `${item.id || item.text} → ${e && e.type ? e.type : 'action'}`;
-    if (e && e.value !== undefined) s += ` (${e.value instanceof Date ? e.value.toDateString() : JSON.stringify(e.value)})`;
+  function describe(item, ctx) {
+    let s = `${item.id || item.text} → ${ctx.type}`;
+    if (ctx.value !== undefined) s += ` (${ctx.value instanceof Date ? ctx.value.toDateString() : JSON.stringify(ctx.value)})`;
     if (item.toggle || item.group) s += ` active=${!!item.active}`;
     if (item.type === 'switch' || item.type === 'checkbox') s += ` checked=${!!item.checked}`;
     return s;
@@ -953,7 +955,7 @@ LookDocs.render('#api', {
       { id: 'find', type: 'search', placeholder: 'Find in document…', onSearch: (v) => say(`search "${v}"`) },
       { id: 'save', type: 'button', icon: 'save', text: 'Save', color: 'primary' },
     ],
-    onAction(item, e) { say(describe(item, e)); },
+    onAction(item, ctx) { say(describe(item, ctx)); },
   });
 
   // --- Embedded components ----------------------------------------------------
@@ -976,8 +978,8 @@ LookDocs.render('#api', {
       { id: id('more'), type: 'button', icon: 'more-vertical', text: 'More', iconOnly: true },
     ];
   }
-  Look.lkToolbar('#tb-fields', { ariaLabel: 'Filters', items: fieldItems(''), onAction: (i, e) => say(describe(i, e)) });
-  Look.lkToolbar('#tb-fields-dense', { ariaLabel: 'Filters (dense)', dense: true, items: fieldItems('-d'), onAction: (i, e) => say(describe(i, e)) });
+  Look.lkToolbar('#tb-fields', { ariaLabel: 'Filters', items: fieldItems(''), onAction: (i, ctx) => say(describe(i, ctx)) });
+  Look.lkToolbar('#tb-fields-dense', { ariaLabel: 'Filters (dense)', dense: true, items: fieldItems('-d'), onAction: (i, ctx) => say(describe(i, ctx)) });
 
   // --- Dense dark + primary ----------------------------------------------------
   Look.lkToolbar('#tb-dark', {
@@ -993,7 +995,7 @@ LookDocs.render('#api', {
       { id: 'mute', type: 'button', icon: 'volume-off', text: 'Mute', iconOnly: true, toggle: true },
       { id: 'cfg', type: 'button', icon: 'settings', text: 'Settings', iconOnly: true },
     ],
-    onAction: (i, e) => say(describe(i, e)),
+    onAction: (i, ctx) => say(describe(i, ctx)),
   });
   Look.lkToolbar('#tb-primary', {
     variant: 'primary', ariaLabel: 'Inbox', align: 'between',
@@ -1005,7 +1007,7 @@ LookDocs.render('#api', {
       ] },
       { id: 'p-new', type: 'button', icon: 'plus', text: 'Compose' },
     ],
-    onAction: (i, e) => say(describe(i, e)),
+    onAction: (i, ctx) => say(describe(i, ctx)),
   });
 
   // --- Runtime API ---------------------------------------------------------------
@@ -1026,7 +1028,7 @@ LookDocs.render('#api', {
   }
   const makeRuntime = () => Look.lkToolbar({
     mount: document.getElementById('tb-runtime'), ariaLabel: 'Runtime',
-    items: runtimeItems(), onAction: (i, e) => say(describe(i, e)),
+    items: runtimeItems(), onAction: (i, ctx) => say(describe(i, ctx)),
   });
   let rt = makeRuntime();
   let added = [];

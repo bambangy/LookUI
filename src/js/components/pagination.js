@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Pagination component factory
 
-import { resolveEl, applyBase } from '../helpers/base.js';
+import { resolveEl, applyBase, renamedOption } from '../helpers/base.js';
 import { createElement } from '../core/index.js';
 import { lkIcon } from './icon.js';
 
@@ -16,7 +16,8 @@ const POP_ANIM_MS = 220;
  * @param {number} [opts.totalPages] - total number of pages
  * @param {number} [opts.page] - current page (1-based, default 1)
  * @param {number} [opts.maxVisible] - max page buttons visible (default 7)
- * @param {Function} [opts.onPageChange] - callback(page)
+ * @param {Function} [opts.onChange] - (page, { source, component, prev }); source 'click' or 'api' (page setter)
+ * @param {Function} [opts.onPageChange] - deprecated alias of onChange
  * @returns {Object}
  */
 export function lkPagination(el, opts = {}) {
@@ -26,6 +27,7 @@ export function lkPagination(el, opts = {}) {
   let totalPages = Math.max(1, Math.floor(opts.totalPages ?? 1));
   let page = Math.max(1, Math.min(totalPages, Math.floor(opts.page ?? 1)));
   const maxVis = Math.max(1, Math.floor(opts.maxVisible ?? 7));
+  const onChange = renamedOption(opts, 'onChange', 'onPageChange', 'lkPagination');
 
   let changeTimer = null;
   let popTimer = null;
@@ -159,18 +161,19 @@ export function lkPagination(el, opts = {}) {
     }, POP_ANIM_MS);
   }
 
-  function goTo(p) {
+  function goTo(p, source = 'api') {
     const next = Math.max(1, Math.min(totalPages, Math.floor(Number(p) || 1)));
     if (next === page) return;
 
     const direction = next > page ? 'next' : 'prev';
+    const prev = page;
     page = next;
 
     animateChange(direction);
     buildPages();
     animateActivePage();
 
-    if (opts.onPageChange) opts.onPageChange(page);
+    if (typeof onChange === 'function') onChange(page, { source, component: comp, prev });
   }
 
   function onClick(e) {
@@ -178,11 +181,11 @@ export function lkPagination(el, opts = {}) {
     if (!btn || btn.classList.contains('lk-pagination__link--disabled')) return;
 
     const label = btn.getAttribute('aria-label');
-    if (label === 'Previous page') { goTo(page - 1); return; }
-    if (label === 'Next page') { goTo(page + 1); return; }
+    if (label === 'Previous page') { goTo(page - 1, 'click'); return; }
+    if (label === 'Next page') { goTo(page + 1, 'click'); return; }
 
     const p = parseInt(btn.dataset.page, 10);
-    if (!Number.isNaN(p)) goTo(p);
+    if (!Number.isNaN(p)) goTo(p, 'click');
   }
 
   node.addEventListener('click', onClick);

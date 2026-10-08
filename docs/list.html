@@ -308,13 +308,14 @@ LookDocs.render('#api', {
 
   events: [
     {
-      name: 'onToggle', signature: 'onToggle({ item, open, depth, origin })',
+      name: 'onToggle', signature: 'onToggle({ item, open, depth, origin, component })',
       description: 'Option callback fired after a branch changes state. It also fires once per branch **during construction** (`origin: "init"`). Siblings closed automatically by the accordion do not fire it.',
       args: [
         { name: 'item', type: 'Element', description: 'The branch `<li>`.' },
         { name: 'open', type: 'boolean', description: 'New state.' },
         { name: 'depth', type: 'number', description: 'Nesting level: `1` for top-level branches, `2` inside one submenu, and so on.' },
         { name: 'origin', type: 'string', description: '`"init"` (construction), `"click"`, `"keyboard"` (Enter/Space on the trigger) or `"api"` (`open/close/toggle/closeAll`).' },
+        { name: 'component', type: 'Object', description: 'The list instance.' },
       ],
       examples: [
         { title: 'Log every toggle', run: true, code: MENU + `

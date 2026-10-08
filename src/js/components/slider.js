@@ -13,7 +13,7 @@ import { qs } from '../core/index.js';
  * @param {number}  [opts.max]    — maximum value (default 100)
  * @param {number}  [opts.value]  — initial value (default min)
  * @param {number}  [opts.step]   — step increment (default 1)
- * @param {Function} [opts.onChange] — callback(value)
+ * @param {Function} [opts.onChange] — (value, { source, component, prev }) after a drag or key press
  * @returns {Object}
  */
 export function lkSlider(el, opts = {}) {
@@ -67,12 +67,14 @@ export function lkSlider(el, opts = {}) {
     node.setAttribute('aria-valuemax', max);
   }
 
-  function commit(v) {
+  // source: 'pointer' | 'key'
+  function commit(v, source) {
     const next = clamp(v);
     if (next === value) return;
+    const prev = value;
     value = next;
     updateView();
-    if (opts.onChange) opts.onChange(value);
+    if (opts.onChange) opts.onChange(value, { source, component: comp, prev });
   }
 
   function setFromEvent(e) {
@@ -80,7 +82,7 @@ export function lkSlider(el, opts = {}) {
     const rect = track.getBoundingClientRect();
     if (!rect.width) return;
     const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    commit(min + ratio * (max - min));
+    commit(min + ratio * (max - min), 'pointer');
   }
 
   // Thumb lives inside the track, so a single listener on the track
@@ -124,7 +126,7 @@ export function lkSlider(el, opts = {}) {
       default: return;
     }
     e.preventDefault();
-    commit(next);
+    commit(next, 'key');
   }
 
   const thumbOutsideTrack = thumb && (!track || !track.contains(thumb));

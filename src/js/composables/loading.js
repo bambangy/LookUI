@@ -134,7 +134,7 @@ export function lkLoading(opts = {}) {
     setBodyLock(true);
 
     if (typeof options.onShow === 'function') {
-      options.onShow();
+      options.onShow(instance);
     }
   }
 
@@ -147,7 +147,7 @@ export function lkLoading(opts = {}) {
     if (activeCount > 0) activeCount -= 1;
 
     if (typeof options.onHide === 'function') {
-      options.onHide(reason);
+      options.onHide(reason, instance);
     }
   }
 
@@ -193,7 +193,7 @@ export function lkLoading(opts = {}) {
     show();
   }
 
-  return {
+  const instance = {
     el: root,
     show,
     hide,
@@ -203,6 +203,8 @@ export function lkLoading(opts = {}) {
       return visible;
     },
   };
+
+  return instance;
 }
 
 

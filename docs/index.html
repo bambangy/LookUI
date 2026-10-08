@@ -40,8 +40,8 @@
         <p class="demo-usage__title">1 · Install</p>
         <pre>npm install @lookui/core</pre>
         <p>…or load it from a CDN (pin the version in production):</p>
-        <pre>&lt;link rel="stylesheet" href="https://unpkg.com/@lookui/core@0.2.0/dist/look.min.css"&gt;
-&lt;script src="https://unpkg.com/@lookui/core@0.2.0/dist/look.min.js"&gt;&lt;/script&gt;</pre>
+        <pre>&lt;link rel="stylesheet" href="https://unpkg.com/@lookui/core@0.3.0/dist/look.min.css"&gt;
+&lt;script src="https://unpkg.com/@lookui/core@0.3.0/dist/look.min.js"&gt;&lt;/script&gt;</pre>
 
         <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">2 · Include</p>
         <pre>&lt;!-- classic script: exposes window.Look --&gt;
@@ -126,6 +126,10 @@ import { lkTextbox, lkDropdown, lkValidation, lkToast } from '@lookui/core';</pr
     <a href="layout.html" class="demo-nav-card">
       <strong>Layout &amp; Utilities</strong>
       <span>Grid, flex, spacing, responsive</span>
+    </a>
+    <a href="migration.html" class="demo-nav-card">
+      <strong>Upgrading to 0.3</strong>
+      <span>One callback convention: onChange(value, ctx) — what changed per component</span>
     </a>
     <a href="customize.html" class="demo-nav-card">
       <strong>Custom Theme File</strong>

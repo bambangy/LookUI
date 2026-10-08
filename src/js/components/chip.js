@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Chip component factory
 
-import { resolveEl, applyBase } from "../helpers/base.js";
+import { resolveEl, applyBase, renamedOption } from "../helpers/base.js";
 import { qs, createElement } from "../core/index.js";
 import { lkIcon } from "./icon.js";
 import { readDurationMs } from "../helpers/motion.js";
@@ -29,9 +29,10 @@ const COLORS = ["primary", "secondary", "accent", "positive", "warning", "negati
  * @param {string}   [opts.removeLabel] — accessible label for the close button (default "Remove")
  * @param {boolean}  [opts.selected]  — initial selected state
  * @param {boolean}  [opts.disabled]  — initial disabled state
- * @param {Function} [opts.onRemove]  — callback when removed; return `false` to keep the chip
- * @param {Function} [opts.onSelect]  — callback(selected) when toggled (makes the chip a toggle button)
- * @param {Function} [opts.onClick]   — plain click callback (makes the chip clickable)
+ * @param {Function} [opts.onRemove]  — (component) when removed; return `false` to keep the chip
+ * @param {Function} [opts.onChange]  — (selected, { source, component }) when toggled (makes the chip a toggle button)
+ * @param {Function} [opts.onSelect]  — deprecated alias of onChange
+ * @param {Function} [opts.onClick]   — (event, { component }) plain click (makes the chip clickable)
  * @returns {Object}
  */
 export function lkChip(el, opts = {}) {
@@ -115,7 +116,8 @@ export function lkChip(el, opts = {}) {
 
   // --- Interactivity -----------------------------------------------------------------
 
-  const interactive = !!(opts.onSelect || opts.onClick);
+  const onChange = renamedOption(opts, "onChange", "onSelect", "lkChip");
+  const interactive = !!(onChange || opts.onClick);
   const hadTabindex = node.hasAttribute("tabindex");
   const hadRole = node.getAttribute("role");
   if (interactive && !hadTabindex && node.tagName !== "BUTTON") node.setAttribute("tabindex", "0");
@@ -124,7 +126,7 @@ export function lkChip(el, opts = {}) {
   function updateView() {
     node.classList.toggle("lk-chip--clickable", interactive);
     node.classList.toggle("lk-chip--selected", selected);
-    if (opts.onSelect) node.setAttribute("aria-pressed", String(selected));
+    if (onChange) node.setAttribute("aria-pressed", String(selected));
   }
 
   function isDisabled() {
@@ -151,17 +153,18 @@ export function lkChip(el, opts = {}) {
     remove();
   }
 
-  function toggle() {
-    if (!opts.onSelect || isDisabled()) return;
+  // source: "click" (user) | "api" (toggle())
+  function toggle(source = "api") {
+    if (!onChange || isDisabled()) return;
     selected = !selected;
     updateView();
-    opts.onSelect(selected, comp);
+    onChange(selected, { source, component: comp });
   }
 
   function onClick(e) {
     if (isDisabled() || e.target.closest(".lk-chip__close")) return;
-    if (opts.onSelect) toggle();
-    if (typeof opts.onClick === "function") opts.onClick(e, comp);
+    if (onChange) toggle("click");
+    if (typeof opts.onClick === "function") opts.onClick(e, { component: comp });
   }
 
   function onKeydown(e) {
