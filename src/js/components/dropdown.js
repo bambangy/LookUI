@@ -46,12 +46,20 @@
  * @param {Function} [opts.onChange]           - (value, item) => void; multiple: (values[], items[]) => void
  * @param {string}  [opts.noResultsText]
  * @param {string}  [opts.loadingText]
+ * @param {Function} [opts.template]          - (item) => Node|string — option content (string = text, never HTML)
+ * @param {Function} [opts.selectedTemplate]  - (item) => Node|string — trigger content for the single selection
+ * @param {string[]} [opts.searchFields]      - item fields the local search matches (default: [labelField])
+ * @param {number|string} [opts.panelWidth]   - panel width (px or CSS length); default = trigger width
+ * @param {string}  [opts.panelClass]         - extra class on the floating panel
+ * @param {Array}   [opts.rules]              - validation rules (see helpers/validation.js)
+ * @param {boolean} [opts.validate]           - validate when focus leaves the dropdown (panel closed)
  */
 
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { wrapField, applyFieldProps } from '../helpers/field.js';
-import { createPresenceController } from '../helpers/motion.js';
+import { createPresenceController, floatingZIndex } from '../helpers/motion.js';
 import { lkChip } from './chip.js';
+import { attachValidation } from '../helpers/validation.js';
 
 const EXIT_MS = 180;
 
@@ -145,6 +153,11 @@ export function lkDropdown(el, opts = {}) {
     onChange: null,
     noResultsText: 'No results',
     loadingText: 'Loading…',
+    template: null,
+    selectedTemplate: null,
+    searchFields: null,
+    panelWidth: null,
+    panelClass: '',
     ...opts,
   };
   if (isObject(opts.server)) options.server = { ...options.server, ...opts.server };
@@ -204,6 +217,7 @@ export function lkDropdown(el, opts = {}) {
   let requestSeq   = 0;
   let debounceSearchFn = null;
   let positionRaf = null;
+  let validation = null; // set once the component object exists
   const positionListenerOpts = { capture: true, passive: true };
 
   // --- Normalize item -------------------------------------------------------
@@ -310,7 +324,7 @@ export function lkDropdown(el, opts = {}) {
 
   // Panel (floating)
   const panel = document.createElement('div');
-  panel.className = 'lk-dropdown__panel';
+  panel.className = `lk-dropdown__panel ${options.panelClass || ''}`.trim();
   panel.setAttribute('role', 'listbox');
   if (multiple) {
     panel.setAttribute('aria-multiselectable', 'true');
@@ -517,9 +531,10 @@ export function lkDropdown(el, opts = {}) {
     if (!q || (hasTransport() && options.server?.filter)) {
       filteredItems = localItems.slice();
     } else {
-      filteredItems = localItems.filter(item =>
-        itemLabel(item).toLowerCase().includes(q)
-      );
+      const fields = Array.isArray(options.searchFields) && options.searchFields.length ? options.searchFields : null;
+      filteredItems = localItems.filter((item) => (fields
+        ? fields.some((f) => String(item?.[f] ?? '').toLowerCase().includes(q))
+        : itemLabel(item).toLowerCase().includes(q)));
     }
 
     emptyEl.hidden = filteredItems.length > 0 || loading;
@@ -563,17 +578,19 @@ export function lkDropdown(el, opts = {}) {
     li.setAttribute('role', 'option');
     li.setAttribute('aria-selected', String(selected));
     li.setAttribute('data-value', String(val ?? ''));
+    const content = renderTemplate(options.template, item, label);
     if (multiple) {
       const check = document.createElement('span');
       check.className = 'lk-dropdown__option-check';
       check.setAttribute('aria-hidden', 'true');
       const text = document.createElement('span');
       text.className = 'lk-dropdown__option-label';
-      text.textContent = label;
+      text.append(content);
       li.append(check, text);
     } else {
-      li.textContent = label;
+      li.append(content);
     }
+    if (options.template) li.classList.add('lk-dropdown__option--custom');
 
     if (!disabled) {
       li.addEventListener('click', () => selectItem(item));
@@ -582,6 +599,14 @@ export function lkDropdown(el, opts = {}) {
     }
 
     return li;
+  }
+
+  // Custom content hook: a template returns a Node or plain text (never parsed as HTML).
+  function renderTemplate(fn, item, fallback) {
+    if (typeof fn !== 'function') return document.createTextNode(fallback);
+    const out = fn(item);
+    if (out instanceof Node) return out;
+    return document.createTextNode(out == null ? fallback : String(out));
   }
 
   function refreshOptionStates() {
@@ -636,6 +661,7 @@ export function lkDropdown(el, opts = {}) {
   }
 
   function emitChange() {
+    validation?.changed();
     if (typeof options.onChange !== 'function') return;
     if (multiple) options.onChange(selectedValues.slice(), selectedItemList());
     else options.onChange(currentValue, currentItem);
@@ -694,6 +720,7 @@ export function lkDropdown(el, opts = {}) {
     updateTriggerLabel();
     refreshOptionStates();
     closePanel('select');
+    validation?.changed();
     if (typeof options.onChange === 'function') options.onChange(val, item);
   }
 
@@ -708,6 +735,7 @@ export function lkDropdown(el, opts = {}) {
     hiddenInput.value = '';
     updateTriggerLabel();
     refreshOptionStates();
+    validation?.changed();
     if (typeof options.onChange === 'function') options.onChange(null, null);
   }
 
@@ -784,7 +812,12 @@ export function lkDropdown(el, opts = {}) {
     const selectedValue = currentItem ? itemValue(currentItem) : null;
     const hasClearableSelection = selectedValue != null && String(selectedValue) !== '';
 
-    triggerLabel.textContent = label || options.placeholder;
+    triggerLabel.textContent = '';
+    if (label && currentItem && typeof options.selectedTemplate === 'function') {
+      triggerLabel.append(renderTemplate(options.selectedTemplate, currentItem, label));
+    } else {
+      triggerLabel.textContent = label || options.placeholder;
+    }
     triggerLabel.classList.toggle('lk-dropdown__trigger-label--placeholder', !label);
     clearBtn.hidden = !(options.clearable && hasClearableSelection);
   }
@@ -803,7 +836,9 @@ export function lkDropdown(el, opts = {}) {
     const margin = 8;
     const gap    = 4;
 
-    panel.style.minWidth  = `${rect.width}px`;
+    const fixedWidth = options.panelWidth == null ? null
+      : (typeof options.panelWidth === 'number' ? `${options.panelWidth}px` : String(options.panelWidth));
+    panel.style.minWidth  = fixedWidth ? '' : `${rect.width}px`;
     panel.style.maxHeight = `${Math.min(320, vh * 0.5)}px`;
 
     const spaceBelow = vh - rect.bottom - gap - margin;
@@ -819,13 +854,14 @@ export function lkDropdown(el, opts = {}) {
       openAbove = true;
     }
 
+    panel.style.width = fixedWidth || `${rect.width}px`;
+    const panelW = fixedWidth ? panel.offsetWidth : rect.width;
     let left = rect.left;
-    if (left + rect.width > vw - margin) left = vw - rect.width - margin;
+    if (left + panelW > vw - margin) left = vw - panelW - margin;
     if (left < margin) left = margin;
 
     panel.style.top  = `${top}px`;
     panel.style.left = `${left}px`;
-    panel.style.width = `${rect.width}px`;
     panel.dataset.side = openAbove ? 'top' : 'bottom';
     layer.classList.toggle('lk-dropdown__layer--above', openAbove);
   }
@@ -859,6 +895,9 @@ export function lkDropdown(el, opts = {}) {
     open = true;
     trigger.setAttribute('aria-expanded', 'true');
     trigger.classList.add('lk-dropdown__trigger--open');
+    // Inside a dialog or popup the layer must outrank that stacking context
+    const z = floatingZIndex(trigger, 50);
+    layer.style.zIndex = z == null ? 'var(--lk-z-dropdown)' : String(z);
     // Panel lives in <body>, so dense context must be mirrored onto it
     panel.classList.toggle('lk-dropdown__panel--dense',
       trigger.classList.contains('lk-input--dense') || !!trigger.closest('.lk-field--dense'));
@@ -886,7 +925,7 @@ export function lkDropdown(el, opts = {}) {
       window.visualViewport.addEventListener('scroll', requestPositionUpdate);
     }
     document.addEventListener('click', onDocumentClick, true);
-    document.addEventListener('keydown', onDocumentKeydown);
+    document.addEventListener('keydown', onDocumentKeydown, true);
     if (options.infinite) {
       listEl.addEventListener('scroll', onListScroll);
       panel.addEventListener('scroll', onListScroll);
@@ -907,7 +946,7 @@ export function lkDropdown(el, opts = {}) {
       window.visualViewport.removeEventListener('scroll', requestPositionUpdate);
     }
     document.removeEventListener('click', onDocumentClick, true);
-    document.removeEventListener('keydown', onDocumentKeydown);
+    document.removeEventListener('keydown', onDocumentKeydown, true);
     listEl.removeEventListener('scroll', onListScroll);
     panel.removeEventListener('scroll', onListScroll);
     cancelPositionUpdate();
@@ -983,7 +1022,11 @@ export function lkDropdown(el, opts = {}) {
 
   function onDocumentKeydown(e) {
     if (!open) return;
-    if (e.key === 'Escape') closePanel('escape');
+    if (e.key === 'Escape') {
+      // Listening in the capture phase: Escape closes only this panel, not a dialog around it
+      e.stopPropagation();
+      closePanel('escape');
+    }
     if (e.key === 'Tab') closePanel('tab');
   }
 
@@ -1189,6 +1232,24 @@ export function lkDropdown(el, opts = {}) {
 
   comp.open  = () => openPanel();
   comp.close = () => closePanel('manual');
+  comp.focus = (o) => trigger.focus(o);
+
+  Object.defineProperties(comp, {
+    isOpen: { get() { return open; }, enumerable: true },
+    panelEl: { get() { return panel; }, enumerable: true },
+  });
+
+  validation = attachValidation(comp, {
+    opts,
+    getValue: () => (multiple ? selectedValues.slice() : currentValue),
+    label: field.getLabel,
+    labels: () => field.labels,
+    required: () => hiddenInput.required,
+    roots: () => [trigger, panel],
+    isOpen: () => open,
+    setError: field.setError,
+    clearError: field.clearError,
+  });
 
   // Load from remote manually
   comp.load = async () => {
@@ -1200,6 +1261,7 @@ export function lkDropdown(el, opts = {}) {
   };
 
   comp.destroy = function () {
+    validation.destroy();
     destroyed = true;
     if (open) closePanel('destroy');
 
@@ -1207,7 +1269,7 @@ export function lkDropdown(el, opts = {}) {
     trigger.removeEventListener('click', onTriggerClick);
     trigger.removeEventListener('keydown', onTriggerKeydown);
     document.removeEventListener('click', onDocumentClick, true);
-    document.removeEventListener('keydown', onDocumentKeydown);
+    document.removeEventListener('keydown', onDocumentKeydown, true);
     window.removeEventListener('resize', requestPositionUpdate);
     window.removeEventListener('scroll', requestPositionUpdate, true);
     listEl.removeEventListener('scroll', onListScroll);

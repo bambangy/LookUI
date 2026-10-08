@@ -468,7 +468,12 @@ export function lkDataSource(opts = {}) {
       const message = isObject(body) && body.message
         ? body.message
         : `Request failed with status ${response.status}`;
-      throw new Error(message);
+      // Keep the response so callers can read field errors (e.g. 422 { errors: { name: [...] } })
+      const error = new Error(message);
+      error.status = response.status;
+      error.body = body;
+      if (isObject(body) && isObject(body.errors)) error.errors = body.errors;
+      throw error;
     }
 
     return body;

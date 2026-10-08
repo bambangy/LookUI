@@ -1,12 +1,12 @@
 {
   "name": "@lookui/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A no-frills JavaScript & CSS library for UI components. Imperative, predictable, and MVC-friendly.",
   "author": {
     "name": "Bambang Yudhotomo",
     "url": "https://github.com/bambangy"
   },
-  "homepage": "https://github.com/bambangy/LookUI",
+  "homepage": "https://bambangy.github.io/LookUI/docs/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bambangy/LookUI.git"
@@ -36,7 +36,8 @@
   "files": [
     "dist",
     "LICENSE",
-    "NOTICE"
+    "NOTICE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build:js": "rollup -c rollup.config.js",
@@ -44,6 +45,7 @@
     "build": "npm run build:js && npm run build:css",
     "dev": "rollup -c rollup.config.js --watch",
     "test:smoke": "node scripts/smoke-test.js",
+    "docs:theme": "node scripts/theme-template.js",
     "prepublishOnly": "npm run build && npm run test:smoke"
   },
   "keywords": [

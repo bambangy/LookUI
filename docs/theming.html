@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Theming</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Theming</h1>
+    <p style="opacity: 0.85;">Runtime &amp; build-time token overrides</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <p class="lk-card" style="padding: var(--lk-space-4); margin-bottom: var(--lk-space-6); border-left: 4px solid var(--lk-info);">Step-by-step guide: <a href="customize.html"><strong>Custom theme file</strong></a> — create a CSS file with your keys, where to place it and how to include it (HTML, CDN, npm, ASP.NET MVC, Laravel/Django), plus a live playground and the <a href="lookui-theme.css" download>full template</a>.</p>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Scoped override — Teal brand</p>
+    <div style="--lk-primary:#00897b;--lk-primary-light:#4db6ac;--lk-primary-dark:#00695c;--lk-primary-contrast:#fff;padding:var(--lk-space-7);background:var(--lk-bg-subtle);border-radius:var(--lk-radius-xl);">
+      <p class="demo-sub">This block overrides <code>--lk-primary</code> to teal via inline CSS. No rebuild needed.</p>
+      <div class="demo-row">
+        <button class="lk-btn lk-btn--primary">Teal Primary</button>
+        <button class="lk-btn lk-btn--ghost">Teal Ghost</button>
+        <input class="lk-input" type="text" placeholder="Focus ring uses teal" style="max-width:220px;" />
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Scoped override — Pink brand</p>
+    <div style="--lk-primary:#e91e63;--lk-primary-light:#f06292;--lk-primary-dark:#c2185b;--lk-primary-contrast:#fff;padding:var(--lk-space-7);background:var(--lk-bg-subtle);border-radius:var(--lk-radius-xl);">
+      <div class="demo-row">
+        <button class="lk-btn lk-btn--primary">Pink Primary</button>
+        <span class="lk-badge">Default Badge</span>
+        <span class="lk-chip lk-chip--primary">Pink Chip</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">Method 1 — Runtime override (no rebuild)</p>
+    <pre>&lt;!-- Global --&gt;
+&lt;style&gt;:root { --lk-primary: #00897b; }&lt;/style&gt;
+
+&lt;!-- Scoped --&gt;
+&lt;div style="--lk-primary: #e91e63;"&gt;
+  &lt;button class="lk-btn lk-btn--primary"&gt;Pink&lt;/button&gt;
+&lt;/div&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top:var(--lk-space-4);">Method 2 — Build-time override</p>
+    <pre>/* src/scss/tokens/custom/_color.scss */
+:root {
+  --lk-primary:          #00897b;
+  --lk-primary-dark:     #00695c;
+  --lk-primary-contrast: #ffffff;
+}
+
+/* Then: npm run build:css */</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'Theming',
+  kind: 'CSS',
+  signature: [
+    ':root            { --lk-primary: #00897b; }   /* global */',
+    '.brand-pink      { --lk-primary: #e91e63; }   /* scoped */',
+    'el.style.setProperty(\'--lk-primary\', \'#e91e63\');  // runtime',
+  ],
+  description: [
+    'LookUI is themed entirely through CSS custom properties. Global tokens (`--lk-primary`, `--lk-space-4`, `--lk-radius`, … — see [Design tokens](tokens.html)) live on `:root`; a few components add their own **component-level variables** that default to those tokens (`--lk-chip-*`, `--lk-modal-*`, `--lk-toast-*`, `--lk-carousel-*`, `--lk-slider-color`, `--lk-timeline-dot`). Custom properties inherit, so an override applies to the element it is set on and everything inside it.',
+    'Three ways to apply a theme: at runtime with plain CSS (no rebuild), from JavaScript, or at build time in `src/scss/tokens/custom/*.scss` (compiled into `look.css`). See [Properties](#api-section-properties) for each technique, [CSS classes](#api-section-classes) for modifiers that switch component variables, and [CSS variables](#api-section-tokens) for every component-level variable.',
+  ],
+  notes: [
+    '**Dark mode** is not built in: there is no `prefers-color-scheme` rule, `data-theme` attribute or dark class in `look.css`. A dark theme is a set of surface/text/border token overrides — see the *Dark palette* entry below. A few component styles mix fixed colors (for example tonal chip text is mixed toward `#000`, carousel indicator dots are white), so check those when you design a dark palette.',
+    '**Reduced motion:** component styles include `prefers-reduced-motion: reduce` rules (button, carousel, chip, composables, datagrid, date, dropdown, list, modal, pagination, spinner, table) that shorten or remove animations — no token needed.',
+  ],
+
+  properties: [
+    {
+      name: 'Global override (:root)', type: 'CSS',
+      description: 'Redefine tokens on `:root` in a stylesheet loaded **after** `look.css`. Every component on the page follows.',
+      examples: [
+        { title: 'Brand + shape', code: `
+          <link rel="stylesheet" href="look.css">
+          <style>
+            :root {
+              --lk-primary:          #00897b;
+              --lk-primary-light:    #4db6ac;
+              --lk-primary-dark:     #00695c;
+              --lk-primary-contrast: #ffffff;
+              --lk-radius:           0.5rem;
+              --lk-font-family:      'Inter', var(--lk-font-sans);
+            }
+          </style>` },
+      ],
+    },
+    {
+      name: 'Scoped override', type: 'CSS',
+      description: 'Set tokens on any element (class, attribute or inline style) to theme just that subtree. Useful for brand sections, previews or multi-tenant pages.',
+      examples: [
+        { title: 'Three brands side by side', run: true, code: `
+          const brands = [['Indigo (default)', ''], ['Teal', '--lk-primary:#00897b;--lk-primary-light:#4db6ac;--lk-primary-dark:#00695c'], ['Pink', '--lk-primary:#e91e63;--lk-primary-light:#f06292;--lk-primary-dark:#c2185b']];
+          container.style.cssText = 'display:flex;flex-wrap:wrap;gap:12px';
+          brands.forEach(([label, vars]) => {
+            const box = document.createElement('div');
+            box.style.cssText = vars + ';padding:12px;border-radius:var(--lk-radius-xl);background:var(--lk-bg-subtle);display:flex;flex-direction:column;gap:8px;align-items:flex-start';
+            box.innerHTML = '<strong>' + label + '</strong>' +
+              '<button class="lk-btn lk-btn--primary lk-btn--sm">Primary</button>' +
+              '<span class="lk-chip lk-chip--primary">Chip</span>' +
+              '<span class="lk-icon lk-icon--heart-fill lk-icon--lg lk-icon--primary"></span>';
+            container.appendChild(box);
+          });` },
+        { title: 'Theme class', code: `
+          .theme-sunset {
+            --lk-primary: #ef6c00;
+            --lk-primary-light: #ffa040;
+            --lk-primary-dark: #b53d00;
+            --lk-radius-lg: 1rem;
+          }
+          <section class="theme-sunset">…</section>` },
+      ],
+    },
+    {
+      name: 'Runtime from JavaScript', type: 'style.setProperty',
+      description: 'Call `style.setProperty(\'--lk-…\', value)` on `document.documentElement` (global) or on a container (scoped). Remove with `style.removeProperty()`. Read the effective value with `getComputedStyle(el).getPropertyValue()`.',
+      examples: [
+        { title: 'Live color picker (scoped to this preview)', run: true, code: `
+          const picker = document.createElement('input');
+          picker.type = 'color';
+          picker.value = '#5c6bc0';
+          picker.setAttribute('aria-label', 'Primary color');
+          const demo = document.createElement('div');
+          demo.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap';
+          demo.innerHTML = '<button class="lk-btn lk-btn--primary">Save</button><button class="lk-btn lk-btn--ghost">Ghost</button>' +
+            '<input class="lk-input" placeholder="Focus me" style="max-width:180px"><span class="lk-chip lk-chip--primary lk-chip--filled">Filled</span>';
+          picker.oninput = () => {
+            container.style.setProperty('--lk-primary', picker.value);
+            container.style.setProperty('--lk-primary-dark', 'color-mix(in srgb, ' + picker.value + ' 80%, #000)');
+            container.style.setProperty('--lk-primary-light', 'color-mix(in srgb, ' + picker.value + ' 70%, #fff)');
+            log('--lk-primary =', getComputedStyle(container).getPropertyValue('--lk-primary').trim());
+          };
+          const reset = document.createElement('button');
+          reset.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          reset.style.marginLeft = '8px';
+          reset.textContent = 'removeProperty';
+          reset.onclick = () => { ['--lk-primary', '--lk-primary-dark', '--lk-primary-light'].forEach((p) => container.style.removeProperty(p)); picker.value = '#5c6bc0'; log('reset'); };
+          container.append(picker, reset, demo);` },
+        { title: 'Global (whole page)', code: `
+          document.documentElement.style.setProperty('--lk-primary', '#00897b');
+          // undo
+          document.documentElement.style.removeProperty('--lk-primary');` },
+      ],
+    },
+    {
+      name: 'Build-time override (tokens/custom)', type: 'SCSS',
+      description: '`src/scss/main.scss` loads the defaults (`tokens/_color`, `_typography`, `_layout`) and then `tokens/custom/_color.scss`, `_typography.scss`, `_layout.scss`. Uncomment the `:root {}` block in a custom file, redefine tokens and run `npm run build:css` — the overrides are compiled into `dist/look.css`.',
+      examples: [
+        { title: 'src/scss/tokens/custom/_color.scss', code: `
+          :root {
+            --lk-primary:          #00897b;
+            --lk-primary-light:    #4db6ac;
+            --lk-primary-dark:     #00695c;
+            --lk-primary-contrast: #ffffff;
+          }` },
+        { title: 'src/scss/tokens/custom/_layout.scss', code: `
+          :root {
+            --lk-radius:       0.5rem;
+            --lk-radius-lg:    1rem;
+            --lk-radius-xl:    1.5rem;
+            --lk-container-xl: 1280px;
+          }` },
+        { title: 'src/scss/tokens/custom/_typography.scss', code: `
+          :root {
+            --lk-font-sans:   'Inter', sans-serif;
+            --lk-font-family: var(--lk-font-sans);
+            --lk-text-base:   0.9375rem;
+            --lk-line-height: var(--lk-leading-relaxed);
+          }` },
+      ],
+    },
+    {
+      name: 'Dark palette', type: 'CSS (token overrides)',
+      description: 'No dark theme ships with LookUI, but surfaces, text, borders, overlay and shadow color are all tokens. Override them (plus `color-scheme: dark` for native controls) on `:root`, inside `@media (prefers-color-scheme: dark)`, or on a scoped wrapper. Lighter brand shades usually read better on dark backgrounds.',
+      examples: [
+        { title: 'Scoped dark preview', run: true, code: `
+          const dark = document.createElement('div');
+          dark.style.cssText = [
+            'color-scheme:dark', '--lk-bg:#16161f', '--lk-bg-subtle:#1e1e2a', '--lk-surface:#2a2a38',
+            '--lk-text:#ececf3', '--lk-text-muted:#a0a0b0', '--lk-border:#3a3a4a', '--lk-border-strong:#5a5a6e',
+            '--lk-overlay:rgb(0 0 0 / 0.6)', '--lk-shadow-color:0 0 0', '--lk-primary:#8c9eff', '--lk-primary-dark:#7986cb',
+            'background:var(--lk-bg)', 'color:var(--lk-text)', 'padding:16px', 'border-radius:var(--lk-radius-xl)',
+          ].join(';');
+          dark.innerHTML =
+            '<div style="background:var(--lk-bg-subtle);border:1px solid var(--lk-border);border-radius:var(--lk-radius-lg);padding:12px;display:flex;flex-direction:column;gap:10px">' +
+              '<strong>Dark card</strong><span style="color:var(--lk-text-muted)">Muted text on --lk-bg-subtle</span>' +
+              '<input class="lk-input" placeholder="Input" style="max-width:220px">' +
+              '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="lk-btn lk-btn--primary lk-btn--sm">Primary</button>' +
+              '<button class="lk-btn lk-btn--secondary lk-btn--sm">Secondary</button><span class="lk-chip">Neutral chip</span>' +
+              '<span class="lk-chip lk-chip--positive lk-chip--filled">Paid</span></div>' +
+            '</div>';
+          container.appendChild(dark);` },
+        { title: 'Follow the OS setting', code: `
+          @media (prefers-color-scheme: dark) {
+            :root {
+              color-scheme: dark;
+              --lk-bg: #16161f;
+              --lk-bg-subtle: #1e1e2a;
+              --lk-surface: #2a2a38;
+              --lk-text: #ececf3;
+              --lk-text-muted: #a0a0b0;
+              --lk-border: #3a3a4a;
+              --lk-border-strong: #5a5a6e;
+            }
+          }` },
+        { title: 'Toggle with an attribute', code: `
+          [data-theme="dark"] { color-scheme: dark; --lk-bg: #16161f; --lk-text: #ececf3; /* … */ }
+          document.documentElement.dataset.theme = 'dark';   // your own attribute, not built in` },
+      ],
+    },
+    {
+      name: 'Chip variables', type: '--lk-chip-*',
+      description: 'Declared on `.lk-chip`; color modifiers (`.lk-chip--primary`, …), `--filled`, `--outline`, `--dense` and the selected state only swap these variables. Set them on a chip, a class, or a wrapper to restyle chips without new modifiers.',
+      examples: [
+        { title: 'Custom brand chip', run: true, code: `
+          container.innerHTML =
+            '<span class="lk-chip" style="--lk-chip-bg:#fff3e0;--lk-chip-fg:#e65100;--lk-chip-tone:#ef6c00;--lk-chip-hover-bg:#ffe0b2">Orange tonal</span> ' +
+            '<span class="lk-chip lk-chip--outline" style="--lk-chip-outline:#8e24aa;--lk-chip-fg:#6a1b9a;--lk-chip-tone:#8e24aa">Purple outline</span> ' +
+            '<span class="lk-chip" style="--lk-chip-height:2.25rem;--lk-chip-pad:var(--lk-space-5)">Tall chip</span>';` },
+        { title: 'Via lkChip + a wrapper', run: true, code: `
+          const wrap = document.createElement('div');
+          wrap.style.cssText = '--lk-chip-tone:#00897b';
+          container.appendChild(wrap);
+          ['Design', 'Code'].forEach((label, i) => {
+            const el = document.createElement('span');
+            el.style.marginRight = '6px';
+            wrap.appendChild(el);
+            Look.lkChip(el, { label, selected: i === 0, onSelect: (on) => log(label, on) });
+          });
+          log('Selected border, check mark and focus ring use --lk-chip-tone');` },
+      ],
+    },
+    {
+      name: 'Modal & dialog motion', type: '--lk-modal-*',
+      description: 'Declared on `:root`. `lkModal` and `lkDialog` wait `--lk-modal-exit-duration` (+20 ms) before hiding, reading it with `getComputedStyle` at close time, so changing the variable keeps CSS and JS in sync. `lkModal` reads it from the `.lk-modal` element; `lkDialog` reads it from its root wrapper (`.lk-composable-dialog`, appended to `mount`) — set it on `:root`, on the `mount` element, or on an ancestor, not via the `className` option (that class lands on the inner panel).',
+      examples: [
+        { title: 'Slow exit for one dialog (via mount)', run: true, code: `
+          const host = document.createElement('div');
+          host.style.setProperty('--lk-modal-exit-duration', '900ms');
+          host.style.setProperty('--lk-modal-exit-easing', 'var(--lk-easing-in-out)');
+          container.appendChild(host);
+          const dlg = Look.lkDialog({
+            title: 'Slow exit',
+            content: '--lk-modal-exit-duration: 900ms on the mount element.',
+            mount: host, open: false, showCancel: false,
+            onClose: () => log('closed'),
+          });
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--primary lk-btn--sm';
+          btn.textContent = 'Open dialog';
+          btn.onclick = () => dlg.open();
+          container.appendChild(btn);` },
+        { title: 'Global', code: `
+          :root {
+            --lk-modal-enter-duration: 320ms;
+            --lk-modal-exit-duration:  160ms;
+            --lk-modal-enter-easing:   var(--lk-easing-spring);
+          }` },
+      ],
+    },
+    {
+      name: 'Toast motion', type: '--lk-toast-*',
+      description: 'Declared on `:root`. A closing toast slides out for `--lk-toast-slide-duration`, then collapses for `--lk-toast-collapse-duration` so the stack glides. `lkToast` reads both from the toast element when it closes and removes it after their sum (+20 ms).',
+      examples: [
+        { title: 'Per-toast slow exit', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary lk-btn--sm';
+          btn.textContent = 'Show toast (slow exit)';
+          btn.onclick = () => {
+            const t = Look.lkToast({ title: 'Saved', message: 'Slides out over 800ms', type: 'positive', duration: 1500, onClose: () => log('toast removed') });
+            t.el.style.setProperty('--lk-toast-slide-duration', '800ms');
+            t.el.style.setProperty('--lk-toast-collapse-duration', '400ms');
+          };
+          container.appendChild(btn);` },
+        { title: 'Global', code: `
+          :root {
+            --lk-toast-slide-duration:    320ms;
+            --lk-toast-collapse-duration: 240ms;
+          }` },
+      ],
+    },
+    {
+      name: 'Carousel variables', type: '--lk-carousel-*',
+      description: 'Declared on `.lk-carousel`. `--lk-carousel-duration` / `--lk-carousel-easing` drive the slide transition (and the active-dot width animation); lkCarousel reads the track\'s computed `transition-duration` for its settle timer, so overrides stay in sync. `--lk-carousel-arrow-size` sizes the prev/next buttons (1.75rem on `.lk-carousel--dense`). Reduced motion sets the duration to `1ms`.',
+      examples: [
+        { title: 'Snappier slides, bigger arrows', code: `
+          .hero-carousel {
+            --lk-carousel-duration:   var(--lk-duration-slow);
+            --lk-carousel-easing:     var(--lk-easing-in-out);
+            --lk-carousel-arrow-size: 3rem;
+          }` },
+      ],
+    },
+    {
+      name: 'Slider & timeline variables', type: '--lk-slider-color, --lk-timeline-dot',
+      description: '`--lk-slider-color` (on `.lk-slider`, default `var(--lk-primary)`) paints the fill, thumb and focus halo. `--lk-timeline-dot` (on `.lk-timeline`, default `1rem`, `0.625rem` dense) sizes the dots; `--lk-timeline-dot-top` centers them on the first title line and is derived from it.',
+      examples: [
+        { title: 'Custom slider color', run: true, code: `
+          ['', '#8e24aa', 'var(--lk-warning)'].forEach((color, i) => {
+            const el = document.createElement('div');
+            el.className = 'lk-slider';
+            el.style.cssText = 'max-width:320px;margin-bottom:8px' + (color ? ';--lk-slider-color:' + color : '');
+            el.innerHTML = '<div class="lk-slider__track"><div class="lk-slider__fill"></div><div class="lk-slider__thumb"></div></div>';
+            container.appendChild(el);
+            Look.lkSlider(el, { value: 30 + i * 20, onChange: (v) => log('slider', i + 1, v) });
+          });` },
+        { title: 'Bigger timeline dots', run: true, code: `
+          container.innerHTML =
+            '<ul class="lk-timeline" style="--lk-timeline-dot:1.5rem">' +
+              '<li class="lk-timeline__item"><div class="lk-timeline__dot lk-timeline__dot--primary"></div><div class="lk-timeline__content"><div class="lk-timeline__title">Ordered</div><div class="lk-timeline__time">09:00</div></div></li>' +
+              '<li class="lk-timeline__item"><div class="lk-timeline__dot"></div><div class="lk-timeline__content"><div class="lk-timeline__title">Shipped</div><div class="lk-timeline__time">14:30</div></div></li>' +
+            '</ul>';` },
+      ],
+    },
+  ],
+
+  classes: [
+    { name: '.lk-chip--{color} / --filled / --outline / --dense', description: 'Swap the `--lk-chip-*` variables (`tone`, `bg`, `fg`, `hover-bg`, `outline`, `border`, `height`, `pad`). Colors: `primary`, `secondary`, `accent`, `positive`, `warning`, `negative`, `info`.' },
+    {
+      name: '.lk-slider--positive / --negative / --accent', description: 'Set `--lk-slider-color` to `--lk-positive`, `--lk-negative` or `--lk-accent`.',
+      examples: [{ title: 'Modifiers', run: true, code: `
+        ['positive', 'negative', 'accent'].forEach((m) => {
+          const el = document.createElement('div');
+          el.className = 'lk-slider lk-slider--' + m;
+          el.style.cssText = 'max-width:320px;margin-bottom:8px';
+          el.innerHTML = '<div class="lk-slider__track"><div class="lk-slider__fill"></div><div class="lk-slider__thumb"></div></div>';
+          container.appendChild(el);
+          Look.lkSlider(el, { value: 60 });
+        });` }],
+    },
+    {
+      name: '.lk-modal--status-{type}', description: 'Sets `--lk-dialog-status-color` (icon/accent of `lkDialog({ type })`): `success` → positive, `error` → negative, `warning` → warning, `info` → info, `question` → secondary; `.lk-modal--status` defaults to primary.',
+      examples: [{ title: 'Status dialogs', run: true, code: `
+        ['success', 'error', 'warning', 'info', 'question'].forEach((type) => {
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          btn.style.margin = '0 6px 6px 0';
+          btn.textContent = type;
+          btn.onclick = () => Look.lkDialog({ type, title: type, content: 'Colored by --lk-dialog-status-color', destroyOnClose: true });
+          container.appendChild(btn);
+        });` }],
+    },
+    { name: '.lk-modal--calm', description: 'Opts a modal panel out of the pop-in / slide-down keyframes (plain rise/fade transitions). Same as `lkDialog({ animation: \'calm\' })`. Durations still come from `--lk-modal-*`.' },
+    { name: '.lk-carousel--dense / .lk-timeline--dense', description: 'Dense variants re-set `--lk-carousel-arrow-size` (1.75rem) and `--lk-timeline-dot` (0.625rem).' },
+  ],
+
+  tokens: [
+    { name: '--lk-chip-tone', default: 'var(--lk-primary)', description: 'Accent for selected state, focus ring and avatar (per color modifier).' },
+    { name: '--lk-chip-bg', default: 'var(--lk-surface)', description: 'Chip background.' },
+    { name: '--lk-chip-fg', default: 'var(--lk-text)', description: 'Chip text color.' },
+    { name: '--lk-chip-hover-bg', default: 'color-mix(--lk-text 9%, --lk-surface)', description: 'Hover background for clickable chips.' },
+    { name: '--lk-chip-outline', default: 'var(--lk-border)', description: 'Border color used by `--outline`.' },
+    { name: '--lk-chip-border', default: 'transparent', description: 'Actual border color (outline / selected set it).' },
+    { name: '--lk-chip-height', default: '1.75rem', description: 'Height (`1.375rem` dense).' },
+    { name: '--lk-chip-pad', default: 'var(--lk-space-3)', description: 'Horizontal padding (`--lk-space-2` dense).' },
+    { name: '--lk-modal-enter-duration', default: 'var(--lk-duration-base)', description: 'Modal / dialog enter duration (`:root`).' },
+    { name: '--lk-modal-exit-duration', default: '220ms', description: 'Exit duration; JS hide timers wait for it.' },
+    { name: '--lk-modal-enter-easing', default: 'var(--lk-easing-out)', description: 'Enter easing.' },
+    { name: '--lk-modal-exit-easing', default: 'cubic-bezier(0.4, 0, 1, 1)', description: 'Exit easing.' },
+    { name: '--lk-dialog-status-color', default: 'var(--lk-primary)', description: 'Status icon color of `lkDialog({ type })` (set per `.lk-modal--status-{type}`).' },
+    { name: '--lk-toast-slide-duration', default: '240ms', description: 'Toast slide-out duration (`:root`).' },
+    { name: '--lk-toast-collapse-duration', default: '180ms', description: 'Height collapse after the slide, so the stack glides.' },
+    { name: '--lk-carousel-duration', default: 'var(--lk-duration-slower)', description: 'Slide transition duration (`.lk-carousel`).' },
+    { name: '--lk-carousel-easing', default: 'var(--lk-easing-out)', description: 'Slide transition easing.' },
+    { name: '--lk-carousel-arrow-size', default: '2.5rem', description: 'Prev/next button size (`1.75rem` dense).' },
+    { name: '--lk-slider-color', default: 'var(--lk-primary)', description: 'Fill, thumb and halo color (`.lk-slider`).' },
+    { name: '--lk-timeline-dot', default: '1rem', description: 'Dot size (`.lk-timeline`; `0.625rem` dense).' },
+    { name: '--lk-timeline-dot-top', default: 'calc(…)', description: 'Derived dot offset; override only if you change the title font size.' },
+    { name: '--lk-icon-src', default: 'per glyph', description: 'Mask image of `.lk-icon` — see [Icons](icon.html).' },
+    { name: '--lk-tip-transform-hidden / -shown', default: 'per placement', description: 'Internal: tooltip enter transform per placement (set on `.lk-tooltip__content`).' },
+    { name: '--lk-submenu-h, --lk-page-i, --lk-sort-i', default: 'set by JS', description: 'Internal, written inline by `lkList` (submenu height), `lkPagination` and `lkTable` (stagger index). Do not set them yourself.' },
+  ],
+});
+</script>
+</body>
+</html>

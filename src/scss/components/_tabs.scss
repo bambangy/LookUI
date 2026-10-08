@@ -1,0 +1,293 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Tabs component (lkTabs)
+//
+//   .lk-tabs                 tab list (<ul role="tablist">)
+//   .lk-tabs--line|pill|box  variant (line = underline, default)
+//   .lk-tabs--vertical       stacked tabs
+//   .lk-tabs__panels         container receiving the panels
+//   .lk-tabs-layout          optional wrapper placing list + panels (--vertical: side by side)
+//
+// The active marker (.lk-tabs__indicator) slides between tabs; JS sets its
+// --lk-tabs-ind-x / -y / -w / -h from the active tab's box.
+
+.lk-tabs {
+  --lk-tabs-pad-y: var(--lk-space-2);
+  --lk-tabs-pad-x: var(--lk-space-4);
+  --lk-tabs-gap: var(--lk-space-1);
+  --lk-tabs-active: var(--lk-primary);
+  --lk-tabs-duration: var(--lk-duration-base);
+  --lk-tabs-easing: var(--lk-easing-out);
+
+  position: relative;
+  display: flex;
+  gap: var(--lk-tabs-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+
+  &__tab {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lk-space-2);
+    margin: 0;
+    padding: var(--lk-tabs-pad-y) var(--lk-tabs-pad-x);
+    border-radius: var(--lk-radius-md);
+    color: var(--lk-text-muted);
+    font-size: var(--lk-text-sm);
+    font-weight: var(--lk-weight-medium);
+    line-height: var(--lk-leading-snug);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      color var(--lk-duration-fast) var(--lk-easing-default),
+      background-color var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover:not(.lk-tabs__tab--active):not(.lk-tabs__tab--disabled) {
+      color: var(--lk-text);
+      background: var(--lk-bg-subtle);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--lk-tabs-active);
+      outline-offset: -2px;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    &--active { color: var(--lk-tabs-active); }
+
+    &--disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  }
+
+  &__badge {
+    min-width: 1.25rem;
+    padding: 0 var(--lk-space-1);
+    border-radius: var(--lk-radius-full);
+    background: var(--lk-bg-subtle);
+    color: var(--lk-text-muted);
+    font-size: var(--lk-text-xs);
+    line-height: 1.25rem;
+    text-align: center;
+  }
+
+  &__indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  &--ready &__indicator {
+    opacity: 1;
+    transition:
+      transform var(--lk-tabs-duration) var(--lk-tabs-easing),
+      width var(--lk-tabs-duration) var(--lk-tabs-easing),
+      height var(--lk-tabs-duration) var(--lk-tabs-easing);
+  }
+
+  // --- Line (default) ---
+
+  &--line {
+    box-shadow: inset 0 calc(-1 * var(--lk-border-width)) 0 var(--lk-border);
+
+    .lk-tabs__tab { border-radius: var(--lk-radius-md) var(--lk-radius-md) 0 0; }
+
+    .lk-tabs__indicator {
+      top: auto;
+      bottom: 0;
+      z-index: 2;
+      width: var(--lk-tabs-ind-w, 0);
+      height: 2px;
+      border-radius: 2px 2px 0 0;
+      background: var(--lk-tabs-active);
+      transform: translateX(var(--lk-tabs-ind-x, 0));
+    }
+  }
+
+  // --- Pill ---
+
+  &--pill {
+    --lk-tabs-gap: var(--lk-space-2);
+
+    padding: var(--lk-space-1);
+
+    .lk-tabs__tab { border-radius: var(--lk-radius-full); }
+    .lk-tabs__tab--active { color: var(--lk-primary-contrast); }
+
+    .lk-tabs__tab--active .lk-tabs__badge {
+      background: rgb(255 255 255 / 0.25);
+      color: inherit;
+    }
+
+    .lk-tabs__indicator {
+      width: var(--lk-tabs-ind-w, 0);
+      height: var(--lk-tabs-ind-h, 0);
+      border-radius: var(--lk-radius-full);
+      background: var(--lk-tabs-active);
+      box-shadow: var(--lk-shadow-sm);
+      transform: translate(var(--lk-tabs-ind-x, 0), var(--lk-tabs-ind-y, 0));
+    }
+  }
+
+  // --- Box (folder tabs) ---
+
+  &--box {
+    --lk-tabs-gap: 0;
+
+    box-shadow: inset 0 calc(-1 * var(--lk-border-width)) 0 var(--lk-border);
+
+    .lk-tabs__tab {
+      border: var(--lk-border-width) solid transparent;
+      border-radius: var(--lk-radius-md) var(--lk-radius-md) 0 0;
+    }
+
+    .lk-tabs__tab--active {
+      border-color: var(--lk-border);
+      border-bottom-color: var(--lk-bg);
+      background: var(--lk-bg);
+      color: var(--lk-text);
+    }
+
+    .lk-tabs__indicator { display: none; }
+  }
+
+  // --- Vertical ---
+
+  &--vertical {
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    .lk-tabs__tab { justify-content: flex-start; }
+  }
+
+  &--vertical#{&}--line {
+    box-shadow: inset calc(-1 * var(--lk-border-width)) 0 0 var(--lk-border);
+
+    .lk-tabs__tab { border-radius: var(--lk-radius-md) 0 0 var(--lk-radius-md); }
+
+    .lk-tabs__indicator {
+      top: 0;
+      right: 0;
+      bottom: auto;
+      left: auto;
+      width: 2px;
+      height: var(--lk-tabs-ind-h, 0);
+      border-radius: 2px 0 0 2px;
+      transform: translateY(var(--lk-tabs-ind-y, 0));
+    }
+  }
+
+  &--vertical#{&}--box {
+    box-shadow: inset calc(-1 * var(--lk-border-width)) 0 0 var(--lk-border);
+
+    .lk-tabs__tab { border-radius: var(--lk-radius-md) 0 0 var(--lk-radius-md); }
+
+    .lk-tabs__tab--active {
+      border-bottom-color: var(--lk-border);
+      border-right-color: var(--lk-bg);
+    }
+  }
+
+  // --- Modifiers ---
+
+  &--fill:not(&--vertical) > .lk-tabs__tab {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+
+  &--dense {
+    --lk-tabs-pad-y: var(--lk-space-1);
+    --lk-tabs-pad-x: var(--lk-space-3);
+
+    .lk-tabs__tab { font-size: var(--lk-text-xs); }
+  }
+}
+
+// --- Panels ---
+
+.lk-tabs__panels {
+  min-width: 0;
+}
+
+.lk-tabs__panel {
+  padding-block: var(--lk-space-4);
+
+  &:focus-visible {
+    outline: 2px solid var(--lk-primary);
+    outline-offset: 2px;
+    border-radius: var(--lk-radius-sm);
+  }
+
+  &--enter {
+    animation: lk-tabs-panel-in var(--lk-duration-base) var(--lk-easing-out);
+  }
+}
+
+.lk-tabs__panels--dense > .lk-tabs__panel { padding-block: var(--lk-space-3); }
+
+.lk-tabs__panels--box {
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-top: none;
+  border-radius: 0 0 var(--lk-radius-md) var(--lk-radius-md);
+  background: var(--lk-bg);
+
+  > .lk-tabs__panel { padding: var(--lk-space-4); }
+}
+
+@keyframes lk-tabs-panel-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+// --- Layout wrapper ---
+
+.lk-tabs-layout {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  &--vertical {
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--lk-space-4);
+
+    > .lk-tabs { flex: none; max-width: 40%; }
+    > .lk-tabs__panels { flex: 1 1 auto; }
+    > .lk-tabs__panels > .lk-tabs__panel { padding-block: 0; }
+  }
+
+  // Box tabs touch their panel
+  &--vertical:has(> .lk-tabs--box) { gap: 0; }
+
+  &--vertical > .lk-tabs__panels--box {
+    border-top: var(--lk-border-width) solid var(--lk-border);
+    border-left: none;
+    border-radius: 0 var(--lk-radius-md) var(--lk-radius-md) 0;
+
+    > .lk-tabs__panel { padding: var(--lk-space-4); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-tabs { --lk-tabs-duration: 1ms; }
+  .lk-tabs__panel--enter { animation: none; }
+}

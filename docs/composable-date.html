@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI - Composable Date</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Date</h1>
+    <p style="opacity: 0.85;">Look.lkDate(target, opts) - compact popup date/range/datetime picker</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+  <section class="demo-section">
+    <p class="demo-section__title">Textbox + calendar icon — displayFormat, ISO value, holidays</p>
+    <p class="demo-sub">
+      The textbox shows <code>picker.display()</code> (from <code>displayFormat</code>); <code>picker.value</code> stays a <code>Date</code>
+      and <code>picker.iso()</code> gives the raw string, also posted by a hidden input (<code>name</code>).
+      Weekends are disabled, holidays are red with a dot (hover for the name), 24–26 Dec are blocked.
+    </p>
+    <form id="dd-form" class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;" novalidate>
+      <div style="display: grid; gap: var(--lk-space-4);">
+        <input id="dd-due" placeholder="Pick a working day" />
+        <input id="dd-meet" placeholder="Pick date & time" />
+        <input id="dd-stay" placeholder="Check-in – check-out" />
+      </div>
+      <div id="dd-out" class="demo-output" style="white-space: pre-wrap;"></div>
+    </form>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Mode Playground</p>
+
+    <div class="lk-card" style="margin-bottom: var(--lk-space-4);">
+      <div class="lk-card__body">
+        <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
+          <label style="display:inline-flex;align-items:center;gap:var(--lk-space-2);">
+            <input id="cfg-time" type="checkbox" />
+            Time mode
+          </label>
+          <label style="display:inline-flex;align-items:center;gap:var(--lk-space-2);">
+            <input id="cfg-range" type="checkbox" />
+            Range mode
+          </label>
+
+          <label style="display:inline-flex;align-items:center;gap:var(--lk-space-2);">
+            Time format
+            <select id="cfg-format" class="lk-input lk-select" style="min-width: 6rem;">
+              <option value="12">12h</option><option value="24">24h</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="demo-row" style="margin-bottom: var(--lk-space-3);">
+          <input id="cfg-ok" class="lk-input" style="max-width: 8rem;" value="OK" placeholder="OK label" />
+          <input id="cfg-cancel" class="lk-input" style="max-width: 8rem;" value="Cancel" placeholder="Cancel label" />
+          <button id="cfg-apply" class="lk-btn lk-btn--secondary">Apply Config</button>
+        </div>
+
+        <div class="demo-row" style="margin-bottom: 0;">
+          <button id="date-trigger" class="lk-btn lk-btn--primary">Open Picker</button>
+          <button id="date-set" class="lk-btn lk-btn--ghost">Set Random Value</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="date-output" class="demo-output">Ready</div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>// A readonly textbox with a calendar icon; the whole field opens the picker
+const due = Look.lkTextbox('#due', { label: 'Due date', readonly: true, append: Look.lkIcon('calendar', { size: 'sm' }) });
+const picker = Look.lkDate(due.el.closest('.lk-input-affix'), {
+  input: due,                         // writes picker.display() into the textbox
+  displayFormat: 'dd MMM yyyy',       // what the user sees
+  isoFormat: 'yyyy-MM-dd',            // picker.iso() (default: yyyy-MM-dd, or yyyy-MM-ddTHH:mm:ss.SSS with time)
+  name: 'dueDate',                    // hidden input posting picker.iso()
+  min: new Date(),
+  disabledDays: [0, 6],               // no weekends
+  disabledDates: [{ from: '2026-12-24', to: '2026-12-26' }],
+  holidays: ['01-01', { date: '2026-08-17', label: 'Independence Day' }],
+});
+
+picker.value;      // Date (unchanged contract)
+picker.display();  // '08 Oct 2026'
+picker.iso();      // '2026-10-08'
+picker.format("dddd, d MMMM yyyy");
+
+// Date + time: calendar, time row and OK in one panel
+Look.lkDate('#meeting', { time: true, timeFormat: 24, minuteStep: 15, displayFormat: 'dd/MM/yyyy HH:mm' });</pre>
+  </div>
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkDate',
+  kind: 'Composable',
+  signature: [
+    'const picker = Look.lkDate(target, options);',
+    'const picker = Look.lkDate({ target, ...options });',
+  ],
+  description: [
+    'Compact popup calendar attached to a trigger element. It supports three modes: **single date** (default), **range** (`range: true`) and **date + time** (`time: true`). The panel is rendered by [lkPopupProxy](composable-popup-proxy.html), so it inherits its placement, outside-click and Escape handling.',
+    'Clicking the trigger toggles the panel. `picker.value` is always a `Date` (or `[start, end]`); `display()` returns the text to show (`displayFormat`), `iso()` the raw string (`isoFormat`). With `displayFormat` on an `<input>` trigger — or with the `input` option — lkDate writes `display()` into that input itself; otherwise show the value yourself from `onConfirm` / `onChange`.',
+    '**Holidays and disabled dates.** `holidays` marks days (red number + dot, name as tooltip) and keeps them selectable unless `disableHolidays: true`; `disabledDates`, `disabledDays` and `min` / `max` make days unselectable (struck through).',
+  ],
+  params: [
+    { name: 'target', type: 'Element | string', description: 'Trigger element or CSS selector (required). Can also be passed as `options.target` when the first argument is the options object.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The picker instance with the properties and methods below.' },
+  notes: [
+    '**Mode rules.** `time: true` always disables `range`. Time mode is one panel: the calendar, a time row (hour / minute [/ second] selects, AM/PM in 12-hour format) and a footer showing the pending value with **Now**, **Cancel** and **OK**. Pick a day, adjust the time, press **OK** (or Enter) to commit. **Cancel**, Escape or an outside click close without committing; the next open starts again from the committed value. Single and range picks commit (and close) immediately.',
+    '**Format tokens** (`displayFormat`, `isoFormat`, `format()`): `yyyy`/`yyy` 2026 · `yy` 26 · `MMMM` October · `MMM` Oct · `MM` 10 · `M` 10 · `dddd` Thursday · `ddd` Thu · `dd` 08 · `d` 8 · `HH`/`H` 14 (24 h) · `hh`/`h` 02 (12 h) · `mm`/`m` minutes · `ss`/`s` seconds · `SSS`/`SS`/`S` milliseconds, hundredths, tenths (also `fff`/`ff`/`f`) · `tt`/`A` AM/PM · `XXX` +07:00 · `XX` +0700. Quote literal text: `\'at\'` or `[at]`; other characters (`- / : . T` and spaces) are copied as-is. Month and weekday names follow `locale`.',
+    '**Value parsing.** Values may be `Date` objects, timestamps or strings. `"YYYY-MM-DD"` strings are read as **local** dates; other strings go through `new Date(string)`. Invalid values are ignored. In date-only modes the time of day is dropped (midnight); in time mode it is kept.',
+    '**Limits.** The week always starts on Sunday, and the year list spans 60 years back / 40 years ahead of the shown month unless `min` / `max` narrow it. `min` and `max` compare whole days (their time of day is ignored).',
+  ],
+
+  options: [
+    {
+      name: 'value', type: 'Date | number | string | Array', default: 'null',
+      description: 'Initial value. In range mode pass `[start, end]` (either may be `null`; a reversed pair is swapped). Values outside `min`/`max` are clamped to the nearest allowed day. The calendar opens on the month of the value (or today).',
+      examples: [
+        { title: 'Single date from an ISO string', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Open (value: 2026-12-24)';
+          container.appendChild(btn);
+          const picker = Look.lkDate(btn, { value: '2026-12-24' });
+          log('picker.value =', picker.value.toDateString());` },
+        { title: 'Range from Date objects', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Open range';
+          container.appendChild(btn);
+          const start = new Date();
+          const end = new Date(); end.setDate(end.getDate() + 6);
+          const picker = Look.lkDate(btn, { range: true, value: [start, end] });
+          log('value =', picker.value.map((d) => d && d.toDateString()).join(' → '));` },
+        { title: 'Date + time from a timestamp', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Open (10:30 today)';
+          container.appendChild(btn);
+          const d = new Date(); d.setHours(10, 30, 0, 0);
+          const picker = Look.lkDate(btn, { time: true, value: d.getTime() });
+          log('value =', picker.value.toLocaleString());` },
+      ],
+    },
+    {
+      name: 'min', type: 'Date | number | string', default: 'null',
+      description: 'Earliest selectable day. Earlier days are disabled, the previous-month arrow stops at the min month and the month/year selects disable unreachable entries.',
+      examples: [
+        { title: 'No past dates', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Book from today';
+          container.appendChild(btn);
+          Look.lkDate(btn, { min: new Date(), onConfirm: (d) => log('booked', d.toDateString()) });` },
+      ],
+    },
+    {
+      name: 'max', type: 'Date | number | string', default: 'null',
+      description: 'Latest selectable day. Combine with `min` to restrict the calendar to a window.',
+      examples: [
+        { title: 'Only the next 14 days', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Next 14 days';
+          container.appendChild(btn);
+          const max = new Date(); max.setDate(max.getDate() + 14);
+          Look.lkDate(btn, { min: new Date(), max, onConfirm: (d) => log('picked', d.toDateString()) });` },
+        { title: 'Birth date (fixed year window)', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Birth date (1950 – 2010)';
+          container.appendChild(btn);
+          Look.lkDate(btn, { min: '1950-01-01', max: '2010-12-31', value: '1990-06-15',
+            onConfirm: (d) => log('born', d.toDateString()) });` },
+      ],
+    },
+    {
+      name: 'range', type: 'boolean', default: 'false',
+      description: 'Range selection. The first click sets the start, the second click (same day or later) sets the end and closes the panel. While waiting for the end, hovering a later day previews the range (`.lk-date__day--range-hover`). Clicking a day **before** the start restarts the range from that day. Ignored when `time: true`.',
+      examples: [
+        { title: 'Pick a stay', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Check-in → check-out';
+          container.appendChild(btn);
+          Look.lkDate(btn, {
+            range: true,
+            min: new Date(),
+            onChange: (v, meta) => log(meta.source, v.map((d) => d ? d.toDateString() : '…').join(' → ')),
+            onConfirm: ([a, b]) => { btn.textContent = a.toLocaleDateString() + ' → ' + b.toLocaleDateString(); },
+          });` },
+        { title: 'range + time → range is ignored', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Open';
+          container.appendChild(btn);
+          const picker = Look.lkDate(btn, { range: true, time: true });
+          log('value is a single Date / null, not an array:', picker.value);` },
+      ],
+    },
+    {
+      name: 'displayFormat', type: 'string', default: "locale medium date (+ short time)",
+      description: 'Pattern for `display()` (see **Format tokens** above), e.g. `\'dd MMM yyyy\'`, `\'dddd, d MMMM yyyy\'`, `\'dd/MM/yyyy HH:mm\'`. Without it `display()` uses the locale\'s medium date style (plus the time in time mode). When set and the trigger is an `<input>`, the input shows it automatically.',
+      examples: [
+        { title: 'Readonly input showing the formatted date', run: true, code: `
+          const input = document.createElement('input');
+          input.className = 'lk-input';
+          input.readOnly = true;
+          input.style.maxWidth = '18rem';
+          container.appendChild(input);
+          const picker = Look.lkDate(input, { value: new Date(), displayFormat: 'dddd, dd MMM yyyy',
+            onChange: (v, meta) => log('display:', meta.display, '| value is Date:', v instanceof Date) });
+          log('input.value =', input.value);` },
+      ],
+    },
+    {
+      name: 'isoFormat', type: 'string', default: "'yyyy-MM-dd' / \"yyyy-MM-dd'T'HH:mm:ss.SSS\"",
+      description: 'Pattern for `iso()` — the raw string for APIs and the hidden `name` input. Defaults to a local date (`yyyy-MM-dd`), or a local date-time with milliseconds in time mode. `\'utc\'` returns `Date.toISOString()` (UTC with `Z`). Add `XXX` for the offset: `"yyyy-MM-dd\'T\'HH:mm:ssXXX"`.',
+      examples: [
+        { title: 'Same value, three strings', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Pick date & time';
+          container.appendChild(btn);
+          const value = new Date(2026, 9, 8, 14, 30);
+          ['yyyy-MM-dd\\'T\\'HH:mm:ss.SS', 'yyyy-MM-dd\\'T\\'HH:mm:ssXXX', 'utc'].forEach((isoFormat) => {
+            log(isoFormat, '→', Look.lkDate(btn, { time: true, value, isoFormat }).iso());
+          });` },
+      ],
+    },
+    { name: 'rangeSeparator', type: 'string', default: "' – '", description: 'Joins start and end in `display()` / `format()` for ranges.' },
+    { name: 'input', type: 'Element | string | Object | boolean', default: '—', description: 'Element (or selector, or a LookUI component such as lkTextbox) that receives `display()` after each change — with `input` / `change` events, so a touched lkTextbox re-validates. `true` = the trigger. Defaults to the trigger when it is an `<input>` and `displayFormat` is set; `false` turns that off.' },
+    { name: 'name', type: 'string | [string, string]', default: '—', description: 'Creates a hidden input (after the bound input or the trigger) carrying `iso()` for form posts. Range mode: one name posts `start/end`; two names post start and end separately.' },
+    {
+      name: 'holidays', type: 'Array | Function', default: '—',
+      description: 'Days marked as holidays (`.lk-date__day--holiday`: red number + dot; the label becomes the tooltip and part of the accessible name). Items: `Date`, `\'YYYY-MM-DD\'`, `\'MM-DD\'` (every year), `{ date, label }`, `{ from, to, label }`; or a function `(date) => false | true | \'label\'`. Holidays stay selectable unless `disableHolidays: true`. Change later with `setHolidays()` (e.g. after loading them from an API).',
+      examples: [
+        { title: 'Yearly and one-off holidays', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'December 2026';
+          container.appendChild(btn);
+          const picker = Look.lkDate(btn, {
+            value: '2026-12-01',
+            holidays: [{ date: '12-25', label: 'Christmas' }, { from: '2026-12-29', to: '2026-12-31', label: 'Office closed' }],
+          });
+          log('holiday(2026-12-25):', picker.holiday('2026-12-25'), '| holiday(2026-12-02):', picker.holiday('2026-12-02'));` },
+      ],
+    },
+    {
+      name: 'disabledDates', type: 'Array | Function', default: '—',
+      description: 'Unselectable days, same item forms as `holidays` (`{ from, to }` blocks a period), or `(date) => boolean`. Change later with `setDisabledDates()`.',
+      examples: [
+        { title: 'Fully booked days from a function', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Every 3rd day is booked';
+          container.appendChild(btn);
+          Look.lkDate(btn, { disabledDates: (d) => d.getDate() % 3 === 0, onConfirm: (d) => log(d.toDateString()) });` },
+      ],
+    },
+    { name: 'disabledDays', type: 'number[]', default: '—', description: 'Weekdays that can never be picked: `0` = Sunday … `6` = Saturday. `[0, 6]` = working days only.' },
+    { name: 'disableHolidays', type: 'boolean', default: 'false', description: 'Make holidays unselectable too.' },
+    { name: 'allowDisabledInRange', type: 'boolean', default: 'false', description: 'Range mode: by default a range cannot span a disabled day (the hover preview stops before it, and clicking beyond it starts a new range). `true` allows spans over disabled days.' },
+    {
+      name: 'time', type: 'boolean', default: 'false',
+      description: 'Date + time mode in one panel: pick a day, set the time in the row below the calendar, press **OK**. **Now** fills in the current day and time. The value is committed only by **OK** (or Enter). Forces `range: false`.',
+      examples: [
+        { title: 'Appointment', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Pick date & time';
+          container.appendChild(btn);
+          Look.lkDate(btn, {
+            time: true,
+            onConfirm: (d) => { btn.textContent = d.toLocaleString(); log('confirmed', d.toLocaleString()); },
+          });` },
+      ],
+    },
+    {
+      name: 'timeFormat', type: "string | number", default: "'12'",
+      description: 'Clock used by the time row (only relevant with `time: true`). Anything that is not a 12-hour value is treated as 24-hour.',
+      values: [
+        ["'12' / 12 / '12h' / 'ampm'", 'Hours 1–12 with an AM/PM toggle.'],
+        ["'24' / 24 / '24h'", 'Hours 00–23, no AM/PM toggle.'],
+      ],
+      examples: [
+        { title: '12-hour (default) vs 24-hour', run: true, code: `
+          ['12', '24'].forEach((timeFormat) => {
+            const btn = document.createElement('button');
+            btn.className = 'lk-btn lk-btn--secondary';
+            btn.style.marginRight = '8px';
+            btn.textContent = timeFormat + 'h clock';
+            container.appendChild(btn);
+            const d = new Date(); d.setHours(14, 5, 0, 0);
+            Look.lkDate(btn, { time: true, timeFormat, value: d,
+              onConfirm: (v) => log(timeFormat + 'h →', v.toLocaleTimeString()) });
+          });` },
+      ],
+    },
+    { name: 'seconds', type: 'boolean', default: 'false', description: 'Time mode: show a seconds select (otherwise seconds keep their value from `value`, or 0).' },
+    { name: 'minuteStep', type: 'number', default: '1', description: 'Time mode: minute list step (1–30), e.g. `15` → 00, 15, 30, 45. A value between steps is kept and listed.' },
+    { name: 'nowText', type: 'string', default: "'Now'", description: 'Label of the time-mode button that picks the current day and time.' },
+    {
+      name: 'okText', type: 'string', default: "'OK'",
+      description: 'Label of the time-mode commit button (disabled until a day is picked).',
+    },
+    {
+      name: 'cancelText', type: 'string', default: "'Cancel'",
+      description: 'Label of the time-mode button that closes without committing (`onClose` reason `"cancel"`).',
+      examples: [
+        { title: 'Localized buttons', run: true, code: `
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--secondary';
+          btn.textContent = 'Pilih tanggal & jam';
+          container.appendChild(btn);
+          Look.lkDate(btn, { time: true, timeFormat: '24', locale: 'id-ID', okText: 'Simpan', cancelText: 'Batal' });` },
+      ],
+    },
+    {
+      name: 'locale', type: 'string', default: "'en-US'",
+      description: 'BCP 47 locale passed to `Intl.DateTimeFormat` for weekday names, month names, the default `display()` text and the MMMM / MMM / dddd / ddd format tokens.',
+      examples: [
+        { title: 'Different locales', run: true, code: `
+          ['en-US', 'id-ID', 'fr-FR', 'ja-JP'].forEach((locale) => {
+            const btn = document.createElement('button');
+            btn.className = 'lk-btn lk-btn--secondary';
+            btn.style.margin = '0 8px 8px 0';
+            btn.textContent = locale;
+            container.appendChild(btn);
+            Look.lkDate(btn, { locale });
+          });` },
+      ],
+    },
+    {
+      name: 'placement', type: 'string', default: "'bottom-left'",
+      description: 'Preferred panel position relative to the trigger (see [lkPopupProxy placement](composable-popup-proxy.html#api-options-placement)).',
+      values: [
+        ['bottom-left / bottom-right', 'Below the trigger, aligned to its left / right edge.'],
+        ['top-left / top-right', 'Above the trigger.'],
+        ['left-top / left-bottom', 'To the left, aligned to the trigger top / bottom.'],
+        ['right-top / right-bottom', 'To the right.'],
+        ['top / bottom / left / right', 'Aliases of `top-left`, `bottom-left`, `left-top`, `right-top`.'],
+      ],
+      examples: [
+        { title: 'Four placements', run: true, code: `
+          ['bottom-left', 'bottom-right', 'top-left', 'right-top'].forEach((placement) => {
+            const btn = document.createElement('button');
+            btn.className = 'lk-btn lk-btn--secondary';
+            btn.style.margin = '0 8px 8px 0';
+            btn.textContent = placement;
+            container.appendChild(btn);
+            Look.lkDate(btn, { placement, autoPlacement: false });
+          });` },
+      ],
+    },
+    { name: 'autoPlacement', type: 'boolean', default: 'true', description: 'Flip to another side when the preferred placement would overflow the viewport. `false` keeps `placement` (still clamped inside the viewport).' },
+    { name: 'closeOnOutside', type: 'boolean', default: 'true', description: 'Close on a click outside the panel and trigger (`onClose` reason `"outside"`).' },
+    { name: 'closeOnEscape', type: 'boolean', default: 'true', description: 'Close on **Escape** (`onClose` reason `"escape"`).' },
+    {
+      name: 'toggleOnTrigger', type: 'boolean', default: 'true',
+      description: 'A trigger click closes an open panel (reason `"toggle"`). With `false` the trigger only opens it.',
+    },
+    { name: 'zIndex', type: 'number', default: '95', description: 'z-index of the popup layer.' },
+    {
+      name: 'open', type: 'boolean', default: 'false',
+      description: 'Open the panel immediately after creation.',
+      examples: [{ title: 'Open right away (not run on this page)', code: `Look.lkDate('#due', { open: true });` }],
+    },
+    { name: 'target', type: 'Element | string', description: 'Trigger, when the options object is the only argument: `Look.lkDate({ target: \'#due\', range: true })`.' },
+  ],
+
+  properties: [
+    {
+      name: 'value', type: 'Date | null | [Date|null, Date|null]', readonly: true,
+      description: 'Current committed value (a copy — mutating it has no effect). Range mode always returns a two-item array. In time mode the value changes only after **OK**. Use `setValue()` to change it.',
+      examples: [`const due = picker.value; // Date | null`],
+    },
+    { name: 'isOpen', type: 'boolean', readonly: true, description: 'Whether the panel is open.' },
+    { name: 'el', type: 'Element', readonly: true, description: 'The popup layer (`.lk-popup-proxy`) — **not** the trigger. It is appended to `<body>` the first time the picker opens.' },
+    { name: 'panelEl', type: 'Element', readonly: true, description: 'The panel (`.lk-popup-proxy__panel.lk-date-proxy`) containing the `.lk-date` markup. Use it for styling hooks or tests.' },
+  ],
+
+  methods: [
+    {
+      name: 'open', signature: 'open() → picker',
+      description: 'Opens the panel (fires `onOpen`). Re-opening always starts on the calendar step.',
+      returns: { type: 'Object', description: 'The picker (chainable).' },
+      examples: [{ title: 'Open from another control', run: true, code: `
+        const field = document.createElement('span');
+        field.className = 'lk-chip lk-chip--outline';
+        field.textContent = 'anchor';
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        btn.style.marginLeft = '8px';
+        btn.textContent = 'picker.open()';
+        container.append(field, btn);
+        const picker = Look.lkDate(field, { onConfirm: (d) => log(d.toDateString()) });
+        btn.onclick = () => picker.open();` }],
+    },
+    {
+      name: 'close', signature: "close(reason = 'close') → picker",
+      description: 'Closes the panel. `reason` is forwarded to `onClose`.',
+      params: [{ name: 'reason', type: 'string', optional: true, description: 'Any string; defaults to `"close"`.' }],
+      returns: { type: 'Object', description: 'The picker.' },
+    },
+    { name: 'toggle', signature: 'toggle() → picker', description: 'Opens or closes the panel (closing reason `"toggle"`).', returns: { type: 'Object', description: 'The picker.' } },
+    {
+      name: 'setValue', signature: "setValue(value, source = 'api')",
+      description: 'Sets the value programmatically (same parsing and clamping as the `value` option), moves the calendar to its month and **fires `onChange`** with `meta.source = source`. Pass `null` to clear. Does not fire `onConfirm`.',
+      params: [
+        { name: 'value', type: 'Date | number | string | Array | null', description: 'New value; `[start, end]` in range mode.' },
+        { name: 'source', type: 'string', optional: true, description: 'Reported as `meta.source` in `onChange` (default `"api"`) — handy to ignore your own updates.' },
+      ],
+      examples: [{ title: 'Preset buttons', run: true, code: `
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--secondary';
+        btn.textContent = 'Open';
+        container.appendChild(btn);
+        const picker = Look.lkDate(btn, {
+          onChange: (v, meta) => log('onChange', meta.source, v ? v.toDateString() : null),
+        });
+        [['Today', 0], ['+7 days', 7], ['Clear', null]].forEach(([label, days]) => {
+          const b = document.createElement('button');
+          b.className = 'lk-btn lk-btn--sm lk-btn--ghost';
+          b.textContent = label;
+          b.onclick = () => {
+            if (days == null) return picker.setValue(null, 'preset');
+            const d = new Date(); d.setDate(d.getDate() + days);
+            picker.setValue(d, 'preset');
+          };
+          container.appendChild(b);
+        });` }],
+    },
+    {
+      name: 'setMonth', signature: 'setMonth(date)',
+      description: 'Shows the month containing `date` without changing the value. Invalid input is ignored.',
+      params: [{ name: 'date', type: 'Date | number | string', description: 'Any day of the month to show.' }],
+      examples: [`picker.setMonth('2027-02-01'); // show February 2027`],
+    },
+    {
+      name: 'display', signature: 'display() → string',
+      description: 'The value as text for the user, using `displayFormat` (locale default without it). Ranges: `start + rangeSeparator + end`. `\'\'` when empty. `value` itself stays a `Date`.',
+      examples: [`input.value = picker.display(); // '08 Oct 2026'`],
+    },
+    {
+      name: 'iso', signature: 'iso() → string | null | [string|null, string|null]',
+      description: 'The value as a raw string in `isoFormat` (default `yyyy-MM-dd`, or `yyyy-MM-ddTHH:mm:ss.SSS` in time mode, local time). Range mode returns `[start, end]`.',
+      examples: [`fetch('/api/tasks', { method: 'POST', body: JSON.stringify({ due: picker.iso() }) });`],
+    },
+    { name: 'format', signature: 'format(pattern) → string', description: 'The value formatted with any pattern (ranges joined with `rangeSeparator`).', examples: [`picker.format('yyyy/MM/dd HH:mm'); // '2026/10/08 14:30'`] },
+    { name: 'isDisabled', signature: 'isDisabled(date) → boolean', description: 'Whether a day cannot be picked (outside `min`/`max`, disabled date/weekday, or a holiday with `disableHolidays`).' },
+    { name: 'holiday', signature: 'holiday(date) → string | false', description: 'The holiday label of a day (`\'\'` for an unnamed holiday) or `false`.' },
+    {
+      name: 'setHolidays / setDisabledDates', signature: 'setHolidays(list) · setDisabledDates(list) → picker',
+      description: 'Replace the holiday / disabled-date list (same forms as the options) and redraw — e.g. after fetching them for the shown year.',
+      examples: [`fetch('/api/holidays?year=2026').then((r) => r.json()).then((list) => picker.setHolidays(list)); // [{ date, label }]`],
+    },
+    { name: 'nextMonth', signature: 'nextMonth()', description: 'Shows the next month (no-op past `max`).' },
+    { name: 'prevMonth', signature: 'prevMonth()', description: 'Shows the previous month (no-op before `min`).' },
+    {
+      name: 'destroy', signature: 'destroy()',
+      description: 'Closes the panel (reason `"destroy"`), removes all listeners and the popup layer. Call it when the trigger goes away.',
+      examples: [{ title: 'Destroy and re-create', run: true, code: `
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--secondary';
+        btn.textContent = 'Pick a date';
+        const kill = document.createElement('button');
+        kill.className = 'lk-btn lk-btn--sm lk-btn--negative';
+        kill.style.marginLeft = '8px';
+        kill.textContent = 'destroy()';
+        container.append(btn, kill);
+        let picker = Look.lkDate(btn);
+        kill.onclick = () => {
+          if (picker) { picker.destroy(); picker = null; kill.textContent = 're-create'; log('destroyed — trigger is inert'); }
+          else { picker = Look.lkDate(btn); kill.textContent = 'destroy()'; log('re-created'); }
+        };` }],
+    },
+  ],
+
+  events: [
+    {
+      name: 'onChange', signature: 'onChange(value, meta)',
+      description: 'Fires whenever the value changes — including the first click of a range and `setValue()` calls. In time mode it fires only on **OK** (`source: "confirm"`) or `setValue()`.',
+      args: [
+        { name: 'value', type: 'Date | null | [Date|null, Date|null]', description: 'New value (copies).' },
+        { name: 'meta.source', type: 'string', description: '`"pick"` (single day clicked), `"range-start"`, `"range-end"`, `"confirm"` (time OK), `"api"` or the source passed to `setValue()`.' },
+        { name: 'meta.display / meta.iso', type: 'string | Array', description: 'Same as `display()` / `iso()` for the new value.' },
+      ],
+      examples: [{ title: 'Watch every source', run: true, code: `
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--secondary';
+        btn.textContent = 'Range picker';
+        container.appendChild(btn);
+        const fmt = (d) => d ? d.toLocaleDateString() : '…';
+        const picker = Look.lkDate(btn, {
+          range: true,
+          onChange: (v, meta) => log(meta.source + ':', fmt(v[0]), '→', fmt(v[1])),
+        });
+        picker.setValue(['2026-10-01', '2026-10-03']); // logs "api"` }],
+    },
+    {
+      name: 'onConfirm', signature: 'onConfirm(value, picker)',
+      description: 'Fires when the user completes a selection: a day click (single), the end click (range) or **OK** (time). The panel closes right after with reason `"select"`. Not fired by `setValue()`.',
+      args: [
+        { name: 'value', type: 'Date | [Date, Date]', description: 'The committed value.' },
+        { name: 'picker', type: 'Object', description: 'The picker instance.' },
+      ],
+      examples: [{ title: 'Write into an input', run: true, code: `
+        const input = document.createElement('input');
+        input.className = 'lk-input';
+        input.readOnly = true;
+        input.placeholder = 'Click to pick a date';
+        input.style.maxWidth = '16rem';
+        container.appendChild(input);
+        Look.lkDate(input, {
+          onConfirm(value) {
+            // local YYYY-MM-DD (toISOString() would shift the day in UTC+ time zones)
+            input.value = value.toLocaleDateString('sv-SE');
+            log('onConfirm', input.value);
+          },
+        });` }],
+    },
+    {
+      name: 'onOpen', signature: 'onOpen(picker)',
+      description: 'Fires when the panel opens (trigger click, `open()` or `toggle()`).',
+      args: [{ name: 'picker', type: 'Object', description: 'The picker instance.' }],
+    },
+    {
+      name: 'onClose', signature: 'onClose(reason, picker)',
+      description: 'Fires when the panel starts closing.',
+      args: [
+        { name: 'reason', type: 'string', description: '`"select"` (value committed), `"cancel"` (time-mode Cancel), `"outside"`, `"escape"`, `"toggle"` (trigger clicked again or `toggle()`), `"close"` (default of `close()`), a custom `close(reason)` string, or `"destroy"`.' },
+        { name: 'picker', type: 'Object', description: 'The picker instance.' },
+      ],
+      examples: [{ title: 'Open / close reasons', run: true, code: `
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--secondary';
+        btn.textContent = 'Open, then click outside / press Esc / pick';
+        container.appendChild(btn);
+        Look.lkDate(btn, {
+          onOpen: () => log('onOpen'),
+          onClose: (reason) => log('onClose:', reason),
+        });` }],
+    },
+  ],
+
+  classes: [
+    { name: '.lk-date-proxy', description: 'Added to the popup panel (`.lk-popup-proxy__panel`) that hosts the calendar.' },
+    { name: '.lk-date', description: 'Calendar root (`.lk-date--compact`). Gets `--time-enabled` in time mode.' },
+    { name: '.lk-date__header / __nav / __select', description: 'Header with previous/next arrows (`__nav--prev`, `__nav--next`) and the month/year `<select>`s (`__select--month`, `__select--year`).' },
+    { name: '.lk-date__weekday / __grid', description: 'Weekday labels and the 6×7 day grid.' },
+    { name: '.lk-date__day', description: 'Day button. Modifiers: `--today`, `--muted` (other month), `--selected`, `--holiday`, `--disabled` (outside min/max, disabled date/weekday; struck through), `--range-start`, `--range-end`, `--in-range`, `--range-hover` (hover preview).' },
+    { name: '.lk-date__time', description: 'Time row (time mode): `__time-icon`, `__time-select` (`[data-part="hour|minute|second"]`), `__time-sep`, `__ampm` + `__ampm-btn--active`.' },
+    { name: '.lk-date__footer', description: 'Time-mode footer: `__summary` (pending value, `--empty` before a day is picked) and `__actions` with `__now`, `__cancel`, `__ok`.' },
+  ],
+  tokens: [
+    { name: '--lk-date-holiday', default: 'var(--lk-negative)', description: 'Holiday number and dot color (set on `.lk-date` or `.lk-date-proxy`).' },
+  ],
+});
+</script>
+<script>
+  const output = document.getElementById('date-output');
+  const timeEl = document.getElementById('cfg-time');
+  const rangeEl = document.getElementById('cfg-range');
+  const formatEl = document.getElementById('cfg-format');
+  const okEl = document.getElementById('cfg-ok');
+  const cancelEl = document.getElementById('cfg-cancel');
+
+  let picker = null;
+
+  function readConfig() {
+    const time = !!timeEl.checked;
+    const range = !!rangeEl.checked && !time;
+
+    return {
+      time,
+      range,
+      timeFormat: formatEl.value,
+      okText: okEl.value.trim() || 'OK',
+      cancelText: cancelEl.value.trim() || 'Cancel',
+    };
+  }
+
+  function mountPicker() {
+    const cfg = readConfig();
+
+    if (picker) {
+      picker.destroy();
+      picker = null;
+    }
+
+    picker = Look.lkDate('#date-trigger', {
+      ...cfg,
+      onChange(value, meta) {
+        output.textContent = `onChange (${meta.source}) -> ${formatValue(value)}`;
+      },
+      onConfirm(value) {
+        output.textContent = `onConfirm -> ${formatValue(value)}`;
+      },
+      onClose(reason) {
+        if (reason !== 'select') {
+          output.textContent = `Closed: ${reason}`;
+        }
+      },
+    });
+
+    if (cfg.time) {
+      rangeEl.checked = false;
+      rangeEl.disabled = true;
+    } else {
+      rangeEl.disabled = false;
+    }
+
+    output.textContent = `Config applied: time=${cfg.time}, range=${cfg.range}, format=${cfg.timeFormat}`;
+  }
+
+  // Local YYYY-MM-DD (toISOString() would shift the day in UTC+ time zones)
+  function localDay(d) { return d.toLocaleDateString('sv-SE'); }
+
+  function formatValue(value) {
+    if (Array.isArray(value)) {
+      const [start, end] = value;
+      const s = start ? localDay(start) : '-';
+      const e = end ? localDay(end) : '-';
+      return `${s} -> ${e}`;
+    }
+
+    if (!value) return '(none)';
+    return value.toLocaleString();
+  }
+
+  document.getElementById('cfg-apply').addEventListener('click', mountPicker);
+
+  document.getElementById('date-set').addEventListener('click', () => {
+    if (!picker) return;
+    const cfg = readConfig();
+
+    if (cfg.range) {
+      const start = new Date();
+      start.setDate(start.getDate() + 2);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 4);
+      picker.setValue([start, end]);
+      output.textContent = `Programmatic range set: ${localDay(start)} -> ${localDay(end)}`;
+      return;
+    }
+
+    const value = new Date();
+    value.setDate(value.getDate() + Math.floor(Math.random() * 15));
+    if (cfg.time) {
+      value.setHours(10, 30, 45, 0);
+    }
+
+    picker.setValue(value);
+    output.textContent = `Programmatic value set: ${value.toLocaleString()}`;
+  });
+
+  timeEl.addEventListener('change', () => {
+    if (timeEl.checked) {
+      rangeEl.checked = false;
+      rangeEl.disabled = true;
+    } else {
+      rangeEl.disabled = false;
+    }
+  });
+
+  mountPicker();
+
+  // Textbox + calendar icon demo
+  (function textboxDemo() {
+    const out = document.getElementById('dd-out');
+    const icon = () => Look.lkIcon('calendar', { size: 'sm' });
+    const y = new Date().getFullYear();
+    const companyDay = new Date(); companyDay.setDate(companyDay.getDate() + 3);
+    const holidays = [
+      { date: '01-01', label: 'New Year' },
+      { date: '08-17', label: 'Independence Day' },
+      { date: '12-25', label: 'Christmas' },
+      { date: companyDay, label: 'Company day' },
+    ];
+    const show = () => {
+      out.textContent = [
+        `due  display: ${due.display() || '—'}`,
+        `     iso:     ${due.iso() ?? '—'}`,
+        `     value:   ${due.value}`,
+        `meet display: ${meet.display() || '—'}`,
+        `     iso:     ${meet.iso() ?? '—'}`,
+        `stay display: ${stay.display() || '—'}`,
+        `     iso:     ${JSON.stringify(stay.iso())}`,
+        `form data:    ${new URLSearchParams(new FormData(document.getElementById('dd-form'))).toString()}`,
+      ].join('\n');
+    };
+
+    const dueBox = Look.lkTextbox('#dd-due', { label: 'Due date (working days)', readonly: true, required: true, validate: true, append: icon() });
+    const due = Look.lkDate(dueBox.el.closest('.lk-input-affix'), {
+      input: dueBox, name: 'dueDate', displayFormat: 'dddd, dd MMM yyyy',
+      min: new Date(), disabledDays: [0, 6], holidays, disableHolidays: true,
+      disabledDates: [{ from: `${y}-12-24`, to: `${y}-12-26` }],
+      onChange: show,
+    });
+
+    const meetBox = Look.lkTextbox('#dd-meet', { label: 'Meeting (24 h, 15-minute steps)', readonly: true, append: icon() });
+    const meet = Look.lkDate(meetBox.el.closest('.lk-input-affix'), {
+      input: meetBox, name: 'meetingAt', time: true, timeFormat: 24, minuteStep: 15,
+      displayFormat: 'dd/MM/yyyy HH:mm', isoFormat: "yyyy-MM-dd'T'HH:mm:ss.SS", holidays,
+      onChange: show,
+    });
+
+    const stayBox = Look.lkTextbox('#dd-stay', { label: 'Stay (range cannot cross blocked days)', readonly: true, append: icon() });
+    const stay = Look.lkDate(stayBox.el.closest('.lk-input-affix'), {
+      input: stayBox, name: ['checkIn', 'checkOut'], range: true, displayFormat: 'd MMM yyyy', min: new Date(),
+      disabledDates: [{ from: `${y}-12-24`, to: `${y}-12-26` }], holidays,
+      onChange: show,
+    });
+    show();
+  })();
+</script>
+</body>
+</html>
+
+

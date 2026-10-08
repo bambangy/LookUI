@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Tooltip</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Tooltip</h1>
+    <p style="opacity: 0.85;">lkTooltip(el, opts) — positioned tooltips with show/hide control</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live Demo</p>
+
+    <div class="demo-row" style="gap: var(--lk-space-6); padding: var(--lk-space-8) 0;">
+      <span id="demo-tip-top">
+        <button class="lk-btn lk-btn--secondary">Hover (top)</button>
+      </span>
+
+      <span id="demo-tip-bottom">
+        <button class="lk-btn lk-btn--secondary">Hover (bottom)</button>
+      </span>
+
+      <span id="demo-tip-right">
+        <button class="lk-btn lk-btn--secondary">Hover (right)</button>
+      </span>
+
+      <span id="demo-tip-js">
+        <button class="lk-btn lk-btn--primary">JS controlled</button>
+      </span>
+    </div>
+
+    <div style="margin-top: var(--lk-space-4);">
+      <button id="btn-show" class="lk-btn lk-btn--positive lk-btn--sm">Show</button>
+      <button id="btn-hide" class="lk-btn lk-btn--negative lk-btn--sm">Hide</button>
+      <button id="btn-text" class="lk-btn lk-btn--secondary lk-btn--sm">Change Text</button>
+    </div>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;span id="info-icon"&gt;
+  &lt;button class="lk-btn"&gt;Hover me&lt;/button&gt;
+&lt;/span&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>const tip = Look.lkTooltip('#info-icon', {
+  content: 'More information',
+  position: 'top',  // top | bottom | left | right
+});
+
+tip.content = 'Updated text';
+tip.show();
+tip.hide();
+tip.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkTooltip',
+  kind: 'Component',
+  signature: 'const tip = Look.lkTooltip(element, options);',
+  description: [
+    'Wraps a trigger (button, icon, link…) in a CSS tooltip. The host element gets `.lk-tooltip`; the tip text lives in a `.lk-tooltip__content` child, which is created for you when you pass `content` and none exists yet.',
+    'The tip appears on **hover** and **keyboard focus** (`:focus-within`) with a small scale/slide motion, or on demand via `show()` (`.lk-tooltip--open`). For accessibility the tip gets `role="tooltip"` and an id, and the first other child of the host (the trigger) gets `aria-describedby` pointing at it.',
+  ],
+  params: [
+    { name: 'element', type: 'Element | string', description: 'The host element (usually an inline wrapper around the trigger) or a CSS selector.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The tooltip instance with the properties and methods below.' },
+  notes: 'The tip is positioned with CSS only (absolute, relative to the host) and does not flip or clamp to the viewport — pick a `position` that has room. Text does not wrap (`white-space: nowrap`), so keep tips short.',
+
+  options: [
+    {
+      name: 'content', type: 'string', default: '—',
+      description: 'Tip text (set as plain `textContent`, HTML is not parsed). Creates `.lk-tooltip__content` if the host has none; if the host already has one, its text is replaced (and restored by `destroy()`). When omitted and no content element exists, the instance has no tip.',
+      examples: [
+        { title: 'Text from options', run: true, code: `
+          container.style.padding = '36px 0 8px';
+          const host = document.createElement('span');
+          host.innerHTML = '<button class="lk-btn lk-btn--secondary">Hover or focus me</button>';
+          container.appendChild(host);
+          Look.lkTooltip(host, { content: 'Saves the draft' });` },
+        { title: 'Existing markup (no content option)', run: true, code: `
+          container.style.padding = '36px 0 8px';
+          container.innerHTML = '<span><button class="lk-btn lk-btn--secondary">Markup tip</button><span class="lk-tooltip__content">Declared in HTML</span></span>';
+          const tip = Look.lkTooltip(container.querySelector('span'));
+          log('content =', tip.content);` },
+        { title: 'HTML', code: `
+          <span id="help">
+            <button class="lk-btn">?</button>
+            <span class="lk-tooltip__content">Keyboard shortcuts</span>
+          </span>
+          <script>Look.lkTooltip('#help', { position: 'bottom' });<\/script>` },
+      ],
+    },
+    {
+      name: 'position', type: 'string', default: "'top'",
+      description: 'Side of the trigger the tip appears on. Adds `lk-tooltip__content--{position}`. Unknown values fall back to `top`.',
+      values: [['top', 'Above, centered, arrow pointing down'], ['bottom', 'Below, centered'], ['left', 'Left side, vertically centered'], ['right', 'Right side, vertically centered']],
+      examples: [
+        { title: 'All four positions (forced open)', run: true, code: `
+          container.style.cssText = 'display:flex;gap:110px;justify-content:center;padding:44px 0';
+          ['top', 'bottom', 'left', 'right'].forEach((position) => {
+            const host = document.createElement('span');
+            host.innerHTML = '<button class="lk-btn lk-btn--sm lk-btn--secondary">' + position + '</button>';
+            container.appendChild(host);
+            Look.lkTooltip(host, { content: position, position }).show();
+          });` },
+        { title: 'Invalid value falls back', run: true, code: `
+          container.style.padding = '36px 0 8px';
+          const host = document.createElement('span');
+          host.innerHTML = '<button class="lk-btn lk-btn--sm">Hover</button>';
+          container.appendChild(host);
+          const tip = Look.lkTooltip(host, { content: 'Fallback', position: 'diagonal' });
+          log('position =', tip.position);` },
+      ],
+    },
+  ],
+
+  properties: [
+    {
+      name: 'content', type: 'string',
+      description: 'Get or set the tip text. Setting it is ignored when the instance has no content element (created without `content` and without `.lk-tooltip__content` markup).',
+      examples: [{ title: 'Live text', run: true, code: `
+        container.style.padding = '36px 0 8px';
+        const host = document.createElement('span');
+        host.innerHTML = '<button class="lk-btn lk-btn--primary">Copy link</button>';
+        container.appendChild(host);
+        const tip = Look.lkTooltip(host, { content: 'Copy to clipboard' });
+        host.querySelector('button').onclick = () => {
+          tip.content = 'Copied!';
+          tip.show();
+          setTimeout(() => { tip.hide(); tip.content = 'Copy to clipboard'; }, 1200);
+          log('content =', 'Copied!');
+        };` }],
+    },
+    {
+      name: 'position', type: 'string',
+      description: "Get or set the side (`'top' | 'bottom' | 'left' | 'right'`); swaps the position class immediately.",
+      examples: [{ title: 'Cycle positions', run: true, code: `
+        container.style.cssText = 'padding:44px 0;text-align:center';
+        const host = document.createElement('span');
+        host.innerHTML = '<button class="lk-btn lk-btn--secondary">Click to move the tip</button>';
+        container.appendChild(host);
+        const tip = Look.lkTooltip(host, { content: 'I move', position: 'top' });
+        tip.show();
+        const order = ['top', 'right', 'bottom', 'left'];
+        host.querySelector('button').onclick = () => {
+          tip.position = order[(order.indexOf(tip.position) + 1) % 4];
+          log('position =', tip.position);
+        };` }],
+    },
+    { name: 'enabled', type: 'boolean', description: 'Enable/disable the host. `false` adds `.lk-disabled` + `aria-disabled` (dimmed, no pointer events, so hover no longer opens the tip; keyboard focus still does).' },
+    { name: 'hidden', type: 'boolean', description: 'Show/hide the whole host including the trigger (`.lk-hidden`).' },
+    { name: 'el', type: 'Element', readonly: true, description: 'The host element.' },
+    { name: 'id', type: 'string', description: 'Get or set the host element id.' },
+  ],
+
+  methods: [
+    {
+      name: 'show', signature: 'show()',
+      description: 'Pins the tip open by adding `.lk-tooltip--open` (stays visible without hover/focus until `hide()`).',
+      examples: [{ title: 'show() / hide()', run: true, code: `
+        container.style.padding = '36px 0 8px';
+        const host = document.createElement('span');
+        host.innerHTML = '<span class="lk-badge lk-badge--info">New</span>';
+        container.appendChild(host);
+        const tip = Look.lkTooltip(host, { content: 'Controlled from code', position: 'right' });
+        [['show()', () => tip.show()], ['hide()', () => tip.hide()]].forEach(([text, fn]) => {
+          const b = document.createElement('button');
+          b.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+          b.style.margin = '0 0 0 8px';
+          b.textContent = text;
+          b.onclick = () => { fn(); log(text); };
+          container.appendChild(b);
+        });` }],
+    },
+    {
+      name: 'hide', signature: 'hide()',
+      description: 'Removes `.lk-tooltip--open`. The tip still shows while the host is hovered or contains focus.',
+      examples: [{ title: 'Onboarding hint that hides itself', run: true, code: `
+        container.style.padding = '36px 0 8px';
+        const host = document.createElement('span');
+        host.innerHTML = '<button class="lk-btn lk-btn--positive lk-btn--sm">Start</button>';
+        container.appendChild(host);
+        const tip = Look.lkTooltip(host, { content: 'Click here to begin', position: 'right' });
+        tip.show();
+        setTimeout(() => { tip.hide(); log('auto-hidden after 2.5s'); }, 2500);` }],
+    },
+    {
+      name: 'destroy', signature: 'destroy()',
+      description: 'Undoes everything lkTooltip added: the open state, the `.lk-tooltip` class (only if it added it), the position class, the `aria-describedby` link, and either removes the auto-created content element or restores the markup one (original text, `role`, `id`).',
+      examples: [{ run: true, code: `
+        container.style.padding = '36px 0 8px';
+        const host = document.createElement('span');
+        host.innerHTML = '<button class="lk-btn lk-btn--sm lk-btn--secondary">Hover me, then destroy</button>';
+        container.appendChild(host);
+        const tip = Look.lkTooltip(host, { content: 'Temporary tip' });
+        const b = document.createElement('button');
+        b.className = 'lk-btn lk-btn--sm lk-btn--negative';
+        b.style.marginLeft = '8px';
+        b.textContent = 'destroy()';
+        b.onclick = () => { tip.destroy(); b.disabled = true; log('destroyed; host classes:', JSON.stringify(host.className)); };
+        container.appendChild(b);` }],
+    },
+  ],
+
+  classes: [
+    { name: '.lk-tooltip', description: 'Host: `position: relative; display: inline-flex` so it hugs the trigger.' },
+    { name: '.lk-tooltip__content', description: 'The tip bubble (dark, extra-small text, no wrapping, arrow via `::after`). Hidden (`opacity: 0; visibility: hidden`) until shown; never catches pointer events.' },
+    { name: '.lk-tooltip__content--top / --bottom / --left / --right', description: 'Placement + arrow direction; set by the `position` option.' },
+    {
+      name: '.lk-tooltip--open', description: 'Forces the tip visible (added by `show()`). The tip is also visible on `:hover` and `:focus-within`.',
+      examples: [{ title: 'CSS only, always open', run: true, code: `
+        container.style.padding = '36px 0 8px';
+        container.innerHTML = '<span class="lk-tooltip lk-tooltip--open"><button class="lk-btn lk-btn--sm">Trigger</button><span class="lk-tooltip__content lk-tooltip__content--top" role="tooltip">Pure CSS</span></span>';` }],
+    },
+    {
+      name: '.lk-tooltip--dense', description: 'Tighter padding on the bubble (text size is unchanged).',
+      examples: [{ title: 'Dense vs default', run: true, code: `
+        container.style.cssText = 'display:flex;gap:40px;padding:36px 0 8px';
+        [false, true].forEach((dense) => {
+          const host = document.createElement('span');
+          if (dense) host.className = 'lk-tooltip--dense';
+          host.innerHTML = '<button class="lk-btn lk-btn--sm lk-btn--secondary">' + (dense ? 'dense' : 'default') + '</button>';
+          container.appendChild(host);
+          Look.lkTooltip(host, { content: dense ? 'Dense tip' : 'Default tip' }).show();
+        });` }],
+    },
+  ],
+
+  tokens: [
+    { name: '--lk-tip-transform-hidden', default: 'per position', description: 'Transform of the hidden tip (e.g. `translateX(-50%) translateY(6px) scale(0.82)` for top). Override on `.lk-tooltip__content--*` to change the entry motion.' },
+    { name: '--lk-tip-transform-shown', default: 'per position', description: 'Transform of the visible tip (e.g. `translateX(-50%) translateY(0) scale(1)`).' },
+    { name: '--lk-secondary-dark', default: '#37474f', description: 'Bubble and arrow background.' },
+    { name: '--lk-text-on-dark', default: 'theme', description: 'Bubble text color.' },
+    { name: '--lk-z-tooltip', default: '120', description: 'Stacking order of the bubble.' },
+    { name: '--lk-duration-fast / --lk-duration-base', default: 'theme', description: 'Fade / transform durations of the show-hide motion.' },
+  ],
+});
+</script>
+<script>
+  Look.lkTooltip('#demo-tip-top', { content: 'Tooltip on top', position: 'top' });
+  Look.lkTooltip('#demo-tip-bottom', { content: 'Tooltip on bottom', position: 'bottom' });
+  Look.lkTooltip('#demo-tip-right', { content: 'Tooltip on right', position: 'right' });
+  const jsTip = Look.lkTooltip('#demo-tip-js', { content: 'Controlled via JS!', position: 'top' });
+  const out = document.getElementById('output');
+
+  document.getElementById('btn-show').onclick = () => { jsTip.show(); out.textContent = 'show() called'; };
+  document.getElementById('btn-hide').onclick = () => { jsTip.hide(); out.textContent = 'hide() called'; };
+  document.getElementById('btn-text').onclick = () => { jsTip.content = 'New tooltip text!'; out.textContent = 'content updated'; };
+</script>
+</body>
+</html>

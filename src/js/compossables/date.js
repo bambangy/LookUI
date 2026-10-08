@@ -2,8 +2,10 @@
 // Copyright (c) 2026 Bambang Yudhotomo — LookUI
 import { lkPopupProxy } from './popupProxy.js';
 import { lkIcon } from '../components/icon.js';
+import { formatDate } from '../helpers/dateFormat.js';
 
 const WEEKDAY_START = 0;
+const RANGE_SCAN_DAYS = 3660; // how far a range may look for a blocking (disabled) day
 
 function toStartOfDay(value) {
   const date = new Date(value);
@@ -191,37 +193,6 @@ function createTimeState(seedDate) {
   };
 }
 
-function formatPreview(parts, format) {
-  const minute = String(parts.minute).padStart(2, '0');
-  const second = String(parts.second).padStart(2, '0');
-
-  if (format === '12') {
-    const meridiem = parts.hour24 >= 12 ? 'PM' : 'AM';
-    const raw = parts.hour24 % 12;
-    const hour = raw === 0 ? 12 : raw;
-    return `${hour}:${minute}:${second} ${meridiem}`;
-  }
-
-  const hour = String(parts.hour24).padStart(2, '0');
-  return `${hour}:${minute}:${second}`;
-}
-
-function adjustTime(parts, part, delta) {
-  if (part === 'hour') {
-    parts.hour24 = (parts.hour24 + delta + 24) % 24;
-    return;
-  }
-
-  if (part === 'minute') {
-    parts.minute = (parts.minute + delta + 60) % 60;
-    return;
-  }
-
-  if (part === 'second') {
-    parts.second = (parts.second + delta + 60) % 60;
-  }
-}
-
 function composeDateTime(date, parts) {
   const out = new Date(date);
   out.setHours(parts.hour24, parts.minute, parts.second, 0);
@@ -229,11 +200,67 @@ function composeDateTime(date, parts) {
 }
 
 /**
+ * Compile a date list into a matcher `(date) => false | true | 'label'`.
+ * Items: Date | timestamp | 'YYYY-MM-DD' | 'MM-DD' (every year) | { date, label } | { from, to, label }.
+ * A function is used as the matcher itself.
+ */
+function compileDateRules(input) {
+  if (typeof input === 'function') return (d) => input(new Date(d));
+  const list = Array.isArray(input) ? input : (input == null ? [] : [input]);
+  const days = new Map();
+  const yearly = new Map();
+  const spans = [];
+
+  list.forEach((item) => {
+    let label = true;
+    let v = item;
+    if (item && typeof item === 'object' && !(item instanceof Date)) {
+      label = item.label ?? item.name ?? true;
+      if (item.from != null || item.to != null) {
+        const a = parseDate(item.from);
+        const b = parseDate(item.to);
+        spans.push({
+          a: a ? toStartOfDay(a).getTime() : -Infinity,
+          b: b ? toStartOfDay(b).getTime() : Infinity,
+          label,
+        });
+        return;
+      }
+      v = item.date;
+    }
+    if (typeof v === 'string' && /^\d{2}-\d{2}$/.test(v.trim())) {
+      yearly.set(v.trim(), label);
+      return;
+    }
+    const d = parseDate(v);
+    if (d) days.set(toIsoDate(d), label);
+  });
+
+  if (!days.size && !yearly.size && !spans.length) return null;
+  return (d) => {
+    const key = toIsoDate(d);
+    if (days.has(key)) return days.get(key);
+    const md = key.slice(5);
+    if (yearly.has(md)) return yearly.get(md);
+    const t = toStartOfDay(d).getTime();
+    const span = spans.find((s) => t >= s.a && t <= s.b);
+    return span ? span.label : false;
+  };
+}
+
+function isTextInput(el) {
+  if (!el) return false;
+  if (el.tagName === 'TEXTAREA') return true;
+  return el.tagName === 'INPUT' && !['checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'hidden', 'image', 'range', 'color']
+    .includes((el.type || 'text').toLowerCase());
+}
+
+/**
  * Compact popup date picker attached to a trigger element.
- * Supports single date, range selection, and optional datetime flow.
+ * Supports single date, range selection, and date + time.
  * @param {Element|string|Object} targetOrOpts
  * @param {Object} [maybeOpts]
- * @returns {{ el: Element, panelEl: Element, open: Function, close: Function, toggle: Function, setValue: Function, setMonth: Function, nextMonth: Function, prevMonth: Function, destroy: Function, isOpen: boolean, value: Date|Array<Date|null>|null }}
+ * @returns {Object}
  */
 export function lkDate(targetOrOpts, maybeOpts) {
   const { target, opts } = resolveArgs(targetOrOpts, maybeOpts);
@@ -254,8 +281,21 @@ export function lkDate(targetOrOpts, maybeOpts) {
     range: false,
     time: false,
     timeFormat: '12',
+    seconds: false,
+    minuteStep: 1,
+    displayFormat: null,
+    isoFormat: null,
+    rangeSeparator: ' – ',
+    input: null,
+    name: null,
+    holidays: null,
+    disabledDates: null,
+    disabledDays: null,
+    disableHolidays: false,
+    allowDisabledInRange: false,
     cancelText: 'Cancel',
     okText: 'OK',
+    nowText: 'Now',
     onOpen: null,
     onClose: null,
     onChange: null,
@@ -268,10 +308,16 @@ export function lkDate(targetOrOpts, maybeOpts) {
     time: !!baseOptions.time,
     range: !!baseOptions.range && !baseOptions.time,
     timeFormat: normalizeTimeFormat(baseOptions.timeFormat),
+    seconds: !!baseOptions.seconds,
+    minuteStep: Math.min(30, Math.max(1, Math.trunc(Number(baseOptions.minuteStep) || 1))),
   };
 
   const minDate = parseDate(options.min);
   const maxDate = parseDate(options.max);
+
+  let holidayRule = compileDateRules(options.holidays);
+  let disabledRule = compileDateRules(options.disabledDates);
+  const disabledWeekdays = new Set((options.disabledDays || []).map(Number));
 
   let singleValue = null;
   let rangeStart = null;
@@ -291,60 +337,41 @@ export function lkDate(targetOrOpts, maybeOpts) {
   const initialViewSeed = options.range ? (rangeStart || new Date()) : (singleValue || new Date());
   let viewDate = new Date(initialViewSeed.getFullYear(), initialViewSeed.getMonth(), 1);
 
-  let viewMode = 'date'; // date | time
-  let pendingTimeDate = null;
   let hoverDate = null;
+  // Time mode works on a draft (day + time) that OK commits
+  let draftDay = null;
   let timeDraft = createTimeState(singleValue);
 
   const markup = '' +
     '<div class="lk-date lk-date--compact">' +
-    '  <div class="lk-date__viewport">' +
-    '    <div class="lk-date__track">' +
-    '      <div class="lk-date__date-view">' +
-    '        <div class="lk-date__header">' +
-    '          <button type="button" class="lk-date__nav lk-date__nav--prev" aria-label="Previous month"></button>' +
-    '          <div class="lk-date__controls">' +
-    '            <select class="lk-date__select lk-date__select--month" aria-label="Month"></select>' +
-    '            <select class="lk-date__select lk-date__select--year" aria-label="Year"></select>' +
-    '          </div>' +
-    '          <button type="button" class="lk-date__nav lk-date__nav--next" aria-label="Next month"></button>' +
-    '        </div>' +
-    '        <div class="lk-date__weekdays"></div>' +
-    '        <div class="lk-date__grid"></div>' +
-    '      </div>' +
-    '      <div class="lk-date__time-view" aria-hidden="true">' +
-    '        <div class="lk-date__time-date"></div>' +
-    '        <div class="lk-date__time-grid">' +
-    '          <div class="lk-date__time-col">' +
-    '            <button type="button" class="lk-date__time-btn" data-part="hour" data-dir="up" aria-label="Increase hour"></button>' +
-    '            <div class="lk-date__time-value" data-time-value="hour"></div>' +
-    '            <div class="lk-date__time-label">hour</div>' +
-    '            <button type="button" class="lk-date__time-btn" data-part="hour" data-dir="down" aria-label="Decrease hour"></button>' +
-    '          </div>' +
-    '          <div class="lk-date__time-col">' +
-    '            <button type="button" class="lk-date__time-btn" data-part="minute" data-dir="up" aria-label="Increase minute"></button>' +
-    '            <div class="lk-date__time-value" data-time-value="minute"></div>' +
-    '            <div class="lk-date__time-label">min</div>' +
-    '            <button type="button" class="lk-date__time-btn" data-part="minute" data-dir="down" aria-label="Decrease minute"></button>' +
-    '          </div>' +
-    '          <div class="lk-date__time-col">' +
-    '            <button type="button" class="lk-date__time-btn" data-part="second" data-dir="up" aria-label="Increase second"></button>' +
-    '            <div class="lk-date__time-value" data-time-value="second"></div>' +
-    '            <div class="lk-date__time-label">sec</div>' +
-    '            <button type="button" class="lk-date__time-btn" data-part="second" data-dir="down" aria-label="Decrease second"></button>' +
-    '          </div>' +
-    '        </div>' +
-    '        <div class="lk-date__ampm" hidden>' +
-    '          <button type="button" class="lk-date__ampm-btn" data-meridiem="AM">AM</button>' +
-    '          <button type="button" class="lk-date__ampm-btn" data-meridiem="PM">PM</button>' +
-    '        </div>' +
-    '        <div class="lk-date__time-preview"></div>' +
-    '        <div class="lk-date__separator"></div>' +
-    '        <div class="lk-date__time-actions">' +
-    '          <button type="button" class="lk-btn lk-btn--secondary lk-date__time-cancel"></button>' +
-    '          <button type="button" class="lk-btn lk-btn--primary lk-date__time-ok"></button>' +
-    '        </div>' +
-    '      </div>' +
+    '  <div class="lk-date__header">' +
+    '    <button type="button" class="lk-date__nav lk-date__nav--prev" aria-label="Previous month"></button>' +
+    '    <div class="lk-date__controls">' +
+    '      <select class="lk-date__select lk-date__select--month" aria-label="Month"></select>' +
+    '      <select class="lk-date__select lk-date__select--year" aria-label="Year"></select>' +
+    '    </div>' +
+    '    <button type="button" class="lk-date__nav lk-date__nav--next" aria-label="Next month"></button>' +
+    '  </div>' +
+    '  <div class="lk-date__weekdays"></div>' +
+    '  <div class="lk-date__grid"></div>' +
+    '  <div class="lk-date__time" hidden>' +
+    '    <span class="lk-date__time-icon" aria-hidden="true"></span>' +
+    '    <select class="lk-date__select lk-date__time-select" data-part="hour" aria-label="Hour"></select>' +
+    '    <span class="lk-date__time-sep" aria-hidden="true">:</span>' +
+    '    <select class="lk-date__select lk-date__time-select" data-part="minute" aria-label="Minute"></select>' +
+    '    <span class="lk-date__time-sep lk-date__time-sep--second" aria-hidden="true">:</span>' +
+    '    <select class="lk-date__select lk-date__time-select" data-part="second" aria-label="Second"></select>' +
+    '    <div class="lk-date__ampm" role="group" aria-label="AM or PM">' +
+    '      <button type="button" class="lk-date__ampm-btn" data-meridiem="AM">AM</button>' +
+    '      <button type="button" class="lk-date__ampm-btn" data-meridiem="PM">PM</button>' +
+    '    </div>' +
+    '  </div>' +
+    '  <div class="lk-date__footer" hidden>' +
+    '    <div class="lk-date__summary" aria-live="polite"></div>' +
+    '    <div class="lk-date__actions">' +
+    '      <button type="button" class="lk-btn lk-btn--ghost lk-btn--sm lk-date__now"></button>' +
+    '      <button type="button" class="lk-btn lk-btn--secondary lk-btn--sm lk-date__cancel"></button>' +
+    '      <button type="button" class="lk-btn lk-btn--primary lk-btn--sm lk-date__ok"></button>' +
     '    </div>' +
     '  </div>' +
     '</div>';
@@ -367,8 +394,6 @@ export function lkDate(targetOrOpts, maybeOpts) {
       }
     },
     onHide(reason) {
-      // Transient state (time step, hover preview) is reset on the next open, not here:
-      // resetting now would visibly slide the track back while the panel fades out.
       if (typeof options.onClose === 'function') {
         options.onClose(reason, api);
       }
@@ -378,9 +403,6 @@ export function lkDate(targetOrOpts, maybeOpts) {
   const panel = proxy.panelEl;
   const root = panel.querySelector('.lk-date');
 
-  const dateViewEl = root.querySelector('.lk-date__date-view');
-  const timeViewEl = root.querySelector('.lk-date__time-view');
-
   const prevBtn = root.querySelector('.lk-date__nav--prev');
   const nextBtn = root.querySelector('.lk-date__nav--next');
   const monthSelect = root.querySelector('.lk-date__select--month');
@@ -388,36 +410,26 @@ export function lkDate(targetOrOpts, maybeOpts) {
   const weekdaysRow = root.querySelector('.lk-date__weekdays');
   const grid = root.querySelector('.lk-date__grid');
 
-  const timeDateEl = root.querySelector('.lk-date__time-date');
-  const timeContainer = root.querySelector('.lk-date__time-grid');
-  const hourValueEl = root.querySelector('[data-time-value="hour"]');
-  const minuteValueEl = root.querySelector('[data-time-value="minute"]');
-  const secondValueEl = root.querySelector('[data-time-value="second"]');
+  const timeRow = root.querySelector('.lk-date__time');
+  const hourSelect = root.querySelector('[data-part="hour"]');
+  const minuteSelect = root.querySelector('[data-part="minute"]');
+  const secondSelect = root.querySelector('[data-part="second"]');
+  const secondSep = root.querySelector('.lk-date__time-sep--second');
   const ampmRow = root.querySelector('.lk-date__ampm');
   const ampmButtons = Array.from(root.querySelectorAll('.lk-date__ampm-btn'));
-  const previewEl = root.querySelector('.lk-date__time-preview');
-  const okBtn = root.querySelector('.lk-date__time-ok');
-  const cancelBtn = root.querySelector('.lk-date__time-cancel');
-
-  const timeButtons = Array.from(root.querySelectorAll('.lk-date__time-btn'));
+  const footer = root.querySelector('.lk-date__footer');
+  const summaryEl = root.querySelector('.lk-date__summary');
+  const nowBtn = root.querySelector('.lk-date__now');
+  const okBtn = root.querySelector('.lk-date__ok');
+  const cancelBtn = root.querySelector('.lk-date__cancel');
 
   prevBtn.appendChild(lkIcon('chevron-left', { size: 'sm' }));
   nextBtn.appendChild(lkIcon('chevron-right', { size: 'sm' }));
-
-  timeButtons.forEach((btn) => {
-    const iconName = btn.dataset.dir === 'up' ? 'chevron-up' : 'chevron-down';
-    btn.appendChild(lkIcon(iconName, { size: 'sm' }));
-  });
+  root.querySelector('.lk-date__time-icon').appendChild(lkIcon('clock', { size: 'sm' }));
 
   okBtn.textContent = options.okText;
   cancelBtn.textContent = options.cancelText;
-
-  const timeDateFormatter = new Intl.DateTimeFormat(options.locale, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  nowBtn.textContent = options.nowText;
 
   createWeekdayLabels(options.locale).forEach((label) => {
     const cell = document.createElement('div');
@@ -426,9 +438,93 @@ export function lkDate(targetOrOpts, maybeOpts) {
     weekdaysRow.appendChild(cell);
   });
 
+  // --- Formatting ------------------------------------------------------------------------
+
+  const defaultDisplay = new Intl.DateTimeFormat(options.locale, options.time
+    ? { dateStyle: 'medium', timeStyle: options.seconds ? 'medium' : 'short', hour12: options.timeFormat === '12' }
+    : { dateStyle: 'medium' });
+  const isoPattern = options.isoFormat || (options.time ? "yyyy-MM-dd'T'HH:mm:ss.SSS" : 'yyyy-MM-dd');
+
+  function displayOf(d) {
+    if (!d) return '';
+    return options.displayFormat ? formatDate(d, options.displayFormat, options.locale) : defaultDisplay.format(d);
+  }
+
+  function isoOf(d) {
+    if (!d) return '';
+    if (isoPattern === 'utc') return d.toISOString();
+    return formatDate(d, isoPattern, options.locale);
+  }
+
+  function formatValue(fn) {
+    if (options.range) {
+      if (!rangeStart) return '';
+      return rangeEnd ? `${fn(rangeStart)}${options.rangeSeparator}${fn(rangeEnd)}` : fn(rangeStart);
+    }
+    return fn(singleValue);
+  }
+
+  function display() {
+    return formatValue(displayOf);
+  }
+
+  function iso() {
+    if (options.range) return [rangeStart ? isoOf(rangeStart) : null, rangeEnd ? isoOf(rangeEnd) : null];
+    return singleValue ? isoOf(singleValue) : null;
+  }
+
+  function format(pattern) {
+    return formatValue((d) => formatDate(d, pattern, options.locale));
+  }
+
+  // --- Bound input (display text) + hidden ISO input ----------------------------------------
+
+  function resolveBound() {
+    const ref = options.input;
+    if (ref === false) return null;
+    if (ref == null || ref === true) return (options.displayFormat || ref === true) && isTextInput(trigger) ? trigger : null;
+    if (typeof ref === 'string') return document.querySelector(ref);
+    if (ref instanceof Element) return ref;
+    return ref.el instanceof Element ? ref.el : null; // a LookUI component (lkTextbox…)
+  }
+  const boundInput = resolveBound();
+
+  const hiddenInputs = [];
+  if (options.name) {
+    const names = Array.isArray(options.name) ? options.name : [options.name];
+    const anchor = boundInput || trigger;
+    names.forEach((n) => {
+      const h = document.createElement('input');
+      h.type = 'hidden';
+      h.name = n;
+      hiddenInputs.push(h);
+    });
+    anchor.after(...hiddenInputs);
+  }
+
+  function syncBound(fire) {
+    const iv = iso();
+    if (hiddenInputs.length === 2) {
+      hiddenInputs[0].value = iv?.[0] || '';
+      hiddenInputs[1].value = iv?.[1] || '';
+    } else if (hiddenInputs.length) {
+      hiddenInputs[0].value = Array.isArray(iv) ? iv.filter(Boolean).join('/') : (iv || '');
+    }
+    if (!boundInput) return;
+    const text = display();
+    if (boundInput.value === text) return;
+    boundInput.value = text;
+    if (fire) {
+      // Lets listeners (e.g. lkTextbox validation) react as if the user typed
+      boundInput.dispatchEvent(new Event('input', { bubbles: true }));
+      boundInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+
   function emitChange(value, source) {
+    syncBound(source !== 'init');
     if (typeof options.onChange === 'function') {
-      options.onChange(value, { source });
+      options.onChange(value, { source, display: display(), iso: iso() });
     }
   }
 
@@ -437,6 +533,41 @@ export function lkDate(targetOrOpts, maybeOpts) {
       options.onConfirm(value, api);
     }
   }
+
+  // --- Day rules -------------------------------------------------------------------------
+
+  function holidayOf(date) {
+    if (!holidayRule) return false;
+    const r = holidayRule(date);
+    if (!r) return false;
+    if (typeof r === 'string') return r;
+    if (typeof r === 'object' && r.label != null) return String(r.label);
+    return '';
+  }
+
+  function isDisabledDay(date) {
+    if (disabledWeekdays.has(date.getDay())) return true;
+    if (disabledRule && disabledRule(date)) return true;
+    return !!options.disableHolidays && holidayOf(date) !== false;
+  }
+
+  function isSelectable(date) {
+    return withinBounds(date, minDate, maxDate) && !isDisabledDay(date);
+  }
+
+  // First unselectable day after `start` (ranges cannot cross it unless allowDisabledInRange)
+  function rangeLimit(start) {
+    if (!start || options.allowDisabledInRange) return null;
+    const d = toStartOfDay(start);
+    for (let i = 0; i < RANGE_SCAN_DAYS; i += 1) {
+      d.setDate(d.getDate() + 1);
+      if (maxDate && d > toStartOfDay(maxDate)) return null;
+      if (isDisabledDay(d)) return new Date(d);
+    }
+    return null;
+  }
+
+  // --- Calendar ------------------------------------------------------------------------------
 
   function getYearBounds() {
     if (minDate || maxDate) {
@@ -491,6 +622,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
     return d > a && d < b;
   }
 
+  let hoverLimit = null;
   function inHoverRange(date) {
     if (!options.range || !rangeStart || rangeEnd || !hoverDate) return false;
 
@@ -498,6 +630,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
     const d = toStartOfDay(date).getTime();
     const a = toStartOfDay(rangeStart).getTime();
     const b = toStartOfDay(hoverDate).getTime();
+    if (hoverLimit && b >= hoverLimit.getTime()) return false;
 
     return b >= a && d >= a && d <= b;
   }
@@ -517,6 +650,8 @@ export function lkDate(targetOrOpts, maybeOpts) {
 
     const today = toStartOfDay(new Date());
     const days = createCalendarDays(viewDate);
+    const dayLabel = new Intl.DateTimeFormat(options.locale, { dateStyle: 'full' });
+    hoverLimit = options.range && rangeStart && !rangeEnd ? rangeLimit(rangeStart) : null;
 
     days.forEach((date) => {
       const btn = document.createElement('button');
@@ -526,25 +661,30 @@ export function lkDate(targetOrOpts, maybeOpts) {
 
       const inCurrentMonth = date.getMonth() === viewDate.getMonth();
       const isToday = sameDay(date, today);
-      const isEnabled = withinBounds(date, minDate, maxDate);
+      const isEnabled = isSelectable(date);
+      const holiday = holidayOf(date);
 
-      const isSingleSelected = !options.range && !options.time && singleValue && sameDay(date, singleValue);
+      const selectedDay = options.time ? (draftDay || singleValue) : singleValue;
+      const isSingleSelected = !options.range && selectedDay && sameDay(date, selectedDay);
       const isRangeStart = options.range && rangeStart && sameDay(date, rangeStart);
       const isRangeEnd = options.range && rangeEnd && sameDay(date, rangeEnd);
       const isRangeMid = options.range && inCurrentRange(date);
       const isRangeHover = options.range && inHoverRange(date);
-      const isPending = options.time && pendingTimeDate && sameDay(date, pendingTimeDate);
-      const isDateTimeCommitted = options.time && singleValue && sameDay(date, singleValue);
 
       if (!inCurrentMonth) btn.classList.add('lk-date__day--muted');
       if (isToday) btn.classList.add('lk-date__day--today');
+      if (holiday !== false) {
+        btn.classList.add('lk-date__day--holiday');
+        if (holiday) btn.title = holiday;
+      }
       if (!isEnabled) {
         btn.classList.add('lk-date__day--disabled');
         btn.disabled = true;
       }
 
-      if (isSingleSelected || isRangeStart || isRangeEnd || isPending || isDateTimeCommitted) {
+      if (isSingleSelected || isRangeStart || isRangeEnd) {
         btn.classList.add('lk-date__day--selected');
+        btn.setAttribute('aria-pressed', 'true');
       }
 
       if (isRangeStart) btn.classList.add('lk-date__day--range-start');
@@ -554,6 +694,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
         btn.classList.add('lk-date__day--range-hover');
       }
 
+      btn.setAttribute('aria-label', dayLabel.format(date) + (holiday ? ` — ${holiday}` : ''));
       btn.dataset.date = toIsoDate(date);
       grid.appendChild(btn);
     });
@@ -567,63 +708,137 @@ export function lkDate(targetOrOpts, maybeOpts) {
     nextBtn.disabled = !monthIsSelectable(nextDate.getFullYear(), nextDate.getMonth(), minDate, maxDate);
   }
 
-  function syncTimeView() {
-    const hour24 = timeDraft.hour24;
-    const minute = String(timeDraft.minute).padStart(2, '0');
-    const second = String(timeDraft.second).padStart(2, '0');
+  // --- Time row --------------------------------------------------------------------------------
 
-    if (options.timeFormat === '12') {
-      const meridiem = hour24 >= 12 ? 'PM' : 'AM';
-      const h = hour24 % 12 || 12;
-      hourValueEl.textContent = String(h);
-      ampmRow.hidden = false;
-      ampmButtons.forEach((btn) => {
-        btn.classList.toggle('lk-date__ampm-btn--active', btn.dataset.meridiem === meridiem);
-      });
-    } else {
-      hourValueEl.textContent = String(hour24).padStart(2, '0');
-      ampmRow.hidden = true;
-    }
-
-    const dateRef = pendingTimeDate || singleValue;
-    timeDateEl.textContent = dateRef ? timeDateFormatter.format(dateRef) : '';
-
-    minuteValueEl.textContent = minute;
-    secondValueEl.textContent = second;
-    previewEl.textContent = formatPreview(timeDraft, options.timeFormat);
+  function fillSelect(select, values, label) {
+    select.textContent = '';
+    values.forEach((v) => {
+      const o = document.createElement('option');
+      o.value = String(v);
+      o.textContent = label(v);
+      select.appendChild(o);
+    });
   }
 
-  function syncViewMode() {
-    if (!options.time) {
-      viewMode = 'date';
+  function setSelect(select, value, label) {
+    // Keep values that fall between minute steps (e.g. 10:07 with a 15-minute step)
+    if (!Array.from(select.options).some((o) => o.value === String(value))) {
+      const o = document.createElement('option');
+      o.value = String(value);
+      o.textContent = label(value);
+      const after = Array.from(select.options).find((x) => Number(x.value) > value);
+      select.insertBefore(o, after || null);
     }
-
-    const isTime = viewMode === 'time' && options.time;
-
-    root.classList.toggle('lk-date--time-enabled', options.time);
-    root.classList.toggle('lk-date--view-time', isTime);
-    dateViewEl.setAttribute('aria-hidden', String(isTime));
-    timeViewEl.setAttribute('aria-hidden', String(!isTime));
-    // Keep the off-screen step out of the tab order; focusing it would scroll the
-    // clipped viewport and break the slide layout.
-    dateViewEl.inert = isTime;
-    timeViewEl.inert = !isTime;
-
-    if (isTime) {
-      syncTimeView();
-    }
-
-    if (proxy.isOpen) {
-      proxy.updatePosition(trigger);
-    }
+    select.value = String(value);
   }
+
+  const two = (n) => String(n).padStart(2, '0');
+  const hourLabel = (h) => (options.timeFormat === '12' ? String(h) : two(h));
+
+  if (options.time) {
+    fillSelect(hourSelect, options.timeFormat === '12' ? [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] : Array.from({ length: 24 }, (_, i) => i), hourLabel);
+    fillSelect(minuteSelect, Array.from({ length: Math.ceil(60 / options.minuteStep) }, (_, i) => i * options.minuteStep), two);
+    fillSelect(secondSelect, Array.from({ length: 60 }, (_, i) => i), two);
+    timeRow.hidden = false;
+    footer.hidden = false;
+    root.classList.add('lk-date--time-enabled');
+    secondSelect.hidden = !options.seconds;
+    secondSep.hidden = !options.seconds;
+    ampmRow.hidden = options.timeFormat !== '12';
+  }
+
+  function draftValue() {
+    return draftDay ? composeDateTime(draftDay, timeDraft) : null;
+  }
+
+  function syncTime() {
+    if (!options.time) return;
+    const h = timeDraft.hour24;
+    setSelect(hourSelect, options.timeFormat === '12' ? (h % 12 || 12) : h, hourLabel);
+    setSelect(minuteSelect, timeDraft.minute, two);
+    setSelect(secondSelect, timeDraft.second, two);
+    const meridiem = h >= 12 ? 'PM' : 'AM';
+    ampmButtons.forEach((btn) => {
+      const active = btn.dataset.meridiem === meridiem;
+      btn.classList.toggle('lk-date__ampm-btn--active', active);
+      btn.setAttribute('aria-pressed', String(active));
+    });
+    const draft = draftValue();
+    summaryEl.textContent = draft ? displayOf(draft) : 'Pick a day';
+    summaryEl.classList.toggle('lk-date__summary--empty', !draft);
+    okBtn.disabled = !draft;
+  }
+
+  function onTimeSelect(e) {
+    const part = e.target.dataset?.part;
+    if (!part) return;
+    const v = Number(e.target.value);
+    if (part === 'hour') {
+      if (options.timeFormat === '12') {
+        const pm = timeDraft.hour24 >= 12;
+        timeDraft.hour24 = (v % 12) + (pm ? 12 : 0);
+      } else {
+        timeDraft.hour24 = v;
+      }
+    } else if (part === 'minute') timeDraft.minute = v;
+    else if (part === 'second') timeDraft.second = v;
+    syncTime();
+  }
+
+  function onMeridiemClick(e) {
+    const btn = e.target.closest('.lk-date__ampm-btn');
+    if (!btn) return;
+    const pm = timeDraft.hour24 >= 12;
+    if (btn.dataset.meridiem === 'AM' && pm) timeDraft.hour24 -= 12;
+    if (btn.dataset.meridiem === 'PM' && !pm) timeDraft.hour24 += 12;
+    syncTime();
+  }
+
+  function onNow() {
+    const now = new Date();
+    const step = options.minuteStep;
+    timeDraft = {
+      hour24: now.getHours(),
+      minute: Math.floor(now.getMinutes() / step) * step,
+      second: options.seconds ? now.getSeconds() : 0,
+    };
+    if (isSelectable(now)) draftDay = toStartOfDay(now);
+    viewDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    refreshDateView();
+    syncTime();
+  }
+
+  function onOk() {
+    const draft = draftValue();
+    if (!draft) return;
+    singleValue = clampDateTime(draft, minDate, maxDate);
+    viewDate = new Date(singleValue.getFullYear(), singleValue.getMonth(), 1);
+    refreshDateView();
+    emitChange(new Date(singleValue), 'confirm');
+    emitConfirm(new Date(singleValue));
+    proxy.hide('select');
+  }
+
+  function onCancel() {
+    proxy.hide('cancel');
+  }
+
+  function onPanelKeydown(e) {
+    if (!options.time || e.key !== 'Enter' || e.defaultPrevented) return;
+    if (e.target.closest('button, select')) return; // buttons/selects handle Enter themselves
+    e.preventDefault();
+    onOk();
+  }
+
+  // --- View ----------------------------------------------------------------------------------
 
   function refreshDateView() {
     syncSelectors();
     syncGrid();
     syncNavDisabled();
+    syncTime();
 
-    if (proxy.isOpen && viewMode === 'date') {
+    if (proxy.isOpen) {
       proxy.updatePosition(trigger);
     }
   }
@@ -654,6 +869,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
     const parsed = parseDate(input);
     if (!parsed) {
       singleValue = null;
+      draftDay = null;
       hoverDate = null;
       refreshDateView();
       emitChange(null, source);
@@ -663,6 +879,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
     if (options.time) {
       singleValue = clampDateTime(parsed, minDate, maxDate);
       hoverDate = null;
+      draftDay = toStartOfDay(singleValue);
       timeDraft = createTimeState(singleValue);
       viewDate = new Date(singleValue.getFullYear(), singleValue.getMonth(), 1);
       refreshDateView();
@@ -701,23 +918,25 @@ export function lkDate(targetOrOpts, maybeOpts) {
     proxy.hide('select');
   }
 
+  function startRange(day) {
+    rangeStart = new Date(day);
+    rangeEnd = null;
+    hoverDate = new Date(day);
+    refreshDateView();
+    emitChange([new Date(rangeStart), null], 'range-start');
+  }
+
   function commitRange(day) {
-    if (!rangeStart || (rangeStart && rangeEnd)) {
-      rangeStart = new Date(day);
-      rangeEnd = null;
-      hoverDate = new Date(day);
-      refreshDateView();
-      emitChange([new Date(rangeStart), null], 'range-start');
+    const picked = new Date(day);
+    if (!rangeStart || rangeEnd || picked < rangeStart) {
+      startRange(picked);
       return;
     }
 
-    const picked = new Date(day);
-    if (picked < rangeStart) {
-      rangeStart = picked;
-      rangeEnd = null;
-      hoverDate = new Date(picked);
-      refreshDateView();
-      emitChange([new Date(rangeStart), null], 'range-start');
+    // A range may not cross a disabled day: start over from the clicked day
+    const limit = rangeLimit(rangeStart);
+    if (limit && picked >= limit) {
+      startRange(picked);
       return;
     }
 
@@ -731,30 +950,19 @@ export function lkDate(targetOrOpts, maybeOpts) {
     proxy.hide('select');
   }
 
-  function moveToTime(day) {
-    pendingTimeDate = new Date(day);
-
-    if (singleValue) {
-      timeDraft = createTimeState(singleValue);
-    } else {
-      timeDraft = createTimeState();
-    }
-
-    viewMode = 'time';
-    syncViewMode();
-  }
-
   function onGridClick(e) {
     const dayEl = e.target.closest('.lk-date__day');
     if (!dayEl || dayEl.disabled) return;
 
     const parsed = parseDate(dayEl.dataset.date);
-    if (!parsed || !withinBounds(parsed, minDate, maxDate)) return;
+    if (!parsed || !isSelectable(parsed)) return;
 
     const day = toStartOfDay(parsed);
 
     if (options.time) {
-      moveToTime(day);
+      draftDay = day;
+      syncGrid();
+      syncTime();
       return;
     }
 
@@ -765,7 +973,6 @@ export function lkDate(targetOrOpts, maybeOpts) {
 
     commitSingleDate(day);
   }
-
 
   function onGridPointerMove(e) {
     if (!options.range || !rangeStart || rangeEnd) return;
@@ -790,6 +997,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
     hoverDate = null;
     syncRangeHover();
   }
+
   function onMonthChange() {
     const year = Number(yearSelect.value);
     const month = Number(monthSelect.value);
@@ -804,94 +1012,32 @@ export function lkDate(targetOrOpts, maybeOpts) {
     refreshDateView();
   }
 
-  function onYearChange() {
-    onMonthChange();
-  }
-
-  function onTimeAdjust(e) {
-    const btn = e.target.closest('.lk-date__time-btn');
-    if (!btn) return;
-
-    const part = btn.dataset.part;
-    const dir = btn.dataset.dir === 'up' ? 1 : -1;
-    adjustTime(timeDraft, part, dir);
-    syncTimeView();
-  }
-
-  function onMeridiemClick(e) {
-    const btn = e.target.closest('.lk-date__ampm-btn');
-    if (!btn) return;
-
-    const next = btn.dataset.meridiem;
-    const isPM = timeDraft.hour24 >= 12;
-
-    if (next === 'AM' && isPM) {
-      timeDraft.hour24 -= 12;
-    }
-
-    if (next === 'PM' && !isPM) {
-      timeDraft.hour24 += 12;
-    }
-
-    syncTimeView();
-  }
-
-  function onTimeCancel() {
-    viewMode = 'date';
-    pendingTimeDate = null;
-    hoverDate = null;
-    syncViewMode();
-  }
-
-  function onTimeOk() {
-    if (!pendingTimeDate) {
-      viewMode = 'date';
-      syncViewMode();
-      return;
-    }
-
-    singleValue = composeDateTime(pendingTimeDate, timeDraft);
-    viewDate = new Date(singleValue.getFullYear(), singleValue.getMonth(), 1);
-    pendingTimeDate = null;
-
-    // Stay on the time step while the panel fades out; resetTransientState()
-    // returns to the date step (without animation) on the next open.
-    refreshDateView();
-
-    emitChange(new Date(singleValue), 'confirm');
-    emitConfirm(new Date(singleValue));
-    proxy.hide('select');
-  }
-
+  // Every open starts from the committed value (an uncommitted time draft is dropped)
   function resetTransientState() {
-    if (viewMode === 'date' && !pendingTimeDate && !hoverDate) return;
-
-    viewMode = 'date';
-    pendingTimeDate = null;
     hoverDate = null;
-
-    // Jump straight back to the date step: the panel is still invisible at this point.
-    root.classList.add('lk-date--instant');
-    syncGrid();
-    syncViewMode();
-    void root.offsetWidth;
-    root.classList.remove('lk-date--instant');
+    if (options.time) {
+      draftDay = singleValue ? toStartOfDay(singleValue) : null;
+      timeDraft = createTimeState(singleValue);
+      if (singleValue) viewDate = new Date(singleValue.getFullYear(), singleValue.getMonth(), 1);
+    }
+    refreshDateView();
   }
 
   prevBtn.addEventListener('click', prevMonth);
   nextBtn.addEventListener('click', nextMonth);
   monthSelect.addEventListener('change', onMonthChange);
-  yearSelect.addEventListener('change', onYearChange);
+  yearSelect.addEventListener('change', onMonthChange);
   grid.addEventListener('click', onGridClick);
   grid.addEventListener('pointermove', onGridPointerMove);
   grid.addEventListener('pointerleave', onGridPointerLeave);
-  timeContainer.addEventListener('click', onTimeAdjust);
+  timeRow.addEventListener('change', onTimeSelect);
   ampmRow.addEventListener('click', onMeridiemClick);
-  cancelBtn.addEventListener('click', onTimeCancel);
-  okBtn.addEventListener('click', onTimeOk);
+  nowBtn.addEventListener('click', onNow);
+  cancelBtn.addEventListener('click', onCancel);
+  okBtn.addEventListener('click', onOk);
+  root.addEventListener('keydown', onPanelKeydown);
 
   refreshDateView();
-  syncViewMode();
 
   function open() {
     proxy.show(trigger);
@@ -912,14 +1058,17 @@ export function lkDate(targetOrOpts, maybeOpts) {
     prevBtn.removeEventListener('click', prevMonth);
     nextBtn.removeEventListener('click', nextMonth);
     monthSelect.removeEventListener('change', onMonthChange);
-    yearSelect.removeEventListener('change', onYearChange);
+    yearSelect.removeEventListener('change', onMonthChange);
     grid.removeEventListener('click', onGridClick);
     grid.removeEventListener('pointermove', onGridPointerMove);
     grid.removeEventListener('pointerleave', onGridPointerLeave);
-    timeContainer.removeEventListener('click', onTimeAdjust);
+    timeRow.removeEventListener('change', onTimeSelect);
     ampmRow.removeEventListener('click', onMeridiemClick);
-    cancelBtn.removeEventListener('click', onTimeCancel);
-    okBtn.removeEventListener('click', onTimeOk);
+    nowBtn.removeEventListener('click', onNow);
+    cancelBtn.removeEventListener('click', onCancel);
+    okBtn.removeEventListener('click', onOk);
+    root.removeEventListener('keydown', onPanelKeydown);
+    hiddenInputs.forEach((h) => h.remove());
     proxy.destroy();
   }
 
@@ -933,6 +1082,29 @@ export function lkDate(targetOrOpts, maybeOpts) {
     setMonth,
     nextMonth,
     prevMonth,
+    display,
+    iso,
+    format,
+    /** Is the day pickable (inside min/max, not disabled)? */
+    isDisabled(date) {
+      const d = parseDate(date);
+      return !d || !isSelectable(d);
+    },
+    /** Holiday label ('' for an unnamed holiday) or false. */
+    holiday(date) {
+      const d = parseDate(date);
+      return d ? holidayOf(d) : false;
+    },
+    setHolidays(list) {
+      holidayRule = compileDateRules(list);
+      refreshDateView();
+      return api;
+    },
+    setDisabledDates(list) {
+      disabledRule = compileDateRules(list);
+      refreshDateView();
+      return api;
+    },
     destroy,
     get isOpen() {
       return proxy.isOpen;
@@ -945,30 +1117,11 @@ export function lkDate(targetOrOpts, maybeOpts) {
     },
   };
 
+  syncBound(false);
+
   if (options.open) {
     open();
   }
 
   return api;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

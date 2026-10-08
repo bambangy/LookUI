@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Breadcrumbs</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Breadcrumbs</h1>
+    <p style="opacity: 0.85;">.lk-breadcrumbs — separators, dense</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-sub">Default (slash separator)</p>
+    <ul class="lk-breadcrumbs" style="margin-bottom:var(--lk-space-4);">
+      <li class="lk-breadcrumbs__item"><a href="#">Home</a></li>
+      <li class="lk-breadcrumbs__item"><a href="#">Products</a></li>
+      <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Detail</li>
+    </ul>
+
+    <p class="demo-sub">Arrow separator</p>
+    <ul class="lk-breadcrumbs lk-breadcrumbs--arrow" style="margin-bottom:var(--lk-space-4);">
+      <li class="lk-breadcrumbs__item"><a href="#">Home</a></li>
+      <li class="lk-breadcrumbs__item"><a href="#">Category</a></li>
+      <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Page</li>
+    </ul>
+
+    <p class="demo-sub">Dot separator</p>
+    <ul class="lk-breadcrumbs lk-breadcrumbs--dot" style="margin-bottom:var(--lk-space-4);">
+      <li class="lk-breadcrumbs__item"><a href="#">Docs</a></li>
+      <li class="lk-breadcrumbs__item"><a href="#">Components</a></li>
+      <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Breadcrumbs</li>
+    </ul>
+
+    <p class="demo-sub">Dense</p>
+    <ul class="lk-breadcrumbs lk-breadcrumbs--dense">
+      <li class="lk-breadcrumbs__item"><a href="#">Home</a></li>
+      <li class="lk-breadcrumbs__item"><a href="#">Section</a></li>
+      <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Current</li>
+    </ul>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;ul class="lk-breadcrumbs lk-breadcrumbs--arrow"&gt;
+  &lt;li class="lk-breadcrumbs__item"&gt;&lt;a href="#"&gt;Home&lt;/a&gt;&lt;/li&gt;
+  &lt;li class="lk-breadcrumbs__item"&gt;&lt;a href="#"&gt;Category&lt;/a&gt;&lt;/li&gt;
+  &lt;li class="lk-breadcrumbs__item lk-breadcrumbs__item--active"&gt;Current&lt;/li&gt;
+&lt;/ul&gt;</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+// CSS-only live example: renders `markup` into the preview box.
+function live(title, markup) {
+  const lines = markup.replace(/^\n+|\s+$/g, '').split('\n');
+  const min = Math.min(...lines.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length));
+  return { title, run: true, code: 'container.innerHTML = `\n' + lines.map((l) => '  ' + l.slice(min)).join('\n') + '\n`;' };
+}
+
+LookDocs.render('#api', {
+  name: '.lk-breadcrumbs',
+  kind: 'CSS',
+  signature: [
+    '<nav aria-label="Breadcrumb">',
+    '  <ol class="lk-breadcrumbs [lk-breadcrumbs--arrow|--dot] [lk-breadcrumbs--dense]">',
+    '    <li class="lk-breadcrumbs__item"><a href="/">Home</a></li>',
+    '    <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active" aria-current="page">Current</li>',
+    '  </ol>',
+    '</nav>',
+  ],
+  description: [
+    'A wrapping trail of links showing where the current page sits in the hierarchy. Pure CSS. Separators are drawn with `::after` on every item except the last, so the markup only contains the crumbs.',
+    'Links are colored `--lk-primary`; plain text and separators are `--lk-text-muted`; the `--active` item is the current page.',
+  ],
+  notes: [
+    'For accessibility wrap the list in `<nav aria-label="Breadcrumb">`, prefer `<ol>`, and put `aria-current="page"` on the active item. The separators are CSS content and are not announced as text by most screen readers.',
+  ],
+
+  classes: [
+    {
+      name: 'Markup',
+      description: 'Recommended accessible structure.',
+      examples: [live('nav + ol + aria-current', `
+        <nav aria-label="Breadcrumb">
+          <ol class="lk-breadcrumbs">
+            <li class="lk-breadcrumbs__item"><a href="#">Home</a></li>
+            <li class="lk-breadcrumbs__item"><a href="#">Orders</a></li>
+            <li class="lk-breadcrumbs__item"><a href="#">2026</a></li>
+            <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active" aria-current="page">#1042</li>
+          </ol>
+        </nav>
+      `)],
+    },
+    {
+      name: '.lk-breadcrumbs',
+      description: 'List container: flex row that wraps, `--lk-space-2` gap, no bullets/padding, `--lk-text-sm` font.',
+      examples: [live('Long trail wraps on narrow widths', `
+        <ol class="lk-breadcrumbs" style="max-width:260px">
+          <li class="lk-breadcrumbs__item"><a href="#">Home</a></li>
+          <li class="lk-breadcrumbs__item"><a href="#">Catalog</a></li>
+          <li class="lk-breadcrumbs__item"><a href="#">Electronics</a></li>
+          <li class="lk-breadcrumbs__item"><a href="#">Laptops</a></li>
+          <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Model X</li>
+        </ol>
+      `)],
+    },
+    {
+      name: '.lk-breadcrumbs__item',
+      description: 'One crumb (inline-flex, muted text). An `<a>` inside is primary-colored with underline on hover. Every item except the last gets a separator after it.',
+      examples: [live('Linked and plain-text items', `
+        <ol class="lk-breadcrumbs">
+          <li class="lk-breadcrumbs__item"><a href="#">Linked</a></li>
+          <li class="lk-breadcrumbs__item">Plain text (muted)</li>
+          <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Active</li>
+        </ol>
+      `)],
+    },
+    {
+      name: '.lk-breadcrumbs__item--active',
+      description: 'Current page: normal text color, medium weight. A link inside it is neutralised (text color, no pointer events).',
+      examples: [live('Active item containing a link', `
+        <ol class="lk-breadcrumbs">
+          <li class="lk-breadcrumbs__item"><a href="#">Home</a></li>
+          <li class="lk-breadcrumbs__item lk-breadcrumbs__item--active"><a href="#">Profile (not clickable)</a></li>
+        </ol>
+      `)],
+    },
+    {
+      name: '.lk-breadcrumbs--{separator}',
+      description: 'Separator style.',
+      values: [
+        ['(default)', '`/` slash'],
+        ['arrow', '`›` single angle quotation mark'],
+        ['dot', '`·` middle dot (slightly larger)'],
+      ],
+      examples: [live('All separators', `
+        <div style="display:grid; gap:10px">
+          <ol class="lk-breadcrumbs"><li class="lk-breadcrumbs__item"><a href="#">Home</a></li><li class="lk-breadcrumbs__item"><a href="#">Library</a></li><li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Slash</li></ol>
+          <ol class="lk-breadcrumbs lk-breadcrumbs--arrow"><li class="lk-breadcrumbs__item"><a href="#">Home</a></li><li class="lk-breadcrumbs__item"><a href="#">Library</a></li><li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Arrow</li></ol>
+          <ol class="lk-breadcrumbs lk-breadcrumbs--dot"><li class="lk-breadcrumbs__item"><a href="#">Home</a></li><li class="lk-breadcrumbs__item"><a href="#">Library</a></li><li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Dot</li></ol>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-breadcrumbs--dense',
+      description: 'Smaller (`--lk-text-xs`) with `--lk-space-1` gaps. Combines with any separator.',
+      examples: [live('Dense + arrow, dense + dot', `
+        <div style="display:grid; gap:8px">
+          <ol class="lk-breadcrumbs lk-breadcrumbs--dense lk-breadcrumbs--arrow"><li class="lk-breadcrumbs__item"><a href="#">Admin</a></li><li class="lk-breadcrumbs__item"><a href="#">Users</a></li><li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">Edit</li></ol>
+          <ol class="lk-breadcrumbs lk-breadcrumbs--dense lk-breadcrumbs--dot"><li class="lk-breadcrumbs__item"><a href="#">Admin</a></li><li class="lk-breadcrumbs__item"><a href="#">Roles</a></li><li class="lk-breadcrumbs__item lk-breadcrumbs__item--active">New</li></ol>
+        </div>
+      `)],
+    },
+  ],
+
+  tokens: [
+    { name: '--lk-primary', default: '#5c6bc0', description: 'Link color.' },
+    { name: '--lk-text-muted', default: '#757575', description: 'Plain item and separator color (separator at 60 % opacity).' },
+    { name: '--lk-text', default: '#1a1a2e', description: 'Active item color.' },
+    { name: '--lk-text-sm / --lk-text-xs', default: '0.8rem / 0.64rem', description: 'Font size (default / dense).' },
+    { name: '--lk-space-2 / --lk-space-1', default: '0.5rem / 0.25rem', description: 'Gap around separators (default / dense).' },
+  ],
+});
+</script>
+</body>
+</html>

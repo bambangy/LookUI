@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Async content states (helpers/content.js) — used by lkTabs panels and lkCarousel slides
+
+.lk-async__status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lk-space-2) var(--lk-space-3);
+  min-height: 6rem;
+  padding: var(--lk-space-4);
+  color: var(--lk-text-muted);
+  font-size: var(--lk-text-sm);
+  text-align: center;
+  animation: lk-async-in var(--lk-duration-base) var(--lk-easing-out) both;
+
+  // Quick loads finish before the spinner shows up
+  &--loading {
+    animation-delay: 120ms;
+  }
+
+  &--error {
+    color: var(--lk-negative);
+
+    .lk-async__message { color: var(--lk-text); }
+  }
+}
+
+@keyframes lk-async-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-async__status { animation: none; }
+}

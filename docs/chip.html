@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Chip</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Chip</h1>
+    <p style="opacity: 0.85;">lkChip(el, opts) — removable and selectable chips</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Styles &times; colors</p>
+
+    <p class="demo-sub">Tonal (default)</p>
+    <div class="demo-row lk-chip-group">
+      <span class="lk-chip">Default</span>
+      <span class="lk-chip lk-chip--primary">Primary</span>
+      <span class="lk-chip lk-chip--secondary">Secondary</span>
+      <span class="lk-chip lk-chip--accent">Accent</span>
+      <span class="lk-chip lk-chip--positive">Positive</span>
+      <span class="lk-chip lk-chip--warning">Warning</span>
+      <span class="lk-chip lk-chip--negative">Negative</span>
+      <span class="lk-chip lk-chip--info">Info</span>
+    </div>
+
+    <p class="demo-sub">Filled</p>
+    <div class="demo-row lk-chip-group">
+      <span class="lk-chip lk-chip--filled">Filled</span>
+      <span class="lk-chip lk-chip--filled lk-chip--secondary">Secondary</span>
+      <span class="lk-chip lk-chip--filled lk-chip--accent">Accent</span>
+      <span class="lk-chip lk-chip--filled lk-chip--positive">Positive</span>
+      <span class="lk-chip lk-chip--filled lk-chip--warning">Warning</span>
+      <span class="lk-chip lk-chip--filled lk-chip--negative">Negative</span>
+      <span class="lk-chip lk-chip--filled lk-chip--info">Info</span>
+    </div>
+
+    <p class="demo-sub">Outline</p>
+    <div class="demo-row lk-chip-group">
+      <span class="lk-chip lk-chip--outline">Outline</span>
+      <span class="lk-chip lk-chip--outline lk-chip--primary">Primary</span>
+      <span class="lk-chip lk-chip--outline lk-chip--positive">Positive</span>
+      <span class="lk-chip lk-chip--outline lk-chip--warning">Warning</span>
+      <span class="lk-chip lk-chip--outline lk-chip--negative">Negative</span>
+      <span class="lk-chip lk-chip--outline lk-chip--info">Info</span>
+    </div>
+
+    <p class="demo-sub">Shape, size &amp; state</p>
+    <div class="demo-row lk-chip-group">
+      <span class="lk-chip lk-chip--primary lk-chip--square">Square</span>
+      <span class="lk-chip lk-chip--primary lk-chip--dense">Dense</span>
+      <span class="lk-chip lk-chip--primary lk-chip--selected">Selected</span>
+      <span class="lk-chip lk-chip--primary lk-chip--disabled">Disabled</span>
+      <span class="lk-chip lk-chip--primary" style="max-width: 9rem;"><span class="lk-chip__label">A very long label that gets truncated</span></span>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">JS-enhanced</p>
+
+    <p class="demo-sub">Icon, avatar &amp; removable</p>
+    <div class="demo-row lk-chip-group">
+      <span id="chip-icon"></span>
+      <span id="chip-avatar"></span>
+      <span id="chip-img"></span>
+      <span id="chip-rm"></span>
+      <span id="chip-rm-dense"></span>
+    </div>
+
+    <p class="demo-sub">Filter chips (selectable &mdash; Enter / Space toggles)</p>
+    <div id="filters" class="demo-row lk-chip-group"></div>
+
+    <p class="demo-sub">Tag list (Backspace / Delete removes the focused chip)</p>
+    <div id="tags" class="demo-row lk-chip-group"></div>
+    <button id="btn-reset-tags" class="lk-btn lk-btn--secondary lk-btn--sm">Reset tags</button>
+
+    <div id="output" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;span class="lk-chip lk-chip--primary"&gt;Tonal&lt;/span&gt;
+&lt;span class="lk-chip lk-chip--positive lk-chip--filled"&gt;Filled&lt;/span&gt;
+&lt;span class="lk-chip lk-chip--negative lk-chip--outline"&gt;Outline&lt;/span&gt;
+&lt;div class="lk-chip-group"&gt;…chips…&lt;/div&gt;</pre>
+
+    <p class="demo-usage__title" style="margin-top: var(--lk-space-4);">JavaScript</p>
+    <pre>const tag = Look.lkChip('#tag', {
+  label: 'JavaScript',
+  color: 'primary',          // primary | secondary | accent | positive | warning | negative | info
+  icon: 'star-fill',         // or avatar: 'JS' | '/img/me.png' | element
+  filled: false, outline: false, square: false, dense: false,
+  removable: true,
+  onRemove(chip) { return confirm('Remove?'); }, // return false to keep it
+  onSelect(selected) { console.log(selected); },  // makes it a toggle chip
+});
+
+tag.label = 'TypeScript';
+tag.selected = true;
+tag.enabled = false;
+tag.remove();   // animated
+tag.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkChip',
+  kind: 'Component',
+  signature: 'const chip = Look.lkChip(element, options);',
+  description: [
+    'Enhances a `.lk-chip` element (or any inline element) into a compact label that can carry an icon or avatar, be removed with a close button, or act as a toggle ("filter chip").',
+    'Plain text inside the element is moved into a `.lk-chip__label` span so long labels ellipsize. Visual styles (tonal, filled, outline, colors, sizes) are pure CSS classes — see [CSS classes](#api-section-classes) — and can also be set through options.',
+  ],
+  params: [
+    { name: 'element', type: 'Element | string', description: 'The chip element or a CSS selector. It does not need any markup inside.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The chip instance with the properties and methods below.' },
+
+  options: [
+    {
+      name: 'label', type: 'string', default: '—',
+      description: 'Chip text. When omitted, the element\'s existing text is used.',
+      examples: [
+        { title: 'Text from options', run: true, code: `
+          const el = document.createElement('span');
+          container.appendChild(el);
+          Look.lkChip(el, { label: 'JavaScript', color: 'primary' });` },
+      ],
+    },
+    {
+      name: 'color', type: 'string', default: '— (neutral)',
+      description: 'Color modifier. Adds `lk-chip--{color}`.',
+      values: [['primary', 'Brand color'], ['secondary', 'Blue-grey'], ['accent', 'Cyan accent'], ['positive', 'Success / green'], ['warning', 'Warning / orange'], ['negative', 'Error / red'], ['info', 'Informational / blue']],
+      examples: [
+        { title: 'Every color', run: true, code: `
+          ['primary', 'secondary', 'accent', 'positive', 'warning', 'negative', 'info'].forEach((color) => {
+            const el = document.createElement('span');
+            el.style.marginRight = '6px';
+            container.appendChild(el);
+            Look.lkChip(el, { label: color, color });
+          });` },
+      ],
+    },
+    {
+      name: 'filled', type: 'boolean', default: 'false',
+      description: 'Solid background in the chip color (white text). Without a `color` it uses primary.',
+      examples: [{ run: true, code: `
+        const el = document.createElement('span');
+        container.appendChild(el);
+        Look.lkChip(el, { label: 'Shipped', color: 'positive', filled: true });` }],
+    },
+    {
+      name: 'outline', type: 'boolean', default: 'false',
+      description: 'Transparent background with a border in the chip color.',
+      examples: [{ run: true, code: `
+        const el = document.createElement('span');
+        container.appendChild(el);
+        Look.lkChip(el, { label: 'Draft', color: 'warning', outline: true });` }],
+    },
+    { name: 'square', type: 'boolean', default: 'false', description: 'Rounded-rectangle shape instead of a pill.' },
+    { name: 'dense', type: 'boolean', default: 'false', description: 'Compact size (22 px tall instead of 28 px). Used for chips inside inputs such as `lkDropdown({ multiple: true })`.' },
+    {
+      name: 'icon', type: 'string', default: '—',
+      description: 'Leading [lkIcon](icon.html) name.',
+      examples: [{ run: true, code: `
+        const el = document.createElement('span');
+        container.appendChild(el);
+        Look.lkChip(el, { label: 'Favorite', icon: 'star-fill', color: 'warning' });` }],
+    },
+    {
+      name: 'avatar', type: 'string | Element', default: '—',
+      description: 'Leading avatar. An image URL (`http…`, `data:`, `/` or `.` prefix) renders an `<img>`; any other string renders its first two characters as initials; an Element is used as-is.',
+      examples: [
+        { title: 'Initials', run: true, code: `
+          const el = document.createElement('span');
+          container.appendChild(el);
+          Look.lkChip(el, { label: 'Jane Doe', avatar: 'JD', color: 'primary' });` },
+        { title: 'Image URL', code: `Look.lkChip('#owner', { label: 'Budi', avatar: '/img/budi.jpg' });` },
+      ],
+    },
+    {
+      name: 'removable', type: 'boolean', default: 'false',
+      description: 'Adds a close button (`.lk-chip__close`). Clicking it — or pressing **Backspace/Delete** while the chip is focused — removes the chip with a short exit animation and calls `onRemove`.',
+    },
+    { name: 'removeLabel', type: 'string', default: "'Remove'", description: 'Accessible label prefix for the close button; the chip text is appended (`"Remove JavaScript"`).' },
+    {
+      name: 'selected', type: 'boolean', default: 'false',
+      description: 'Initial selected state. Selected chips get a tinted background, colored border and a check mark.',
+    },
+    { name: 'disabled', type: 'boolean', default: 'false', description: 'Initial disabled state (dimmed, not interactive). Same as setting `chip.enabled = false`.' },
+  ],
+
+  properties: [
+    { name: 'label', type: 'string', description: 'Get or set the chip text.', examples: [`chip.label = 'TypeScript';`] },
+    { name: 'selected', type: 'boolean', description: 'Get or set the selected state (does not fire `onSelect`).' },
+    { name: 'removable', type: 'boolean', readonly: true, description: 'Whether the chip has a close button.' },
+    { name: 'enabled', type: 'boolean', description: 'Enable/disable the chip (adds `.lk-disabled` and `aria-disabled`).' },
+    { name: 'hidden', type: 'boolean', description: 'Show/hide the chip (`.lk-hidden`).' },
+    { name: 'el', type: 'Element', readonly: true, description: 'The chip element.' },
+    { name: 'id', type: 'string', description: 'Get or set the element id.' },
+  ],
+
+  methods: [
+    {
+      name: 'remove', signature: 'remove() → boolean',
+      description: 'Runs `onRemove` and, unless it returned `false`, plays the exit animation and removes the element.',
+      returns: { type: 'boolean', description: '`false` if `onRemove` vetoed the removal.' },
+      examples: [{ run: true, code: `
+        const el = document.createElement('span');
+        container.appendChild(el);
+        const chip = Look.lkChip(el, { label: 'Click the button to remove me', removable: true });
+        const btn = document.createElement('button');
+        btn.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        btn.style.marginLeft = '8px';
+        btn.textContent = 'chip.remove()';
+        btn.onclick = () => log('removed:', chip.remove());
+        container.appendChild(btn);` }],
+    },
+    { name: 'toggle', signature: 'toggle()', description: 'Flips `selected` and fires `onSelect` (only for chips created with `onSelect`).' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes listeners and everything lkChip added (label span, icon, avatar, close button, classes it set). Text is put back as a plain text node.' },
+  ],
+
+  events: [
+    {
+      name: 'onSelect', signature: 'onSelect(selected, chip)',
+      description: 'Makes the chip a toggle button (`role="button"`, `aria-pressed`, focusable). Fires on click, **Enter** or **Space**.',
+      args: [{ name: 'selected', type: 'boolean', description: 'New state.' }, { name: 'chip', type: 'Object', description: 'The chip instance.' }],
+      examples: [{ title: 'Filter chips', run: true, code: `
+        ['Design', 'Engineering', 'Sales'].forEach((name) => {
+          const el = document.createElement('span');
+          el.style.marginRight = '6px';
+          container.appendChild(el);
+          Look.lkChip(el, { label: name, color: 'primary', outline: true, onSelect: (on) => log(name, on) });
+        });` }],
+    },
+    {
+      name: 'onRemove', signature: 'onRemove(chip) → boolean | void',
+      description: 'Called before the chip is removed. Return `false` to keep it.',
+      args: [{ name: 'chip', type: 'Object', description: 'The chip instance.' }],
+      examples: [{ title: 'Veto removal', run: true, code: `
+        ['keep me', 'remove me'].forEach((label) => {
+          const el = document.createElement('span');
+          el.style.marginRight = '6px';
+          container.appendChild(el);
+          Look.lkChip(el, { label, removable: true, onRemove: () => { log('onRemove', label); return label !== 'keep me'; } });
+        });` }],
+    },
+    { name: 'onClick', signature: 'onClick(event, chip)', description: 'Plain click handler. Makes the chip focusable and clickable without toggle semantics.' },
+  ],
+
+  classes: [
+    { name: '.lk-chip', description: 'Base chip (neutral, 28 px tall pill).' },
+    { name: '.lk-chip--{color}', description: 'Tonal color: `primary`, `secondary`, `accent`, `positive`, `warning`, `negative`, `info`.' },
+    { name: '.lk-chip--filled', description: 'Solid style; combine with a color modifier.' },
+    { name: '.lk-chip--outline', description: 'Outline style; combine with a color modifier.' },
+    { name: '.lk-chip--square', description: 'Rounded rectangle shape.' },
+    { name: '.lk-chip--dense', description: 'Compact size.' },
+    { name: '.lk-chip--selected', description: 'Selected look (tint, border, check mark).' },
+    { name: '.lk-chip--disabled', description: 'Disabled look (also `[aria-disabled="true"]` and `.lk-disabled`).' },
+    { name: '.lk-chip--clickable', description: 'Hover/press feedback; added automatically for interactive chips.' },
+    { name: '.lk-chip__label / __icon / __avatar / __close', description: 'Parts: text (ellipsizes), leading icon, leading avatar, remove button.' },
+    {
+      name: '.lk-chip-group', description: 'Wrapping row of chips with consistent spacing (`--dense` for tighter gaps).',
+      examples: [{ title: 'CSS only', code: `
+        <div class="lk-chip-group">
+          <span class="lk-chip lk-chip--positive lk-chip--filled">Paid</span>
+          <span class="lk-chip lk-chip--warning lk-chip--outline">Pending</span>
+          <span class="lk-chip lk-chip--dense">v1.2</span>
+        </div>` }],
+    },
+  ],
+
+  tokens: [
+    { name: '--lk-chip-height', default: '1.75rem', description: 'Chip height (`1.375rem` when dense).' },
+    { name: '--lk-chip-pad', default: 'var(--lk-space-3)', description: 'Horizontal padding.' },
+    { name: '--lk-chip-bg / --lk-chip-fg', default: 'per color', description: 'Background and text color; override for custom palettes.' },
+    { name: '--lk-chip-tone', default: 'var(--lk-primary)', description: 'Accent used by selected state, focus ring and avatar.' },
+  ],
+});
+</script>
+<script>
+  const out = document.getElementById('output');
+  out.textContent = 'Interact with the chips above';
+
+  Look.lkChip('#chip-icon',   { label: 'Favorite', icon: 'star-fill', color: 'warning' });
+  Look.lkChip('#chip-avatar', { label: 'Jane Doe', avatar: 'JD', color: 'primary' });
+  Look.lkChip('#chip-img',    { label: 'Outlined', avatar: 'AB', color: 'positive', outline: true });
+  Look.lkChip('#chip-rm', {
+    label: 'Removable', color: 'negative', removable: true,
+    onRemove() { out.textContent = 'Chip removed'; },
+  });
+  Look.lkChip('#chip-rm-dense', { label: 'Dense removable', color: 'info', removable: true, dense: true });
+
+  const filters = document.getElementById('filters');
+  ['Design', 'Engineering', 'Marketing', 'Sales'].forEach((name, i) => {
+    const el = document.createElement('span');
+    filters.appendChild(el);
+    Look.lkChip(el, {
+      label: name, color: 'primary', outline: true, selected: i === 1,
+      onSelect(sel) { out.textContent = name + ' selected = ' + sel; },
+    });
+  });
+
+  const tagsEl = document.getElementById('tags');
+  function renderTags() {
+    tagsEl.textContent = '';
+    ['vanilla-js', 'css', 'ui-library', 'accessible'].forEach((name) => {
+      const el = document.createElement('span');
+      tagsEl.appendChild(el);
+      Look.lkChip(el, {
+        label: name, removable: true, onClick() {},
+        onRemove() { out.textContent = 'Removed "' + name + '"'; },
+      });
+    });
+  }
+  renderTags();
+  document.getElementById('btn-reset-tags').onclick = renderTags;
+</script>
+</body>
+</html>

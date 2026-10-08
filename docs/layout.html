@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Layout &amp; Utilities</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+  <style>
+    .demo-grid-cell { background: var(--lk-primary); color: var(--lk-primary-contrast); padding: var(--lk-space-3); border-radius: var(--lk-radius); text-align: center; font-size: var(--lk-text-sm); }
+    .demo-box { background: var(--lk-bg-subtle); border: 1px dashed var(--lk-border-strong); border-radius: var(--lk-radius); font-size: var(--lk-text-sm); }
+  </style>
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Layout &amp; Utilities</h1>
+    <p style="opacity: 0.85;">Grid, flex, page shell, spacing, display and responsive helpers</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Grid — .lk-grid</p>
+    <p class="demo-sub">3 columns</p>
+    <div class="lk-grid lk-grid--cols-3" style="margin-bottom:var(--lk-space-5);">
+      <div class="demo-grid-cell">1</div><div class="demo-grid-cell">2</div><div class="demo-grid-cell">3</div>
+    </div>
+    <p class="demo-sub">4 columns, small gap</p>
+    <div class="lk-grid lk-grid--cols-4 lk-grid--gap-sm" style="margin-bottom:var(--lk-space-5);">
+      <div class="demo-grid-cell">1</div><div class="demo-grid-cell">2</div><div class="demo-grid-cell">3</div><div class="demo-grid-cell">4</div>
+    </div>
+    <p class="demo-sub">Column spanning</p>
+    <div class="lk-grid lk-grid--cols-4" style="margin-bottom:var(--lk-space-5);">
+      <div class="demo-grid-cell lk-col-span-2">span-2</div><div class="demo-grid-cell">3</div><div class="demo-grid-cell">4</div>
+    </div>
+    <p class="demo-sub">Responsive: 1 → 2 (sm) → 4 (lg) columns — resize the window</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-sm-2 lk-grid--cols-lg-4">
+      <div class="demo-grid-cell">A</div><div class="demo-grid-cell">B</div><div class="demo-grid-cell">C</div><div class="demo-grid-cell">D</div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Flex — .lk-flex</p>
+    <div class="lk-flex lk-flex--justify-between lk-flex--align-center lk-flex--gap-md" style="background:var(--lk-bg-subtle);padding:var(--lk-space-4);border-radius:var(--lk-radius);">
+      <span class="lk-badge">Left</span>
+      <span class="lk-badge lk-badge--positive">Center</span>
+      <span class="lk-badge lk-badge--info">Right</span>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Responsive Container</p>
+    <div class="lk-container" style="background:var(--lk-bg-subtle);padding:var(--lk-space-4);border-radius:var(--lk-radius);text-align:center;">
+      <code>.lk-container</code> — responsive max-width
+    </div>
+    <div style="margin-top:var(--lk-space-4);">
+      <p class="demo-sub">Resize browser to see visibility utilities:</p>
+      <div class="demo-row">
+        <span class="lk-badge lk-hidden-md-up">Visible on &lt; md</span>
+        <span class="lk-badge lk-badge--positive lk-hidden-sm-down">Visible on &ge; md</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">Grid usage</p>
+    <pre>&lt;div class="lk-grid lk-grid--cols-3 lk-grid--gap-lg"&gt;
+  &lt;div&gt;col 1&lt;/div&gt;
+  &lt;div class="lk-col-span-2"&gt;spans 2&lt;/div&gt;
+&lt;/div&gt;</pre>
+    <p class="demo-usage__title" style="margin-top:var(--lk-space-4);">Flex usage</p>
+    <pre>&lt;div class="lk-flex lk-flex--justify-between lk-flex--align-center lk-flex--gap-md"&gt;
+  …
+&lt;/div&gt;</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+// CSS-only live example: renders `markup` into the preview box.
+function live(title, markup) {
+  const lines = markup.replace(/^\n+|\s+$/g, '').split('\n');
+  const min = Math.min(...lines.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length));
+  return { title, run: true, code: 'container.innerHTML = `\n' + lines.map((l) => '  ' + l.slice(min)).join('\n') + '\n`;' };
+}
+
+const BP = 'Breakpoints: `sm` ≥ 480px, `md` ≥ 768px, `lg` ≥ 1024px, `xl` ≥ 1280px, `2xl` ≥ 1536px. Responsive classes react to the **viewport** width, not the width of the preview box.';
+
+LookDocs.render('#api', {
+  name: 'Layout & utilities',
+  kind: 'CSS',
+  signature: [
+    '<div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3 lk-grid--gap-lg">…</div>',
+    '<div class="lk-flex lk-flex--justify-between lk-flex--align-center lk-flex--gap-md">…</div>',
+    '<p class="lk-mt-4 lk-px-2 lk-text-center lk-hidden-sm-down">…</p>',
+  ],
+  description: [
+    'Layout classes come in three groups: **layout primitives** (`src/scss/layout/`: `.lk-grid`, `.lk-flex`, page shell and page building blocks), **utilities** (`src/scss/utilities/`: spacing, display, position, alignment) and **responsive helpers** (breakpoint-suffixed grid, visibility, container, direction and text alignment).',
+    'Utilities are loaded last in `look.css`, so they override component styles. ' + BP,
+  ],
+  notes: [
+    'Breakpoints are Sass variables (`$look-bp-sm` … `$look-bp-2xl` in `tokens/_layout.scss`), not CSS custom properties, because `var()` cannot be used in media queries. To change them, edit the variables and rebuild the CSS.',
+  ],
+
+  classes: [
+    // ---------------- Grid ----------------
+    {
+      name: '.lk-grid',
+      description: 'CSS grid container with a `--lk-space-4` (16px) gap. Without a `--cols-N` modifier it is a single column.',
+      examples: [live('Grid with default gap', `
+        <div class="lk-grid lk-grid--cols-3">
+          <div class="demo-grid-cell">1</div><div class="demo-grid-cell">2</div><div class="demo-grid-cell">3</div>
+          <div class="demo-grid-cell">4</div><div class="demo-grid-cell">5</div><div class="demo-grid-cell">6</div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-grid--cols-{1-12}',
+      description: '`N` equal columns: `grid-template-columns: repeat(N, minmax(0, 1fr))` (the `minmax(0, …)` stops long content from blowing out a column).',
+      values: [['1 … 12', 'Number of columns']],
+      examples: [
+        live('2, 4 and 6 columns', `
+          <div style="display:grid; gap:10px">
+            <div class="lk-grid lk-grid--cols-2"><div class="demo-grid-cell">1/2</div><div class="demo-grid-cell">1/2</div></div>
+            <div class="lk-grid lk-grid--cols-4"><div class="demo-grid-cell">1</div><div class="demo-grid-cell">2</div><div class="demo-grid-cell">3</div><div class="demo-grid-cell">4</div></div>
+            <div class="lk-grid lk-grid--cols-6"><div class="demo-grid-cell">1</div><div class="demo-grid-cell">2</div><div class="demo-grid-cell">3</div><div class="demo-grid-cell">4</div><div class="demo-grid-cell">5</div><div class="demo-grid-cell">6</div></div>
+          </div>
+        `),
+      ],
+    },
+    {
+      name: '.lk-col-span-{1-12}',
+      description: 'Makes a grid child span `N` columns (`grid-column: span N / span N`).',
+      examples: [
+        live('12-column layout: 8 + 4, 3 + 6 + 3', `
+          <div class="lk-grid lk-grid--cols-12 lk-grid--gap-sm">
+            <div class="demo-grid-cell lk-col-span-8">span 8</div><div class="demo-grid-cell lk-col-span-4">span 4</div>
+            <div class="demo-grid-cell lk-col-span-3">3</div><div class="demo-grid-cell lk-col-span-6">span 6</div><div class="demo-grid-cell lk-col-span-3">3</div>
+            <div class="demo-grid-cell lk-col-span-12">span 12</div>
+          </div>
+        `),
+      ],
+    },
+    {
+      name: '.lk-grid--gap-{size}',
+      description: 'Override the grid gap.',
+      values: [['0', 'No gap'], ['sm', '`--lk-space-2` (8px)'], ['(default)', '`--lk-space-4` (16px)'], ['lg', '`--lk-space-6` (24px)']],
+      examples: [live('gap-0, gap-sm, gap-lg', `
+        <div style="display:grid; gap:12px">
+          <div class="lk-grid lk-grid--cols-4 lk-grid--gap-0"><div class="demo-grid-cell">0</div><div class="demo-grid-cell">0</div><div class="demo-grid-cell">0</div><div class="demo-grid-cell">0</div></div>
+          <div class="lk-grid lk-grid--cols-4 lk-grid--gap-sm"><div class="demo-grid-cell">sm</div><div class="demo-grid-cell">sm</div><div class="demo-grid-cell">sm</div><div class="demo-grid-cell">sm</div></div>
+          <div class="lk-grid lk-grid--cols-4 lk-grid--gap-lg"><div class="demo-grid-cell">lg</div><div class="demo-grid-cell">lg</div><div class="demo-grid-cell">lg</div><div class="demo-grid-cell">lg</div></div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-grid--cols-{bp}-{1-12}',
+      description: 'Responsive column count applied from breakpoint `bp` upward (mobile first). Combine several to step up. ' + BP,
+      values: [['sm', '≥ 480px'], ['md', '≥ 768px'], ['lg', '≥ 1024px'], ['xl', '≥ 1280px']],
+      examples: [live('1 col → 2 at sm → 3 at md → 6 at xl', `
+        <div class="lk-grid lk-grid--cols-1 lk-grid--cols-sm-2 lk-grid--cols-md-3 lk-grid--cols-xl-6 lk-grid--gap-sm">
+          <div class="demo-grid-cell">A</div><div class="demo-grid-cell">B</div><div class="demo-grid-cell">C</div>
+          <div class="demo-grid-cell">D</div><div class="demo-grid-cell">E</div><div class="demo-grid-cell">F</div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-col-span-{bp}-{1-12}',
+      description: 'Responsive span from breakpoint `bp` upward (`sm`, `md`, `lg`, `xl`).',
+      examples: [live('Full width on mobile, 8/4 split from md', `
+        <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-12">
+          <div class="demo-grid-cell lk-col-span-md-8">main (md: span 8)</div>
+          <div class="demo-grid-cell lk-col-span-md-4">aside (md: span 4)</div>
+        </div>
+      `)],
+    },
+
+    // ---------------- Flex ----------------
+    {
+      name: '.lk-flex',
+      description: '`display: flex`. Add modifiers for direction, wrapping, alignment, gap and child sizing.',
+      examples: [live('Toolbar row: title left, actions right', `
+        <div class="lk-flex lk-flex--justify-between lk-flex--align-center lk-flex--gap-md demo-box lk-p-3">
+          <strong>Orders</strong>
+          <div class="lk-flex lk-flex--gap-sm">
+            <button class="lk-btn lk-btn--secondary lk-btn--sm">Export</button>
+            <button class="lk-btn lk-btn--primary lk-btn--sm">New</button>
+          </div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-flex--{direction|wrap}',
+      description: 'Display, direction and wrapping modifiers.',
+      values: [['inline', '`display: inline-flex`'], ['row', '`flex-direction: row`'], ['col', '`flex-direction: column`'], ['wrap', '`flex-wrap: wrap`'], ['nowrap', '`flex-wrap: nowrap`']],
+      examples: [live('Column and wrapping row', `
+        <div style="display:grid; grid-template-columns:1fr 2fr; gap:12px">
+          <div class="lk-flex lk-flex--col lk-flex--gap-sm demo-box lk-p-2"><span class="lk-badge">1</span><span class="lk-badge">2</span><span class="lk-badge">3</span></div>
+          <div class="lk-flex lk-flex--wrap lk-flex--gap-sm demo-box lk-p-2">
+            <span class="lk-chip">alpha</span><span class="lk-chip">beta</span><span class="lk-chip">gamma</span><span class="lk-chip">delta</span><span class="lk-chip">epsilon</span><span class="lk-chip">zeta</span>
+          </div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-flex--justify-{value}',
+      description: 'Main-axis distribution (`justify-content`).',
+      values: [['start', 'flex-start'], ['end', 'flex-end'], ['center', 'center'], ['between', 'space-between'], ['around', 'space-around']],
+      examples: [live('All justify values', `
+        <div style="display:grid; gap:6px">
+          <div class="lk-flex lk-flex--justify-start demo-box lk-p-1"><span class="lk-badge">start</span><span class="lk-badge">·</span></div>
+          <div class="lk-flex lk-flex--justify-center demo-box lk-p-1"><span class="lk-badge">center</span><span class="lk-badge">·</span></div>
+          <div class="lk-flex lk-flex--justify-end demo-box lk-p-1"><span class="lk-badge">end</span><span class="lk-badge">·</span></div>
+          <div class="lk-flex lk-flex--justify-between demo-box lk-p-1"><span class="lk-badge">between</span><span class="lk-badge">·</span><span class="lk-badge">·</span></div>
+          <div class="lk-flex lk-flex--justify-around demo-box lk-p-1"><span class="lk-badge">around</span><span class="lk-badge">·</span><span class="lk-badge">·</span></div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-flex--align-{value}',
+      description: 'Cross-axis alignment (`align-items`).',
+      values: [['start', 'flex-start'], ['end', 'flex-end'], ['center', 'center'], ['stretch', 'stretch']],
+      examples: [live('start / center / end / stretch', `
+        <div class="lk-grid lk-grid--cols-4 lk-grid--gap-sm">
+          <div class="lk-flex lk-flex--align-start demo-box" style="height:70px"><span class="lk-badge">start</span></div>
+          <div class="lk-flex lk-flex--align-center demo-box" style="height:70px"><span class="lk-badge">center</span></div>
+          <div class="lk-flex lk-flex--align-end demo-box" style="height:70px"><span class="lk-badge">end</span></div>
+          <div class="lk-flex lk-flex--align-stretch demo-box" style="height:70px"><span class="lk-badge">stretch</span></div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-flex--gap-{size}',
+      description: 'Gap between flex children.',
+      values: [['sm', '`--lk-space-2` (8px)'], ['md', '`--lk-space-4` (16px)'], ['lg', '`--lk-space-6` (24px)']],
+      examples: [live('sm / md / lg gaps', `
+        <div style="display:grid; gap:8px">
+          <div class="lk-flex lk-flex--gap-sm"><span class="lk-badge">sm</span><span class="lk-badge">sm</span><span class="lk-badge">sm</span></div>
+          <div class="lk-flex lk-flex--gap-md"><span class="lk-badge">md</span><span class="lk-badge">md</span><span class="lk-badge">md</span></div>
+          <div class="lk-flex lk-flex--gap-lg"><span class="lk-badge">lg</span><span class="lk-badge">lg</span><span class="lk-badge">lg</span></div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-flex--{grow|shrink|none}',
+      description: 'Child sizing — put on a flex **child**.',
+      values: [['grow', '`flex: 1 1 auto` — take remaining space'], ['shrink', '`flex: 0 1 auto` — may shrink, never grow'], ['none', '`flex: none` — fixed size']],
+      examples: [live('Input that grows next to a fixed button', `
+        <div class="lk-flex lk-flex--gap-sm lk-flex--align-center">
+          <input class="lk-input lk-flex--grow" placeholder="Search…">
+          <button class="lk-btn lk-btn--primary lk-flex--none">Go</button>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-flex--col-{sm|md}',
+      description: 'Responsive stacking: `.lk-flex--col-sm` becomes a column **below 768px**, `.lk-flex--col-md` **below 1024px**; children are stretched to full width when stacked. ' + BP,
+      examples: [live('Row on desktop, column on small screens', `
+        <div class="lk-flex lk-flex--gap-md lk-flex--col-md">
+          <div class="demo-grid-cell lk-flex--grow">Panel 1</div>
+          <div class="demo-grid-cell lk-flex--grow">Panel 2</div>
+        </div>
+      `)],
+    },
+
+    // ---------------- Alignment utilities ----------------
+    {
+      name: '.lk-items-{value} / .lk-justify-{value} / .lk-self-{value}',
+      description: 'Standalone alignment utilities for any flex or grid container (and `align-self` for children).',
+      values: [
+        ['lk-items-', '`start`, `center`, `end`, `stretch` (align-items)'],
+        ['lk-justify-', '`start`, `center`, `end`, `between`, `around`, `evenly` (justify-content)'],
+        ['lk-self-', '`start`, `center`, `end`, `stretch` (align-self)'],
+      ],
+      examples: [live('justify-evenly + self-end', `
+        <div class="lk-flex lk-justify-evenly lk-items-start demo-box" style="height:80px">
+          <span class="lk-badge">top</span>
+          <span class="lk-badge lk-badge--positive lk-self-center">self-center</span>
+          <span class="lk-badge lk-badge--info lk-self-end">self-end</span>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-center / .lk-center-inline',
+      description: 'Shortcut: `display: flex` (or `inline-flex`) with content centred on both axes.',
+      examples: [live('Centered empty state', `
+        <div class="lk-center demo-box" style="height:120px">
+          <div class="lk-text-center"><div class="lk-spinner lk-spinner--sm"></div><div class="lk-mt-2">Loading…</div></div>
+        </div>
+      `)],
+    },
+
+    // ---------------- Spacing ----------------
+    {
+      name: '.lk-{m|p}{side?}-{size}',
+      description: 'Margin (`m`) and padding (`p`) utilities. Sides: none = all, `x` = left+right, `y` = top+bottom, `t`, `r`, `b`, `l`. Sizes map to spacing tokens. Examples: `lk-p-4`, `lk-mx-2`, `lk-mt-6`, `lk-pb-0`.',
+      values: [
+        ['0', '0'], ['1', '`--lk-space-1` 4px'], ['2', '`--lk-space-2` 8px'], ['3', '`--lk-space-3` 12px'], ['4', '`--lk-space-4` 16px'],
+        ['5', '`--lk-space-5` 20px'], ['6', '`--lk-space-6` 24px'], ['8', '`--lk-space-8` 40px'], ['10', '`--lk-space-10` 64px'],
+      ],
+      examples: [
+        live('Padding scale', `
+          <div class="lk-flex lk-flex--wrap lk-flex--gap-sm lk-flex--align-start">
+            <div class="demo-box lk-p-1">p-1</div><div class="demo-box lk-p-2">p-2</div><div class="demo-box lk-p-4">p-4</div>
+            <div class="demo-box lk-p-6">p-6</div><div class="demo-box lk-px-8 lk-py-2">px-8 py-2</div>
+          </div>
+        `),
+        live('Margins on individual sides', `
+          <div class="demo-box">
+            <div class="demo-grid-cell lk-mt-4 lk-ml-8">mt-4 ml-8</div>
+            <div class="demo-grid-cell lk-my-3 lk-mx-10">my-3 mx-10</div>
+            <div class="demo-grid-cell lk-mb-2 lk-mr-6">mb-2 mr-6</div>
+          </div>
+        `),
+      ],
+    },
+    {
+      name: '.lk-mx-auto / .lk-ml-auto / .lk-mr-auto',
+      description: 'Auto margins: centre a block with a width, or push a flex child to one side.',
+      examples: [live('Centered block and pushed-right item', `
+        <div class="demo-grid-cell lk-mx-auto" style="width:50%">mx-auto</div>
+        <div class="lk-flex lk-mt-3"><span class="lk-badge">left</span><span class="lk-badge lk-ml-auto">ml-auto</span></div>
+      `)],
+    },
+
+    // ---------------- Display / position / sizing ----------------
+    {
+      name: '.lk-{display}',
+      description: 'Display utilities.',
+      values: [['lk-block', 'display: block'], ['lk-inline', 'display: inline'], ['lk-inline-block', 'display: inline-block'], ['lk-hidden', 'display: none (also set by `comp.hidden = true`)']],
+      examples: [live('block vs inline-block', `
+        <span class="lk-badge lk-block lk-mb-2">lk-block badge</span>
+        <span class="demo-box lk-inline-block lk-p-2">inline-block</span>
+        <span class="demo-box lk-inline-block lk-p-2">inline-block</span>
+        <span class="lk-hidden">you cannot see me</span>
+      `)],
+    },
+    {
+      name: '.lk-visible / .lk-invisible',
+      description: '`visibility: visible | hidden` — `.lk-invisible` hides but keeps the space.',
+      examples: [live('Invisible keeps its slot', `
+        <div class="lk-flex lk-flex--gap-sm"><span class="lk-badge">1</span><span class="lk-badge lk-invisible">2</span><span class="lk-badge">3</span></div>
+      `)],
+    },
+    {
+      name: '.lk-sr-only',
+      description: 'Visually hidden but read by screen readers — for icon-only buttons and status dots.',
+      examples: [live('Labelled icon button', `
+        <button class="lk-btn lk-btn--ghost"><span class="lk-icon lk-icon--bell" aria-hidden="true"></span><span class="lk-sr-only">Notifications</span></button>
+      `)],
+    },
+    {
+      name: '.lk-overflow-{value}',
+      description: 'Overflow utilities.',
+      values: [['hidden', 'overflow: hidden'], ['auto', 'overflow: auto'], ['scroll', 'overflow: scroll']],
+      examples: [live('Scrollable box', `
+        <div class="lk-overflow-auto demo-box lk-p-2" style="height:70px">Line 1<br>Line 2<br>Line 3<br>Line 4<br>Line 5<br>Line 6</div>
+      `)],
+    },
+    {
+      name: '.lk-{position}',
+      description: 'Position utilities.',
+      values: [['lk-relative', 'position: relative'], ['lk-absolute', 'position: absolute'], ['lk-fixed', 'position: fixed'], ['lk-sticky', 'position: sticky']],
+      examples: [live('Absolute badge on a relative box', `
+        <div class="lk-relative lk-inline-block">
+          <button class="lk-btn lk-btn--secondary">Inbox</button>
+          <span class="lk-badge lk-badge--negative lk-absolute" style="top:-6px; right:-6px">4</span>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-w-{full|auto} / .lk-h-{full|auto}',
+      description: '`width` / `height` of `100%` or `auto`.',
+      examples: [live('Full-width input', `<input class="lk-input lk-w-full" placeholder="lk-w-full">`)],
+    },
+    {
+      name: '.lk-text-{left|center|right}',
+      description: 'Text alignment. Responsive variants: `.lk-text-center-sm` (below 768px) and `.lk-text-center-md`, `.lk-text-left-md`, `.lk-text-right-md` (768px and up).',
+      examples: [live('Alignment', `
+        <div class="demo-box lk-text-left lk-p-1">left</div>
+        <div class="demo-box lk-text-center lk-p-1 lk-mt-1">center</div>
+        <div class="demo-box lk-text-right lk-p-1 lk-mt-1">right</div>
+        <div class="demo-box lk-text-center-sm lk-text-right-md lk-p-1 lk-mt-1">center below md, right from md</div>
+      `)],
+    },
+    {
+      name: '.lk-disabled',
+      description: 'Disabled look (50 % opacity, no pointer events). Added by component `enabled = false`; skipped on native form controls, which use the `disabled` attribute instead.',
+      examples: [live('Disabled block', `<div class="demo-box lk-p-3 lk-disabled">This panel is disabled</div>`)],
+    },
+
+    // ---------------- Responsive visibility ----------------
+    {
+      name: '.lk-hidden-{bp}-up',
+      description: 'Hide from breakpoint `bp` and wider (`display: none !important`). ' + BP,
+      values: [['sm', '≥ 480px'], ['md', '≥ 768px'], ['lg', '≥ 1024px'], ['xl', '≥ 1280px'], ['2xl', '≥ 1536px']],
+      examples: [live('Mobile-only menu button', `
+        <button class="lk-btn lk-btn--ghost lk-hidden-md-up">☰ Menu (hidden ≥ md)</button>
+        <span class="lk-badge lk-hidden-xl-up">hidden ≥ xl</span>
+      `)],
+    },
+    {
+      name: '.lk-hidden-{bp}-down',
+      description: 'Hide **below** the next breakpoint: `xs-down` < 480px, `sm-down` < 768px, `md-down` < 1024px, `lg-down` < 1280px, `xl-down` < 1536px.',
+      values: [['xs', '< 480px'], ['sm', '< 768px'], ['md', '< 1024px'], ['lg', '< 1280px'], ['xl', '< 1536px']],
+      examples: [live('Desktop-only content', `
+        <span class="lk-badge lk-badge--positive lk-hidden-sm-down">visible ≥ 768px</span>
+        <span class="lk-badge lk-badge--info lk-hidden-md-down">visible ≥ 1024px</span>
+      `)],
+    },
+    {
+      name: '.lk-visible-{bp}-only',
+      description: 'Forces `display: block !important` inside one breakpoint range (`xs` < 480, `sm` 480–767, `md` 768–1023, `lg` 1024–1279, `xl` ≥ 1280). **It does not hide the element outside that range** — pair it with `.lk-hidden` so it only appears in the range.',
+      examples: [live('Show only on md screens', `
+        <div class="lk-hidden lk-visible-md-only demo-box lk-p-2">Only visible between 768 and 1023px</div>
+        <div class="lk-hidden lk-visible-lg-only demo-box lk-p-2">Only visible between 1024 and 1279px</div>
+        <div class="lk-hidden lk-visible-xl-only demo-box lk-p-2">Only visible ≥ 1280px</div>
+      `)],
+    },
+    {
+      name: '.lk-container / .lk-container--fluid',
+      description: 'Centred page container with `--lk-space-4` side padding and a max-width that steps up per breakpoint: 540px (sm), 720px (md), 960px (lg), 1140px (xl), 1320px (2xl). `--fluid` keeps it at 100%.',
+      examples: [live('Container inside the preview', `
+        <div class="lk-container demo-box lk-py-2 lk-text-center">lk-container</div>
+        <div class="lk-container lk-container--fluid demo-box lk-py-2 lk-mt-2 lk-text-center">lk-container--fluid</div>
+      `)],
+    },
+
+    // ---------------- Page shell ----------------
+    {
+      name: '.lk-page / __header / __body / __footer',
+      description: 'App shell: `.lk-page` is a full-height (`min-height: 100vh`) flex column. `__header` does not shrink, `__body` grows to fill, and `__footer` sticks to the bottom with muted small text, padding and a top border.',
+      examples: [live('Page shell (min-height reduced for the preview)', `
+        <div class="lk-page" style="min-height:240px; border:1px solid var(--lk-border)">
+          <header class="lk-page__header"><div class="lk-bar lk-bar--primary lk-bar--dense"><span class="lk-bar__title">My app</span></div></header>
+          <main class="lk-page__body lk-p-4">Page content grows to fill.</main>
+          <footer class="lk-page__footer">© 2026 My company</footer>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-layout / __sidebar / __content',
+      description: 'Sidebar + content row. The sidebar is 16rem, `--lk-surface` background, scrolls on its own and is **hidden below 768px**. `__content` takes the rest (`min-width: 0`).',
+      examples: [live('Sidebar layout (view ≥ 768px to see the sidebar)', `
+        <div class="lk-layout" style="height:200px; border:1px solid var(--lk-border)">
+          <aside class="lk-layout__sidebar lk-layout__sidebar--narrow">
+            <ul class="lk-sidebar-nav">
+              <li class="lk-sidebar-nav__heading">Menu</li>
+              <li><a class="lk-sidebar-nav__item lk-sidebar-nav__item--active" href="#">Dashboard</a></li>
+              <li><a class="lk-sidebar-nav__item" href="#">Orders</a></li>
+            </ul>
+          </aside>
+          <section class="lk-layout__content lk-p-4">Content area</section>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-layout__sidebar--{modifier}',
+      description: 'Sidebar variants.',
+      values: [['narrow', '12rem wide'], ['(default)', '16rem wide'], ['wide', '20rem wide'], ['right', 'Placed after the content with a left border']],
+      examples: [live('Wide right sidebar', `
+        <div class="lk-layout" style="height:140px; border:1px solid var(--lk-border)">
+          <aside class="lk-layout__sidebar lk-layout__sidebar--right lk-layout__sidebar--wide lk-px-4">Details panel (right, wide)</aside>
+          <section class="lk-layout__content lk-p-4">Content</section>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-section',
+      description: 'Vertical page band with `space-8 / space-4` padding.',
+      values: [['sm', 'Smaller vertical padding (`--lk-space-4`)'], ['lg', 'Larger vertical padding (`--lk-space-12`)'], ['surface', '`--lk-surface` background'], ['primary', 'Primary background, contrast text'], ['dark', '`--lk-secondary-dark` background, light text']],
+      examples: [live('Section variants', `
+        <section class="lk-section lk-section--sm lk-section--surface">surface + sm</section>
+        <section class="lk-section lk-section--sm lk-section--primary">primary + sm</section>
+        <section class="lk-section lk-section--sm lk-section--dark">dark + sm</section>
+      `)],
+    },
+    {
+      name: '.lk-hero / __title / __subtitle / __actions',
+      description: 'Centred intro section (min-height 24rem, large padding). `__title` is `--lk-text-4xl` (`5xl` from 768px), `__subtitle` `--lk-text-lg` at 85 % opacity, `__actions` a wrapping centred row; outline/secondary buttons inside follow the hero text color.',
+      examples: [live('Hero on a primary section', `
+        <div class="lk-hero lk-section--primary" style="min-height:0; padding:32px 16px">
+          <h1 class="lk-hero__title" style="font-size:var(--lk-text-2xl)">Build faster with LookUI</h1>
+          <p class="lk-hero__subtitle">Vanilla JS + CSS components, zero dependencies.</p>
+          <div class="lk-hero__actions">
+            <button class="lk-btn lk-btn--secondary">Docs</button>
+            <button class="lk-btn lk-btn--outline">GitHub</button>
+          </div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-prose',
+      description: 'Readable article text: 48rem max width, centred, relaxed line height, vertical rhythm between children, and styles for headings, images, `blockquote`, `code` and `pre`.',
+      examples: [live('Prose block', `
+        <article class="lk-prose" style="margin:0">
+          <h3 style="margin-top:0">Getting started</h3>
+          <p>Include <code>look.css</code> and <code>look.js</code>, then add classes.</p>
+          <blockquote>Small, sharp, dependency-free.</blockquote>
+        </article>
+      `)],
+    },
+    {
+      name: '.lk-stat / __value / __label / __delta',
+      description: 'Centred metric tile. `__delta--up` is green, `__delta--down` red.',
+      examples: [live('Stats row', `
+        <div class="lk-grid lk-grid--cols-3">
+          <div class="lk-stat"><div class="lk-stat__value">1,284</div><div class="lk-stat__label">Orders</div><div class="lk-stat__delta lk-stat__delta--up">▲ 12%</div></div>
+          <div class="lk-stat"><div class="lk-stat__value">$48k</div><div class="lk-stat__label">Revenue</div><div class="lk-stat__delta lk-stat__delta--up">▲ 4%</div></div>
+          <div class="lk-stat"><div class="lk-stat__value">3.1%</div><div class="lk-stat__label">Refunds</div><div class="lk-stat__delta lk-stat__delta--down">▼ 0.4%</div></div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-sidebar-nav / __item / __item--active / __heading',
+      description: 'Dashboard sidebar menu: uppercase muted `__heading`s and `__item` links with hover tint; `--active` gets primary text, tint and a 3 px left bar.',
+      examples: [live('Sidebar nav', `
+        <ul class="lk-sidebar-nav" style="max-width:220px; background:var(--lk-surface)">
+          <li class="lk-sidebar-nav__heading">Store</li>
+          <li><a class="lk-sidebar-nav__item lk-sidebar-nav__item--active" href="#"><span class="lk-icon lk-icon--dashboard" aria-hidden="true"></span> Overview</a></li>
+          <li><a class="lk-sidebar-nav__item" href="#"><span class="lk-icon lk-icon--shopping-cart" aria-hidden="true"></span> Orders</a></li>
+          <li class="lk-sidebar-nav__heading">Account</li>
+          <li><a class="lk-sidebar-nav__item" href="#"><span class="lk-icon lk-icon--settings" aria-hidden="true"></span> Settings</a></li>
+        </ul>
+      `)],
+    },
+    {
+      name: '.lk-page-title / __text / __actions',
+      description: 'Page heading row: title (`--lk-text-xl` semibold) on the left, actions on the right; wraps on narrow screens.',
+      examples: [live('Page title', `
+        <div class="lk-page-title demo-box">
+          <div class="lk-page-title__text">Products</div>
+          <div class="lk-page-title__actions"><button class="lk-btn lk-btn--secondary lk-btn--sm">Import</button><button class="lk-btn lk-btn--primary lk-btn--sm">Add product</button></div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-product-card / __image / __body / __title / __price / __old-price / __rating / __actions',
+      description: 'E-commerce product tile: square image, ellipsized title, primary-colored price with a struck-through old price, muted rating, actions pinned to the bottom. Hover adds a shadow.',
+      examples: [live('Product cards', `
+        <div class="lk-grid lk-grid--cols-2" style="max-width:420px">
+          <div class="lk-product-card">
+            <div class="lk-product-card__image"></div>
+            <div class="lk-product-card__body">
+              <div class="lk-product-card__title">Wireless headphones</div>
+              <div><span class="lk-product-card__price">$79</span><span class="lk-product-card__old-price">$99</span></div>
+              <div class="lk-product-card__rating">★★★★☆ (128)</div>
+              <div class="lk-product-card__actions"><button class="lk-btn lk-btn--primary lk-btn--sm lk-btn--full-width">Add to cart</button></div>
+            </div>
+          </div>
+          <div class="lk-product-card">
+            <div class="lk-product-card__image"></div>
+            <div class="lk-product-card__body">
+              <div class="lk-product-card__title">USB-C charger 65W with a long name</div>
+              <div><span class="lk-product-card__price">$35</span></div>
+              <div class="lk-product-card__actions"><button class="lk-btn lk-btn--secondary lk-btn--sm lk-btn--full-width">Add to cart</button></div>
+            </div>
+          </div>
+        </div>
+      `)],
+    },
+    {
+      name: '.lk-cart-item / __image / __info / __name / __meta / __price',
+      description: 'Shopping-cart row: 4rem thumbnail, name + muted meta, right-hand price, bottom divider.',
+    },
+    {
+      name: '.lk-order-summary / __row / __total',
+      description: 'Checkout summary box (`--lk-surface` background): label/value `__row`s and a bold `__total` with a 2 px top border.',
+      examples: [live('Cart item + order summary', `
+        <div style="max-width:380px">
+          <div class="lk-cart-item">
+            <div class="lk-cart-item__image"></div>
+            <div class="lk-cart-item__info"><div class="lk-cart-item__name">Wireless headphones</div><div class="lk-cart-item__meta">Black · Qty 1</div></div>
+            <div class="lk-cart-item__price">$79.00</div>
+          </div>
+          <div class="lk-order-summary lk-mt-4">
+            <div class="lk-order-summary__row"><span>Subtotal</span><span>$79.00</span></div>
+            <div class="lk-order-summary__row"><span>Shipping</span><span>$5.00</span></div>
+            <div class="lk-order-summary__total"><span>Total</span><span>$84.00</span></div>
+          </div>
+        </div>
+      `)],
+    },
+  ],
+
+  tokens: [
+    { name: '$look-bp-sm', default: '480px', description: 'Sass breakpoint (`sm`).' },
+    { name: '$look-bp-md', default: '768px', description: 'Sass breakpoint (`md`). Also where `.lk-layout__sidebar` hides and `.lk-flex--col-sm` stacks.' },
+    { name: '$look-bp-lg', default: '1024px', description: 'Sass breakpoint (`lg`).' },
+    { name: '$look-bp-xl', default: '1280px', description: 'Sass breakpoint (`xl`).' },
+    { name: '$look-bp-2xl', default: '1536px', description: 'Sass breakpoint (`2xl`).' },
+    { name: '--lk-container-sm … --lk-container-2xl', default: '540 / 720 / 960 / 1140 / 1320px', description: '`.lk-container` max-width per breakpoint.' },
+    { name: '--lk-container-fluid', default: '100%', description: '`.lk-container--fluid` max-width.' },
+    { name: '--lk-space-1 … --lk-space-10', default: '0.25rem … 4rem', description: 'Spacing scale behind the `lk-m*`/`lk-p*` utilities and grid/flex gaps. See [Tokens](tokens.html).' },
+    { name: '--lk-grid-gutter / --lk-grid-columns', default: 'var(--lk-space-4) / 12', description: 'Declared for reference only; `.lk-grid` currently uses `--lk-space-4` directly, so overriding these has no effect.' },
+  ],
+});
+</script>
+</body>
+</html>

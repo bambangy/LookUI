@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
-const API = ['lkButton', 'lkDialog', 'lkTable', 'lkToolbar', 'lkDataSource', 'lkIcon'];
+const API = ['lkButton', 'lkDialog', 'lkTable', 'lkToolbar', 'lkDataSource', 'lkIcon', 'lkPhone', 'lkTextPop', 'lkValidation', 'lkTabs', 'lkCarousel'];
 
 function checkApi(label, L) {
   assert.equal(L.version, pkg.version, `${label}: version should match package.json`);

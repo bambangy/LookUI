@@ -556,3 +556,18 @@
 
   .lk-field-error[hidden] { display: none; }
 }
+
+// =============================================================================
+// Component editors (column.editor: 'dropdown' | 'date' | 'phone' | { component, … })
+// =============================================================================
+
+.lk-datagrid__editor-host {
+  min-width: 6rem;
+
+  > .lk-rating { padding-block: var(--lk-space-1); }
+}
+
+.lk-datagrid__cell--invalid .lk-datagrid__editor-host .lk-input,
+.lk-datagrid-form .lk-field--error .lk-datagrid__editor-host .lk-input {
+  border-color: var(--lk-negative);
+}

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Timeline</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Timeline</h1>
+    <p style="opacity: 0.85;">.lk-timeline — event list, dense</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <div style="max-width:500px;">
+      <ul class="lk-timeline" style="margin-bottom:var(--lk-space-5);">
+        <li class="lk-timeline__item">
+          <div class="lk-timeline__dot lk-timeline__dot--primary"></div>
+          <div class="lk-timeline__content">
+            <div class="lk-timeline__title">Project started</div>
+            <div class="lk-timeline__time">Jan 2026</div>
+            <div class="lk-timeline__body">Initial commit and project scaffolding.</div>
+          </div>
+        </li>
+        <li class="lk-timeline__item">
+          <div class="lk-timeline__dot lk-timeline__dot--positive"></div>
+          <div class="lk-timeline__content">
+            <div class="lk-timeline__title">v0.1.0 released</div>
+            <div class="lk-timeline__time">Mar 2026</div>
+            <div class="lk-timeline__body">First public release with core components.</div>
+          </div>
+        </li>
+        <li class="lk-timeline__item">
+          <div class="lk-timeline__dot lk-timeline__dot--info"></div>
+          <div class="lk-timeline__content">
+            <div class="lk-timeline__title">JS components added</div>
+            <div class="lk-timeline__time">Apr 2026</div>
+          </div>
+        </li>
+        <li class="lk-timeline__item">
+          <div class="lk-timeline__dot"></div>
+          <div class="lk-timeline__content">
+            <div class="lk-timeline__title">Docs site (planned)</div>
+            <div class="lk-timeline__time">TBD</div>
+          </div>
+        </li>
+      </ul>
+
+      <p class="demo-sub">Dense</p>
+      <ul class="lk-timeline lk-timeline--dense">
+        <li class="lk-timeline__item">
+          <div class="lk-timeline__dot lk-timeline__dot--warning"></div>
+          <div class="lk-timeline__content"><div class="lk-timeline__title">Event A</div><div class="lk-timeline__time">9:00 AM</div></div>
+        </li>
+        <li class="lk-timeline__item">
+          <div class="lk-timeline__dot lk-timeline__dot--negative"></div>
+          <div class="lk-timeline__content"><div class="lk-timeline__title">Event B</div><div class="lk-timeline__time">10:30 AM</div></div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML</p>
+    <pre>&lt;ul class="lk-timeline"&gt;
+  &lt;li class="lk-timeline__item"&gt;
+    &lt;div class="lk-timeline__dot lk-timeline__dot--primary"&gt;&lt;/div&gt;
+    &lt;div class="lk-timeline__content"&gt;
+      &lt;div class="lk-timeline__title"&gt;Title&lt;/div&gt;
+      &lt;div class="lk-timeline__time"&gt;Date&lt;/div&gt;
+      &lt;div class="lk-timeline__body"&gt;Description&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+// CSS-only live example: renders `markup` into the preview box.
+function live(title, markup) {
+  const lines = markup.replace(/^\n+|\s+$/g, '').split('\n');
+  const min = Math.min(...lines.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length));
+  return { title, run: true, code: 'container.innerHTML = `\n' + lines.map((l) => '  ' + l.slice(min)).join('\n') + '\n`;' };
+}
+
+// Small helper for compact examples: one <li> per event.
+function ev(dot, title, time, body) {
+  return '<li class="lk-timeline__item"><div class="lk-timeline__dot' + (dot ? ' lk-timeline__dot--' + dot : '') + '"></div>'
+    + '<div class="lk-timeline__content"><div class="lk-timeline__title">' + title + '</div>'
+    + (time ? '<div class="lk-timeline__time">' + time + '</div>' : '')
+    + (body ? '<div class="lk-timeline__body">' + body + '</div>' : '') + '</div></li>';
+}
+
+LookDocs.render('#api', {
+  name: '.lk-timeline',
+  kind: 'CSS',
+  signature: [
+    '<ul class="lk-timeline [lk-timeline--dense]">',
+    '  <li class="lk-timeline__item">',
+    '    <div class="lk-timeline__dot [lk-timeline__dot--{color}]"></div>',
+    '    <div class="lk-timeline__content">',
+    '      <div class="lk-timeline__title">Title</div>',
+    '      <div class="lk-timeline__time">Time</div>',
+    '      <div class="lk-timeline__body">Description</div>',
+    '    </div>',
+    '  </li>',
+    '</ul>',
+  ],
+  description: [
+    'A vertical list of events, each marked by a dot connected to the next by a line. Pure CSS. The connector is an `::before` pseudo-element on every item except the last; the dot is vertically centred on the first line of the title.',
+    'Use `<ul>` / `<ol>` with `<li class="lk-timeline__item">`. `__time` and `__body` are optional.',
+  ],
+
+  classes: [
+    {
+      name: 'Markup',
+      description: 'Complete item with title, time and body.',
+      examples: [live('Order history', `
+        <ol class="lk-timeline" style="max-width:420px">
+          <li class="lk-timeline__item">
+            <div class="lk-timeline__dot lk-timeline__dot--positive"></div>
+            <div class="lk-timeline__content">
+              <div class="lk-timeline__title">Delivered</div>
+              <div class="lk-timeline__time">Oct 3, 14:20</div>
+              <div class="lk-timeline__body">Signed by the recipient at the front desk.</div>
+            </div>
+          </li>
+          <li class="lk-timeline__item">
+            <div class="lk-timeline__dot lk-timeline__dot--info"></div>
+            <div class="lk-timeline__content">
+              <div class="lk-timeline__title">Out for delivery</div>
+              <div class="lk-timeline__time">Oct 3, 08:05</div>
+            </div>
+          </li>
+          <li class="lk-timeline__item">
+            <div class="lk-timeline__dot"></div>
+            <div class="lk-timeline__content">
+              <div class="lk-timeline__title">Order placed</div>
+              <div class="lk-timeline__time">Oct 1, 19:42</div>
+            </div>
+          </li>
+        </ol>
+      `)],
+    },
+    { name: '.lk-timeline', description: 'List container (no bullets, padding or margin). Defines the `--lk-timeline-dot` and `--lk-timeline-dot-top` geometry variables.' },
+    { name: '.lk-timeline__item', description: 'One event: flex row (dot + content) with `--lk-space-4` gap and `--lk-space-6` bottom padding (none on the last item). Draws the connector line in `--lk-border`.' },
+    {
+      name: '.lk-timeline__dot',
+      description: '1rem circle (0.625rem dense) with a 2 px `--lk-bg` ring and a 1 px outer ring. Default color is the neutral `--lk-border` — good for pending/future events.',
+    },
+    {
+      name: '.lk-timeline__dot--{color}',
+      description: 'Dot color (fill and outer ring).',
+      values: [
+        ['(default)', 'Neutral grey (`--lk-border`)'],
+        ['primary', '`--lk-primary`'],
+        ['positive', '`--lk-positive` — done / success'],
+        ['warning', '`--lk-warning` — attention'],
+        ['negative', '`--lk-negative` — failed / cancelled'],
+        ['info', '`--lk-info` — informational'],
+      ],
+      examples: [{
+        title: 'Every dot color', run: true,
+        code: "container.innerHTML = '<ul class=\"lk-timeline\">'\n"
+          + "  + ev('', 'Default', 'neutral')\n"
+          + "  + ev('primary', 'Primary')\n"
+          + "  + ev('positive', 'Positive', 'done')\n"
+          + "  + ev('warning', 'Warning', 'needs review')\n"
+          + "  + ev('negative', 'Negative', 'failed')\n"
+          + "  + ev('info', 'Info')\n"
+          + "  + '</ul>';\n"
+          + "// ev(dot, title, time, body) builds one <li class=\"lk-timeline__item\"> (defined on this page)",
+      }],
+    },
+    { name: '.lk-timeline__content', description: 'Text column (`flex: 1`, `min-width: 0` so long text wraps instead of overflowing).' },
+    { name: '.lk-timeline__title', description: '`--lk-text-base` semibold, tight line height (`--lk-text-sm` dense).' },
+    { name: '.lk-timeline__time', description: '`--lk-text-xs` muted text under the title (9 px dense).' },
+    {
+      name: '.lk-timeline__body',
+      description: 'Optional description: `--lk-text-sm`, `--lk-space-2` above (`--lk-text-xs` dense). Can hold any markup.',
+      examples: [live('Body with rich content', `
+        <ul class="lk-timeline" style="max-width:420px">
+          <li class="lk-timeline__item">
+            <div class="lk-timeline__dot lk-timeline__dot--primary"></div>
+            <div class="lk-timeline__content">
+              <div class="lk-timeline__title">Jane commented</div>
+              <div class="lk-timeline__time">5 min ago</div>
+              <div class="lk-timeline__body">
+                <div class="lk-card lk-card--dense"><div class="lk-card__body">"Looks great — ship it!"</div></div>
+              </div>
+            </div>
+          </li>
+          <li class="lk-timeline__item">
+            <div class="lk-timeline__dot lk-timeline__dot--positive"></div>
+            <div class="lk-timeline__content">
+              <div class="lk-timeline__title">Build passed <span class="lk-badge lk-badge--positive">CI</span></div>
+            </div>
+          </li>
+        </ul>
+      `)],
+    },
+    {
+      name: '.lk-timeline--dense',
+      description: 'Compact: smaller dot (0.625rem), `--lk-space-3` gap, `--lk-space-4` item spacing and smaller text. The dot stays centred on the smaller title.',
+      examples: [live('Dense activity log', `
+        <ul class="lk-timeline lk-timeline--dense" style="max-width:360px">
+          <li class="lk-timeline__item"><div class="lk-timeline__dot lk-timeline__dot--warning"></div><div class="lk-timeline__content"><div class="lk-timeline__title">Disk usage 85 %</div><div class="lk-timeline__time">09:00</div></div></li>
+          <li class="lk-timeline__item"><div class="lk-timeline__dot lk-timeline__dot--negative"></div><div class="lk-timeline__content"><div class="lk-timeline__title">Backup failed</div><div class="lk-timeline__time">10:30</div><div class="lk-timeline__body">Retrying in 15 minutes.</div></div></li>
+          <li class="lk-timeline__item"><div class="lk-timeline__dot lk-timeline__dot--positive"></div><div class="lk-timeline__content"><div class="lk-timeline__title">Backup completed</div><div class="lk-timeline__time">10:45</div></div></li>
+        </ul>
+      `)],
+    },
+  ],
+
+  tokens: [
+    { name: '--lk-timeline-dot', default: '1rem', description: 'Dot diameter (`0.625rem` with `--dense`). Set on `.lk-timeline` to resize dots; the connector follows.' },
+    { name: '--lk-timeline-dot-top', default: 'calc((var(--lk-text-base) * var(--lk-leading-tight) - var(--lk-timeline-dot)) / 2)', description: 'Top offset that centres the dot on the first title line. Recalculate if you change the title font size.' },
+    { name: '--lk-border', default: '#d0d0d8', description: 'Connector line and default dot color.' },
+    { name: '--lk-bg', default: '#ffffff', description: 'Ring between dot and connector — match it to the background behind the timeline.' },
+    { name: '--lk-border-width-md', default: '2px', description: 'Dot ring width.' },
+  ],
+});
+</script>
+</body>
+</html>

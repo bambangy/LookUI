@@ -11,5 +11,6 @@ export { lkStorage } from './storage.js';
 export { lkTable } from './table.js';
 export { lkToast } from './toast.js';
 export { lkToolbar } from './toolbar.js';
+export { lkValidation } from './validation.js';
 
 

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — TextPop</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">TextPop</h1>
+    <p style="opacity: 0.85;">lkTextPop(el, opts) — lookup field: a searchable, read-only lkTable in a popup, single or multi select</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Single select</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div>
+        <input id="tp-single" />
+        <p class="demo-sub" style="margin-top: var(--lk-space-3);">Click (or focus + Enter) to open. Type to filter every column, click a row to pick it. Backspace clears.</p>
+      </div>
+      <div id="tp-single-out" class="demo-output"></div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Multiple select &mdash; chips with <code>maxChips: 3</code></p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div>
+        <input id="tp-multi" />
+        <div class="demo-row" style="margin-top: var(--lk-space-3); margin-bottom: 0;">
+          <button id="tp-multi-preset" class="lk-btn lk-btn--secondary lk-btn--sm">Preset 5 values</button>
+          <button id="tp-multi-clear" class="lk-btn lk-btn--ghost lk-btn--sm">Clear</button>
+          <button id="tp-multi-ro" class="lk-btn lk-btn--ghost lk-btn--sm">Toggle readonly</button>
+        </div>
+      </div>
+      <div id="tp-multi-out" class="demo-output"></div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Custom display &amp; server-style data source</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="tp-display" />
+      <input id="tp-remote" />
+    </div>
+    <div id="tp-remote-out" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const owner = Look.lkTextPop('#owner', {
+  label: 'Owner',
+  name: 'ownerId',
+  dataSource: employees,          // array | lkDataSource options | lkDataSource instance
+  valueField: 'id',
+  textField: 'name',
+  columns: [
+    { field: 'id', title: 'ID', width: 70 },
+    { field: 'name', title: 'Name' },
+    { field: 'dept', title: 'Department' },
+  ],
+  onChange(value, row) { console.log(value, row); },
+});
+
+const reviewers = Look.lkTextPop('#reviewers', {
+  multiple: true,
+  maxChips: 3,                    // then a "+N" chip
+  dataSource: employees,
+  columns: [{ field: 'name' }, { field: 'dept' }],
+});
+
+reviewers.value = [3, 7, 9];
+reviewers.selectedRows;           // full records
+reviewers.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+  // Shared sample data
+  const FIRST = ['Ayu', 'Budi', 'Citra', 'Dewi', 'Eko', 'Fajar', 'Gita', 'Hadi', 'Indah', 'Joko', 'Kartika', 'Lukman', 'Maya', 'Nanda', 'Oki', 'Putri', 'Rizky', 'Sari', 'Taufik', 'Wulan'];
+  const LAST = ['Santoso', 'Wijaya', 'Pratama', 'Lestari', 'Saputra', 'Hidayat', 'Kusuma', 'Nugroho'];
+  const DEPTS = ['Engineering', 'Finance', 'Marketing', 'Operations', 'Sales', 'HR'];
+  const CITIES = ['Jakarta', 'Bandung', 'Surabaya', 'Medan', 'Makassar', 'Denpasar'];
+  window.EMPLOYEES = Array.from({ length: 48 }, (_, i) => ({
+    id: i + 1,
+    name: `${FIRST[i % FIRST.length]} ${LAST[(i * 3) % LAST.length]}`,
+    dept: DEPTS[(i * 7) % DEPTS.length],
+    city: CITIES[(i * 5) % CITIES.length],
+    email: `${FIRST[i % FIRST.length].toLowerCase()}.${LAST[(i * 3) % LAST.length].toLowerCase()}@example.com`,
+  }));
+</script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkTextPop',
+  validateable: true,
+  kind: 'Component',
+  signature: 'const pop = Look.lkTextPop(inputElement, options);',
+  description: [
+    'A lookup ("text pop") field. Clicking it opens an [lkPopupProxy](composable-popup-proxy.html) with a search [lkTextbox](textbox.html) and a read-only [lkTable](table.html). Single mode picks the clicked row and closes; multiple mode adds a checkbox column and shows the picks as [lkChip](chip.html)s, capped by `maxChips`.',
+    'The search box calls `grid.search()`: local data is filtered across the columns, a server data source receives `filter.$search`. Values on other pages (or not loaded yet) are kept.',
+  ],
+  params: [
+    { name: 'inputElement', type: 'HTMLInputElement | string', description: 'An input (or selector). It becomes the hidden value input; one extra hidden input is added per value in multiple mode.' },
+    { name: 'options', type: 'Object', description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The TextPop instance.' },
+  options: [
+    {
+      name: 'dataSource', type: 'Array | Object | lkDataSource', default: '—', required: true,
+      description: 'Rows to pick from: a plain array, lkDataSource options, or an lkDataSource instance (shared with other widgets).',
+      examples: [{ run: true, code: `
+        const el = document.createElement('input');
+        container.appendChild(el);
+        Look.lkTextPop(el, {
+          dataSource: [{ id: 'ID', name: 'Indonesia' }, { id: 'SG', name: 'Singapore' }, { id: 'MY', name: 'Malaysia' }],
+          onChange: (v, row) => log(v, row && row.name),
+        });` }],
+    },
+    { name: 'columns', type: 'Array', default: 'generated', description: 'lkTable column definitions (formatting, templates, widths…).' },
+    { name: 'valueField', type: 'string', default: "dataSource keyField or 'id'", description: 'Field used as the value.' },
+    { name: 'textField', type: 'string', default: "'name'", description: 'Field shown in the field and chips.' },
+    { name: 'displayText', type: 'Function', default: '—', description: '`(row) => string` — overrides `textField`.' },
+    {
+      name: 'multiple', type: 'boolean', default: 'false',
+      description: 'Pick many rows. Adds a checkbox column, a footer with *Clear* / *Done*, and renders chips.',
+      examples: [{ run: true, code: `
+        const el = document.createElement('input');
+        container.appendChild(el);
+        Look.lkTextPop(el, {
+          multiple: true, maxChips: 2, value: [1, 2, 3],
+          dataSource: EMPLOYEES, columns: [{ field: 'name' }, { field: 'dept' }],
+          onChange: (values) => log(values),
+        });` }],
+    },
+    { name: 'maxChips', type: 'number', default: '—', description: 'Show at most N chips, then a `+N` chip whose tooltip lists the rest.' },
+    { name: 'chipColor', type: 'string', default: "'primary'", description: 'Chip color.' },
+    { name: 'value', type: 'any', default: '—', description: 'Key or row object; an array of either when `multiple`.' },
+    { name: 'label / name / placeholder', type: 'string', default: "— / input name / 'Select…'", description: 'Field label, posted name, empty text.' },
+    { name: 'title', type: 'string', default: '—', description: 'Heading inside the popup.' },
+    { name: 'searchPlaceholder', type: 'string', default: "'Search…'", description: 'Placeholder of the search box.' },
+    { name: 'clearable', type: 'boolean', default: 'true', description: 'Show the × button when there is a value.' },
+    { name: 'pageable / pageSize / height', type: 'boolean|Object / number / string', default: 'true / 8 / —', description: 'Grid paging and body height.' },
+    { name: 'popupWidth', type: 'number', default: '560', description: 'Popup width in px (capped to the viewport).' },
+    { name: 'table', type: 'Object', default: '—', description: 'Extra lkTable options (e.g. `{ striped: true, sortable: false }`).' },
+    { name: 'required / readonly / disabled / dense', type: 'boolean', default: 'false', description: 'Initial states.' },
+    { name: 'onChange', type: 'Function', default: '—', description: 'Single: `(value, row)`; multiple: `(values[], rows[])`.' },
+    { name: 'onOpen / onClose', type: 'Function', default: '—', description: 'Popup lifecycle callbacks; `onClose(reason)`.' },
+  ],
+  properties: [
+    { name: 'value', type: 'any | any[]', description: 'Current key(s).' },
+    { name: 'selectedRows', type: 'Object[]', readonly: true, description: 'Records for the current keys (`null` while a remote row is unknown).' },
+    { name: 'text', type: 'string', readonly: true, description: 'Display text, comma separated.' },
+    { name: 'grid / dataSource', type: 'Object', readonly: true, description: 'The inner lkTable (created on first open) and its data source.' },
+    { name: 'isOpen / multiple', type: 'boolean', readonly: true, description: 'State flags.' },
+    { name: 'label / name / required / readonly / disabled / enabled / hidden', type: '—', description: 'Standard field properties.' },
+  ],
+  methods: [
+    { name: 'open / close', signature: 'open() / close()', description: 'Show or hide the popup.' },
+    { name: 'clear', signature: 'clear()', description: 'Remove every value (fires `onChange`).' },
+    { name: 'setError / clearError', signature: 'setError(message) / clearError()', description: 'Field validation message.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Destroys the popup, grid and chips and restores the input.' },
+  ],
+  classes: [
+    { name: '.lk-textpop', description: 'The field (`--multiple`, `--open`, `--readonly`, `--dense`).' },
+    { name: '.lk-textpop__panel', description: 'Popup panel: `__head`, `__search`, `__grid`, `__foot`.' },
+  ],
+});
+</script>
+<script>
+  const COLS = [
+    { field: 'id', title: 'ID', width: 64, align: 'right' },
+    { field: 'name', title: 'Name' },
+    { field: 'dept', title: 'Department' },
+    { field: 'city', title: 'City' },
+  ];
+
+  const singleOut = document.getElementById('tp-single-out');
+  Look.lkTextPop('#tp-single', {
+    label: 'Account owner',
+    name: 'owner',
+    title: 'Choose an employee',
+    dataSource: EMPLOYEES,
+    columns: COLS,
+    value: 4,
+    onChange(value, row) { singleOut.textContent = JSON.stringify({ value, row }, null, 2); },
+  });
+  singleOut.textContent = 'Initial value: 4';
+
+  const multiOut = document.getElementById('tp-multi-out');
+  const multi = Look.lkTextPop('#tp-multi', {
+    label: 'Reviewers',
+    name: 'reviewers',
+    multiple: true,
+    maxChips: 3,
+    required: true,
+    dataSource: EMPLOYEES,
+    columns: COLS.slice(1),
+    onChange(values, rows) { multiOut.textContent = `${values.length} selected: ${rows.map((r) => r && r.name).join(', ')}`; },
+  });
+  document.getElementById('tp-multi-preset').onclick = () => { multi.value = [2, 5, 8, 13, 21]; multiOut.textContent = 'value = ' + JSON.stringify(multi.value); };
+  document.getElementById('tp-multi-clear').onclick = () => multi.clear();
+  document.getElementById('tp-multi-ro').onclick = () => { multi.readonly = !multi.readonly; };
+
+  Look.lkTextPop('#tp-display', {
+    label: 'Custom display text',
+    dataSource: EMPLOYEES,
+    displayText: (r) => `${r.name} — ${r.dept}`,
+    columns: [
+      { field: 'name', title: 'Name', template: (r) => `<strong>${r.name}</strong><br><small style="opacity:.7">${r.email}</small>` },
+      { field: 'dept', title: 'Department' },
+    ],
+    pageSize: 5,
+  });
+
+  // A server-style data source: paging + search handled by the "server" (simulated)
+  const remoteOut = document.getElementById('tp-remote-out');
+  const remoteDs = Look.lkDataSource({
+    keyField: 'id',
+    pageSize: 6,
+    server: { paging: true, filter: true },
+    transport: {
+      read(params) {
+        remoteOut.textContent = 'read ' + JSON.stringify(params);
+        const q = String((params.filter && params.filter.$search) || '').toLowerCase();
+        const rows = EMPLOYEES.filter((r) => !q || `${r.name} ${r.dept} ${r.city}`.toLowerCase().includes(q));
+        const start = ((params.page || 1) - 1) * (params.pageSize || 6);
+        return new Promise((resolve) => setTimeout(() => resolve({ data: rows.slice(start, start + (params.pageSize || 6)), total: rows.length }), 250));
+      },
+    },
+  });
+  Look.lkTextPop('#tp-remote', {
+    label: 'Server lookup (multiple)',
+    multiple: true,
+    maxChips: 2,
+    dataSource: remoteDs,
+    columns: COLS,
+    value: [{ id: 1, name: EMPLOYEES[0].name }], // row object: label known before the first read
+  });
+</script>
+</body>
+</html>

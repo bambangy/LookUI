@@ -1,0 +1,1318 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LookUI - DataSource</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+    <link rel="stylesheet" href="../dist/look.css" />
+    <link rel="stylesheet" href="shared.css" />
+    <link rel="stylesheet" href="api-docs.css" />
+  </head>
+  <body>
+    <header class="demo-header">
+      <div class="demo-container">
+        <a href="index.html" class="demo-back">&larr; All Components</a>
+        <h1 style="font-size: var(--lk-text-2xl)">DataSource</h1>
+        <p style="opacity: 0.85">
+          Look.lkDataSource(opts) — reactive data with filter, sort, paging
+          &amp; CRUD, integrated with lkTextbox, lkTable and lkPagination
+        </p>
+      </div>
+    </header>
+
+    <main
+      class="demo-container"
+      style="padding: var(--lk-space-9) var(--lk-space-4)"
+    >
+      <!-- ================================================================== -->
+      <!-- Section 1: Full integrated demo                                     -->
+      <!-- ================================================================== -->
+      <section class="demo-section">
+        <p class="demo-section__title">
+          Integrated Demo — Search + Table + Pagination
+        </p>
+
+        <!-- Toolbar: search + add -->
+        <div
+          style="
+            display: flex;
+            gap: var(--lk-space-3);
+            align-items: flex-end;
+            margin-bottom: var(--lk-space-4);
+            flex-wrap: wrap;
+          "
+        >
+          <div style="flex: 1; min-width: 200px">
+            <input
+              id="search-input"
+              type="text"
+              placeholder="Search by name or email..."
+            />
+          </div>
+          <div style="width: 11rem">
+            <select id="status-filter"></select>
+          </div>
+          <button id="btn-add" class="lk-btn lk-btn--primary">
+            <span class="lk-icon lk-icon--plus" aria-hidden="true"></span> Add
+            Employee
+          </button>
+        </div>
+
+        <!-- Table -->
+        <div class="lk-card">
+          <div class="lk-card__body" style="padding: 0">
+            <table id="ds-table" class="lk-table" style="width: 100%">
+              <thead>
+                <tr>
+                  <th data-field="id" style="width: 60px">ID</th>
+                  <th data-field="name">Name</th>
+                  <th data-field="email">Email</th>
+                  <th data-field="department">Department</th>
+                  <th data-field="salary">Salary</th>
+                  <th data-field="status">Status</th>
+                  <th style="width: 100px">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ds-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pagination + info -->
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--lk-space-3);
+            flex-wrap: wrap;
+            gap: var(--lk-space-2);
+          "
+        >
+          <span
+            id="ds-info"
+            style="font-size: var(--lk-text-sm); color: var(--lk-text-muted)"
+          ></span>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: var(--lk-space-2);
+              white-space: nowrap;
+            "
+          >
+            <span
+              style="font-size: var(--lk-text-sm); color: var(--lk-text-muted)"
+              >Per page</span
+            >
+            <div style="width: 5rem"><select id="page-size"></select></div>
+            <ul id="ds-pagination"></ul>
+          </div>
+        </div>
+
+        <div id="ds-output" class="demo-output"></div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- Section 2: API reference                                           -->
+      <!-- ================================================================== -->
+      <section class="demo-section">
+        <p class="demo-section__title">API Quick Reference</p>
+        <div class="demo-usage">
+          <p class="demo-usage__title">Creating a DataSource</p>
+          <pre>
+const ds = Look.lkDataSource({
+  keyField: 'id',             // unique key per record
+  data: [...],                // initial data array
+  pageSize: 5,                // rows per page
+  page: 1,                    // starting page
+  filter: null,               // initial filter (see below)
+  sort: null,                 // initial sort (see below)
+});</pre
+          >
+
+          <p class="demo-usage__title" style="margin-top: var(--lk-space-4)">
+            Filtering
+          </p>
+          <pre>
+// Object filter — field rules
+ds.setFilter({ status: 'active' });
+ds.setFilter({ age: { gte: 18, lt: 65 } });
+ds.setFilter({ name: { contains: 'ada' } });
+ds.setFilter({ role: { in: ['admin', 'editor'] } });
+
+// Function filter — full control
+ds.setFilter((item) => item.salary > 50000);
+
+// Combine multiple field rules
+ds.setFilter({
+  status: 'active',
+  department: { in: ['Engineering', 'Design'] },
+  name: { contains: searchText },
+});
+
+// Clear filter
+ds.clearFilter();</pre
+          >
+
+          <p class="demo-usage__title" style="margin-top: var(--lk-space-4)">
+            Sorting
+          </p>
+          <pre>
+// Single field sort
+ds.setSort({ field: 'name', dir: 'asc' });
+ds.setSort({ field: 'salary', dir: 'desc' });
+
+// Multi-field sort
+ds.setSort([
+  { field: 'department', dir: 'asc' },
+  { field: 'salary', dir: 'desc' },
+]);
+
+// Custom comparer
+ds.setSort({ comparer: (a, b) => a.name.localeCompare(b.name) });
+
+// Clear sort
+ds.clearSort();</pre
+          >
+
+          <p class="demo-usage__title" style="margin-top: var(--lk-space-4)">
+            Paging
+          </p>
+          <pre>
+ds.setPage(2);
+ds.setPageSize(25);
+ds.page;          // current page (1-based)
+ds.totalPages;    // computed total pages
+ds.total;         // total filtered count</pre
+          >
+
+          <p class="demo-usage__title" style="margin-top: var(--lk-space-4)">
+            CRUD Operations
+          </p>
+          <pre>
+// Add
+await ds.add({ id: 99, name: 'New User' }, { sync: false });
+
+// Update by ID or predicate
+await ds.update(5, { name: 'Updated Name' }, { sync: false });
+await ds.update(item => item.email === 'x@y.com', { status: 'active' });
+
+// Remove by ID
+await ds.remove(5, { sync: false });
+
+// Replace all data
+ds.set([...newData]);
+
+// Clear all
+ds.clear();</pre
+          >
+
+          <p class="demo-usage__title" style="margin-top: var(--lk-space-4)">
+            Subscribing to Changes
+          </p>
+          <pre>
+// Subscribe — fires on every change, immediate by default
+const unsub = ds.subscribe((state, evt) => {
+  console.log(evt.reason);     // 'filter', 'sort', 'page', 'add', 'remove', etc.
+  console.log(state.view);     // current page of visible rows
+  console.log(state.total);    // total filtered count
+  console.log(state.totalPages);
+});
+
+// Granular events
+ds.on('add', ({ record }) => console.log('Added:', record));
+ds.on('remove', ({ record }) => console.log('Removed:', record));
+ds.on('filter', ({ filter }) => console.log('Filter changed'));
+ds.on('sort', ({ sort }) => console.log('Sort changed'));
+
+// Batch multiple changes (single event)
+ds.batch(() => {
+  ds.setFilter({ status: 'active' });
+  ds.setSort({ field: 'name', dir: 'asc' });
+  ds.setPage(1);
+});
+
+// Unsubscribe
+unsub();</pre
+          >
+
+          <p class="demo-usage__title" style="margin-top: var(--lk-space-4)">
+            Remote Transport (optional)
+          </p>
+          <pre>
+const ds = Look.lkDataSource({
+  keyField: 'id',
+  autoLoad: true,
+  transport: {
+    read:   { url: '/api/users', method: 'GET' },
+    create: { url: '/api/users', method: 'POST' },
+    update: { url: '/api/users/{id}', method: 'PUT' },
+    delete: { url: '/api/users/{id}', method: 'DELETE' },
+  },
+  server: {
+    filter: true,    // send filter to server
+    sort: true,      // send sort to server
+    paging: true,    // send page/pageSize to server
+  },
+  request: {
+    headers: { Authorization: 'Bearer token' },
+  },
+  hooks: {
+    onError: ({ error }) => console.error(error),
+  },
+});
+
+// Or use a function transport
+const ds2 = Look.lkDataSource({
+  transport: {
+    read: async (params) => {
+      const res = await fetch(`/api?page=${params.page}`);
+      return res.json(); // { items: [...], total: 100 }
+    },
+  },
+});</pre
+          >
+
+          <p class="demo-usage__title" style="margin-top: var(--lk-space-4)">
+            Lookup Helpers
+          </p>
+          <pre>
+ds.getById(5);                        // find record by key
+ds.find(item => item.name === 'Ada'); // find first match
+ds.items;                             // all raw (unfiltered) items
+ds.view;                              // current page slice
+ds.toJSON();                          // full snapshot</pre
+          >
+        </div>
+      </section>
+      <div id="api"></div>
+    </main>
+
+    <script src="../dist/look.js"></script>
+    <script src="api-docs.js"></script>
+    <script>
+      // ========================================================================
+      // Sample data
+      // ========================================================================
+      const DEPARTMENTS = [
+        "Engineering",
+        "Design",
+        "Marketing",
+        "Sales",
+        "HR",
+        "Finance",
+      ];
+      const STATUSES = ["active", "inactive", "pending"];
+      const NAMES = [
+        "Ada Lovelace",
+        "Bram Stoker",
+        "Clio Barnard",
+        "Dax Shepard",
+        "Ena Sharples",
+        "Faro Caudana",
+        "Gia Carangi",
+        "Hugo Weaving",
+        "Iris Murdoch",
+        "Jax Teller",
+        "Kira Nerys",
+        "Lena Headey",
+        "Max Planck",
+        "Nia Long",
+        "Omar Sharif",
+        "Pia Wurtzbach",
+        "Quinn Hughes",
+        "Rex Harrison",
+        "Sky Ferreira",
+        "Tao Lin",
+        "Uma Thurman",
+        "Vic Fuentes",
+        "Wes Anderson",
+        "Xia Junsu",
+        "Yara Shahidi",
+      ];
+
+      const employees = NAMES.map((name, i) => ({
+        id: i + 1,
+        name,
+        email: name.toLowerCase().replace(/\s+/g, ".") + "@example.com",
+        department: DEPARTMENTS[i % DEPARTMENTS.length],
+        salary: 40000 + Math.round(Math.random() * 80000),
+        status: STATUSES[i % STATUSES.length],
+      }));
+
+      // ========================================================================
+      // DataSource
+      // ========================================================================
+      const ds = Look.lkDataSource({
+        keyField: "id",
+        data: employees,
+        pageSize: 5,
+      });
+
+      // ========================================================================
+      // Components
+      // ========================================================================
+      const searchBox = Look.lkTextbox("#search-input", { label: "Search" });
+      const statusFilter = Look.lkDropdown("#status-filter", {
+        label: "Status",
+        value: "",
+        items: [
+          { value: "", label: "All statuses" },
+          { value: "active", label: "Active" },
+          { value: "inactive", label: "Inactive" },
+          { value: "pending", label: "Pending" },
+        ],
+        onChange() {
+          applyFilters();
+        },
+      });
+      const pagination = Look.lkPagination("#ds-pagination", {
+        totalPages: ds.totalPages,
+        page: ds.page,
+        onPageChange(p) {
+          ds.setPage(p);
+        },
+      });
+
+      // ========================================================================
+      // Rendering
+      // ========================================================================
+      const body = document.getElementById("ds-body");
+      const info = document.getElementById("ds-info");
+      const output = document.getElementById("ds-output");
+
+      function statusBadge(status) {
+        const colors = {
+          active: "lk-badge--positive",
+          inactive: "lk-badge--secondary",
+          pending: "lk-badge--warning",
+        };
+        return `<span class="lk-badge ${colors[status] || ""}">${status}</span>`;
+      }
+
+      function renderTable(state) {
+        body.innerHTML = "";
+
+        if (state.view.length === 0) {
+          const tr = document.createElement("tr");
+          tr.innerHTML =
+            '<td colspan="7" style="text-align:center; color:var(--lk-text-muted); padding: var(--lk-space-6);">No records found</td>';
+          body.appendChild(tr);
+          return;
+        }
+
+        state.view.forEach((item) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML =
+            `<td>${item.id}</td>` +
+            `<td><strong>${item.name}</strong></td>` +
+            `<td style="color: var(--lk-text-muted);">${item.email}</td>` +
+            `<td>${item.department}</td>` +
+            `<td>$${item.salary.toLocaleString()}</td>` +
+            `<td>${statusBadge(item.status)}</td>` +
+            `<td style="white-space: nowrap;">
+          <button class="lk-btn lk-btn--ghost lk-btn--sm act-edit" data-id="${item.id}" title="Edit salary">
+            <span class="lk-icon lk-icon--edit" aria-hidden="true"></span>
+          </button>
+          <button class="lk-btn lk-btn--ghost lk-btn--sm act-del" data-id="${item.id}" title="Delete">
+            <span class="lk-icon lk-icon--delete lk-icon--negative" aria-hidden="true"></span>
+          </button>
+        </td>`;
+          body.appendChild(tr);
+        });
+      }
+
+      function updateInfo(state) {
+        const from =
+          state.total === 0 ? 0 : (state.page - 1) * state.pageSize + 1;
+        const to = Math.min(state.page * state.pageSize, state.total);
+        info.textContent = `Showing ${from}–${to} of ${state.total} records`;
+      }
+
+      // ========================================================================
+      // Subscribe — single render loop
+      // ========================================================================
+      ds.subscribe((state, evt) => {
+        renderTable(state);
+        updateInfo(state);
+        pagination.totalPages = state.totalPages;
+        pagination.page = state.page;
+        if (evt.reason !== "init") {
+          output.textContent = `Event: ${evt.reason}`;
+        }
+      });
+
+      // ========================================================================
+      // Search input — debounced filter
+      // ========================================================================
+      let searchTimer = null;
+      document.getElementById("search-input").addEventListener("input", (e) => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          applyFilters();
+        }, 250);
+      });
+
+      // ========================================================================
+      // Status dropdown filter
+      // ========================================================================
+      // (wired via statusFilter onChange above)
+
+      function applyFilters() {
+        const text = searchBox.value.trim().toLowerCase();
+        const status = statusFilter.value || "";
+
+        if (!text && !status) {
+          ds.clearFilter();
+          return;
+        }
+
+        ds.setFilter((item) => {
+          if (text) {
+            const match =
+              item.name.toLowerCase().includes(text) ||
+              item.email.toLowerCase().includes(text);
+            if (!match) return false;
+          }
+          if (status && item.status !== status) return false;
+          return true;
+        });
+      }
+
+      // ========================================================================
+      // Column header sort
+      // ========================================================================
+      document
+        .getElementById("ds-table")
+        .querySelector("thead")
+        .addEventListener("click", (e) => {
+          const th = e.target.closest("th[data-field]");
+          if (!th) return;
+          const field = th.dataset.field;
+
+          // Toggle sort direction
+          const current = ds.sort;
+          const isArray = Array.isArray(current);
+          const desc =
+            !isArray &&
+            current &&
+            current.field === field &&
+            current.dir === "asc";
+
+          ds.setSort({ field, dir: desc ? "desc" : "asc" });
+
+          // Update sort indicators on headers
+          document.querySelectorAll("#ds-table th[data-field]").forEach((h) => {
+            h.style.cursor = "pointer";
+            // Remove old indicators
+            const old = h.querySelector(".sort-arrow");
+            if (old) old.remove();
+          });
+
+          const arrow = document.createElement("span");
+          arrow.className = "sort-arrow";
+          arrow.style.marginLeft = "4px";
+          arrow.style.fontSize = "var(--lk-text-xs)";
+          arrow.textContent = desc ? " \u25BC" : " \u25B2";
+          th.appendChild(arrow);
+        });
+
+      // Make headers look clickable
+      document.querySelectorAll("#ds-table th[data-field]").forEach((h) => {
+        h.style.cursor = "pointer";
+      });
+
+      // ========================================================================
+      // Page size selector
+      // ========================================================================
+      const pageSizeDropdown = Look.lkDropdown("#page-size", {
+        value: "5",
+        items: [
+          { value: "5", label: "5" },
+          { value: "10", label: "10" },
+          { value: "25", label: "25" },
+        ],
+        onChange(v) {
+          if (v) ds.setPageSize(Number(v));
+        },
+      });
+
+      // ========================================================================
+      // Add employee
+      // ========================================================================
+      let nextId = employees.length + 1;
+      document.getElementById("btn-add").addEventListener("click", async () => {
+        const id = nextId++;
+        const name = "Employee " + id;
+        await ds.add(
+          {
+            id,
+            name,
+            email: name.toLowerCase().replace(/\s+/g, ".") + "@example.com",
+            department: DEPARTMENTS[id % DEPARTMENTS.length],
+            salary: 40000 + Math.round(Math.random() * 80000),
+            status: STATUSES[id % STATUSES.length],
+          },
+          { sync: false },
+        );
+
+        // Jump to last page to see the new record
+        ds.setPage(ds.totalPages);
+        output.textContent = `Added: ${name}`;
+      });
+
+      // ========================================================================
+      // Row actions — edit / delete (delegated)
+      // ========================================================================
+      body.addEventListener("click", async (e) => {
+        const editBtn = e.target.closest(".act-edit");
+        if (editBtn) {
+          const id = Number(editBtn.dataset.id);
+          const item = ds.getById(id);
+          if (!item) return;
+          const newSalary = prompt(
+            `Edit salary for ${item.name}:`,
+            item.salary,
+          );
+          if (newSalary == null) return;
+          await ds.update(
+            id,
+            { salary: Number(newSalary) || item.salary },
+            { sync: false },
+          );
+          output.textContent = `Updated salary for ${item.name}`;
+          return;
+        }
+
+        const delBtn = e.target.closest(".act-del");
+        if (delBtn) {
+          const id = Number(delBtn.dataset.id);
+          const item = ds.getById(id);
+          if (!item) return;
+          await ds.remove(id, { sync: false });
+          output.textContent = `Removed: ${item.name}`;
+        }
+      });
+    </script>
+    <script>
+      // Tiny helpers shared by the live examples below
+      const FRUITS = [
+        { id: 1, name: 'Apple', color: 'red', price: 3, stock: 40, origin: { country: 'ID' } },
+        { id: 2, name: 'Banana', color: 'yellow', price: 1, stock: 120, origin: { country: 'EC' } },
+        { id: 3, name: 'Cherry', color: 'red', price: 8, stock: 0, origin: { country: 'TR' } },
+        { id: 4, name: 'Durian', color: 'green', price: 12, stock: 7, origin: { country: 'ID' } },
+        { id: 5, name: 'Elderberry', color: 'purple', price: 6, stock: 15, origin: { country: 'DE' } },
+      ];
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      // Renders ds.view as a list inside `el` and keeps it in sync
+      function showView(ds, el, fmt = (r) => r.name) {
+        const ul = el.appendChild(document.createElement('ul'));
+        ul.style.margin = '0';
+        return ds.subscribe((state) => {
+          ul.innerHTML = '';
+          state.view.forEach((r) => { const li = document.createElement('li'); li.textContent = fmt(r); ul.appendChild(li); });
+          if (state.loading) ul.insertAdjacentHTML('beforeend', '<li><em>loading…</em></li>');
+          else if (!state.view.length) ul.insertAdjacentHTML('beforeend', '<li><em>(empty view)</em></li>');
+        });
+      }
+
+      LookDocs.render('#api', {
+        name: 'lkDataSource',
+        kind: 'Helper',
+        signature: 'const ds = Look.lkDataSource(options);   // alias: Look.createDataSource',
+        description: [
+          'A framework-free, ref-style data container. It holds the raw records (`items`), derives the visible page (`view`) by applying **filter → sort → paging**, offers CRUD with optional optimistic remote sync, and tells subscribers about every change. `lkTable` is built on it; you can also drive your own markup with `subscribe()`.',
+          'Each query part can run locally or on the server (`server: { filter, sort, paging }`). Remote access is optional and goes through `transport` — URL strings, fetch configs or plain (async) functions — so it works with REST, GraphQL wrappers, IndexedDB or a mock.',
+          'Live examples use a 5-record `FRUITS` array `{ id, name, color, price, stock, origin: { country } }`, a `wait(ms)` promise and `showView(ds, el)`, which renders `ds.view` as a list and keeps it in sync via `subscribe()`.',
+        ],
+        params: [{ name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' }],
+        returns: { type: 'Object', description: 'The data source with the properties, methods and events below.' },
+        notes: [
+          '**Pipeline.** `items` → filter (unless `server.filter`) → `total` → sort (unless `server.sort`) → page slice (unless `server.paging`; the page is clamped to the last page) → `view`.',
+          '**Read responses** may be an array, or an object with the records in `items`, `data`, `results` or `rows` (first non-empty wins) and the count in `total`, `totalCount`, `count` or `meta.total`. The server count is used as `total` only with `server.paging`.',
+          '**Write responses** (create/update) are optional. A record is taken from `item`, `data`, `result` or the object itself and merged into the local record — e.g. to pick up a server-generated `id`.',
+          '**Failed requests.** A non-2xx response rejects with `Error(body.message || "Request failed with status N")` carrying `status`, the parsed `body`, and `errors` when the body has an `errors` object (e.g. a 422 `{ errors: { field: [...] } }` — lkTable and `lkValidation().submit()` show those under the matching fields); a function transport rejects by throwing (throw `{ message, errors }` for field errors). The error is stored in `error`, emitted as `error`, passed to `hooks.onError`, and the returned promise rejects.',
+        ],
+
+        options: [
+          {
+            name: 'keyField', type: 'string', default: "'id'",
+            description: 'Property that identifies a record. Used by `getById`, and when `update` / `remove` receive a key or a record, and as the `id` in update/delete transport payloads. (Plain property name — dot paths are not resolved here.)',
+            examples: [{ title: 'Custom key', run: true, code: `
+              const ds = Look.lkDataSource({ keyField: 'sku', data: [{ sku: 'A-1', name: 'Pen' }, { sku: 'B-7', name: 'Ink' }] });
+              log(ds.getById('B-7'));
+              ds.update('A-1', { name: 'Fountain pen' }).then(() => log(ds.getById('A-1')));` }],
+          },
+          {
+            name: 'data', type: 'Array', default: '[]',
+            description: 'Initial records (copied: each object is shallow-cloned, or passed through `parseItem`). Replace later with `set()` / `ds.items = [...]`.',
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS });
+              showView(ds, container);
+              log('items', ds.items.length, '— same objects?', ds.items[0] === FRUITS[0]);` }],
+          },
+          {
+            name: 'filter', type: 'Object | Function | null', default: 'null',
+            description: [
+              'Initial filter (change it with `setFilter`). A **function** `(item, index) => boolean` filters whole records — use it for OR logic. An **object** maps field names (dot paths such as `origin.country` allowed) to rules; every field must match (AND). A rule can be a plain value (strict equality), an **array** (value is one of), a **RegExp** (tested against the value as text), a **function** `(value, item) => boolean`, or an **operator object** whose operators must all pass (table below).',
+              'A **Date** used as a plain rule is treated as an operator object without operators and therefore matches every record, and `eq` compares by identity. Compare dates with `gte` / `lte` or a function.',
+            ],
+            values: [
+              ['eq / ne', 'Strictly equal / not equal (`===`) — e.g. `{ status: { eq: \'active\' } }`, `{ color: { ne: \'red\' } }`'],
+              ['gt / gte / lt / lte', 'Greater / greater-or-equal / less / less-or-equal (numbers, ISO date strings, Date objects) — e.g. `{ price: { gte: 3, lt: 10 } }`, `{ at: { gte: \'2024-01-01\' } }`'],
+              ['in', 'Value is one of the array entries — e.g. `{ id: { in: [1, 4, 5] } }`'],
+              ['contains', 'Text contains, case-insensitive — e.g. `{ name: { contains: \'err\' } }`'],
+              ['startsWith / endsWith', 'Text starts / ends with, case-insensitive — e.g. `{ name: { startsWith: \'b\' } }`, `{ email: { endsWith: \'.id\' } }`'],
+              ['(unknown keys)', 'Ignored — an object with no known operator matches everything'],
+            ],
+            examples: [
+              { title: 'Plain value, array and nested field', run: true, code: `
+                const ds = Look.lkDataSource({ data: FRUITS, filter: { color: 'red' } });
+                log('color = red →', ds.view.map((r) => r.name));
+                ds.setFilter({ color: ['yellow', 'green'] });
+                log('color in [yellow, green] →', ds.view.map((r) => r.name));
+                ds.setFilter({ 'origin.country': 'ID' });
+                log('origin.country = ID →', ds.view.map((r) => r.name));` },
+              { title: 'Operator objects (combine several on one field)', run: true, code: `
+                const ds = Look.lkDataSource({ data: FRUITS });
+                const show = (rule) => { ds.setFilter(rule); log(JSON.stringify(rule), '→', ds.view.map((r) => r.name).join(', ') || '(none)'); };
+                show({ price: { gte: 3, lt: 10 } });
+                show({ stock: { gt: 0 }, color: { ne: 'red' } });
+                show({ id: { in: [1, 4, 5] } });
+                show({ name: { contains: 'ERR' } });
+                show({ name: { startsWith: 'b' } });
+                show({ name: { endsWith: 'an' } });
+                show({ color: { eq: 'purple' } });` },
+              { title: 'RegExp, per-field function and whole-record function', run: true, code: `
+                const ds = Look.lkDataSource({ data: FRUITS, filter: { name: /^[A-C]/ } });
+                log('name ~ /^[A-C]/ →', ds.view.map((r) => r.name));
+                ds.setFilter({ price: (value, item) => value * item.stock > 100 });
+                log('stock value > 100 →', ds.view.map((r) => r.name));
+                ds.setFilter((item, index) => index % 2 === 0);
+                log('even positions →', ds.view.map((r) => r.name));
+                ds.setFilter((item) => item.color === 'red' || item.price > 10);
+                log('red OR price > 10 →', ds.view.map((r) => r.name));` },
+              { title: 'Dates: use range operators, not a plain Date', run: true, code: `
+                const orders = [
+                  { id: 1, at: new Date('2024-01-15') },
+                  { id: 2, at: new Date('2024-03-02') },
+                  { id: 3, at: '2024-05-20' },
+                ];
+                const ds = Look.lkDataSource({ data: orders });
+                ds.setFilter({ at: { gte: new Date('2024-02-01'), lt: new Date('2024-04-01') } });
+                log('Feb–Mar (Date objects) →', ds.view.map((r) => r.id));
+                ds.setFilter({ at: { gte: '2024-05-01' } });
+                log('ISO string >= 2024-05-01 →', ds.view.map((r) => r.id));
+                ds.setFilter({ at: new Date('1999-01-01') });
+                log('plain Date rule (matches all!) →', ds.view.map((r) => r.id));` },
+            ],
+          },
+          {
+            name: 'sort', type: 'Object | Array | Function | null', default: 'null',
+            description: 'Initial sort (change it with `setSort`). A descriptor is `{ field, dir }` (`dir`: `\'asc\'` default, or `\'desc\'`; dot paths allowed) or `{ comparer(a, b), dir }`. An **array** sorts by several levels in order. A bare **function** is a comparer `(a, b) => number`. Sorting is stable; `null`/`undefined` values go last; strings use `localeCompare`.',
+            examples: [
+              { title: 'Single field, multiple levels, comparer', run: true, code: `
+                const ds = Look.lkDataSource({ data: FRUITS, sort: { field: 'price', dir: 'desc' } });
+                log('price desc →', ds.view.map((r) => r.name + ' ' + r.price).join(', '));
+                ds.setSort([{ field: 'color' }, { field: 'stock', dir: 'desc' }]);
+                log('color asc, stock desc →', ds.view.map((r) => r.color + '/' + r.name).join(', '));
+                ds.setSort((a, b) => a.name.length - b.name.length);
+                log('by name length →', ds.view.map((r) => r.name).join(', '));
+                ds.setSort({ comparer: (a, b) => a.stock - b.stock, dir: 'desc' });
+                log('comparer + desc →', ds.view.map((r) => r.name + ' ' + r.stock).join(', '));` },
+            ],
+          },
+          {
+            name: 'page', type: 'number', default: '1',
+            description: 'Initial 1-based page. With local paging the page is clamped to `1…totalPages` whenever the view is recomputed. With `server.paging` it is sent as-is in the read payload (no clamping).',
+            examples: [{ title: 'Out-of-range page is clamped', run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS, pageSize: 2, page: 7 });
+              log('requested 7 → page', ds.page, 'of', ds.totalPages, ds.view.map((r) => r.name));` }],
+          },
+          {
+            name: 'pageSize', type: 'number', default: '10',
+            description: 'Records per page (minimum 1). Local data is always paged — use a large value (or `Number.MAX_SAFE_INTEGER`) to show everything.',
+            examples: [
+              { title: 'pageSize: 2, page: 2', run: true, code: `
+                const ds = Look.lkDataSource({ data: FRUITS, pageSize: 2, page: 2 });
+                showView(ds, container);
+                log('page', ds.page, 'of', ds.totalPages, '— total', ds.total);` },
+              { title: 'Default (10) vs everything', run: true, code: `
+                const many = Array.from({ length: 25 }, (_, i) => ({ id: i + 1 }));
+                log('default →', Look.lkDataSource({ data: many }).view.length, 'rows');
+                log('MAX_SAFE_INTEGER →', Look.lkDataSource({ data: many, pageSize: Number.MAX_SAFE_INTEGER }).view.length, 'rows');` },
+            ],
+          },
+          {
+            name: 'autoLoad', type: 'boolean', default: 'false',
+            description: 'Call `load()` right after creation when `transport.read` is set. Errors are swallowed here (they are still emitted as `error`).',
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({
+                autoLoad: true,
+                transport: { read: async () => { await wait(500); return FRUITS; } },
+              });
+              showView(ds, container);
+              ds.once('load', ({ state }) => log('loaded', state.items.length, 'records'));` }],
+          },
+          {
+            name: 'optimistic', type: 'boolean', default: 'true',
+            description: 'For `add` / `update` / `remove` with a matching transport: `true` changes the local list **immediately**, then syncs and rolls back (`add:rollback` …) if the server fails. `false` leaves the local list untouched — note that, in the current version, it is **not** updated after the server succeeds either, so call `load()` afterwards. Override per call with `{ optimistic }`.',
+            values: [['true', 'Apply locally first, roll back on failure'], ['false', 'Only send to the server; refresh with `load()`']],
+            examples: [{ title: 'Optimistic add with a failing server', run: true, code: `
+              const ds = Look.lkDataSource({
+                data: FRUITS.slice(0, 2),
+                transport: { create: async (record) => { await wait(800); throw new Error('Out of stock'); } },
+              });
+              showView(ds, container);
+              ds.on('change', ({ reason }) => log('change:', reason));
+              ds.add({ id: 9, name: 'Fig (rolled back after 0.8 s)' }).catch((err) => log('rejected:', err.message));` }],
+          },
+          {
+            name: 'parseItem', type: 'Function', default: '— (shallow copy)',
+            description: '`parseItem(raw) → record`. Applied to every incoming record: initial `data`, `set()`, loaded items, `add()`/`update()` records and server echoes. Use it to convert types or add computed fields.',
+            examples: [{ title: 'Strings to numbers and Dates', run: true, code: `
+              const ds = Look.lkDataSource({
+                data: [{ id: '1', total: '12.50', at: '2024-05-01' }, { id: '2', total: '3', at: '2024-04-11' }],
+                parseItem: (r) => ({ ...r, id: Number(r.id), total: Number(r.total), at: new Date(r.at) }),
+                sort: { field: 'at' },
+              });
+              log(ds.view.map((r) => typeof r.total + ' ' + r.total + ' on ' + r.at.toDateString()));
+              log('getById(2) →', ds.getById(2)?.total);` }],
+          },
+          {
+            name: 'transport', type: 'Object', default: '{ read, create, update, delete: null }',
+            description: 'Remote endpoints. Each of `read`, `create`, `update`, `delete` can be: a **URL string** (`\'/api/items/{id}\'`); a **config object** `{ url, method, headers, credentials }`; or a **function** `(payload, ds) → value | Promise` that does the work itself (fetch, axios, IndexedDB, mock …). `{name}` placeholders in a URL are replaced by the same-named payload properties (URL-encoded). Default methods: read `GET`, create `POST`, update `PUT`, delete `DELETE`. For `GET` the whole payload is appended as a query string (objects JSON-encoded, arrays repeated); otherwise it is sent as a JSON body. Headers: `Content-Type: application/json` + `request.headers` + the endpoint\'s `headers`.',
+            examples: [
+              { title: 'URL forms', code: `
+                transport: {
+                  read:   '/api/fruits',                                  // GET /api/fruits?page=2&pageSize=10  (with server.paging)
+                  create: '/api/fruits',                                  // POST, body = record
+                  update: { url: '/api/fruits/{id}', method: 'PATCH' },    // body = { id, item, changes }
+                  delete: { url: '/api/fruits/{id}', headers: { 'X-Reason': 'cleanup' } },
+                }` },
+              { title: 'URL string (a data: URL, so it works offline)', run: true, code: `
+                const json = JSON.stringify({ data: FRUITS.slice(0, 3), total: 3 });
+                const ds = Look.lkDataSource({ transport: { read: 'data:application/json,' + encodeURIComponent(json) } });
+                showView(ds, container);
+                ds.load().then((view) => log('load() resolved with', view.length, 'rows'));` },
+              { title: 'Function transports (fake REST server)', run: true, code: `
+                let db = FRUITS.slice(0, 2).map((r) => ({ ...r }));
+                const ds = Look.lkDataSource({
+                  transport: {
+                    read:   async (payload) => { await wait(300); log('read', payload); return { items: db, total: db.length }; },
+                    create: async (record) => { await wait(300); const saved = { ...record, id: Date.now() % 1000 }; db.push(saved); log('create', record); return saved; },
+                    update: async ({ id, item, changes }) => { await wait(300); log('update', id, changes); return { item }; },
+                    delete: async ({ id }) => { await wait(300); db = db.filter((r) => r.id !== id); log('delete', id); },
+                  },
+                });
+                showView(ds, container, (r) => r.id + ' · ' + r.name);
+                ds.load()
+                  .then(() => ds.add({ name: 'Grape' }))
+                  .then((saved) => ds.update(saved.id, { name: 'Grape (seedless)' }))
+                  .then(() => ds.remove(1));` },
+            ],
+          },
+          {
+            name: 'transport.read', type: 'string | Object | Function', default: 'null',
+            description: 'Used by `load()`. **Payload:** the `params` passed to `load(params)`, plus `filter` (with `server.filter`), `sort` (with `server.sort`) and `page` + `pageSize` (with `server.paging`) — the current values as set via `setFilter` / `setSort` / `setPage`. **Response:** see “Read responses” above. Its presence makes `canRead` true.',
+            examples: [{ title: 'Inspect the payload', run: true, code: `
+              const ds = Look.lkDataSource({
+                transport: { read: (payload) => { log(JSON.stringify(payload)); return []; } },
+                server: { filter: true, sort: true, paging: true },
+                pageSize: 20,
+              });
+              ds.setFilter({ color: 'red', price: { lt: 5 } });
+              ds.setSort({ field: 'name', dir: 'desc' });
+              ds.load({ include: 'origin' });` }],
+          },
+          {
+            name: 'transport.create', type: 'string | Object | Function', default: 'null',
+            description: 'Used by `add()`. **Payload:** the new record (after `parseItem`). URL placeholders come from its fields. **Response:** optional record to merge into the local copy (e.g. the server id). The merge happens only for optimistic adds.',
+            examples: [{ title: 'Server assigns the id (merged into the local record)', run: true, code: `
+              let seq = 100;
+              const ds = Look.lkDataSource({
+                data: FRUITS.slice(0, 1),
+                transport: { create: async (record) => { await wait(400); log('server got', record); return { data: { id: ++seq, createdAt: '2024-06-01' } }; } },
+              });
+              showView(ds, container, (r) => (r.id ?? '(no id yet)') + ' · ' + r.name);
+              ds.add({ name: 'Guava' }).then((saved) => log('resolved', saved, '| local', ds.items[1]));` }],
+          },
+          {
+            name: 'transport.update', type: 'string | Object | Function', default: 'null',
+            description: 'Used by `update()`. **Payload:** `{ id, item, changes }` — `id` is the record\'s `keyField` value before the change, `item` the full updated record, `changes` the patch you passed. **Response:** optional record to merge.',
+            examples: [{ title: 'Update payload and rollback on failure', run: true, code: `
+              let calls = 0;
+              const ds = Look.lkDataSource({
+                data: FRUITS.slice(0, 2),
+                transport: {
+                  update: async (payload) => {
+                    log('payload', payload);
+                    await wait(500);
+                    if (++calls === 2) throw new Error('Conflict');
+                    return { result: { updatedAt: 'now' } };
+                  },
+                },
+              });
+              showView(ds, container, (r) => r.name + ' $' + r.price + (r.updatedAt ? ' (' + r.updatedAt + ')' : ''));
+              ds.update(1, { price: 5 })
+                .then(() => ds.update(2, { price: 99 }))
+                .catch((err) => log('rejected:', err.message, '→ price back to', ds.getById(2).price));` }],
+          },
+          {
+            name: 'transport.delete', type: 'string | Object | Function', default: 'null',
+            description: 'Used by `remove()`. **Payload:** `{ id, item }` — the key and the removed record. The response is ignored.',
+            examples: [{ title: 'Delete payload; a failed delete re-inserts the record', run: true, code: `
+              const ds = Look.lkDataSource({
+                data: FRUITS.slice(0, 3),
+                transport: { delete: async ({ id, item }) => { log('delete', id, item.name); await wait(500); if (id === 3) throw new Error('Locked'); } },
+              });
+              showView(ds, container);
+              ds.remove(1)
+                .then(() => ds.remove(3))
+                .catch((err) => log(err.message, '→ restored:', ds.items.map((r) => r.name).join(', ')));` }],
+          },
+          {
+            name: 'request', type: 'Object', default: "{ headers: {}, credentials: 'same-origin' }",
+            description: 'Defaults for URL/config transports (function transports ignore it): `headers` merged into every request (endpoint headers win), `credentials` for `fetch` (`\'omit\'`, `\'same-origin\'`, `\'include\'`; an endpoint\'s own `credentials` wins).',
+            examples: [{ code: `
+              Look.lkDataSource({
+                transport: { read: 'https://api.example.com/fruits', update: { url: 'https://api.example.com/fruits/{id}', method: 'PATCH' } },
+                request: { headers: { Authorization: 'Bearer ' + token, 'Accept-Language': 'id' }, credentials: 'include' },
+              });` }],
+          },
+          {
+            name: 'server', type: 'Object', default: '{ filter: false, sort: false, paging: false }',
+            description: 'Which query parts the server performs. Each `true` part is skipped locally and sent in the read payload instead; `total` comes from the response when `paging` is on. Changing a server-side part (e.g. `setPage`) does **not** reload by itself — call `load()` (lkTable does this for you). With `paging`, local `add` / `remove` do not change the server total — reload to get an exact count.',
+            values: [
+              ['filter: true', 'Send `filter` (your rule object — keep it serializable for URL transports)'],
+              ['sort: true', 'Send `sort` (`{ field, dir }` or an array)'],
+              ['paging: true', 'Send `page` and `pageSize`; use the response total'],
+            ],
+            examples: [{ title: 'Server paging (fake server, 400 ms)', run: true, code: `
+              const ALL = Array.from({ length: 23 }, (_, i) => ({ id: i + 1, name: 'Item ' + (i + 1) }));
+              const ds = Look.lkDataSource({
+                pageSize: 5,
+                server: { paging: true, sort: true },
+                transport: {
+                  read: async ({ page, pageSize, sort }) => {
+                    await wait(400);
+                    const rows = sort?.dir === 'desc' ? ALL.slice().reverse() : ALL;
+                    return { rows: rows.slice((page - 1) * pageSize, page * pageSize), totalCount: rows.length };
+                  },
+                },
+              });
+              showView(ds, container);
+              const pager = container.appendChild(document.createElement('ul'));
+              const p = Look.lkPagination(pager, { totalPages: 1, onPageChange: (n) => { ds.setPage(n); ds.load(); } });
+              ds.subscribe((s) => { p.totalPages = s.totalPages; });
+              ds.load().then(() => log('total', ds.total, '— pages', ds.totalPages));` },
+              { title: 'Server filter: rules are sent, not applied locally', run: true, code: `
+                const ds = Look.lkDataSource({
+                  server: { filter: true },
+                  transport: {
+                    read: async ({ filter }) => {
+                      await wait(300);
+                      log('server received filter', filter);
+                      const q = filter?.name?.contains?.toLowerCase() || '';
+                      return FRUITS.filter((r) => r.name.toLowerCase().includes(q));
+                    },
+                  },
+                });
+                showView(ds, container);
+                log('server', ds.server, '| canRead', ds.canRead);
+                ds.setFilter({ name: { contains: 'an' } });   // no reload by itself
+                ds.load().then(() => log('view', ds.view.map((r) => r.name)));` }],
+          },
+          {
+            name: 'hooks', type: 'Object', default: '{ beforeRequest, afterRequest, onError: null }',
+            description: 'Callbacks around every transport call: `beforeRequest({ action, payload, options, source })` and `afterRequest({ action, payload, result, options, source })` are awaited (throwing aborts the call as an error; you may mutate `payload`, `result` or `options.request.headers`); `onError({ action, payload, error, source })` runs after the `error` event. `action` is `read` / `create` / `update` / `delete`; `source` is the data source.',
+            examples: [{ title: 'Inject a header, log timing and errors', run: true, code: `
+              let started = 0;
+              const ds = Look.lkDataSource({
+                transport: {
+                  read: async () => { await wait(200); return FRUITS.slice(0, 2); },
+                  delete: async () => { await wait(200); throw new Error('Forbidden'); },
+                },
+                hooks: {
+                  beforeRequest: ({ action, options }) => { started = performance.now(); options.request.headers['X-Trace'] = 'demo'; log('→', action); },
+                  afterRequest: ({ action }) => log('←', action, Math.round(performance.now() - started) + ' ms'),
+                  onError: ({ action, error }) => log('✖', action, error.message),
+                },
+              });
+              showView(ds, container);
+              ds.load().then(() => ds.remove(1)).catch(() => {});` }],
+          },
+        ],
+
+        properties: [
+          {
+            name: 'value', type: 'Array',
+            description: 'Ref-style alias of `items`: reading returns the raw records; assigning replaces them (change reason `value:set`).',
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS.slice(0, 2) });
+              showView(ds, container);
+              ds.on('change', ({ reason }) => log('change:', reason));
+              setTimeout(() => { ds.value = [{ id: 7, name: 'Kiwi' }, { id: 8, name: 'Lime' }, { id: 9, name: 'Mango' }]; }, 600);` }],
+          },
+          {
+            name: 'items', type: 'Array',
+            description: 'All raw records (unfiltered, unsorted, unpaged) — the live internal array. Assigning replaces them (reason `items:set`). If you mutate records in place, call `refresh()` afterwards.',
+            examples: [{ title: 'items vs view', run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS, pageSize: 2, filter: { color: 'red' } });
+              log('items', ds.items.map((r) => r.name));
+              log('view ', ds.view.map((r) => r.name));
+              ds.items = [{ id: 1, name: 'Only one', color: 'red' }];
+              log('after assign →', ds.view.map((r) => r.name));` }],
+          },
+          { name: 'view', type: 'Array', readonly: true, description: 'The current page after filter, sort and paging — what a UI should render. With all three on the server it equals `items`.' },
+          {
+            name: 'filter', type: 'Object | Function | null',
+            description: 'Current filter. Assigning calls `setFilter()` (page goes back to 1).',
+            examples: [{ title: 'Assignable query properties', run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS, pageSize: 2 });
+              ds.on('change', ({ reason }) => log('change:', reason));
+              ds.filter = { stock: { gt: 0 } };
+              ds.sort = { field: 'price', dir: 'desc' };
+              ds.page = 2;
+              ds.pageSize = 3;
+              log({ filter: ds.filter, sort: ds.sort, page: ds.page, pageSize: ds.pageSize, view: ds.view.map((r) => r.name) });` }],
+          },
+          { name: 'sort', type: 'Object | Array | Function | null', description: 'Current sort. Assigning calls `setSort()`.' },
+          { name: 'page', type: 'number', description: 'Current 1-based page. Assigning calls `setPage()`.' },
+          { name: 'pageSize', type: 'number', description: 'Records per page. Assigning calls `setPageSize()` (back to page 1).' },
+          {
+            name: 'loading', type: 'boolean', readonly: true,
+            description: '`true` while at least one transport call is in flight (stays `true` until all overlapping calls settle).',
+            examples: [{ title: 'Loading indicator', run: true, code: `
+              const ds = Look.lkDataSource({ transport: { read: async () => { await wait(700); return FRUITS.slice(0, 3); } } });
+              const badge = container.appendChild(document.createElement('div'));
+              ds.subscribe((s) => { badge.textContent = s.loading ? 'Loading…' : 'Ready — ' + s.total + ' rows'; });
+              log('before', ds.loading);
+              ds.load().then(() => log('after', ds.loading));
+              log('during', ds.loading);` }],
+          },
+          {
+            name: 'error', type: 'Error | null', readonly: true,
+            description: 'Error of the last failed transport call; reset to `null` when the next call starts.',
+            examples: [{ run: true, code: `
+              let fail = true;
+              const ds = Look.lkDataSource({ transport: { read: async () => { await wait(200); if (fail) throw new Error('Timeout'); return FRUITS; } } });
+              ds.load()
+                .catch(() => { log('error:', ds.error.message); fail = false; return ds.load(); })
+                .then(() => log('retry ok, error is', ds.error, '— rows', ds.total));` }],
+          },
+          {
+            name: 'total', type: 'number', readonly: true,
+            description: 'Record count after filtering (all pages). With `server.paging`, the total reported by the server.',
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS, pageSize: 2, filter: { stock: { gt: 0 } } });
+              log({ items: ds.items.length, total: ds.total, totalPages: ds.totalPages, view: ds.view.length });` }],
+          },
+          { name: 'totalPages', type: 'number', readonly: true, description: '`ceil(total / pageSize)`, at least 1.' },
+          { name: 'keyField', type: 'string', readonly: true, description: 'The configured key property (option `keyField`).' },
+          {
+            name: 'server', type: 'Object', readonly: true,
+            description: 'A copy of the `server` option — which query parts the server handles. Note: when you pass `server`, only the keys you passed are present (missing ones read as `undefined`, i.e. local). Mutating the returned object has no effect. Components such as `lkTable` read it to decide whether a query change needs `load()`.',
+            examples: [{ title: 'keyField, server and canRead', run: true, code: `
+              const local = Look.lkDataSource({ data: FRUITS });
+              const remote = Look.lkDataSource({ keyField: 'uuid', transport: { read: '/api/fruits' }, server: { paging: true } });
+              log('local ', local.keyField, local.server, 'canRead=' + local.canRead);
+              log('remote', remote.keyField, remote.server, 'canRead=' + remote.canRead);
+              remote.server.paging = false;
+              log('still', remote.server.paging);` }],
+          },
+          { name: 'canRead', type: 'boolean', readonly: true, description: '`true` when a `read` transport is configured (i.e. the data is remote).' },
+        ],
+
+        methods: [
+          {
+            name: 'subscribe', signature: 'subscribe(handler, { event, immediate }?) → unsubscribe',
+            description: 'Calls `handler(state, payload)` on every `change` (or another `event`). By default it is also called **immediately** with `payload.reason === \'init\'`, so one function can render the initial and every later state.',
+            params: [
+              { name: 'handler', type: 'Function', description: '`(state, payload) => void`. `state` is the snapshot `{ items, view, filter, sort, page, pageSize, total, totalPages, loading, error }`; `payload` is the event payload (`{ reason, detail, state }` for `change`).' },
+              { name: 'options.event', type: 'string', optional: true, default: "'change'", description: 'Event to listen to.' },
+              { name: 'options.immediate', type: 'boolean', optional: true, default: 'true', description: 'Call once right away.' },
+            ],
+            returns: { type: 'Function', description: 'Call it to unsubscribe.' },
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS, pageSize: 3 });
+              const stop = ds.subscribe((state, { reason }) => log(reason, '→', state.view.map((r) => r.name).join(', ')));
+              ds.setPage(2);
+              ds.setSort({ field: 'price' });
+              stop();
+              ds.setPage(1); // not logged
+              ds.subscribe((state) => log('sort event (not immediate):', JSON.stringify(state.sort)), { event: 'sort', immediate: false });
+              ds.setSort({ field: 'stock', dir: 'desc' });` }],
+          },
+          {
+            name: 'refresh', signature: "refresh(reason = 'refresh', detail = {}) → ds",
+            description: 'Recomputes `view` and emits `change` with the given `reason` and `detail`. Call it after mutating records in `items` directly.',
+            params: [
+              { name: 'reason', type: 'string', optional: true, default: "'refresh'", description: 'Passed through as `change.reason`.' },
+              { name: 'detail', type: 'Object', optional: true, default: '{}', description: 'Passed through as `change.detail`.' },
+            ],
+            examples: [{ title: 'In-place mutation + refresh', run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS.map((r) => ({ ...r })), sort: { field: 'price' } });
+              showView(ds, container, (r) => r.name + ' $' + r.price);
+              ds.on('change', ({ reason, detail }) => log('change:', reason, detail));
+              setTimeout(() => {
+                ds.items.forEach((r) => { r.price = 20 - r.price; });   // not tracked
+                ds.refresh('reprice', { by: 'demo' });
+              }, 600);` }],
+          },
+          {
+            name: 'batch', signature: "batch(fn, reason = 'batch') → ds",
+            description: 'Runs `fn(ds)` and coalesces all `change` events inside it into **one** `change` with `reason` (only if something changed). Granular events (`filter`, `sort`, …) still fire immediately.',
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS, pageSize: 2 });
+              ds.on('change', ({ reason }) => log('change:', reason));
+              ds.batch((d) => {
+                d.setFilter({ color: 'red' });
+                d.setSort({ field: 'price', dir: 'desc' });
+                d.setPageSize(5);
+              }, 'apply-filters');
+              log('view', ds.view.map((r) => r.name));` }],
+          },
+          {
+            name: 'set', signature: "set(items, reason = 'set') → ds",
+            description: 'Replaces all records (each through `parseItem`) and forgets the server total. No transport call. Emits `change` with `{ count }`.',
+            params: [{ name: 'items', type: 'Array', description: 'New records.' }, { name: 'reason', type: 'string', optional: true, default: "'set'", description: 'Change reason.' }],
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS.slice(0, 1) });
+              showView(ds, container);
+              ds.on('change', ({ reason, detail }) => log('change:', reason, detail));
+              setTimeout(() => ds.set(FRUITS.slice(2), 'reset'), 500);` }],
+          },
+          {
+            name: 'load', signature: 'load(params = {}) → Promise<Array>',
+            description: 'Reads through `transport.read` (see its payload) and replaces `items` with the result. When reads overlap, only the **latest** one is applied — an older, slower response is dropped. Resolves with the new view.',
+            params: [{ name: 'params', type: 'Object', optional: true, description: 'Extra payload properties (merged before filter/sort/paging).' }],
+            returns: { type: 'Promise<Array>', description: 'The view. Rejects when the transport fails.' },
+            examples: [{ title: 'Overlapping reads — the slow first one is ignored', run: true, code: `
+              const ds = Look.lkDataSource({
+                transport: { read: async ({ q, delay }) => { await wait(delay); return [{ id: 1, name: 'result for ' + q }]; } },
+              });
+              showView(ds, container);
+              ds.load({ q: 'slow', delay: 900 }).then((v) => log('slow resolved; view still:', v[0]?.name));
+              ds.load({ q: 'fast', delay: 200 }).then((v) => log('fast →', v[0].name));` }],
+          },
+          {
+            name: 'add', signature: 'add(record, { sync, optimistic }?) → Promise<Object>',
+            description: 'Appends a record (through `parseItem`) and, with `transport.create`, sends it. `sync: false` skips the transport. Resolves with the server record (or the local one).',
+            params: [
+              { name: 'record', type: 'Object', description: 'The new record.' },
+              { name: 'options.sync', type: 'boolean', optional: true, default: 'true', description: 'Call the transport.' },
+              { name: 'options.optimistic', type: 'boolean', optional: true, default: 'options.optimistic', description: 'See the `optimistic` option.' },
+            ],
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS.slice(0, 2), sort: { field: 'name' } });
+              showView(ds, container);
+              ds.add({ id: 6, name: 'Avocado' }, { sync: false }).then((r) => log('added', r));` }],
+          },
+          {
+            name: 'update', signature: 'update(target, patch, { sync, optimistic }?) → Promise<Object | null>',
+            description: 'Merges `patch` into one record and, with `transport.update`, sends `{ id, item, changes }`. Resolves with the updated record, or `null` if `target` matched nothing.',
+            params: [
+              { name: 'target', type: 'any | Object | Function', description: 'A key value, a record (matched by its key) or a predicate `(item, index) => boolean`.' },
+              { name: 'patch', type: 'Object | Function', description: 'Fields to merge, or `(copy, index) => patch`.' },
+              { name: 'options', type: 'Object', optional: true, description: '`{ sync, optimistic }` as for `add`.' },
+            ],
+            examples: [{ title: 'By key, by predicate, with a patch function', run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS });
+              showView(ds, container, (r) => r.name + ' — $' + r.price + ', stock ' + r.stock);
+              ds.update(1, { price: 4 });
+              ds.update((r) => r.stock === 0, { stock: 50 });
+              ds.update(2, (copy) => ({ price: copy.price * 2 })).then((r) => log('banana now', r.price));` }],
+          },
+          {
+            name: 'remove', signature: 'remove(target, { sync, optimistic }?) → Promise<Object | null>',
+            description: 'Removes one record (first match) and, with `transport.delete`, sends `{ id, item }`. Resolves with the removed record or `null`.',
+            params: [{ name: 'target', type: 'any | Object | Function', description: 'Key, record or predicate.' }, { name: 'options', type: 'Object', optional: true, description: '`{ sync, optimistic }`.' }],
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS });
+              showView(ds, container);
+              ds.remove(3).then((r) => log('removed', r.name));
+              ds.remove((r) => r.color === 'green');` }],
+          },
+          {
+            name: 'clear', signature: "clear(reason = 'clear') → ds",
+            description: 'Removes all records locally (no transport call), forgets the server total, emits `change` and `clear`.',
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS });
+              showView(ds, container);
+              ds.on('clear', ({ state }) => log('clear event — total', state.total));
+              setTimeout(() => ds.clear(), 600);` }],
+          },
+          {
+            name: 'setFilter', signature: 'setFilter(filter) → ds',
+            description: 'Sets the filter (same forms as the `filter` option), goes back to page 1, emits `change` (`filter`) and `filter`. With `server.filter` call `load()` afterwards.',
+            params: [{ name: 'filter', type: 'Object | Function | null', description: 'New filter; `null` removes it.' }],
+            examples: [{ title: 'Live search box', run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS });
+              const input = container.appendChild(document.createElement('input'));
+              input.className = 'lk-input lk-input--dense';
+              input.placeholder = 'Type to filter (e.g. "rr")';
+              showView(ds, container);
+              input.addEventListener('input', () => {
+                const q = input.value.trim();
+                q ? ds.setFilter({ name: { contains: q } }) : ds.clearFilter();
+              });
+              ds.on('filter', ({ filter, state }) => log('filter', filter, '→', state.total, 'rows'));` }],
+          },
+          { name: 'clearFilter', signature: 'clearFilter() → ds', description: 'Same as `setFilter(null)`.' },
+          {
+            name: 'setSort', signature: 'setSort(sort) → ds',
+            description: 'Sets the sort (same forms as the `sort` option) and emits `change` (`sort`) and `sort`. The page is kept.',
+            params: [{ name: 'sort', type: 'Object | Array | Function | null', description: 'New sort; `null` restores the original order.' }],
+            examples: [{ title: 'Toggle asc / desc / none', run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS });
+              const btn = container.appendChild(document.createElement('button'));
+              btn.className = 'lk-btn lk-btn--dense';
+              const states = [{ field: 'price', dir: 'asc' }, { field: 'price', dir: 'desc' }, null];
+              let i = -1;
+              const next = () => { i = (i + 1) % states.length; ds.setSort(states[i]); btn.textContent = 'Sort: ' + (states[i] ? 'price ' + states[i].dir : 'none'); };
+              btn.addEventListener('click', next);
+              showView(ds, container, (r) => r.name + ' $' + r.price);
+              next();
+              ds.on('sort', ({ sort }) => log('sort event', sort));` }],
+          },
+          { name: 'clearSort', signature: 'clearSort() → ds', description: 'Same as `setSort(null)` — back to the original order.' },
+          { name: 'setPage', signature: 'setPage(page) → ds', description: 'Goes to a 1-based page (clamped for local paging). Emits `change` (`page`) and `page`.' },
+          {
+            name: 'setPageSize', signature: 'setPageSize(size) → ds', description: 'Changes the page size, goes back to page 1, emits `change` (`pageSize`) and `pageSize`.',
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS, pageSize: 2 });
+              showView(ds, container);
+              const info = () => log('page', ds.page, '/', ds.totalPages, '→', ds.view.map((r) => r.name).join(', '));
+              info();
+              ds.setPage(3); info();
+              ds.setPage(99); info();       // clamped to the last page
+              ds.setPageSize(4); info();    // back to page 1` }],
+          },
+          {
+            name: 'setQuery', signature: 'setQuery({ filter, sort, page, pageSize }) → ds',
+            description: 'Sets several query parts at once (only the keys present) and emits `query`. **Note:** in the current version it does not recompute `view` or emit `change` — call `refresh()` afterwards (or use `batch()` with the individual setters).',
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS, pageSize: 2 });
+              ds.on('query', ({ query }) => log('query event', JSON.stringify(query)));
+              ds.setQuery({ filter: { color: 'red' }, sort: { field: 'price', dir: 'desc' }, page: 1 }).refresh('query');
+              log('view', ds.view.map((r) => r.name));` }],
+          },
+          {
+            name: 'find', signature: 'find(predicate) → Object | null',
+            description: 'First record in `items` (all records, not just the view) matching `predicate(item, index)`, or `null`.',
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS, pageSize: 1 });
+              log('view has', ds.view.length, 'row — find still searches all:', ds.find((r) => r.stock === 0)?.name);
+              log('no match →', ds.find((r) => r.price > 100));` }],
+          },
+          {
+            name: 'getById', signature: 'getById(id) → Object | null', description: 'Record whose `keyField` equals `id` (strict equality — `\'1\'` does not match `1`).',
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS });
+              log(ds.getById(4)?.name, '|', ds.getById('4'), '|', ds.find((r) => r.price > 10)?.name);` }],
+          },
+          {
+            name: 'toJSON', signature: 'toJSON() → Object',
+            description: 'The state snapshot `{ items, view, filter, sort, page, pageSize, total, totalPages, loading, error }` (arrays copied). Also what `JSON.stringify(ds)` uses.',
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS.slice(0, 3), pageSize: 2, sort: { field: 'name', dir: 'desc' } });
+              const snap = ds.toJSON();
+              log(Object.keys(snap).join(', '));
+              log('page', snap.page, '/', snap.totalPages, '— view', snap.view.map((r) => r.name));
+              log('JSON length', JSON.stringify(ds).length);` }],
+          },
+          {
+            name: 'on', signature: 'on(event, handler) → off',
+            description: 'Listens to an event (see Events). Returns a function that removes the listener.',
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS });
+              const off = ds.on('remove', ({ record }) => log('removed', record.name));
+              ds.once('add', ({ record }) => log('first add only:', record.name));
+              ds.remove(1);
+              ds.add({ id: 10, name: 'Jackfruit' });
+              ds.add({ id: 11, name: 'Kiwi' });   // once → not logged
+              off();
+              ds.remove(2);                       // not logged
+              ds.on('custom', (p) => log('custom event', p));
+              ds.emit('custom', { hello: 'world' });` }],
+          },
+          { name: 'off', signature: 'off(event, handler)', description: 'Removes a listener added with `on`.' },
+          { name: 'once', signature: 'once(event, handler) → off', description: 'Like `on`, but removes itself after the first call.' },
+          { name: 'emit', signature: 'emit(event, payload)', description: 'Emits an event on the data source\'s bus (also usable for your own event names).' },
+        ],
+
+        events: [
+          {
+            name: 'change', signature: "on('change', ({ reason, detail, state }) => …)",
+            description: 'Fired whenever `view` or the state may have changed. `subscribe()` listens to it. `state` is the snapshot (see `toJSON`).',
+            args: [
+              { name: 'reason', type: 'string', description: 'Why — see the table below.' },
+              { name: 'detail', type: 'Object', description: 'Reason-specific data (listed below).' },
+              { name: 'state', type: 'Object', description: '`{ items, view, filter, sort, page, pageSize, total, totalPages, loading, error }`.' },
+            ],
+            examples: [{ title: 'Reasons and their detail', code: `
+              // init                       {}                       first computation (and subscribe's immediate call)
+              // refresh | <custom>         detail you passed        ds.refresh(reason, detail)
+              // batch | <custom>           {}                       end of ds.batch(fn, reason)
+              // set | value:set | items:set { count }               items replaced
+              // filter                     { filter }
+              // sort                       { sort }
+              // page                       { page }
+              // pageSize                   { pageSize }
+              // loading                    { action, payload }      a transport call started
+              // idle                       { action, payload }      a transport call settled
+              // load                       { params, result }       read applied
+              // add | add:sync | add:rollback          { record, result? | error? }
+              // update | update:sync | update:rollback { target, record, result? | error? }
+              // remove | remove:rollback               { target, record, error? }
+              // clear | <custom>           {}` },
+              { title: 'Watch the reasons go by', run: true, code: `
+                const ds = Look.lkDataSource({ data: FRUITS, pageSize: 2 });
+                ds.on('change', ({ reason, detail, state }) => log(reason.padEnd(8), JSON.stringify(detail), '→ page', state.page + '/' + state.totalPages));
+                ds.setFilter({ color: 'red' });
+                ds.setSort({ field: 'price', dir: 'desc' });
+                ds.setPageSize(1);
+                ds.setPage(2);
+                ds.add({ id: 6, name: 'Raspberry', color: 'red' });
+                ds.clear();` }],
+          },
+          {
+            name: 'request:start', signature: "on('request:start', ({ action, payload, state }) => …)",
+            description: 'A transport call is starting (after `loading` became true).',
+            args: [{ name: 'action', type: 'string', description: '`read` / `create` / `update` / `delete`.' }, { name: 'payload', type: 'any', description: 'What is sent.' }, { name: 'state', type: 'Object', description: 'Snapshot.' }],
+            examples: [{ title: 'Request lifecycle', run: true, code: `
+              const ds = Look.lkDataSource({ transport: { read: async () => { await wait(300); return FRUITS.slice(0, 1); } } });
+              ['request:start', 'request:success', 'request:end', 'load', 'error'].forEach((name) =>
+                ds.on(name, (e) => log(name, e.action ? 'action=' + e.action : '(params ' + JSON.stringify(e.params) + ')', 'loading=' + e.state.loading)));
+              ds.load();` }],
+          },
+          { name: 'request:success', signature: "on('request:success', ({ action, payload, result, state }) => …)", description: 'The transport resolved (after `hooks.afterRequest`). `result` is the raw response.' },
+          { name: 'request:end', signature: "on('request:end', ({ action, payload, state }) => …)", description: 'The call settled — success or failure (after `loading` was updated).' },
+          {
+            name: 'error', signature: "on('error', ({ action, payload, error, state }) => …)",
+            description: 'A transport call failed (before `hooks.onError`).',
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ transport: { read: async () => { await wait(200); throw new Error('503 Service Unavailable'); } } });
+              ds.on('error', ({ action, error }) => log('error event:', action, error.message, '| ds.error =', ds.error.message));
+              ds.load().catch(() => log('load() rejected'));` }],
+          },
+          { name: 'load', signature: "on('load', ({ params, result, state }) => …)", description: 'A read was applied (`params` = the read payload, `result` = raw response). Not fired for stale reads.' },
+          { name: 'add', signature: "on('add', ({ record, state }) => …)", description: 'A record was added to the local list.' },
+          { name: 'update', signature: "on('update', ({ target, record, state }) => …)", description: 'A local record was updated (`target` as passed to `update`).' },
+          { name: 'remove', signature: "on('remove', ({ target, record, state }) => …)", description: 'A record was removed from the local list.' },
+          { name: 'clear', signature: "on('clear', ({ state }) => …)", description: '`clear()` was called.' },
+          { name: 'filter', signature: "on('filter', ({ filter, state }) => …)", description: '`setFilter` / `clearFilter` / `ds.filter = …`.' },
+          { name: 'sort', signature: "on('sort', ({ sort, state }) => …)", description: '`setSort` / `clearSort` / `ds.sort = …`.' },
+          { name: 'page', signature: "on('page', ({ page, state }) => …)", description: '`setPage` / `ds.page = …`.' },
+          { name: 'pageSize', signature: "on('pageSize', ({ pageSize, state }) => …)", description: '`setPageSize` / `ds.pageSize = …`.' },
+          { name: 'query', signature: "on('query', ({ query, state }) => …)", description: '`setQuery(query)` was called.' },
+        ],
+      });
+    </script>
+  </body>
+</html>

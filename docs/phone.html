@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Phone</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Phone</h1>
+    <p style="opacity: 0.85;">lkPhone(el, opts) — country dropdown (flag + dial code) joined to a digits-only textbox</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Basic</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div>
+        <input id="ph-basic" placeholder="812 3456 7890" />
+        <p class="demo-sub" style="margin-top: var(--lk-space-3);">Type digits only — anything else is stripped. Paste <code>+65 9123 4567</code> to switch the country automatically.</p>
+      </div>
+      <div id="ph-basic-out" class="demo-output"></div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Flags, preferred countries &amp; states</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="ph-pref" />
+      <input id="ph-emoji" />
+      <input id="ph-code" />
+      <input id="ph-ro" />
+      <input id="ph-dis" />
+      <div class="lk-field--dense"><input id="ph-dense" /></div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Form &amp; validation</p>
+    <form id="ph-form" class="lk-card" novalidate>
+      <div class="lk-card__body" style="display: grid; gap: var(--lk-space-4); max-width: 28rem;">
+        <input id="ph-form-name" placeholder="Jane Doe" />
+        <input id="ph-form-phone" />
+        <div class="demo-row" style="margin-bottom: 0;">
+          <button class="lk-btn lk-btn--primary" type="submit">Submit</button>
+          <button id="ph-fill" class="lk-btn lk-btn--secondary" type="button">Set +44 20 7946 0958</button>
+          <button id="ph-country" class="lk-btn lk-btn--ghost" type="button">Country &rarr; SG</button>
+        </div>
+        <div id="ph-form-out" class="demo-output"></div>
+      </div>
+    </form>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const phone = Look.lkPhone('#phone', {
+  label: 'Phone number',
+  name: 'phone',             // hidden input carries the E.164 value (+6281234567890)
+  country: 'ID',             // initial country (ISO 3166-1 alpha-2)
+  preferred: ['ID', 'SG', 'MY'],
+  flag: 'image',             // 'image' (flagcdn.com) | 'emoji' | 'code' | false
+  required: true,
+  onChange(value, info) { console.log(value, info.country, info.number, info.valid); },
+});
+
+phone.value = '+6281234567890';   // detects Indonesia, fills 81234567890
+phone.country = 'SG';
+phone.valid;                      // length check against minDigits / maxDigits
+phone.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkPhone',
+  validateable: true,
+  kind: 'Component',
+  signature: 'const phone = Look.lkPhone(inputElement, options);',
+  description: [
+    'Turns an `<input>` into a phone number field made of two controls: an [lkDropdown](dropdown.html) listing countries (flag, name, dial code; searchable by any of them) and a numeric textbox that only accepts digits.',
+    'The value is an E.164 string such as `+6281234567890`. The national trunk prefix (`0` by default) is dropped, so typing `0812…` with Indonesia selected gives `+62812…`. Pasting an international number (`+…` or `00…`) selects its country.',
+  ],
+  params: [
+    { name: 'inputElement', type: 'HTMLInputElement | string', description: 'The input (or selector) that becomes the number box.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The phone instance.' },
+  options: [
+    { name: 'label', type: 'string', default: '—', description: 'Creates an `.lk-field` wrapper with a label.' },
+    { name: 'name', type: 'string', default: 'the input\'s name', description: 'Name of the hidden input that carries the E.164 value for form posts.' },
+    { name: 'countryName', type: 'string', default: '—', description: 'When set, the ISO country code is also posted under this name.' },
+    {
+      name: 'value', type: 'string', default: '—',
+      description: 'Initial value. `+…` / `00…` strings pick their country; plain digits are a national number for the current country.',
+      examples: [{ run: true, code: `
+        const el = document.createElement('input');
+        container.appendChild(el);
+        const p = Look.lkPhone(el, { value: '+60123456789', onChange: (v) => log(v) });
+        log('country =', p.country, '| number =', p.number);` }],
+    },
+    { name: 'country', type: 'string', default: "'ID'", description: 'Initial country (ISO 3166-1 alpha-2).' },
+    {
+      name: 'countries', type: 'Array', default: 'Look.lkPhone.countries',
+      description: 'Country list: `[{ code, name, dial, flag? }]`. `flag` may be an image URL or an Element.',
+      examples: [{ run: true, code: `
+        const el = document.createElement('input');
+        container.appendChild(el);
+        Look.lkPhone(el, {
+          country: 'ID',
+          countries: [
+            { code: 'ID', name: 'Indonesia', dial: '62' },
+            { code: 'SG', name: 'Singapore', dial: '65' },
+            { code: 'JP', name: 'Japan', dial: '81' },
+          ],
+        });` }],
+    },
+    { name: 'preferred', type: 'string[]', default: '—', description: 'ISO codes listed first in the dropdown.' },
+    {
+      name: 'flag', type: 'string | false', default: "'image'",
+      description: 'How flags render.',
+      values: [['image', 'SVG from `flagUrl` (falls back to the ISO code when it fails to load)'], ['emoji', 'Regional-indicator emoji (Windows shows letters instead)'], ['code', 'ISO code badge'], ['false', 'No flag']],
+    },
+    { name: 'flagUrl', type: 'string', default: "'https://flagcdn.com/{code}.svg'", description: 'Image URL template: `{code}` = lower-case ISO code, `{CODE}` = upper-case. Point it at self-hosted flags for offline apps.' },
+    { name: 'trunkPrefix', type: 'string', default: "'0'", description: 'National prefix removed from the E.164 value. `\'\'` keeps every digit.' },
+    { name: 'minDigits / maxDigits', type: 'number', default: '6 / 15 − dial length', description: 'Bounds for `valid`. `maxDigits` also limits typing.' },
+    { name: 'placeholder', type: 'string', default: '—', description: 'Placeholder of the number box.' },
+    { name: 'required / readonly / disabled / dense', type: 'boolean', default: 'false', description: 'Initial states; `dense` uses the compact size.' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(value, { country, dial, number, valid })` — after typing, pasting or picking a country.' },
+  ],
+  properties: [
+    { name: 'value', type: 'string', description: 'E.164 value (`\'\'` while the number is empty). Setting it parses `+…` strings.' },
+    { name: 'country', type: 'string', description: 'Selected ISO code.' },
+    { name: 'dialCode', type: 'string', readonly: true, description: 'E.g. `+62`.' },
+    { name: 'number', type: 'string', description: 'National digits without the trunk prefix.' },
+    { name: 'valid', type: 'boolean', readonly: true, description: 'Digit count is within `minDigits`..`maxDigits`.' },
+    { name: 'countries', type: 'Array', description: 'Replace the list at runtime.' },
+    { name: 'dropdown', type: 'Object', readonly: true, description: 'The inner lkDropdown instance.' },
+    { name: 'label / name / required / readonly / disabled / enabled / hidden', type: '—', description: 'Standard field properties.' },
+  ],
+  methods: [
+    { name: 'setError', signature: 'setError(message)', description: 'Shows a field error and colors both halves.' },
+    { name: 'clearError', signature: 'clearError()', description: 'Removes the error.' },
+    { name: 'focus', signature: 'focus()', description: 'Focuses the number box.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes the dropdown and wrapper and restores the original input.' },
+  ],
+  classes: [
+    { name: '.lk-phone', description: 'Flex group holding the country trigger and the input.' },
+    { name: '.lk-phone__flag', description: 'Flag box (`--emoji`, `--code` variants).' },
+    { name: '.lk-phone__panel', description: 'Class on the floating country list.' },
+  ],
+});
+</script>
+<script>
+  const basicOut = document.getElementById('ph-basic-out');
+  const show = (v, info) => {
+    basicOut.textContent = JSON.stringify({ value: v, ...info }, null, 2);
+  };
+  const basic = Look.lkPhone('#ph-basic', { label: 'Phone number', onChange: show });
+  show(basic.value, { country: basic.country, number: basic.number, valid: basic.valid });
+
+  Look.lkPhone('#ph-pref', { label: 'Preferred: ID, SG, MY first', preferred: ['ID', 'SG', 'MY'], country: 'MY' });
+  Look.lkPhone('#ph-emoji', { label: 'Emoji flags', flag: 'emoji', country: 'JP' });
+  Look.lkPhone('#ph-code', { label: 'ISO code badges', flag: 'code', country: 'US' });
+  Look.lkPhone('#ph-ro', { label: 'Readonly', value: '+6221500888', readonly: true });
+  Look.lkPhone('#ph-dis', { label: 'Disabled', value: '+6591234567', disabled: true });
+  Look.lkPhone('#ph-dense', { label: 'Dense', dense: true, country: 'AU' });
+
+  Look.lkTextbox('#ph-form-name', { label: 'Name', name: 'name', required: true });
+  const formPhone = Look.lkPhone('#ph-form-phone', {
+    label: 'Mobile', name: 'mobile', countryName: 'mobile_country', required: true, preferred: ['ID'],
+    onChange() { formPhone.clearError(); },
+  });
+  const formOut = document.getElementById('ph-form-out');
+  document.getElementById('ph-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!formPhone.valid) {
+      formPhone.setError(formPhone.number ? 'Number looks too short' : 'Mobile number is required');
+      formOut.textContent = 'Invalid';
+      return;
+    }
+    formOut.textContent = JSON.stringify(Object.fromEntries(new FormData(e.target)), null, 2);
+  });
+  document.getElementById('ph-fill').onclick = () => { formPhone.value = '+44 20 7946 0958'; formPhone.clearError(); };
+  document.getElementById('ph-country').onclick = () => { formPhone.country = 'SG'; };
+</script>
+</body>
+</html>

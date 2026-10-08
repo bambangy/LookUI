@@ -214,3 +214,21 @@ export function setCollapsibleState(element, opts) {
   });
   element.classList.remove(options.openClass);
 }
+
+/**
+ * z-index a floating layer (dropdown panel, popup proxy) needs so it paints above
+ * the stacking context its anchor lives in — e.g. a field inside an lkDialog.
+ * Returns null when no positioned ancestor outranks `base`, so callers keep their default.
+ * @param {Element} anchor
+ * @param {number} [base=0] — the layer's own default z-index
+ * @returns {number|null}
+ */
+export function floatingZIndex(anchor, base = 0) {
+  if (!anchor || typeof getComputedStyle !== 'function') return null;
+  let top = null;
+  for (let node = anchor.parentElement; node && node !== document.body; node = node.parentElement) {
+    const z = parseInt(getComputedStyle(node).zIndex, 10);
+    if (Number.isFinite(z) && z >= base && (top == null || z > top)) top = z;
+  }
+  return top == null ? null : top + 1;
+}

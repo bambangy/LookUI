@@ -119,6 +119,8 @@ export function lkModal(triggerEl, modalEl) {
 // --- Form components ---
 export { lkTextbox, lkCheckbox, lkRadio, lkSwitch } from './form.js';
 export { lkDropdown } from './dropdown.js';
+export { lkPhone } from './phone.js';
+export { lkTextPop } from './textPop.js';
 
 // --- Icon utility ---
 export { lkIcon, lkIcons, lkIcons as icons } from './icon.js';
@@ -133,4 +135,5 @@ export { lkList }       from './list.js';
 export { lkPagination } from './pagination.js';
 export { lkProgress }   from './progress.js';
 export { lkSplitter }   from './splitter.js';
+export { lkTabs }       from './tabs.js';
 
