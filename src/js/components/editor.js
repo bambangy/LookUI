@@ -504,12 +504,15 @@ export function lkEditor(el, opts = {}) {
       return;
     }
     guard(root, opts, 'change', clean, { source, component: comp }, (v) => {
-      lastCommitted = v;
-      if (source !== 'input' || v !== surface.innerHTML) surface.innerHTML = v;
+      // beforeChange / lk:before-change may replace the payload with anything — re-sanitize
+      // rather than trust it, so a replacement can't smuggle unsanitized HTML into the surface.
+      const safe = applySanitize(v);
+      lastCommitted = safe;
+      if (source !== 'input' || safe !== surface.innerHTML) surface.innerHTML = safe;
       syncNative();
       updateEmptyState();
       validation?.changed();
-      if (typeof opts.onChange === 'function') opts.onChange(v, { source, component: comp });
+      if (typeof opts.onChange === 'function') opts.onChange(safe, { source, component: comp });
     });
   }
 
