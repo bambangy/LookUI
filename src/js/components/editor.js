@@ -107,9 +107,15 @@ function buildAttrMap(extra) {
   return map;
 }
 
-function isSafeUrl(value) {
+// Only raster formats here — data:image/svg+xml can embed <script> and still runs
+// if the data URI is ever opened/navigated to directly, so it is not "safe".
+const SAFE_DATA_IMAGE_RE = /^data:image\/(?:png|jpe?g|gif|webp|bmp|x-icon);base64,/;
+
+function isSafeUrl(value, { allowDataImage = false } = {}) {
   const v = String(value || '').replace(/[\s\u0000-\u001f]+/g, '').toLowerCase();
-  return !(v.startsWith('javascript:') || v.startsWith('vbscript:') || v.startsWith('data:text/html'));
+  if (v.startsWith('javascript:') || v.startsWith('vbscript:')) return false;
+  if (v.startsWith('data:')) return allowDataImage && SAFE_DATA_IMAGE_RE.test(v);
+  return true;
 }
 
 // Keep color / background-color / text-align / font-size / text-decoration etc. (what
@@ -117,7 +123,12 @@ function isSafeUrl(value) {
 function sanitizeStyleValue(value) {
   const v = String(value || '');
   if (/expression\s*\(/i.test(v)) return '';
-  if (/url\s*\(\s*['"]?\s*(javascript|vbscript|data:text\/html)\s*:/i.test(v)) return '';
+  if (/url\s*\(\s*['"]?\s*(javascript|vbscript)\s*:/i.test(v)) return '';
+  // data: is allowed only for safe raster images (inline background-image), same allowlist as img src.
+  if (/url\s*\(\s*['"]?\s*data:/i.test(v)
+    && !SAFE_DATA_IMAGE_RE.test(v.toLowerCase().replace(/^.*?(?=data:)/i, ''))) {
+    return '';
+  }
   return v;
 }
 
@@ -165,7 +176,10 @@ export function sanitizeHtml(html, options = {}) {
           return;
         }
         if (!attrAllowed(tag, name)) { child.removeAttribute(attr.name); return; }
-        if ((name === 'href' || name === 'src') && !isSafeUrl(attr.value)) child.removeAttribute(attr.name);
+        if ((name === 'href' || name === 'src')
+          && !isSafeUrl(attr.value, { allowDataImage: tag === 'img' && name === 'src' })) {
+          child.removeAttribute(attr.name);
+        }
       });
     });
   }
