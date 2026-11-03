@@ -33,7 +33,8 @@ export const LOOK_ICON_NAMES = [
   'shopping-cart-fill', 'play', 'play-fill', 'pause', 'pause-fill', 'stop', 'stop-fill',
   'skip-forward', 'skip-forward-fill', 'skip-back', 'skip-back-fill', 'volume-off',
   'volume-off-fill', 'share', 'link', 'pin', 'pin-fill', 'chat', 'chat-fill', 'star-outline',
-  'heart-outline',
+  'heart-outline', 'align-left', 'align-center', 'align-right', 'align-justify',
+  'paste', 'paste-fill', 'file-plus', 'file-edit',
 ];
 
 const registry = new Map(); // name -> css <image> value

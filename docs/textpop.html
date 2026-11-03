@@ -110,6 +110,21 @@ reviewers.destroy();</pre>
 LookDocs.render('#api', {
   name: 'lkTextPop',
   validateable: true,
+  textNamespace: 'textpop',
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange(value | values, { source, component, item | items })', description: 'Runs when the user picks a row (`"select"`), removes a chip (`"remove"`) or clears (`"clear"`), before `onChange`. Single mode passes the key (`null` for clear) and `item`; multiple mode passes the resulting array of keys and `items`. Return `false` to veto (the grid ticks are put back; the popup still closes after a single pick), a Promise to wait, or another key / array to replace it.' },
+    { name: 'beforeOpen', signature: 'beforeOpen({ source, component })', description: 'Runs before the popup opens (`"user"` or `"api"` for `open()`). Return `false` to keep it closed or a Promise to wait.' },
+    { name: 'beforeClose', signature: 'beforeClose(reason, { source, reason, component })', description: 'Runs before a user dismissal hides the popup: `reason` is `"escape"`, `"outside"`, `"toggle"` or `"manual"` (`close()`). Return `false` to keep it open (synchronous). Closing after a single pick is not asked.' },
+  ],
+  texts: [
+    { name: 'placeholder', default: 'Select…', description: 'Field text while nothing is selected. The `placeholder` option wins.' },
+    { name: 'searchPlaceholder', default: 'Search…', description: 'Placeholder of the popup search. The `searchPlaceholder` option wins.' },
+    { name: 'done', default: 'Done', description: 'Multiple mode: closes the popup.' },
+    { name: 'selected', default: { one: '{count} selected', other: '{count} selected' }, description: 'Multiple mode footer count (plural object, `{count}`).' },
+    { name: 'more', default: '+{count}', description: 'Overflow chip when `maxChips` is exceeded.' },
+    { name: 'common.clear', default: 'Clear', description: 'Clear button / accessible name (shared key).' },
+    { name: 'common.remove', default: 'Remove', description: 'Accessible name of a chip remove button (shared key).' },
+  ],
   kind: 'Component',
   signature: 'const pop = Look.lkTextPop(inputElement, options);',
   description: [

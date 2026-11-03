@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Composable Tree</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Tree</h1>
+    <p style="opacity: 0.85;">Look.lkTree(target, opts) — nested data as an accessible tree view: selection, tri-state checkboxes, lazy loading, filter</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Nested items, single selection, icons</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      Built from a plain nested <code>items</code> array. <code>selectable: 'single'</code> highlights one row at a
+      time and fires <code>onChange</code>; <code>icons</code> sets the default branch/leaf glyph (a node's own
+      <code>icon</code> field wins). Try the keyboard: Up/Down/Home/End move, Right expands (or enters the first
+      child), Left collapses (or goes to the parent), Enter selects + <code>onAction</code>, and typing jumps to a
+      matching label.
+    </p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div id="tree-basic" style="max-width: 22rem;"></div>
+      <div id="tree-basic-out" class="demo-output"></div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Tri-state checkboxes + multi-select</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      <code>checkboxes: 'tri'</code> propagates down (checking a folder checks every descendant) and up (a parent
+      shows a dash when only some children are checked). Row selection (<code>selectable: 'multiple'</code>,
+      Ctrl/Cmd-click or Shift-click to extend) is independent of the checkboxes.
+    </p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div id="tree-check" style="max-width: 22rem;"></div>
+      <div id="tree-check-out" class="demo-output"></div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Lazy loading (<code>loadChildren</code>) + error retry</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      Neither <code>items</code> nor <code>dataSource</code> is given, so the whole tree (and every branch without
+      a <code>children</code> array) loads through <code>loadChildren(node)</code> — called with <code>null</code>
+      for the root. A spinner replaces the toggle chevron while a branch loads. The "docs" folder is wired to fail
+      once, to show the inline retry button.
+    </p>
+    <div id="tree-lazy" style="max-width: 22rem;"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Filter</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      <code>filter(text)</code> hides every node that doesn't match (ancestors of a match stay visible and expand);
+      clearing it restores the previous expansion exactly.
+    </p>
+    <input id="tree-filter-input" class="lk-input" placeholder="Filter…" style="max-width: 22rem; margin-bottom: var(--lk-space-3);" />
+    <div id="tree-filter" style="max-width: 22rem;"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const tree = Look.lkTree('#files', {
+  items: [{ text: 'src', children: [{ text: 'index.js' }] }, { text: 'README.md' }],
+  selectable: 'single',             // false | 'single' | 'multiple' | true (= 'single')
+  checkboxes: 'tri',                 // false | true | 'tri'
+  icons: { branch: 'folder', leaf: 'file' },
+  onChange(value, { source, node, nodes }) { console.log(value, source); },
+  onToggle(open, { node, source }) {},
+});
+
+// Lazy branches: no `items` / `dataSource` — loadChildren(null) fetches the roots
+Look.lkTree('#remote', {
+  loadChildren: (node) => node ? fetchChildrenOf(node.value) : fetchRoots(),
+});
+
+tree.expand('src');     tree.select('readme');    tree.check('src');
+tree.filter('index');   tree.reveal('index.js', true);
+tree.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkTree',
+  textNamespace: 'tree',
+  kind: 'Composable',
+  signature: 'const tree = Look.lkTree(target, options);',
+  description: [
+    'Builds a full tree view inside an empty `target` — every node, toggle, checkbox and status message is created for you. Data comes from one of three sources: a nested `items` array, an `lkDataSource` (its rows nested by `parentField` when they are flat), or `loadChildren(node)` for branches that fetch their children lazily (called with `null` for the root when neither `items` nor `dataSource` is given).',
+    '**Selection vs. checkboxes** are independent: `selectable` highlights a row (click, or Space/Enter); `checkboxes` adds a tri-state (`\'tri\'`) or plain (`true`) checkbox per node. With `checkboxes: \'tri\'`, checking a branch checks every descendant (`checkChildren`, default on) and a parent reflects its children as checked / mixed / unchecked (`checkParents`, default on).',
+    '**Lazy loading.** A node without a `children` array (and no `leaf`/`hasChildren: false`) is a lazy branch when `loadChildren` is given: expanding it calls `loadChildren(node)`, shows a spinner in place of the chevron, and renders the result; a rejected promise shows an inline error with a retry button. The same applies to the root when there is no `items`/`dataSource`.',
+    '**Keyboard** (roving tabindex): Up/Down, Right (expand, or move into the first child of an open branch), Left (collapse, or move to the parent), Home/End, Enter (select + `onAction`), Space (toggle the checkbox, or select), `*` (expand every sibling), and type-ahead.',
+  ],
+  params: [
+    { name: 'target', type: 'Element | string', description: 'Empty container the tree is built into (or a selector).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The tree instance.' },
+  options: [
+    { name: 'items', type: 'Array', default: '—', description: 'Nested items — plain strings, or objects with `children`.' },
+    { name: 'dataSource', type: 'Object', default: '—', description: 'An [lkDataSource](datasource.html) instance or its options object; the tree re-renders on every `change` and shows `request:start`/`request:end`/`error` as loading / error status.' },
+    { name: 'parentField', type: 'string', default: '—', description: 'Flat `dataSource` rows: the field holding the parent key (`null`/absent = root). Omit it for already-nested rows.' },
+    { name: 'childrenField', type: 'string', default: "'children'", description: 'Field holding a node\'s nested children.' },
+    { name: 'textField', type: 'string', default: "'text'", description: 'Field used as the label.' },
+    { name: 'valueField', type: 'string', default: "'value'", description: 'Field used as the node\'s value (falls back to the id field, then the text).' },
+    { name: 'idField', type: 'string', default: '—', description: 'Field used as a stable identity (default: the `dataSource` key field, else `\'id\'`); auto-generated when missing/duplicated.' },
+    { name: 'iconField', type: 'string', default: "'icon'", description: 'Field with a per-node icon name, overriding `icons`.' },
+    { name: 'disabledField', type: 'string', default: "'disabled'", description: 'Field marking a node disabled.' },
+    { name: 'leafField', type: 'string', default: "'leaf'", description: 'Field (or `hasChildren: false`) marking a node as never having children, so it never shows a toggle even without a `loadChildren`.' },
+    { name: 'loadChildren', type: 'Function', default: '—', description: '`(node | null) => items[] | Promise<items[]>` — supplies children for a lazy branch, or the roots when called with `null`.' },
+    { name: 'selectable', type: "false | 'single' | 'multiple' | true", default: 'false', description: '`true` is the same as `\'single\'`. `\'multiple\'` adds Ctrl/Cmd-click to toggle and Shift-click to extend a range.' },
+    { name: 'checkboxes', type: "false | true | 'tri'", default: 'false', description: 'A checkbox per node. `\'tri\'` adds parent/child propagation and a mixed (dash) state.' },
+    { name: 'checkChildren', type: 'boolean', default: "true for 'tri'", description: 'Checking a node also checks its enabled descendants.' },
+    { name: 'checkParents', type: 'boolean', default: "true for 'tri'", description: 'A parent mirrors its children: checked, mixed, or unchecked.' },
+    { name: 'expanded', type: 'Array | boolean', default: '—', description: 'Ids/values initially expanded, or `true` for every branch.' },
+    { name: 'expandAll', type: 'boolean', default: 'false', description: 'Shorthand for `expanded: true`.' },
+    { name: 'expandDepth', type: 'number', default: '—', description: 'Expand every branch up to this nesting level (`1` = just the roots).' },
+    { name: 'expandOnClick', type: 'boolean', default: 'true when not selectable', description: 'A click anywhere on the row also toggles its branch (not just the chevron).' },
+    { name: 'value', type: 'Array', default: '—', description: 'Initially selected value(s)/id(s) (only with `selectable`).' },
+    { name: 'checked', type: 'Array', default: '—', description: 'Initially checked value(s)/id(s) (only with `checkboxes`).' },
+    { name: 'template', type: 'Function', default: '—', description: '`(node, { component, filter }) => Node | text` replaces the default label (plain text/Node only, never HTML).' },
+    { name: 'filterFn', type: 'Function', default: '—', description: '`(node, text) => boolean` replaces the default case-insensitive "text contains" match used by `filter()`.' },
+    { name: 'icons', type: '{ branch?, leaf? }', default: '—', description: 'Default icon name per node kind; a node\'s own `icon` field wins.' },
+    { name: 'dense', type: 'boolean', default: 'false', description: 'Compact row height.' },
+    { name: 'ariaLabel', type: 'string', default: "the 'label' text", description: 'Accessible name of the tree (`role="tree"`).' },
+    { name: 'text', type: 'Object', default: '—', description: 'Per-instance text overrides — see **Text keys** below.' },
+    { name: 'autoLoad', type: 'boolean', default: 'true', description: 'With a `dataSource` and no rows yet, call `ds.load()` right away.' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(value, { source, kind, component, node, nodes, checked })` for both selection and checkbox changes — `kind` is `\'select\'` or `\'check\'`, `source` is `\'select\'` / `\'check\'` / `\'api\'`. Assigning `value` / `checked` is silent.' },
+    { name: 'onToggle', type: 'Function', default: '—', description: '`(open, { node, source, component })` after a branch expands/collapses; `source` is `\'click\'`, `\'key\'` or `\'api\'`.' },
+    { name: 'onLoad', type: 'Function', default: '—', description: '`(children, { node, component })` after `loadChildren` resolves (`node` is `null` for the root).' },
+    { name: 'onError', type: 'Function', default: '—', description: '`(error, { node, component })` when `loadChildren` rejects, or the `dataSource` reports an error.' },
+    { name: 'onAction', type: 'Function', default: '—', description: '`(node, { component, event })` on Enter or a double click.' },
+  ],
+  guards: [
+    { name: 'beforeChange', signature: "beforeChange(nextNodes, { kind: 'select' | 'check', source, node, checked, component })", description: 'Runs before a selection or checkbox change is applied. Return `false` to cancel, or an array of nodes/values to replace the result. DOM event `lk:before-change`.' },
+    { name: 'beforeToggle', signature: 'beforeToggle(nextOpen, { node, source, component })', description: 'Runs before a branch expands or collapses (including the implicit expand that precedes a lazy load). Return `false` to cancel. DOM event `lk:before-toggle`.' },
+    { name: 'beforeLoad', signature: 'beforeLoad({ node, source, component })', description: 'Runs right before `loadChildren` is called (`node` is `null` for the root). Return `false` to skip the load, or a Promise to delay it. DOM event `lk:before-load`.' },
+  ],
+  texts: [
+    { name: 'label', default: 'Tree', description: 'Accessible name of the tree when `ariaLabel` is not set.' },
+    { name: 'empty', default: 'No items', description: 'Status shown when there are no (visible) nodes and no filter is active.' },
+    { name: 'expand', default: 'Expand', description: 'Toggle button title on a collapsed branch.' },
+    { name: 'collapse', default: 'Collapse', description: 'Toggle button title on an expanded branch.' },
+    { name: 'error', default: 'Could not load items', description: 'Default message when `loadChildren` rejects without one, or the `dataSource` errors.' },
+    { name: 'common.retry', default: 'Retry', description: 'Shared text on the inline / root retry buttons.' },
+    { name: 'common.loading', default: 'Loading…', description: 'Shared text next to the root loading spinner.' },
+    { name: 'common.noResults', default: 'No results', description: 'Shared text shown instead of `empty` while a filter matches nothing.' },
+  ],
+  properties: [
+    { name: 'value', type: 'Array | *', description: 'Selected value(s) — a single value, or an array when `selectable: \'multiple\'`. Assigning it is silent.' },
+    { name: 'checked', type: 'Array', description: 'Checked values. Assigning an array re-derives the tri-state parents/children; silent.' },
+    { name: 'nodes', type: 'Array', readonly: true, description: 'Public root node records (each has `text`, `value`, `children`, `expanded`, `selected`, `checked`, `disabled`, `leaf`, `loading`, `error`, …).' },
+    { name: 'text', type: 'Object', description: 'Get/set the active text overrides (see `bindText`).' },
+    { name: 'filterText', type: 'string', readonly: true, description: 'The text passed to the last `filter()` call.' },
+    { name: 'dataSource', type: 'Object', readonly: true, description: 'The resolved `lkDataSource` instance, or `null`.' },
+    { name: 'el / id / hidden / enabled', type: '—', description: 'Standard base properties; `el` is the `.lk-tree` root.' },
+  ],
+  methods: [
+    { name: 'find', signature: 'find(ref)', description: 'Resolves a node by id, value, element/event target, or a predicate function `(node) => boolean`.' },
+    { name: 'getSelected', signature: 'getSelected()', description: 'Array of the selected node records.' },
+    { name: 'getChecked', signature: 'getChecked({ leavesOnly })', description: 'Array of the checked node records (optionally leaves only).' },
+    { name: 'expand', signature: 'expand(ref)', description: 'Expands a branch (loads it first if lazy and not yet loaded). Guarded, fires `onToggle` with `source: \'api\'`.' },
+    { name: 'collapse', signature: 'collapse(ref)', description: 'Collapses a branch.' },
+    { name: 'toggle', signature: 'toggle(ref)', description: 'Expands or collapses depending on the current state.' },
+    { name: 'expandAll', signature: 'expandAll()', description: 'Expands every already-loaded branch. Silent (no guards, no `onToggle`); unloaded lazy branches are left alone.' },
+    { name: 'collapseAll', signature: 'collapseAll()', description: 'Collapses every branch. Silent.' },
+    { name: 'reveal', signature: 'reveal(ref, focus?)', description: 'Expands the ancestors of a node (silent), scrolls it into view, and optionally focuses it.' },
+    { name: 'select', signature: 'select(ref)', description: 'Adds a node to the selection (replaces it unless `selectable: \'multiple\'`). Guarded, `source: \'api\'`.' },
+    { name: 'deselect', signature: 'deselect(ref)', description: 'Removes a node from the selection.' },
+    { name: 'clearSelection', signature: 'clearSelection()', description: 'Clears the selection.' },
+    { name: 'check', signature: 'check(ref)', description: 'Checks a node (propagates per `checkChildren`/`checkParents`). Guarded, `source: \'api\'`.' },
+    { name: 'uncheck', signature: 'uncheck(ref)', description: 'Unchecks a node.' },
+    { name: 'add', signature: 'add(item, parentRef?, index?)', description: 'Inserts a node under `parentRef` (default: root) at `index` (default: the end). Silent.' },
+    { name: 'update', signature: 'update(ref, patch)', description: 'Merges fields into a node\'s data and re-renders it; including the `childrenField` in `patch` replaces its children. Silent.' },
+    { name: 'remove', signature: 'remove(ref)', description: 'Removes a node and its descendants. Silent.' },
+    { name: 'setItems', signature: 'setItems(items)', description: 'Replaces the whole data set; selection, checks and expansion reset to what the new items say.' },
+    { name: 'filter', signature: 'filter(text)', description: 'Shows only matching nodes and their (auto-expanded) ancestors; `\'\'`/`null` clears it and restores the previous expansion.' },
+    { name: 'reload', signature: 'reload(ref?)', description: 'With a node: re-runs `loadChildren` for it (if it is open, it reloads and re-opens; closed, it is just marked stale). With no argument: `dataSource.load()`, `loadChildren(null)`, or a re-render of the current items. Returns a Promise.' },
+    { name: 'focus', signature: 'focus()', description: 'Moves focus to the current roving tab stop.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes every listener, the `dataSource` subscription and the built DOM.' },
+  ],
+  classes: [
+    { name: '.lk-tree[--dense]', description: 'Root.' },
+    { name: '.lk-tree__list / __group', description: 'The root `<ul role="tree">` and a branch\'s nested `<ul role="group">`.' },
+    { name: '.lk-tree__node', description: 'A `<li role="treeitem">`; modifiers `--open`, `--selected`, `--disabled`, `--loading`, `--match` (filter hit).' },
+    { name: '.lk-tree__row', description: 'The clickable row: toggle + optional checkbox + optional icon + label.' },
+    { name: '.lk-tree__toggle / __spinner', description: 'Chevron button and the spinner shown in its place while a lazy branch loads.' },
+    { name: '.lk-tree__check', description: 'The checkbox mark (`data-state="checked" | "mixed" | "unchecked"`).' },
+    { name: '.lk-tree__icon / __label / __mark', description: 'Row icon, label, and the `<mark>` wrapped around a filter match.' },
+    { name: '.lk-tree__error', description: 'Inline per-node error message + retry button.' },
+    { name: '.lk-tree__status[--loading|--error|--empty]', description: 'Root-level status row (loading spinner, error + retry, or the empty/no-results message).' },
+  ],
+  tokens: [
+    { name: '--lk-tree-row-h', default: '2rem', description: 'Row height.' },
+    { name: '--lk-tree-indent', default: '1.25rem', description: 'Indent per nesting level (used with `--lk-tree-level`).' },
+    { name: '--lk-primary', default: '#5c6bc0', description: 'Selected row and checked-state color.' },
+    { name: '--lk-warning', default: '#fb8c00', description: 'Filter match `<mark>` background.' },
+    { name: '--lk-negative', default: '#e53935', description: 'Error text / retry button.' },
+    { name: '--lk-border-strong / --lk-radius-sm', default: '#b5b5c0 / 0.25rem', description: 'Checkbox box.' },
+  ],
+});
+</script>
+<script>
+(function () {
+  // --- Basic: items, single select, icons ---
+  const out1 = document.getElementById('tree-basic-out');
+  Look.lkTree('#tree-basic', {
+    selectable: 'single',
+    icons: { branch: 'folder', leaf: 'file' },
+    expandDepth: 1,
+    items: [
+      { text: 'src', children: [
+        { text: 'components', children: [{ text: 'tree.js' }, { text: 'menu.js' }] },
+        { text: 'index.js' },
+      ] },
+      { text: 'docs', children: [{ text: 'tree.html' }, { text: 'menu.html' }] },
+      { text: 'README.md', icon: 'file' },
+    ],
+    onChange(value, ctx) { out1.textContent = `selected: ${value} (source ${ctx.source})`; },
+    onAction(node) { out1.textContent = `action on: ${node.text}`; },
+  });
+
+  // --- Checkboxes tri-state + multi-select ---
+  const out2 = document.getElementById('tree-check-out');
+  const tChk = Look.lkTree('#tree-check', {
+    selectable: 'multiple',
+    checkboxes: 'tri',
+    expanded: true,
+    icons: { branch: 'folder', leaf: 'file' },
+    items: [
+      { text: 'Frontend', children: [
+        { text: 'Button.jsx' }, { text: 'Modal.jsx' }, { text: 'Tree.jsx', checked: true },
+      ] },
+      { text: 'Backend', children: [{ text: 'server.js' }, { text: 'db.js' }] },
+    ],
+    onChange(value, ctx) {
+      out2.textContent = ctx.kind === 'check'
+        ? `checked: ${JSON.stringify(value)}`
+        : `selected: ${JSON.stringify(value)} (source ${ctx.source})`;
+    },
+  });
+
+  // --- Lazy loading ---
+  const FS = {
+    src: ['index.js', 'helpers.js'],
+    docs: null, // fails once
+  };
+  let docsAttempt = 0;
+  Look.lkTree('#tree-lazy', {
+    icons: { branch: 'folder', leaf: 'file' },
+    loadChildren(node) {
+      if (node === null) {
+        return new Promise((resolve) => setTimeout(() => resolve([
+          { text: 'src', value: 'src' },
+          { text: 'docs', value: 'docs' },
+          { text: 'package.json', leaf: true, value: 'package.json' },
+        ]), 400));
+      }
+      return new Promise((resolve, reject) => setTimeout(() => {
+        if (node.value === 'docs' && docsAttempt++ === 0) { reject(new Error('Network error, try again')); return; }
+        const names = node.value === 'src' ? FS.src : ['guide.md', 'api.md'];
+        resolve(names.map((n) => ({ text: n, leaf: true })));
+      }, 500));
+    },
+  });
+
+  // --- Filter ---
+  const tFilter = Look.lkTree('#tree-filter', {
+    icons: { branch: 'folder', leaf: 'file' },
+    expanded: true,
+    items: [
+      { text: 'Fruits', children: [{ text: 'Apple' }, { text: 'Banana' }, { text: 'Cherry' }] },
+      { text: 'Vegetables', children: [{ text: 'Carrot' }, { text: 'Potato' }, { text: 'Cabbage' }] },
+    ],
+  });
+  document.getElementById('tree-filter-input').addEventListener('input', (e) => tFilter.filter(e.target.value));
+})();
+</script>
+</body>
+</html>

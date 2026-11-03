@@ -25,20 +25,94 @@ import { lkDialog } from './dialog.js';
 import { lkDate } from './date.js';
 import { lkPopupProxy } from './popupProxy.js';
 import { extractFieldErrors, firstMessage } from '../helpers/validation.js';
+import { lkI18n, bindText } from '../helpers/i18n.js';
+import { guard, guardSync } from '../helpers/guard.js';
+import { lkStorage } from './storage.js';
+
+lkI18n.define('table', {
+  noRecords: 'No records found',
+  confirmDelete: 'Delete this record?',
+  actions: 'Actions',
+  'toolbar.add': 'Add new',
+  'search.placeholder': 'Search…',
+  'op.contains': 'Contains',
+  'op.eq': 'Is equal to',
+  'op.ne': 'Is not equal to',
+  'op.startsWith': 'Starts with',
+  'op.endsWith': 'Ends with',
+  'op.on': 'Is on',
+  'op.before': 'Is before',
+  'op.after': 'Is after',
+  'filter.title': 'Filter',
+  'filter.apply': 'Filter',
+  'filter.all': 'All',
+  'filter.placeholder': 'Filter…',
+  'filter.valuePlaceholder': 'Value…',
+  'filter.operator': 'Operator',
+  'filter.column': 'Filter {column}',
+  'filter.value': 'Filter value for {column}',
+  'menu.sortAsc': 'Sort ascending',
+  'menu.sortDesc': 'Sort descending',
+  'menu.clearSort': 'Clear sort',
+  'menu.columns': 'Columns',
+  'menu.label': '{column} column options',
+  'menu.button': '{column} column menu',
+  'menu.buttonState': '{column} column menu ({state})',
+  'state.sortedAsc': 'sorted ascending',
+  'state.sortedDesc': 'sorted descending',
+  'state.filtered': 'filtered',
+  'select.all': 'Select all rows on this page',
+  'select.row': 'Select row',
+  'edit.add': 'Add record',
+  'edit.edit': 'Edit record',
+  'pager.label': 'Pagination',
+  'pager.pageSize': 'Rows per page',
+  'pager.info': '{from}–{to} of {total}',
+  'pager.none': 'No items',
+  'resize.label': 'Resize {column} column',
+  'reorder.hint': 'Press Alt+Left or Alt+Right to move this column.',
+  'reorder.moved': 'Column {column} moved to position {to} of {total}',
+  'rowReorder.header': 'Reorder',
+  'rowReorder.grip': 'Reorder row {n}. Press Space to pick up.',
+  'rowReorder.disabled': 'Row reordering is unavailable while the grid is sorted or filtered',
+  'rowReorder.pickedUp': 'Picked up row {n}. Use Up and Down to move, Space to drop, Escape to cancel.',
+  'rowReorder.position': 'Position {to} of {total}',
+  'rowReorder.moved': 'Row moved to position {to} of {total}',
+  'rowReorder.cancelled': 'Move cancelled',
+});
 
 const SORT_ANIM_MS = 260;
+const DEFAULT_COL_PX = 120;
 
-// Filter operators per column type (first one is the default)
+// "120", 120, "120px", "8rem" → pixels (null when not a plain length)
+function toPx(v) {
+  if (v == null || v === '') return null;
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
+  const m = /^([\d.]+)\s*(px|rem|em)?$/.exec(String(v).trim());
+  if (!m) return null;
+  const n = parseFloat(m[1]);
+  if (m[2] === 'rem' || m[2] === 'em') {
+    return n * (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16);
+  }
+  return n;
+}
+
+function prefersReducedMotion() {
+  try { return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+}
+
+// Filter operators per column type (first one is the default).
+// A label starting with 'op.' is a text key (resolved when rendered); symbols are language-neutral.
 const OPERATORS = {
   string: [
-    ['contains', 'Contains'], ['eq', 'Is equal to'], ['ne', 'Is not equal to'],
-    ['startsWith', 'Starts with'], ['endsWith', 'Ends with'],
+    ['contains', 'op.contains'], ['eq', 'op.eq'], ['ne', 'op.ne'],
+    ['startsWith', 'op.startsWith'], ['endsWith', 'op.endsWith'],
   ],
   number: [
     ['eq', '='], ['ne', '≠'], ['gt', '>'], ['gte', '≥'], ['lt', '<'], ['lte', '≤'],
   ],
   date: [
-    ['on', 'Is on'], ['before', 'Is before'], ['after', 'Is after'],
+    ['on', 'op.on'], ['before', 'op.before'], ['after', 'op.after'],
   ],
 };
 
@@ -127,14 +201,24 @@ function dayKey(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function defaultFormat(value, type) {
+// Numbers and dates follow the active Look.i18n locale (falls back to the browser's on a bad tag)
+function localeNumber(n) {
+  try { return Number(n).toLocaleString(lkI18n.locale); } catch (e) { return Number(n).toLocaleString(); }
+}
+
+function localeDate(d) {
+  try { return d.toLocaleDateString(lkI18n.locale); } catch (e) { return d.toLocaleDateString(); }
+}
+
+// `t` = the grid's absolute-key translator (tx.tf) for the Yes / No words
+function defaultFormat(value, type, t) {
   if (value == null || value === '') return '';
-  if (type === 'number' && Number.isFinite(Number(value))) return Number(value).toLocaleString();
+  if (type === 'number' && Number.isFinite(Number(value))) return localeNumber(value);
   if (type === 'date') {
     const d = toDate(value);
-    return d ? d.toLocaleDateString() : String(value);
+    return d ? localeDate(d) : String(value);
   }
-  if (type === 'boolean') return value ? 'Yes' : 'No';
+  if (type === 'boolean') return value ? t('common.yes') : t('common.no');
   return String(value);
 }
 
@@ -188,15 +272,28 @@ function normalizeValues(values) {
  * @param {boolean|string|Object} [opts.editable=false] — 'inline' | 'popup' | { mode, createAt: 'top'|'bottom', title }
  * @param {boolean|string} [opts.selectable=false] — true | 'single' | 'multiple'
  * @param {Array}   [opts.toolbar] — 'create' | 'search' | { text, icon, color, click(grid) } | Node
+ * @param {boolean|Object} [opts.resizable=false] — column resize handles: true | { minWidth, maxWidth, mode: 'expand'|'fit' }
+ *   (per column: resizable: false, width, minWidth, maxWidth). Events: onColumnResize; guard: beforeColumnResize.
+ * @param {boolean} [opts.reorderable=false] — drag a header (or Alt+Left/Right) to move a column (per column: reorderable: false).
+ *   Events: onColumnReorder; guard: beforeColumnReorder.
+ * @param {boolean|Object} [opts.rowReorder=false] — drag rows (grip column, or the whole row with handle: false): true | { handle, field }.
+ *   Local data only; disabled while sorted/filtered. Events: onRowReorder; guard: beforeRowReorder.
+ * @param {string|Object} [opts.persist] — storage key (or { key, session }) saving column widths, order and visibility
  * @param {string|number} [opts.height] — fixed body height (scrolls with a sticky header)
  * @param {boolean} [opts.striped] [opts.hover=true] [opts.bordered] [opts.dense]
  * @param {boolean} [opts.autoBind=true] — load remote data on creation
  * @param {string}  [opts.keyField] — record key (default: the data source's keyField)
- * @param {string|Function} [opts.noRecords='No records found']
- * @param {string}  [opts.confirmDelete='Delete this record?'] — false to delete without asking
+ * @param {string|Function} [opts.noRecords] — empty text (wins over the localized 'table.noRecords')
+ * @param {string}  [opts.confirmDelete] — confirmation text (wins over 'table.confirmDelete'); false to delete without asking
+ * @param {Object}  [opts.text] — text overrides, see Look.i18n (namespace 'table'); explicit options above win
  * @param {Function} [opts.rowClass] — (row) => className
  * @param {Function} [opts.onDataBound] [opts.onChange] [opts.onRowClick] [opts.onSort] [opts.onPage] [opts.onFilter]
- *                   [opts.onEdit] [opts.onSave] (return false to veto) [opts.onCancel] [opts.onError]
+ *                   [opts.onEdit] [opts.onSave] (return false to veto — legacy, same as beforeSave) [opts.onCancel] [opts.onError]
+ * Overridable events — each takes ONE event object (incl. `component`, `source`) and may return false / a Promise
+ * (also the cancelable DOM event 'lk:before-<name>' on the grid root); the matching on* callback fires only if it went through:
+ * @param {Function} [opts.beforeSort] [opts.beforeFilter] [opts.beforePage] [opts.beforeSelect] [opts.beforeEdit]
+ *                   [opts.beforeSave] [opts.beforeDelete] [opts.beforeCancel]
+ *                   [opts.beforeColumnResize] [opts.beforeColumnReorder] [opts.beforeRowReorder]
  * @returns {Object}
  */
 export function lkTable(target, opts = {}) {
@@ -227,12 +324,25 @@ function createGrid(root, opts) {
     bordered: false,
     dense: false,
     autoBind: true,
+    resizable: false,
+    reorderable: false,
+    rowReorder: false,
+    persist: null,
     keyField: null,
-    noRecords: 'No records found',
-    confirmDelete: 'Delete this record?',
+    noRecords: undefined,      // default: the localized 'table.noRecords'
+    confirmDelete: undefined,  // default: the localized 'table.confirmDelete'; false = delete without asking
     rowClass: null,
     ...opts,
   };
+
+  // Texts: explicit options (noRecords, confirmDelete, editable.title, column titles…) win,
+  // then opts.text, then the Look.i18n locale.
+  const tx = bindText('table', opts.text, () => refreshTexts());
+  const fmtDefault = (v, type) => defaultFormat(v, type, tx.tf);
+  const opLabel = (label) => (String(label).startsWith('op.') ? tx.t(label) : label);
+  const noRecordsOf = () => (options.noRecords === undefined ? tx.t('noRecords') : options.noRecords);
+  const confirmDeleteOf = () => (options.confirmDelete === undefined ? tx.t('confirmDelete') : options.confirmDelete);
+  const colLabel = (c) => c.title || c.field || tx.t('actions');
 
   const sortCfg = {
     enabled: options.sortable !== false,
@@ -264,6 +374,43 @@ function createGrid(root, opts) {
   if (!pageCfg && ownsDataSource && !ds.server.paging) ds.setPageSize(Number.MAX_SAFE_INTEGER);
   const keyField = options.keyField || ds.keyField || 'id';
 
+  // Column resize / reorder, row reorder (all opt-in)
+  const resizeCfg = options.resizable ? {
+    minWidth: 48, maxWidth: Infinity, mode: 'expand',
+    ...(isObject(options.resizable) ? options.resizable : {}),
+  } : null;
+  if (resizeCfg) {
+    resizeCfg.minWidth = toPx(resizeCfg.minWidth) ?? 48;
+    resizeCfg.maxWidth = toPx(resizeCfg.maxWidth) ?? Infinity;
+    resizeCfg.mode = resizeCfg.mode === 'fit' ? 'fit' : 'expand';
+  }
+  const reorderCfg = !!options.reorderable;
+  let rowCfg = options.rowReorder
+    ? { handle: true, field: null, ...(isObject(options.rowReorder) ? options.rowReorder : {}) }
+    : null;
+  if (rowCfg && ds.server.paging) {
+    // eslint-disable-next-line no-console
+    console.warn('Look.lkTable: rowReorder needs a local (non server-paged) data source — row reordering is disabled.');
+    rowCfg = null;
+  }
+  const persistCfg = options.persist
+    ? (isObject(options.persist) ? { ...options.persist } : { key: String(options.persist) })
+    : null;
+
+  // Feature state (declared before the first buildColumns call)
+  let frozen = false;          // column widths pinned in px + fixed table layout (after the first resize)
+  let kbSession = null;        // keyboard column resize in progress
+  let kbRow = null;            // keyboard row move in progress
+  let dragCleanup = null;      // active pointer session (resize / column drag / row drag)
+  let suppressClick = false;   // swallow the click that follows a drag
+  let movedKey;                // key of the row that was just moved (highlight)
+  let movedTimer = null;
+  let gripIndex = 0;           // roving tabindex among the row grips
+  let restoring = false;       // applying persisted state (no save)
+  let initialCols = null;      // { order, hidden } as configured, for resetColumns()
+  const colEls = new Map();    // colId -> <col>
+  const ghosts = new Set();    // floating drag ghosts (in <body>)
+
   function isRemote(part) {
     return ds.canRead && !!ds.server[part];
   }
@@ -293,7 +440,13 @@ function createGrid(root, opts) {
     if (editCfg && !list.some((c) => c._kind === 'command')) {
       list.push({ _id: `c${colSeq++}`, _kind: 'command', command: ['edit', 'destroy'], title: '', hidden: false, _auto: true });
     }
+    // Row reordering with a grip: a leading, always-fixed handle column
+    if (rowCfg && rowCfg.handle) {
+      list.unshift({ _id: `c${colSeq++}`, _kind: 'grip', title: '', hidden: false, _auto: true });
+    }
+    if (frozen) unfreeze();
     columns = list;
+    initialCols = { order: list.slice(), hidden: new Map(list.map((c) => [c, c.hidden])) };
   }
   function autoColumns() {
     const first = ds.view[0] || ds.items[0];
@@ -306,6 +459,9 @@ function createGrid(root, opts) {
   const isSortable = (c) => sortCfg.enabled && c._kind === 'data' && c.field && c.sortable !== false;
   const isFilterable = (c) => !!filterMode && c._kind === 'data' && c.field && c.filterable !== false;
   const hasSelectColumn = () => columns.some((c) => c._kind === 'select' && !c.hidden);
+  const isResizable = (c) => !!resizeCfg && c.resizable !== false
+    && (c._kind === 'data' || (c._kind === 'command' && !c._auto));
+  const isReorderable = (c) => reorderCfg && c._kind === 'data' && c.reorderable !== false && !c.frozen;
   const hasMenu = (c) => options.columnMenu !== false && c.menu !== false && c._kind === 'data'
     && (isSortable(c) || (filterMode === 'menu' && isFilterable(c)) || toggleableColumns().length > 1);
   const toggleableColumns = () => columns.filter((c) => (c._kind === 'data' || (c._kind === 'command' && !c._auto)) && (c.title || c.field));
@@ -328,6 +484,17 @@ function createGrid(root, opts) {
   const tbody = el('tbody');
   const loadingEl = el('div', 'lk-datagrid__loading');
   const pagerEl = el('div', 'lk-datagrid__pager');
+  const liveEl = el('div', 'lk-datagrid__live');   // polite announcements (reorder)
+  liveEl.setAttribute('aria-live', 'polite');
+  liveEl.setAttribute('aria-atomic', 'true');
+  const hintEl = el('span', 'lk-datagrid__sr', tx.t('reorder.hint'));
+  hintEl.id = uid('lk-dg-hint');
+  const featureClasses = [
+    resizeCfg && 'lk-datagrid--resizable',
+    reorderCfg && 'lk-datagrid--reorderable',
+    rowCfg && 'lk-datagrid--row-reorder',
+  ].filter(Boolean);
+  root.classList.add(...featureClasses);
 
   tableEl.setAttribute('role', 'grid');
   if (selectMode === 'multiple' || hasSelectColumn()) tableEl.setAttribute('aria-multiselectable', 'true');
@@ -343,6 +510,7 @@ function createGrid(root, opts) {
 
   loadingEl.hidden = true;
   loadingEl.setAttribute('aria-hidden', 'true');
+  loadingEl.title = tx.tf('common.loading');
   loadingEl.appendChild(el('span', 'lk-spinner lk-datagrid__spinner'));
 
   if (options.height != null) {
@@ -353,6 +521,7 @@ function createGrid(root, opts) {
   if (options.toolbar) root.appendChild(toolbarEl);
   root.append(contentEl, loadingEl);
   if (pageCfg) root.appendChild(pagerEl);
+  if (reorderCfg || rowCfg) root.append(liveEl, hintEl);
 
   // --- State ---------------------------------------------------------------------------
 
@@ -366,6 +535,8 @@ function createGrid(root, opts) {
   let pager = null;
   let pageSizeDd = null;
   let infoEl = null;
+  let pagerNav = null;
+  let pageSizeLabel = null;
   let syncingPager = false;
   let pendingAnimate = false;
   let editState = null;       // { key, isNew, row, draft, errors, saving, focus }
@@ -381,6 +552,18 @@ function createGrid(root, opts) {
     cleanups.push(() => target.removeEventListener(type, fn, o));
   }
 
+  // Overridable events: before<Name>(event) / DOM 'lk:before-<name>' on the grid root. The event object
+  // always carries `component`. `proceed()` runs when allowed (maybe later for async guards); `revert()`
+  // puts the UI back when the action is vetoed (now, or when a Promise guard resolves false).
+  function ask(name, event, proceed, revert) {
+    const ev = { ...event, grid: api, component: api };
+    const r = guard(root, options, name, undefined, ev, proceed);
+    if (r === false) { if (revert) revert(); } else if (r && typeof r.then === 'function') {
+      r.then((ok) => { if (ok === false && revert) revert(); });
+    }
+    return r;
+  }
+
   function rowKey(row) {
     const k = getField(row, keyField);
     return k === undefined ? row : k;
@@ -390,8 +573,7 @@ function createGrid(root, opts) {
 
   let searchInput = null;
   const applySearch = debounce((term) => {
-    searchTerm = term.trim();
-    applyFilters();
+    changeFilters({ search: term.trim() }, 'search');
   }, 300);
 
   function renderToolbar() {
@@ -406,8 +588,8 @@ function createGrid(root, opts) {
         wrap.appendChild(lkIcon('search', { size: 'sm' }));
         searchInput = el('input', 'lk-input lk-input--dense lk-datagrid__search-input');
         searchInput.type = 'search';
-        searchInput.placeholder = 'Search…';
-        searchInput.setAttribute('aria-label', 'Search');
+        searchInput.placeholder = tx.t('search.placeholder');
+        searchInput.setAttribute('aria-label', tx.tf('common.search'));
         on(searchInput, 'input', () => applySearch(searchInput.value));
         wrap.appendChild(searchInput);
         toolbarEl.appendChild(wrap);
@@ -416,8 +598,10 @@ function createGrid(root, opts) {
         btn.type = 'button';
         btn.dataset.name = 'create';
         btn.appendChild(lkIcon('plus', { size: 'sm' }));
-        btn.appendChild(document.createTextNode(isObject(item) && item.text ? item.text : 'Add new'));
-        on(btn, 'click', () => api.addRow());
+        const caption = document.createTextNode(isObject(item) && item.text ? item.text : tx.t('toolbar.add'));
+        if (!(isObject(item) && item.text)) btn.dataset.i18n = 'toolbar.add';
+        btn.appendChild(caption);
+        on(btn, 'click', () => startEdit({}, true, 'toolbar'));
         toolbarEl.appendChild(btn);
       } else if (isObject(item)) {
         const btn = el('button', `lk-btn lk-btn--sm lk-btn--${item.color || 'secondary'}`);
@@ -513,9 +697,27 @@ function createGrid(root, opts) {
     return (row) => tests.every(([field, test]) => test(getField(row, field)))
       && (!term || searchFields.some((c) => {
         const v = getField(row, c.field);
-        const shown = typeof c.format === 'function' ? c.format(v, row) : defaultFormat(v, c.type);
+        const shown = typeof c.format === 'function' ? c.format(v, row) : fmtDefault(v, c.type);
         return String(shown ?? '').toLowerCase().includes(term) || String(v ?? '').toLowerCase().includes(term);
       }));
+  }
+
+  // Ask before changing the filters. `next` = { filters?, search? } (what the grid would end up with);
+  // a veto puts the search box / filter row back to the current state.
+  function changeFilters(next, source) {
+    if (destroyed) return;
+    const filters = next.filters ? { ...next.filters } : { ...columnFilters };
+    const search = next.search != null ? next.search : searchTerm;
+    ask('filter', { filters, search, source }, () => {
+      Object.keys(columnFilters).forEach((k) => delete columnFilters[k]);
+      Object.assign(columnFilters, filters);
+      searchTerm = search;
+      if (searchInput && searchInput.value.trim() !== searchTerm) searchInput.value = searchTerm;
+      applyFilters();
+    }, () => {
+      if (searchInput) searchInput.value = searchTerm;
+      renderFilterRow();
+    });
   }
 
   function applyFilters() {
@@ -530,7 +732,12 @@ function createGrid(root, opts) {
   }
 
   // Filter row (filterable: { mode: 'row' })
-  const applyFiltersDebounced = debounce(() => applyFilters(), 300);
+  const pendingRow = {}; // filter-row edits waiting for the debounce
+  const applyFiltersDebounced = debounce(() => {
+    const filters = { ...columnFilters, ...pendingRow };
+    Object.keys(pendingRow).forEach((k) => delete pendingRow[k]);
+    changeFilters({ filters }, 'filterRow');
+  }, 300);
 
   function renderFilterRow() {
     if (filterMode !== 'row') return;
@@ -542,27 +749,26 @@ function createGrid(root, opts) {
         let input;
         if (type === 'boolean') {
           input = el('select', 'lk-input lk-input--dense lk-datagrid__filter-input');
-          [['', 'All'], ['true', 'Yes'], ['false', 'No']].forEach(([v, t]) => {
+          [['', tx.t('filter.all')], ['true', tx.tf('common.yes')], ['false', tx.tf('common.no')]].forEach(([v, t]) => {
             const o = el('option', null, t);
             o.value = v;
             input.appendChild(o);
           });
           input.value = hasFilter(c.field) ? String(columnFilters[c.field].value) : '';
           on(input, 'change', () => {
-            columnFilters[c.field] = { op: 'eq', value: input.value };
-            applyFilters();
+            changeFilters({ filters: { ...columnFilters, [c.field]: { op: 'eq', value: input.value } } }, 'filterRow');
           });
         } else {
           input = el('input', 'lk-input lk-input--dense lk-datagrid__filter-input');
           input.type = type === 'number' ? 'number' : (type === 'date' ? 'date' : 'search');
-          input.placeholder = c.filter?.placeholder ?? (type === 'number' ? '=' : 'Filter…');
-          input.value = columnFilters[c.field]?.value ?? '';
+          input.placeholder = c.filter?.placeholder ?? (type === 'number' ? '=' : tx.t('filter.placeholder'));
+          input.value = pendingRow[c.field]?.value ?? columnFilters[c.field]?.value ?? '';
           on(input, 'input', () => {
-            columnFilters[c.field] = { op: c.filter?.operator || OPERATORS[type][0][0], value: input.value };
+            pendingRow[c.field] = { op: c.filter?.operator || OPERATORS[type][0][0], value: input.value };
             applyFiltersDebounced();
           });
         }
-        input.setAttribute('aria-label', `Filter ${c.title || c.field}`);
+        input.setAttribute('aria-label', tx.t('filter.column', { column: c.title || c.field }));
         th.appendChild(input);
       }
       filterRow.appendChild(th);
@@ -575,12 +781,14 @@ function createGrid(root, opts) {
     return normalizeSort(ds.sort);
   }
 
-  function setSort(next) {
-    pendingAnimate = true;
-    ds.setSort(next.length ? (sortCfg.mode === 'multiple' ? next : next[0]) : null);
-    syncRemote('sort');
-    updateHeaderState();
-    if (typeof options.onSort === 'function') options.onSort({ sort: next, grid: api, component: api });
+  function setSort(next, source = 'api') {
+    ask('sort', { sort: next, source }, () => {
+      pendingAnimate = true;
+      ds.setSort(next.length ? (sortCfg.mode === 'multiple' ? next : next[0]) : null);
+      syncRemote('sort');
+      updateHeaderState();
+      if (typeof options.onSort === 'function') options.onSort({ sort: next, grid: api, component: api });
+    });
   }
 
   function toggleSort(field) {
@@ -598,23 +806,23 @@ function createGrid(root, opts) {
     } else {
       next = sortCfg.mode === 'multiple' ? sort.map((s) => (s.field === field ? { field, dir: 'asc' } : s)) : [{ field, dir: 'asc' }];
     }
-    setSort(next);
+    setSort(next, 'header');
   }
 
   // Explicit direction from the column menu (null clears this column's sort)
-  function sortColumn(field, dir) {
+  function sortColumn(field, dir, source = 'menu') {
     const others = sortCfg.mode === 'multiple' ? currentSort().filter((s) => s.field !== field) : [];
     if (!dir) {
-      setSort(sortCfg.mode === 'multiple' ? others : []);
+      setSort(sortCfg.mode === 'multiple' ? others : [], source);
       return;
     }
     const existing = currentSort().findIndex((s) => s.field === field);
     if (sortCfg.mode === 'multiple' && existing > -1) {
       const next = currentSort();
       next[existing] = { field, dir };
-      setSort(next);
+      setSort(next, source);
     } else {
-      setSort([...others, { field, dir }]);
+      setSort([...others, { field, dir }], source);
     }
   }
 
@@ -632,15 +840,15 @@ function createGrid(root, opts) {
   function buildMenu(c, close) {
     const wrap = el('div', 'lk-datagrid-menu');
     wrap.setAttribute('role', 'menu');
-    wrap.setAttribute('aria-label', `${c.title || c.field} column options`);
+    wrap.setAttribute('aria-label', tx.t('menu.label', { column: colLabel(c) }));
     const refreshers = [];
 
     // Sort
     if (isSortable(c)) {
       const section = el('div', 'lk-datagrid-menu__section');
-      const asc = menuItem('sort-asc', 'Sort ascending', () => { sortColumn(c.field, 'asc'); close(); });
-      const desc = menuItem('sort-desc', 'Sort descending', () => { sortColumn(c.field, 'desc'); close(); });
-      const clear = menuItem('close', 'Clear sort', () => { sortColumn(c.field, null); close(); });
+      const asc = menuItem('sort-asc', tx.t('menu.sortAsc'), () => { sortColumn(c.field, 'asc'); close(); });
+      const desc = menuItem('sort-desc', tx.t('menu.sortDesc'), () => { sortColumn(c.field, 'desc'); close(); });
+      const clear = menuItem('close', tx.t('menu.clearSort'), () => { sortColumn(c.field, null); close(); });
       section.append(asc, desc, clear);
       wrap.appendChild(section);
       refreshers.push(() => {
@@ -656,50 +864,50 @@ function createGrid(root, opts) {
       const type = colType(c);
       const section = el('form', 'lk-datagrid-menu__section lk-datagrid-menu__filter');
       section.setAttribute('novalidate', '');
-      section.appendChild(el('div', 'lk-datagrid-menu__title', 'Filter'));
+      section.appendChild(el('div', 'lk-datagrid-menu__title', tx.t('filter.title')));
 
       let opSelect = null;
       let valueInput;
       if (type === 'boolean') {
         valueInput = el('select', 'lk-input lk-input--dense');
-        [['', 'All'], ['true', 'Yes'], ['false', 'No']].forEach(([v, t]) => {
+        [['', tx.t('filter.all')], ['true', tx.tf('common.yes')], ['false', tx.tf('common.no')]].forEach(([v, t]) => {
           const o = el('option', null, t);
           o.value = v;
           valueInput.appendChild(o);
         });
       } else {
         opSelect = el('select', 'lk-input lk-input--dense');
-        opSelect.setAttribute('aria-label', 'Operator');
+        opSelect.setAttribute('aria-label', tx.t('filter.operator'));
         OPERATORS[type].forEach(([v, t]) => {
-          const o = el('option', null, t);
+          const o = el('option', null, opLabel(t));
           o.value = v;
           opSelect.appendChild(o);
         });
         section.appendChild(opSelect);
         valueInput = el('input', 'lk-input lk-input--dense');
         valueInput.type = type === 'number' ? 'number' : (type === 'date' ? 'date' : 'text');
-        valueInput.placeholder = type === 'string' ? 'Value…' : '';
+        valueInput.placeholder = type === 'string' ? tx.t('filter.valuePlaceholder') : '';
       }
-      valueInput.setAttribute('aria-label', `Filter value for ${c.title || c.field}`);
+      valueInput.setAttribute('aria-label', tx.t('filter.value', { column: colLabel(c) }));
       section.appendChild(valueInput);
 
       const actions = el('div', 'lk-datagrid-menu__actions');
-      const clearBtn = el('button', 'lk-btn lk-btn--sm lk-btn--secondary', 'Clear');
+      const clearBtn = el('button', 'lk-btn lk-btn--sm lk-btn--secondary', tx.tf('common.clear'));
       clearBtn.type = 'button';
-      const applyBtn = el('button', 'lk-btn lk-btn--sm lk-btn--primary', 'Filter');
+      const applyBtn = el('button', 'lk-btn lk-btn--sm lk-btn--primary', tx.t('filter.apply'));
       applyBtn.type = 'submit';
       actions.append(clearBtn, applyBtn);
       section.appendChild(actions);
 
       section.addEventListener('submit', (e) => {
         e.preventDefault();
-        columnFilters[c.field] = { op: opSelect ? opSelect.value : 'eq', value: valueInput.value };
-        applyFilters();
+        changeFilters({ filters: { ...columnFilters, [c.field]: { op: opSelect ? opSelect.value : 'eq', value: valueInput.value } } }, 'menu');
         close();
       });
       clearBtn.addEventListener('click', () => {
-        delete columnFilters[c.field];
-        applyFilters();
+        const rest = { ...columnFilters };
+        delete rest[c.field];
+        changeFilters({ filters: rest }, 'menu');
         close();
       });
 
@@ -716,7 +924,7 @@ function createGrid(root, opts) {
     const toggleable = toggleableColumns();
     if (toggleable.length > 1) {
       const section = el('div', 'lk-datagrid-menu__section lk-datagrid-menu__columns');
-      section.appendChild(el('div', 'lk-datagrid-menu__title', 'Columns'));
+      section.appendChild(el('div', 'lk-datagrid-menu__title', tx.t('menu.columns')));
       const boxes = toggleable.map((col) => {
         const label = el('label', 'lk-datagrid-menu__check');
         const cb = el('input', 'lk-checkbox');
@@ -726,7 +934,7 @@ function createGrid(root, opts) {
           if (!cb.checked && visibleCount <= 1) { cb.checked = true; return; } // keep at least one
           setColumnHidden(col._id, !cb.checked);
         });
-        label.append(cb, el('span', null, col.title || titleCase(col.field || 'Actions')));
+        label.append(cb, el('span', null, col.title || (col.field ? titleCase(col.field) : tx.t('actions'))));
         section.appendChild(label);
         return [col, cb];
       });
@@ -747,13 +955,20 @@ function createGrid(root, opts) {
 
   function renderColgroup() {
     colgroup.textContent = '';
+    colEls.clear();
     visibleColumns().forEach((c) => {
       const col = el('col');
       if (c._kind === 'select') col.style.width = '2.75rem';
-      if (c.width != null) col.style.width = typeof c.width === 'number' ? `${c.width}px` : c.width;
+      if (c._kind === 'grip') col.style.width = '2.5rem';
+      // Once widths are pinned, a column that appeared later (shown / restored) needs a pixel width too
+      if (frozen && c._width == null && c._kind !== 'select' && c._kind !== 'grip') c._width = toPx(c.width) || DEFAULT_COL_PX;
+      const w = c._width != null ? c._width : c.width;
+      if (w != null) col.style.width = typeof w === 'number' ? `${w}px` : w;
       if (c.minWidth != null) col.style.minWidth = typeof c.minWidth === 'number' ? `${c.minWidth}px` : c.minWidth;
       colgroup.appendChild(col);
+      colEls.set(c._id, col);
     });
+    applyTableWidth();
   }
 
   let headerCheckbox = null;
@@ -775,9 +990,12 @@ function createGrid(root, opts) {
       th.classList.add('lk-datagrid__select-cell');
       const cb = el('input', 'lk-checkbox lk-datagrid__checkbox');
       cb.type = 'checkbox';
-      cb.setAttribute('aria-label', 'Select all rows on this page');
+      cb.setAttribute('aria-label', tx.t('select.all'));
       th.appendChild(cb);
       entry.checkbox = cb;
+    } else if (c._kind === 'grip') {
+      th.classList.add('lk-datagrid__grip-cell');
+      th.appendChild(el('span', 'lk-datagrid__sr', tx.t('rowReorder.header')));
     } else {
       const inner = el('div', 'lk-datagrid__th-inner');
       const label = el('span', 'lk-datagrid__th-label');
@@ -800,7 +1018,7 @@ function createGrid(root, opts) {
       if (hasMenu(c)) {
         const btn = el('button', 'lk-datagrid__menu-btn');
         btn.type = 'button';
-        btn.setAttribute('aria-label', `${c.title || c.field} column menu`);
+        btn.setAttribute('aria-label', tx.t('menu.button', { column: colLabel(c) }));
         btn.appendChild(lkIcon('more-vertical', { size: 'sm' }));
         inner.appendChild(btn);
         entry.menuBtn = btn;
@@ -825,6 +1043,21 @@ function createGrid(root, opts) {
         entry.menu = menu;
       }
       th.appendChild(inner);
+
+      if (isReorderable(c)) {
+        th.classList.add('lk-datagrid__th--reorderable');
+        if (th.tabIndex < 0 || !th.hasAttribute('tabindex')) th.tabIndex = 0;
+        th.setAttribute('aria-describedby', hintEl.id);
+      }
+      if (isResizable(c)) {
+        th.classList.add('lk-datagrid__th--resizable');
+        const r = el('span', 'lk-datagrid__resizer');
+        r.setAttribute('role', 'separator');
+        r.setAttribute('aria-orientation', 'vertical');
+        r.tabIndex = 0;
+        th.appendChild(r);
+        entry.resizer = r;
+      }
     }
 
     headerCache.set(c._id, entry);
@@ -845,6 +1078,7 @@ function createGrid(root, opts) {
       if ((!col || col.hidden) && entry.proxy) entry.proxy.hide('hidden');
     });
     updateHeaderState();
+    updateHandles();
   }
 
   // Sort/filter indicators, badges and open-menu contents, without rebuilding cells
@@ -868,8 +1102,10 @@ function createGrid(root, opts) {
         entry.menuBtn.classList.toggle('lk-datagrid__menu-btn--active', sorted || filtered);
         entry.menuBtn.classList.toggle('lk-datagrid__menu-btn--filtered', filtered);
         entry.th.classList.toggle('lk-datagrid__th--filtered', filtered);
-        const state = [sorted ? `sorted ${sort[idx].dir === 'desc' ? 'descending' : 'ascending'}` : '', filtered ? 'filtered' : ''].filter(Boolean).join(', ');
-        entry.menuBtn.setAttribute('aria-label', `${c.title || c.field} column menu${state ? ` (${state})` : ''}`);
+        const state = [sorted ? tx.t(sort[idx].dir === 'desc' ? 'state.sortedDesc' : 'state.sortedAsc') : '', filtered ? tx.t('state.filtered') : ''].filter(Boolean).join(', ');
+        entry.menuBtn.setAttribute('aria-label', state
+          ? tx.t('menu.buttonState', { column: colLabel(c), state })
+          : tx.t('menu.button', { column: colLabel(c) }));
         if (entry.proxy?.isOpen) entry.menu.refresh();
       }
     });
@@ -1078,20 +1314,20 @@ function createGrid(root, opts) {
     const v = c.validation || {};
     const label = c.title || c.field;
     const empty = value == null || value === '' || (typeof value === 'number' && Number.isNaN(value));
-    if (v.required && empty && colType(c) !== 'boolean') return v.message || `${label} is required`;
+    if (v.required && empty && colType(c) !== 'boolean') return v.message || tx.tf('validation.required', { label });
     if (!empty) {
-      if (v.min != null && Number(value) < v.min) return v.message || `${label} must be at least ${v.min}`;
-      if (v.max != null && Number(value) > v.max) return v.message || `${label} must be at most ${v.max}`;
-      if (v.minLength != null && String(value).length < v.minLength) return v.message || `${label} must be at least ${v.minLength} characters`;
-      if (v.maxLength != null && String(value).length > v.maxLength) return v.message || `${label} must be at most ${v.maxLength} characters`;
+      if (v.min != null && Number(value) < v.min) return v.message || tx.tf('validation.min', { label, min: v.min });
+      if (v.max != null && Number(value) > v.max) return v.message || tx.tf('validation.max', { label, max: v.max });
+      if (v.minLength != null && String(value).length < v.minLength) return v.message || tx.tf('validation.minLength', { label, min: v.minLength });
+      if (v.maxLength != null && String(value).length > v.maxLength) return v.message || tx.tf('validation.maxLength', { label, max: v.maxLength });
       if (v.pattern) {
         const re = v.pattern instanceof RegExp ? v.pattern : new RegExp(v.pattern);
-        if (!re.test(String(value))) return v.message || `${label} is not valid`;
+        if (!re.test(String(value))) return v.message || tx.tf('validation.pattern', { label });
       }
     }
     if (typeof c.validate === 'function') {
       const r = c.validate(value, row);
-      if (r !== true && r !== undefined && r !== null) return typeof r === 'string' ? r : `${label} is not valid`;
+      if (r !== true && r !== undefined && r !== null) return typeof r === 'string' ? r : tx.tf('validation.pattern', { label });
     }
     return null;
   }
@@ -1113,9 +1349,9 @@ function createGrid(root, opts) {
     return keys.length ? Math.max(...keys) + 1 : uid('new');
   }
 
-  function startEdit(row, isNew = false) {
+  // Enter edit mode (existing row, or a new record when isNew). Guarded by beforeEdit.
+  function startEdit(row, isNew = false, source = 'api') {
     if (!editCfg) return;
-    if (editState) cancelEdit(true);
 
     const draft = isNew ? {} : JSON.parse(JSON.stringify(row ?? {}));
     if (isNew) {
@@ -1128,22 +1364,27 @@ function createGrid(root, opts) {
       Object.assign(draft, isObject(row) ? JSON.parse(JSON.stringify(row)) : {});
     }
 
-    editState = {
-      key: isNew ? Symbol('new') : rowKey(row),
-      isNew,
-      row: isNew ? null : row,
-      draft,
-      errors: {},
-      saving: false,
-      focus: true,
-    };
-    if (typeof options.onEdit === 'function') options.onEdit({ row: editState.row, values: draft, isNew, grid: api, component: api });
+    ask('edit', { row: isNew ? null : row, values: draft, isNew, source }, () => {
+      if (destroyed) return;
+      if (editState) discardEdit(true);
+      editState = {
+        key: isNew ? Symbol('new') : rowKey(row),
+        isNew,
+        row: isNew ? null : row,
+        draft,
+        errors: {},
+        saving: false,
+        focus: true,
+      };
+      if (typeof options.onEdit === 'function') options.onEdit({ row: editState.row, values: draft, isNew, grid: api, component: api });
 
-    if (editCfg.mode === 'popup') openPopup();
-    else renderBody(false);
+      if (editCfg.mode === 'popup') openPopup();
+      else renderBody(false);
+    });
   }
 
-  function cancelEdit(silent = false) {
+  // Leave edit mode without asking (internal: row switch, paging, delete, destroy)
+  function discardEdit(silent = false) {
     if (!editState) return;
     const prev = editState;
     editState = null;
@@ -1156,7 +1397,14 @@ function createGrid(root, opts) {
     if (!silent && typeof options.onCancel === 'function') options.onCancel({ row: prev.row, isNew: prev.isNew, grid: api, component: api });
   }
 
-  async function saveEdit() {
+  // User-driven cancel (button, Escape, API): guarded by beforeCancel
+  function cancelEdit(silent = false, source = 'user') {
+    if (!editState) return;
+    if (silent) { discardEdit(true); return; }
+    ask('cancel', { row: editState.row, isNew: editState.isNew, source }, () => discardEdit(false));
+  }
+
+  async function saveEdit(source = 'user') {
     if (!editState || editState.saving) return false;
     const state = editState;
     state.errors = validateDraft();
@@ -1173,14 +1421,27 @@ function createGrid(root, opts) {
         if (JSON.stringify(values[k]) !== JSON.stringify(state.row?.[k])) changes[k] = values[k];
       });
     }
+    const saveEvent = { row: state.row, values, changes: state.isNew ? values : changes, isNew: state.isNew };
+
+    // beforeSave (option / DOM event 'lk:before-save') may veto or hold the save (Promise)
+    state.saving = true;
+    const allowed = await new Promise((resolve) => {
+      const r = ask('save', { ...saveEvent, source }, () => resolve(true), () => resolve(false));
+      if (r === true) resolve(true);
+    });
+    if (!allowed || editState !== state || destroyed) {
+      state.saving = false;
+      return false;
+    }
+    // Legacy: onSave returning false still vetoes
     if (typeof options.onSave === 'function'
-      && options.onSave({ row: state.row, values, changes: state.isNew ? values : changes, isNew: state.isNew, grid: api, component: api }) === false) {
+      && options.onSave({ ...saveEvent, grid: api, component: api }) === false) {
+      state.saving = false;
       return false;
     }
 
     // lkDataSource updates optimistically: leave edit mode first so the record
     // isn't drawn twice (draft + saved), and restore it if the server rejects.
-    state.saving = true;
     editState = null;
     try {
       if (state.isNew) {
@@ -1246,7 +1507,7 @@ function createGrid(root, opts) {
         onEnter: () => submit(),
         bucket: popupEditors,
       });
-      const label = el('label', 'lk-label', c.title || titleCase(c.field));
+      const label = el('label', 'lk-label', c.title || titleCase(c.field)); // column titles are the caller's data
       label.htmlFor = editor.id;
       if (c.validation?.required) label.classList.add('lk-label--required');
       const errorEl = el('span', 'lk-field-error');
@@ -1263,7 +1524,7 @@ function createGrid(root, opts) {
     });
 
     const submit = () => {
-      saveEdit().then((ok) => {
+      saveEdit('popup').then((ok) => {
         if (ok && popupDialog) {
           const dlg = popupDialog;
           popupDialog = null;
@@ -1275,16 +1536,20 @@ function createGrid(root, opts) {
 
     const title = typeof editCfg.title === 'function'
       ? editCfg.title({ row: state.row, isNew: state.isNew })
-      : (editCfg.title || (state.isNew ? 'Add record' : 'Edit record'));
+      : (editCfg.title || tx.t(state.isNew ? 'edit.add' : 'edit.edit'));
 
     popupDialog = lkDialog({
       title,
       content: form,
-      confirmText: 'Save',
-      cancelText: 'Cancel',
+      confirmText: tx.tf('common.save'),
+      cancelText: tx.tf('common.cancel'),
       destroyOnClose: true,
       className: 'lk-datagrid-popup',
       onConfirm() { submit(); return false; }, // stays open until the save succeeds
+      onCancel() { // Cancel button: beforeCancel can keep the popup open (Escape / overlay close cannot be vetoed here)
+        const g = guardSync(root, options, 'cancel', undefined, { row: state.row, isNew: state.isNew, source: 'popup', grid: api, component: api });
+        return g.allowed ? undefined : false;
+      },
       onDestroy() { flushEditors(popupEditors); },
       onClose(reason) {
         if (reason === 'saved') return;
@@ -1335,15 +1600,16 @@ function createGrid(root, opts) {
     } else if (ds.loading) {
       td.textContent = ' ';
     } else {
-      fill(td, typeof options.noRecords === 'function' ? options.noRecords(api) : options.noRecords, typeof options.noRecords === 'function');
+      const noRecords = noRecordsOf();
+      fill(td, typeof noRecords === 'function' ? noRecords(api) : noRecords, typeof noRecords === 'function');
     }
     tr.appendChild(td);
     tbody.appendChild(tr);
   }
 
   function commandDef(cmd) {
-    if (cmd === 'destroy') return { name: 'destroy', text: 'Delete', icon: 'delete', color: 'negative' };
-    if (cmd === 'edit') return { name: 'edit', text: 'Edit', icon: 'edit' };
+    if (cmd === 'destroy') return { name: 'destroy', text: tx.tf('common.delete'), icon: 'delete', color: 'negative' };
+    if (cmd === 'edit') return { name: 'edit', text: tx.tf('common.edit'), icon: 'edit' };
     return isObject(cmd) ? cmd : null;
   }
 
@@ -1374,8 +1640,8 @@ function createGrid(root, opts) {
         td.classList.add('lk-datagrid__select-cell');
       } else if (c._kind === 'command') {
         td.classList.add('lk-datagrid__command-cell');
-        td.appendChild(cmdButton({ text: 'Save', icon: 'save', color: 'primary' }, { action: 'save' }));
-        td.appendChild(cmdButton({ text: 'Cancel', icon: 'close' }, { action: 'cancel' }));
+        td.appendChild(cmdButton({ text: tx.tf('common.save'), icon: 'save', color: 'primary' }, { action: 'save' }));
+        td.appendChild(cmdButton({ text: tx.tf('common.cancel'), icon: 'close' }, { action: 'cancel' }));
       } else if (isFieldEditable(c, state.isNew)) {
         const editor = createEditor(c, state.draft, getField(state.draft, c.field), {
           dense: true,
@@ -1387,8 +1653,8 @@ function createGrid(root, opts) {
               td.querySelector('.lk-datagrid__cell-error')?.remove();
             }
           },
-          onEnter: () => saveEdit(),
-          onEscape: () => cancelEdit(),
+          onEnter: () => saveEdit('keyboard'),
+          onEscape: () => cancelEdit(false, 'keyboard'),
           bucket: inlineEditors,
         });
         editor.el.setAttribute?.('aria-label', c.title || c.field);
@@ -1404,7 +1670,7 @@ function createGrid(root, opts) {
         const value = getField(state.draft, c.field);
         if (typeof c.template === 'function' && !state.isNew) fill(td, c.template(state.draft, value), true);
         else if (typeof c.format === 'function') fill(td, c.format(value, state.draft), false);
-        else td.textContent = defaultFormat(value, c.type);
+        else td.textContent = fmtDefault(value, c.type);
       }
       tr.appendChild(td);
     });
@@ -1443,6 +1709,8 @@ function createGrid(root, opts) {
     }
 
     activeRowIndex = Math.min(activeRowIndex, Math.max(0, rows.length - 1));
+    gripIndex = Math.min(gripIndex, Math.max(0, rows.length - 1));
+    const reorderOn = rowReorderOn();
 
     rows.forEach((row, i) => {
       const key = rowKey(row);
@@ -1459,7 +1727,9 @@ function createGrid(root, opts) {
       } else if (selectMode || hasSelectColumn()) {
         tr.setAttribute('aria-selected', 'false');
       }
-      if (selectMode) tr.tabIndex = i === activeRowIndex ? 0 : -1;
+      if (selectMode || (rowCfg && !rowCfg.handle)) tr.tabIndex = i === activeRowIndex ? 0 : -1;
+      if (rowCfg && !rowCfg.handle && reorderOn) tr.classList.add('lk-datagrid__row--draggable');
+      if (movedKey !== undefined && key === movedKey) tr.classList.add('lk-datagrid__row--moved');
       if (typeof options.rowClass === 'function') {
         const cls = options.rowClass(row);
         if (cls) tr.classList.add(...String(cls).split(/\s+/).filter(Boolean));
@@ -1480,8 +1750,22 @@ function createGrid(root, opts) {
           cb.type = 'checkbox';
           cb.checked = isSel;
           cb.tabIndex = -1;
-          cb.setAttribute('aria-label', 'Select row');
+          cb.setAttribute('aria-label', tx.t('select.row'));
           td.appendChild(cb);
+        } else if (c._kind === 'grip') {
+          td.classList.add('lk-datagrid__grip-cell');
+          const g = el('button', 'lk-datagrid__grip');
+          g.type = 'button';
+          g.tabIndex = i === gripIndex ? 0 : -1;
+          if (reorderOn) {
+            g.setAttribute('aria-label', tx.t('rowReorder.grip', { n: (ds.page - 1) * ds.pageSize + i + 1 }));
+          } else {
+            g.setAttribute('aria-label', tx.t('rowReorder.disabled'));
+            g.setAttribute('aria-disabled', 'true');
+            g.title = tx.t('rowReorder.disabled');
+            g.classList.add('lk-datagrid__grip--disabled');
+          }
+          td.appendChild(g);
         } else if (c._kind === 'command') {
           td.classList.add('lk-datagrid__command-cell');
           (Array.isArray(c.command) ? c.command : [c.command]).forEach((cmd, ci) => {
@@ -1494,7 +1778,7 @@ function createGrid(root, opts) {
           const value = getField(row, c.field);
           if (typeof c.template === 'function') fill(td, c.template(row, value), true);
           else if (typeof c.format === 'function') fill(td, c.format(value, row), false);
-          else td.textContent = defaultFormat(value, c.type);
+          else td.textContent = fmtDefault(value, c.type);
         }
         tr.appendChild(td);
       });
@@ -1522,7 +1806,8 @@ function createGrid(root, opts) {
     if (!pager) {
       pagerEl.textContent = '';
       const nav = el('nav', 'lk-datagrid__pager-nav');
-      nav.setAttribute('aria-label', 'Pagination');
+      nav.setAttribute('aria-label', tx.t('pager.label'));
+      pagerNav = nav;
       const ul = el('ul', 'lk-pagination lk-pagination--dense');
       nav.appendChild(ul);
       pagerEl.appendChild(nav);
@@ -1533,17 +1818,24 @@ function createGrid(root, opts) {
         maxVisible: pageCfg.maxVisible,
         onChange(p) {
           if (syncingPager) return;
-          if (editState && editCfg.mode === 'inline') cancelEdit();
-          ds.setPage(p);
-          syncRemote('paging');
-          if (typeof options.onPage === 'function') options.onPage({ page: p, grid: api, component: api });
+          ask('page', { page: p, pageSize: ds.pageSize, source: 'pager' }, () => {
+            if (editState && editCfg.mode === 'inline') discardEdit(false);
+            ds.setPage(p);
+            syncRemote('paging');
+            if (typeof options.onPage === 'function') options.onPage({ page: p, grid: api, component: api });
+          }, () => { // vetoed: move the pager back to the current page
+            syncingPager = true;
+            pager.page = ds.page;
+            syncingPager = false;
+          });
         },
       });
 
       const right = el('div', 'lk-datagrid__pager-meta');
       if (Array.isArray(pageCfg.pageSizes) && pageCfg.pageSizes.length) {
         const sizeWrap = el('div', 'lk-datagrid__page-size');
-        sizeWrap.appendChild(el('span', 'lk-datagrid__page-size-label', 'Rows per page'));
+        pageSizeLabel = el('span', 'lk-datagrid__page-size-label', tx.t('pager.pageSize'));
+        sizeWrap.appendChild(pageSizeLabel);
         const host = el('div', 'lk-input--dense');
         sizeWrap.appendChild(host);
         right.appendChild(sizeWrap);
@@ -1552,8 +1844,10 @@ function createGrid(root, opts) {
           value: ds.pageSize,
           onChange(v) {
             if (v == null) return;
-            ds.setPageSize(Number(v));
-            syncRemote('paging');
+            ask('page', { page: 1, pageSize: Number(v), source: 'pageSize' }, () => {
+              ds.setPageSize(Number(v));
+              syncRemote('paging');
+            }, () => { pageSizeDd.value = ds.pageSize; });
           },
         });
       }
@@ -1580,7 +1874,9 @@ function createGrid(root, opts) {
       const total = ds.total;
       const start = total ? (ds.page - 1) * ds.pageSize + 1 : 0;
       const end = Math.min(total, ds.page * ds.pageSize);
-      infoEl.textContent = total ? `${start.toLocaleString()}–${end.toLocaleString()} of ${total.toLocaleString()}` : 'No items';
+      infoEl.textContent = total
+        ? tx.t('pager.info', { from: localeNumber(start), to: localeNumber(end), total: localeNumber(total), count: total })
+        : tx.t('pager.none');
     }
   }
 
@@ -1590,12 +1886,6 @@ function createGrid(root, opts) {
     if (typeof options.onChange === 'function') {
       options.onChange({ selectedRows: api.selectedRows, selectedKeys: api.selectedKeys, grid: api, component: api });
     }
-  }
-
-  function setRowSelected(row, isOn) {
-    const key = rowKey(row);
-    if (isOn) selected.set(key, row);
-    else selected.delete(key);
   }
 
   function refreshSelectionView() {
@@ -1619,40 +1909,54 @@ function createGrid(root, opts) {
     headerCheckbox.indeterminate = count > 0 && count < rows.length;
   }
 
+  // Selection changes are staged on a copy, offered to beforeSelect (selectedRows / selectedKeys = what
+  // the selection WOULD be), then committed. A veto repaints the checkboxes from the real selection.
+  function requestSelection(mutate, source, extra) {
+    const next = new Map(selected);
+    mutate(next);
+    ask('select', { selectedRows: Array.from(next.values()), selectedKeys: Array.from(next.keys()), ...extra, source }, () => {
+      selected.clear();
+      next.forEach((v, k) => selected.set(k, v));
+      refreshSelectionView();
+      emitSelection();
+    }, refreshSelectionView);
+  }
+
   function handleRowSelect(index, e, viaCheckbox) {
     const row = ds.view[index];
     if (!row) return;
     const key = rowKey(row);
     const multi = selectMode === 'multiple' || viaCheckbox || (hasSelectColumn() && !selectMode);
 
-    if (multi) {
-      if (e?.shiftKey && lastAnchorKey != null) {
-        const keys = ds.view.map(rowKey);
-        const a = keys.indexOf(lastAnchorKey);
-        const [from, to] = a < 0 ? [index, index] : [Math.min(a, index), Math.max(a, index)];
-        for (let i = from; i <= to; i++) setRowSelected(ds.view[i], true);
+    requestSelection((next) => {
+      if (multi) {
+        if (e?.shiftKey && lastAnchorKey != null) {
+          const keys = ds.view.map(rowKey);
+          const a = keys.indexOf(lastAnchorKey);
+          const [from, to] = a < 0 ? [index, index] : [Math.min(a, index), Math.max(a, index)];
+          for (let i = from; i <= to; i++) next.set(rowKey(ds.view[i]), ds.view[i]);
+        } else {
+          if (next.has(key)) next.delete(key); else next.set(key, row);
+          lastAnchorKey = key;
+        }
       } else {
-        setRowSelected(row, !selected.has(key));
+        const wasOnly = next.size === 1 && next.has(key);
+        next.clear();
+        if (!wasOnly) next.set(key, row);
         lastAnchorKey = key;
       }
-    } else {
-      const wasOnly = selected.size === 1 && selected.has(key);
-      selected.clear();
-      if (!wasOnly) selected.set(key, row);
-      lastAnchorKey = key;
-    }
-    refreshSelectionView();
-    emitSelection();
+    }, viaCheckbox ? 'checkbox' : (e?.type === 'keydown' ? 'keyboard' : 'click'), { row, index });
   }
 
   // --- Events ---------------------------------------------------------------------------------------------
 
   function onHeadClick(e) {
+    if (e.target.closest('.lk-datagrid__resizer')) return;
     if (headerCheckbox && e.target === headerCheckbox) {
       const isOn = headerCheckbox.checked;
-      ds.view.forEach((r) => setRowSelected(r, isOn));
-      refreshSelectionView();
-      emitSelection();
+      requestSelection((next) => {
+        ds.view.forEach((r) => { if (isOn) next.set(rowKey(r), r); else next.delete(rowKey(r)); });
+      }, 'selectAll', {});
       return;
     }
     if (e.target.closest('.lk-datagrid__menu-btn')) return;
@@ -1663,6 +1967,18 @@ function createGrid(root, opts) {
   }
 
   function onHeadKeydown(e) {
+    const handle = e.target.closest('.lk-datagrid__resizer');
+    if (handle) { resizerKeydown(e, handle); return; }
+    if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && reorderCfg) {
+      const rth = e.target.closest('th');
+      const rcol = rth && e.target === rth ? columns.find((c) => c._id === rth.dataset.col) : null;
+      if (rcol && isReorderable(rcol)) {
+        e.preventDefault();
+        const rtl = getComputedStyle(root).direction === 'rtl';
+        keyMoveColumn(rcol, (e.key === 'ArrowRight' ? 1 : -1) * (rtl ? -1 : 1));
+      }
+      return;
+    }
     if (e.key !== 'Enter' && e.key !== ' ') return;
     const th = e.target.closest('th.lk-table__th--sortable');
     if (!th || e.target !== th) return;
@@ -1673,8 +1989,8 @@ function createGrid(root, opts) {
   function onBodyClick(e) {
     const actionBtn = e.target.closest('[data-action]');
     if (actionBtn && tbody.contains(actionBtn)) {
-      if (actionBtn.dataset.action === 'save') saveEdit();
-      else cancelEdit();
+      if (actionBtn.dataset.action === 'save') saveEdit('button');
+      else cancelEdit(false, 'button');
       return;
     }
 
@@ -1691,7 +2007,7 @@ function createGrid(root, opts) {
       const cmd = list[Number(cmdBtn.dataset.cmd)];
       const def = commandDef(cmd);
       if (cmd === 'destroy') removeRow(row);
-      else if (cmd === 'edit') startEdit(row, false);
+      else if (cmd === 'edit') startEdit(row, false, 'button');
       else if (def && typeof def.click === 'function') def.click(row, api, e);
       return;
     }
@@ -1727,29 +2043,864 @@ function createGrid(root, opts) {
     else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handleRowSelect(index, e, false); }
   }
 
+  const swallowClick = (e) => {
+    if (!suppressClick) return;
+    suppressClick = false;
+    e.stopImmediatePropagation();
+    e.preventDefault();
+  };
+  on(thead, 'click', swallowClick, true);
+  on(tbody, 'click', swallowClick, true);
   on(thead, 'click', onHeadClick);
   on(thead, 'keydown', onHeadKeydown);
   on(tbody, 'click', onBodyClick);
   on(tbody, 'keydown', onBodyKeydown);
+  if (resizeCfg || reorderCfg) on(thead, 'pointerdown', onHeadPointerDown);
+  if (resizeCfg) {
+    on(thead, 'dblclick', (e) => {
+      const handle = e.target.closest('.lk-datagrid__resizer');
+      const c = handle && columns.find((x) => x._id === handle.closest('th')?.dataset.col);
+      if (c) { e.preventDefault(); autoFit(c); }
+    });
+    on(thead, 'focusin', (e) => {
+      const handle = e.target.closest('.lk-datagrid__resizer');
+      const c = handle && columns.find((x) => x._id === handle.closest('th')?.dataset.col);
+      if (c) updateResizer(c);
+    });
+    on(thead, 'focusout', (e) => {
+      if (kbSession && e.target === kbSession.handle) commitKb();
+    });
+  }
+  if (rowCfg) {
+    on(tbody, 'pointerdown', onBodyPointerDown);
+    on(tbody, 'keydown', onRowKeydown);
+    on(tbody, 'focusin', (e) => {
+      const g = e.target.closest?.('.lk-datagrid__grip');
+      const tr = g && g.closest('tr.lk-datagrid__row');
+      if (tr) gripIndex = Number(tr.dataset.index) || 0;
+    });
+    on(tbody, 'focusout', (e) => {
+      if (kbRow && !kbRow.moving && e.target === kbRow.grip) cancelKbRow(false);
+    });
+  }
+
+  // --- Column resize ----------------------------------------------------------------------------------------
+
+  // Public copy of a column definition (what events and `grid.columns` expose)
+  function pub(c) {
+    const { _id, _kind, _auto, _width, ...rest } = c;
+    if (_width != null) rest.width = Math.round(_width);
+    return rest;
+  }
+
+  const isRtl = () => getComputedStyle(root).direction === 'rtl';
+  const colOf = (th) => columns.find((x) => x._id === th?.dataset.col) || null;
+  const minOf = (c) => { const v = toPx(c.minWidth); return v != null ? v : resizeCfg.minWidth; };
+  const maxOf = (c) => { const v = toPx(c.maxWidth); return v != null ? v : resizeCfg.maxWidth; };
+
+  function announce(text) {
+    liveEl.textContent = '';
+    liveEl.textContent = text;
+  }
+
+  // Current pixel width: the pinned one, else what is rendered
+  function colWidth(c) {
+    if (c._width != null) return c._width;
+    const w = headerCache.get(c._id)?.th.getBoundingClientRect().width || 0;
+    return w || toPx(c.width) || DEFAULT_COL_PX;
+  }
+
+  // Pin every visible column to its rendered pixel width and switch to a fixed table layout, so
+  // header and body stay aligned while a column changes. Done lazily on the first resize.
+  function freeze() {
+    if (frozen || !resizeCfg) return;
+    const vis = visibleColumns();
+    const measured = vis.map((c) => Math.round(headerCache.get(c._id)?.th.getBoundingClientRect().width || 0));
+    frozen = true;
+    vis.forEach((c, i) => { if (c._width == null) c._width = measured[i] || toPx(c.width) || DEFAULT_COL_PX; });
+    tableEl.classList.add('lk-datagrid__table--fixed');
+    renderColgroup();
+  }
+
+  function unfreeze() {
+    frozen = false;
+    columns.forEach((c) => { delete c._width; });
+    tableEl.classList.remove('lk-datagrid__table--fixed');
+    tableEl.style.width = '';
+  }
+
+  function applyTableWidth() {
+    if (!frozen) return;
+    if (resizeCfg.mode === 'fit') { tableEl.style.width = ''; return; }
+    tableEl.style.width = `${visibleColumns().reduce((sum, c) => sum + (c._width || 0), 0)}px`;
+  }
+
+  function updateResizer(c) {
+    const r = headerCache.get(c._id)?.resizer;
+    if (!r) return;
+    const w = Math.round(colWidth(c));
+    const mx = maxOf(c);
+    r.setAttribute('aria-valuenow', String(w));
+    r.setAttribute('aria-valuemin', String(Math.round(minOf(c))));
+    r.setAttribute('aria-valuemax', String(Number.isFinite(mx) ? Math.round(mx) : Math.max(w, Math.round(contentEl.clientWidth) || w)));
+    r.setAttribute('aria-label', tx.t('resize.label', { column: colLabel(c) }));
+  }
+
+  function nextResizable(c) {
+    const v = visibleColumns();
+    for (let i = v.indexOf(c) + 1; i < v.length; i++) if (isResizable(v[i])) return v[i];
+    return null;
+  }
+
+  function updateHandles() {
+    if (!resizeCfg) return;
+    visibleColumns().forEach((c) => {
+      const r = headerCache.get(c._id)?.resizer;
+      if (!r) return;
+      r.hidden = resizeCfg.mode === 'fit' && !nextResizable(c); // nothing to take width from
+      updateResizer(c);
+    });
+  }
+
+  function setColWidth(c, w) {
+    c._width = w;
+    const col = colEls.get(c._id);
+    if (col) col.style.width = `${w}px`;
+    updateResizer(c);
+  }
+
+  // Widths for a target width of `c`; in 'fit' mode the neighbour `n` gives / takes the difference
+  function resolveWidths(s, target) {
+    const startC = s.w0;
+    let lo = minOf(s.c) - startC;
+    let hi = maxOf(s.c) - startC;
+    if (s.n) {
+      lo = Math.max(lo, s.nw0 - maxOf(s.n));
+      hi = Math.min(hi, s.nw0 - minOf(s.n));
+    }
+    const delta = Math.max(Math.min(lo, hi), Math.min(hi, target - startC));
+    return { w: Math.round(startC + delta), nw: s.n ? Math.round(s.nw0 - delta) : null };
+  }
+
+  function applyResize(s, target) {
+    const r = resolveWidths(s, target);
+    setColWidth(s.c, r.w);
+    if (s.n) setColWidth(s.n, r.nw);
+    applyTableWidth();
+    s.width = r.w;
+  }
+
+  function restoreWidths(s) {
+    setColWidth(s.c, s.w0);
+    if (s.n) setColWidth(s.n, s.nw0);
+    applyTableWidth();
+    s.width = s.w0;
+  }
+
+  // The state that exists once the guard allowed the resize: widths are pinned, the neighbour is known
+  function armResize(s) {
+    freeze();
+    s.allowed = true;
+    s.w0 = colWidth(s.c);
+    s.n = resizeCfg.mode === 'fit' ? nextResizable(s.c) : null;
+    s.nw0 = s.n ? colWidth(s.n) : 0;
+  }
+
+  function emitResize(c, width, source) {
+    if (typeof options.onColumnResize === 'function') {
+      options.onColumnResize({ column: pub(c), width, source, grid: api, component: api });
+    }
+    savePersist();
+  }
+
+  function startResize(e, handle) {
+    const c = colOf(handle.closest('th'));
+    if (!c || dragCleanup) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const s = {
+      c, handle, id: e.pointerId, x0: e.clientX, x: e.clientX, w0: colWidth(c), width: colWidth(c),
+      dir: isRtl() ? -1 : 1, allowed: false, released: false, done: false, n: null, nw0: 0,
+    };
+    let untrack = null;
+    const end = () => {
+      s.done = true;
+      untrack?.();
+      root.classList.remove('lk-datagrid--resizing');
+      handle.classList.remove('lk-datagrid__resizer--active');
+      try { handle.releasePointerCapture(s.id); } catch (err) { /* not captured */ }
+      dragCleanup = null;
+    };
+    const finish = (commit) => {
+      if (s.done) return;
+      if (!commit) restoreWidths(s);
+      end();
+      if (commit && Math.round(s.width) !== Math.round(s.w0)) emitResize(s.c, Math.round(s.width), 'pointer');
+    };
+    untrack = trackPointer(s, {
+      move(ev) { s.x = ev.clientX; if (s.allowed && !s.done) applyResize(s, s.w0 + (s.x - s.x0) * s.dir); },
+      up() { s.released = true; if (s.allowed) finish(true); },
+      cancel() { if (s.allowed) finish(false); else end(); },
+    });
+    dragCleanup = () => { if (!s.done) { if (s.allowed) restoreWidths(s); end(); } };
+    try { handle.setPointerCapture(e.pointerId); } catch (err) { /* synthetic pointer */ }
+    handle.classList.add('lk-datagrid__resizer--active');
+
+    ask('columnResize', { column: pub(c), width: s.w0, source: 'pointer' }, () => {
+      if (s.done) return;
+      armResize(s);
+      root.classList.add('lk-datagrid--resizing');
+      applyResize(s, s.w0 + (s.x - s.x0) * s.dir);
+      if (s.released) finish(true);
+    }, () => { if (!s.done) end(); });
+  }
+
+  // Width the column needs for its widest content (header included)
+  function measureColumn(c) {
+    const idx = visibleColumns().indexOf(c);
+    const col = colEls.get(c._id);
+    if (idx < 0 || !col) return colWidth(c);
+    const old = colWidth(c);
+    const prevTable = tableEl.style.width;
+    root.classList.add('lk-datagrid--measuring');
+    col.style.width = '1px';
+    if (prevTable) tableEl.style.width = `${Math.max(1, parseFloat(prevTable) - old + 1)}px`;
+    let max = 0;
+    [headRow, ...Array.from(tbody.rows)].forEach((tr) => {
+      const cell = tr.cells[idx];
+      if (cell && cell.colSpan === 1) max = Math.max(max, cell.scrollWidth);
+    });
+    root.classList.remove('lk-datagrid--measuring');
+    col.style.width = `${old}px`;
+    tableEl.style.width = prevTable;
+    return Math.ceil(max);
+  }
+
+  // Double-click on the handle: fit the column to its content
+  function autoFit(c) {
+    ask('columnResize', { column: pub(c), width: colWidth(c), source: 'autofit' }, () => {
+      const s = { c, id: 0 };
+      armResize(s);
+      applyResize(s, measureColumn(c));
+      if (Math.round(s.width) !== Math.round(s.w0)) emitResize(c, Math.round(s.width), 'autofit');
+    });
+  }
+
+  // Keyboard: Left/Right (Shift = x10) resize live, Enter / blur commits, Escape reverts
+  function keyResize(c, handle, delta) {
+    let s = kbSession;
+    if (s && s.c !== c) commitKb();
+    if (!kbSession) {
+      s = { c, handle, delta: 0, allowed: false, asked: false, dead: false, w0: colWidth(c), width: colWidth(c), n: null, nw0: 0 };
+      kbSession = s;
+    }
+    s = kbSession;
+    s.delta += delta;
+    if (!s.asked) {
+      s.asked = true;
+      ask('columnResize', { column: pub(c), width: s.w0, source: 'keyboard' }, () => {
+        if (s.dead) return;
+        armResize(s);
+        applyResize(s, s.w0 + s.delta);
+      }, () => { s.dead = true; if (kbSession === s) kbSession = null; });
+    } else if (s.allowed) {
+      applyResize(s, s.w0 + s.delta);
+    }
+  }
+
+  function commitKb() {
+    const s = kbSession;
+    if (!s) return;
+    kbSession = null;
+    s.dead = true;
+    if (s.allowed && Math.round(s.width) !== Math.round(s.w0)) emitResize(s.c, Math.round(s.width), 'keyboard');
+  }
+
+  function cancelKb() {
+    const s = kbSession;
+    if (!s) return;
+    kbSession = null;
+    s.dead = true;
+    if (s.allowed) restoreWidths(s);
+  }
+
+  function resizerKeydown(e, handle) {
+    const c = colOf(handle.closest('th'));
+    if (!c) return;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      const dir = (e.key === 'ArrowRight' ? 1 : -1) * (isRtl() ? -1 : 1);
+      keyResize(c, handle, dir * (e.shiftKey ? 100 : 10));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      commitKb();
+    } else if (e.key === 'Escape' && kbSession) {
+      e.preventDefault();
+      e.stopPropagation();
+      cancelKb();
+    }
+  }
+
+  // --- Drag plumbing (column reorder, row reorder, resize) ------------------------------------------------------
+
+  // Document-level pointer listeners for one drag session; returns the remover
+  function trackPointer(s, h) {
+    const move = (e) => { if (e.pointerId === s.id) h.move(e); };
+    const up = (e) => { if (e.pointerId === s.id) h.up(e); };
+    const cancel = (e) => { if (e.pointerId === s.id) h.cancel(e); };
+    const key = (e) => { if (e.key === 'Escape') h.cancel(e); };
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
+    document.addEventListener('pointercancel', cancel);
+    document.addEventListener('keydown', key);
+    return () => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+      document.removeEventListener('pointercancel', cancel);
+      document.removeEventListener('keydown', key);
+    };
+  }
+
+  function makeGhost(cls, rect) {
+    const g = el('div', `lk-datagrid__ghost ${cls}`);
+    if (options.dense) g.classList.add('lk-datagrid__ghost--dense');
+    g.style.width = `${rect.width}px`;
+    g.style.height = `${rect.height}px`;
+    g.style.left = `${rect.left}px`;
+    g.style.top = `${rect.top}px`;
+    document.body.appendChild(g);
+    ghosts.add(g);
+    return g;
+  }
+
+  function dropGhost(g) {
+    if (!g) return;
+    g.remove();
+    ghosts.delete(g);
+  }
+
+  // A vetoed / cancelled drag: the ghost glides back to where the item came from
+  function flyBack(g, rect) {
+    if (!g) return;
+    if (prefersReducedMotion() || typeof g.animate !== 'function') { dropGhost(g); return; }
+    const from = g.getBoundingClientRect();
+    const done = () => dropGhost(g);
+    try {
+      const a = g.animate(
+        [{ transform: 'translate(0, 0)' }, { transform: `translate(${rect.left - from.left}px, ${rect.top - from.top}px)` }],
+        { duration: 180, easing: 'ease-out' },
+      );
+      a.onfinish = done;
+      a.oncancel = done;
+    } catch (err) { done(); return; }
+    setTimeout(done, 400);
+  }
+
+  // Scroll the grid while the pointer rests near its edge. `pos` = { x, y }; `onScroll` re-targets the drop.
+  function startAutoScroll(axis, pos, onScroll) {
+    let raf = 0;
+    let alive = true;
+    const zone = 40;
+    const speed = (d) => Math.max(2, Math.min(24, Math.round(d / 2)));
+    const tick = () => {
+      if (!alive) return;
+      const r = contentEl.getBoundingClientRect();
+      let moved = false;
+      if (axis === 'x') {
+        const before = contentEl.scrollLeft;
+        if (pos.x < r.left + zone) contentEl.scrollLeft -= speed(r.left + zone - pos.x);
+        else if (pos.x > r.right - zone) contentEl.scrollLeft += speed(pos.x - (r.right - zone));
+        moved = contentEl.scrollLeft !== before;
+      } else if (contentEl.scrollHeight > contentEl.clientHeight + 1) {
+        const before = contentEl.scrollTop;
+        if (pos.y < r.top + zone) contentEl.scrollTop -= speed(r.top + zone - pos.y);
+        else if (pos.y > r.bottom - zone) contentEl.scrollTop += speed(pos.y - (r.bottom - zone));
+        moved = contentEl.scrollTop !== before;
+      } else {
+        const vh = window.innerHeight;
+        if (pos.y < zone) { window.scrollBy(0, -speed(zone - pos.y)); moved = true; }
+        else if (pos.y > vh - zone) { window.scrollBy(0, speed(pos.y - (vh - zone))); moved = true; }
+      }
+      if (moved) onScroll();
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => { alive = false; cancelAnimationFrame(raf); };
+  }
+
+  function swallowNextClick() {
+    suppressClick = true;
+    setTimeout(() => { suppressClick = false; }, 80);
+  }
+
+  // --- Column reorder -------------------------------------------------------------------------------------------
+
+  // New visible order when `c` takes slot `b` among the movable columns; fixed columns keep their place
+  function planMove(c, b) {
+    const vis = visibleColumns();
+    const movable = vis.filter(isReorderable);
+    const a = movable.indexOf(c);
+    const next = movable.slice();
+    next.splice(a, 1);
+    next.splice(b, 0, c);
+    let k = 0;
+    return vis.map((col) => (isReorderable(col) ? next[k++] : col));
+  }
+
+  function applyVisibleOrder(newVisible) {
+    const slots = [];
+    columns.forEach((c, i) => { if (!c.hidden) slots.push(i); });
+    const next = columns.slice();
+    slots.forEach((idx, k) => { next[idx] = newVisible[k]; });
+    columns = next;
+    renderColgroup();
+    renderHeader();
+    renderFilterRow();
+    renderBody(false);
+  }
+
+  function emitReorder(c, from, to, source) {
+    if (typeof options.onColumnReorder === 'function') {
+      options.onColumnReorder({ column: pub(c), from, to, columns: api.columns, source, grid: api, component: api });
+    }
+    savePersist();
+  }
+
+  function keyMoveColumn(c, dir) {
+    const movable = visibleColumns().filter(isReorderable);
+    const a = movable.indexOf(c);
+    const b = a + dir;
+    if (a < 0 || b < 0 || b >= movable.length) return;
+    const plan = planMove(c, b);
+    const from = visibleColumns().indexOf(c);
+    const to = plan.indexOf(c);
+    ask('columnReorder', { column: pub(c), from, to, source: 'keyboard' }, () => {
+      applyVisibleOrder(plan);
+      headerCache.get(c._id)?.th.focus();
+      announce(tx.t('reorder.moved', { column: colLabel(c), to: b + 1, total: movable.length }));
+      emitReorder(c, from, to, 'keyboard');
+    });
+  }
+
+  function startColumnDrag(e) {
+    if (!reorderCfg || dragCleanup) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (e.target.closest('button, input, a, select, textarea, .lk-datagrid__resizer')) return;
+    const th = e.target.closest('th');
+    if (!th || !headRow.contains(th)) return;
+    const c = colOf(th);
+    if (!c || !isReorderable(c)) return;
+
+    const s = {
+      id: e.pointerId, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY,
+      active: false, ghost: null, ind: null, stopScroll: null, rect: null, a: 0, b: 0,
+    };
+    let untrack = null;
+
+    const update = () => {
+      s.ghost.style.left = `${s.rect.left + (s.x - s.x0)}px`;
+      s.ghost.style.top = `${s.rect.top + (s.y - s.y0)}px`;
+      const movable = visibleColumns().filter(isReorderable);
+      const rects = movable.map((m) => headerCache.get(m._id).th.getBoundingClientRect());
+      const rtl = isRtl();
+      let j = 0;
+      rects.forEach((r, k) => {
+        const center = r.left + r.width / 2;
+        if (rtl ? s.x < center : s.x > center) j = k + 1;
+      });
+      s.a = movable.indexOf(c);
+      s.b = j > s.a ? j - 1 : j;
+      if (s.b === s.a || !rects.length) { s.ind.hidden = true; return; }
+      const edge = j < rects.length ? (rtl ? rects[j].right : rects[j].left) : (rtl ? rects[rects.length - 1].left : rects[rects.length - 1].right);
+      const cr = contentEl.getBoundingClientRect();
+      s.ind.hidden = false;
+      s.ind.style.left = `${edge - cr.left + contentEl.scrollLeft - 1}px`;
+      s.ind.style.top = `${contentEl.scrollTop}px`;
+      s.ind.style.height = `${contentEl.clientHeight}px`;
+    };
+
+    const begin = () => {
+      s.active = true;
+      s.rect = th.getBoundingClientRect();
+      s.ghost = makeGhost('lk-datagrid__ghost--col', s.rect);
+      s.ghost.textContent = th.querySelector('.lk-datagrid__th-label')?.textContent || th.textContent;
+      th.classList.add('lk-datagrid__th--dragging');
+      root.classList.add('lk-datagrid--dragging');
+      s.ind = el('div', 'lk-datagrid__drop lk-datagrid__drop--col');
+      s.ind.hidden = true;
+      contentEl.appendChild(s.ind);
+      s.stopScroll = startAutoScroll('x', s, update);
+    };
+
+    const end = () => {
+      untrack?.();
+      s.stopScroll?.();
+      s.ind?.remove();
+      th.classList.remove('lk-datagrid__th--dragging');
+      root.classList.remove('lk-datagrid--dragging');
+      dragCleanup = null;
+    };
+
+    untrack = trackPointer(s, {
+      move(ev) {
+        s.x = ev.clientX;
+        s.y = ev.clientY;
+        if (!s.active) {
+          if (Math.hypot(s.x - s.x0, s.y - s.y0) < 4) return;
+          begin();
+        }
+        update();
+      },
+      up() {
+        if (!s.active) { end(); return; }
+        update();
+        swallowNextClick();
+        const { a, b, ghost } = s;
+        end();
+        if (b === a) { flyBack(ghost, th.getBoundingClientRect()); return; }
+        const plan = planMove(c, b);
+        const from = visibleColumns().indexOf(c);
+        const to = plan.indexOf(c);
+        ask('columnReorder', { column: pub(c), from, to, source: 'pointer' }, () => {
+          dropGhost(ghost);
+          applyVisibleOrder(plan);
+          emitReorder(c, from, to, 'pointer');
+        }, () => flyBack(ghost, th.getBoundingClientRect()));
+      },
+      cancel() {
+        if (s.active) { swallowNextClick(); flyBack(s.ghost, th.getBoundingClientRect()); }
+        end();
+      },
+    });
+    dragCleanup = () => { dropGhost(s.ghost); end(); };
+  }
+
+  function onHeadPointerDown(e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const handle = e.target.closest('.lk-datagrid__resizer');
+    if (handle && headRow.contains(handle)) { if (resizeCfg) startResize(e, handle); return; }
+    startColumnDrag(e);
+  }
+
+  // --- Row reorder ------------------------------------------------------------------------------------------------
+
+  // Only meaningful while the visible order IS the data order: not sorted, not filtered, not editing
+  function rowReorderOn() {
+    return !!rowCfg && !currentSort().length && !ds.filter && !searchTerm && !editState;
+  }
+
+  const dataRows = () => Array.from(tbody.querySelectorAll('tr.lk-datagrid__row'));
+
+  function focusRowControl(key) {
+    const tr = dataRows().find((t) => rowKey(ds.view[Number(t.dataset.index)]) === key);
+    if (!tr) return;
+    const g = tr.querySelector('.lk-datagrid__grip');
+    (g || tr).focus();
+  }
+
+  // Ask, then move `row` to the position of the row currently at view index `toView`
+  function requestRowMove(row, toView, source, o = {}) {
+    const from = ds.items.indexOf(row);
+    const to = ds.items.indexOf(ds.view[toView]);
+    if (from < 0 || to < 0 || from === to) { o.onVeto?.(); return; }
+    const key = rowKey(row);
+    ask('rowReorder', { row, from, to, source }, () => {
+      clearTimeout(movedTimer);
+      movedKey = key;
+      movedTimer = setTimeout(() => { movedKey = undefined; }, 900);
+      o.onMoved?.();
+      ds.move(from, to);
+      if (rowCfg.field) {
+        ds.items.forEach((r, i) => setField(r, rowCfg.field, i + 1));
+        renderBody(false);
+      }
+      announce(tx.t('rowReorder.moved', { to: to + 1, total: ds.items.length }));
+      if (o.refocus) focusRowControl(key);
+      if (typeof options.onRowReorder === 'function') {
+        options.onRowReorder({ row, from, to, rows: ds.items.slice(), source, grid: api, component: api });
+      }
+    }, o.onVeto);
+  }
+
+  function onBodyPointerDown(e) {
+    if (!rowCfg || dragCleanup) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const tr = e.target.closest('tr.lk-datagrid__row');
+    if (!tr || !tbody.contains(tr) || tr.classList.contains('lk-datagrid__row--editing')) return;
+    const grip = e.target.closest('.lk-datagrid__grip');
+    if (grip) {
+      if (!rowReorderOn()) return;
+    } else if (rowCfg.handle || !rowReorderOn()
+      || e.target.closest('a, button, input, select, textarea, label, .lk-datagrid__cmd')) {
+      return;
+    }
+    const index = Number(tr.dataset.index);
+    const row = ds.view[index];
+    if (!row) return;
+
+    const s = {
+      id: e.pointerId, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY,
+      active: false, ghost: null, ind: null, stopScroll: null, rect: null, k: index, t: index,
+    };
+    let untrack = null;
+
+    const update = () => {
+      s.ghost.style.top = `${s.rect.top + (s.y - s.y0)}px`;
+      const trs = dataRows();
+      const rects = trs.map((t) => t.getBoundingClientRect());
+      let k = 0;
+      rects.forEach((r, i) => { if (s.y > r.top + r.height / 2) k = i + 1; });
+      s.k = k;
+      s.t = k > index ? k - 1 : k;
+      if (s.t === index || !rects.length) { s.ind.hidden = true; return; }
+      const edge = k < rects.length ? rects[k].top : rects[rects.length - 1].bottom;
+      const cr = contentEl.getBoundingClientRect();
+      s.ind.hidden = false;
+      s.ind.style.top = `${edge - cr.top + contentEl.scrollTop - 1}px`;
+      s.ind.style.width = `${tableEl.offsetWidth}px`;
+    };
+
+    const begin = () => {
+      s.active = true;
+      s.rect = tr.getBoundingClientRect();
+      s.ghost = makeGhost('lk-datagrid__ghost--row', s.rect);
+      const gt = el('table', `lk-table lk-datagrid__ghost-table${options.dense ? ' lk-table--dense' : ''}`);
+      const gb = el('tbody');
+      const clone = tr.cloneNode(true);
+      clone.removeAttribute('tabindex');
+      Array.from(tr.cells).forEach((td, i) => { if (clone.cells[i]) clone.cells[i].style.width = `${td.getBoundingClientRect().width}px`; });
+      gb.appendChild(clone);
+      gt.appendChild(gb);
+      gt.style.width = `${s.rect.width}px`;
+      s.ghost.appendChild(gt);
+      tr.classList.add('lk-datagrid__row--dragging');
+      root.classList.add('lk-datagrid--dragging');
+      s.ind = el('div', 'lk-datagrid__drop lk-datagrid__drop--row');
+      s.ind.hidden = true;
+      contentEl.appendChild(s.ind);
+      s.stopScroll = startAutoScroll('y', s, update);
+    };
+
+    const end = () => {
+      untrack?.();
+      s.stopScroll?.();
+      s.ind?.remove();
+      tr.classList.remove('lk-datagrid__row--dragging');
+      root.classList.remove('lk-datagrid--dragging');
+      dragCleanup = null;
+    };
+
+    untrack = trackPointer(s, {
+      move(ev) {
+        s.x = ev.clientX;
+        s.y = ev.clientY;
+        if (!s.active) {
+          if (Math.hypot(s.x - s.x0, s.y - s.y0) < 4) return;
+          begin();
+        }
+        update();
+      },
+      up() {
+        if (!s.active) { end(); return; }
+        update();
+        swallowNextClick();
+        const { t, ghost } = s;
+        end();
+        const back = () => flyBack(ghost, tr.isConnected ? tr.getBoundingClientRect() : s.rect);
+        if (t === index) { back(); return; }
+        // The ghost stays until the guard decided (a pending Promise guard keeps it on screen)
+        requestRowMove(row, t, 'pointer', { onVeto: back, onMoved: () => dropGhost(ghost) });
+      },
+      cancel() {
+        if (s.active) { swallowNextClick(); flyBack(s.ghost, tr.getBoundingClientRect()); }
+        end();
+      },
+    });
+    dragCleanup = () => { dropGhost(s.ghost); end(); };
+  }
+
+  // Keyboard: focus the grip, Space picks the row up, Up/Down move it, Space drops, Escape cancels
+  function onRowKeydown(e) {
+    const grip = e.target.closest?.('.lk-datagrid__grip');
+    if (grip && tbody.contains(grip)) {
+      const tr = grip.closest('tr.lk-datagrid__row');
+      const index = Number(tr.dataset.index);
+      if (kbRow) {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); moveKbRow(e.key === 'ArrowUp' ? -1 : 1); }
+        else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); dropKbRow(); }
+        else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); cancelKbRow(true); }
+        return;
+      }
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        if (!rowReorderOn()) { announce(tx.t('rowReorder.disabled')); return; }
+        pickUpRow(tr, index, grip);
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Home' || e.key === 'End') {
+        e.preventDefault();
+        const grips = dataRows().map((t) => t.querySelector('.lk-datagrid__grip'));
+        let next = index + (e.key === 'ArrowDown' ? 1 : (e.key === 'ArrowUp' ? -1 : 0));
+        if (e.key === 'Home') next = 0;
+        if (e.key === 'End') next = grips.length - 1;
+        next = Math.max(0, Math.min(grips.length - 1, next));
+        grips.forEach((g, i) => { if (g) g.tabIndex = i === next ? 0 : -1; });
+        gripIndex = next;
+        grips[next]?.focus();
+      }
+      return;
+    }
+    // Whole-row mode: Alt+Up / Alt+Down on the focused row
+    if (rowCfg && !rowCfg.handle && e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      const tr = e.target.closest('tr.lk-datagrid__row');
+      if (!tr || e.target !== tr || !rowReorderOn()) return;
+      e.preventDefault();
+      const index = Number(tr.dataset.index);
+      const to = index + (e.key === 'ArrowUp' ? -1 : 1);
+      const row = ds.view[index];
+      if (row && to >= 0 && to < ds.view.length) requestRowMove(row, to, 'keyboard', { refocus: true });
+    }
+  }
+
+  function pickUpRow(tr, index, grip) {
+    kbRow = { row: ds.view[index], from: index, cur: index, tr, grip, moving: false };
+    tr.classList.add('lk-datagrid__row--picked');
+    grip.setAttribute('aria-pressed', 'true');
+    announce(tx.t('rowReorder.pickedUp', { n: ds.items.indexOf(kbRow.row) + 1 }));
+  }
+
+  function moveKbRow(dir) {
+    const s = kbRow;
+    const trs = dataRows();
+    const next = s.cur + dir;
+    if (next < 0 || next >= trs.length) return;
+    s.moving = true;
+    const ref = trs[next];
+    tbody.insertBefore(s.tr, dir > 0 ? ref.nextSibling : ref);
+    s.cur = next;
+    s.grip.focus();
+    s.moving = false;
+    s.tr.scrollIntoView?.({ block: 'nearest' });
+    announce(tx.t('rowReorder.position', { to: ds.items.indexOf(ds.view[next]) + 1, total: ds.items.length }));
+  }
+
+  function dropKbRow() {
+    const s = kbRow;
+    kbRow = null;
+    const key = rowKey(s.row);
+    if (s.cur === s.from) { renderBody(false); focusRowControl(key); return; }
+    requestRowMove(s.row, s.cur, 'keyboard', {
+      refocus: true,
+      onVeto: () => { renderBody(false); focusRowControl(key); },
+    });
+  }
+
+  function cancelKbRow(refocus) {
+    const s = kbRow;
+    if (!s) return;
+    kbRow = null;
+    renderBody(false);
+    announce(tx.t('rowReorder.cancelled'));
+    if (refocus) focusRowControl(rowKey(s.row));
+  }
+
+  // --- Column state (widths, order, visibility) ---------------------------------------------------------------------
+
+  let store = null;
+  if (persistCfg && persistCfg.key) {
+    try {
+      store = lkStorage({ namespace: persistCfg.namespace || 'look-grid', encrypted: false, useSession: !!persistCfg.session });
+    } catch (err) { store = null; }
+  }
+
+  const stateColumns = () => columns.filter((c) => c._kind === 'data' && c.field);
+
+  function getColumnState() {
+    return stateColumns().map((c, i) => {
+      const w = c._width != null ? c._width : toPx(c.width);
+      return { field: c.field, width: w != null ? Math.round(w) : null, order: i, visible: !c.hidden };
+    });
+  }
+
+  function savePersist() {
+    if (!store || restoring || destroyed) return;
+    try {
+      Promise.resolve(store.set(persistCfg.key, getColumnState())).catch(() => {});
+    } catch (err) { /* storage unavailable */ }
+  }
+
+  // Apply a saved state: unknown fields are ignored, columns missing from it keep their place
+  function applyColumnState(state) {
+    if (!Array.isArray(state)) return;
+    const byField = new Map(state.filter((s) => s && s.field != null).map((s) => [String(s.field), s]));
+    const fielded = stateColumns();
+    const slots = [];
+    columns.forEach((c, i) => { if (fielded.includes(c)) slots.push(i); });
+    const ordered = fielded
+      .map((c, i) => ({ c, o: Number.isFinite(byField.get(String(c.field))?.order) ? byField.get(String(c.field)).order : i, i }))
+      .sort((a, b) => a.o - b.o || a.i - b.i);
+    const next = columns.slice();
+    slots.forEach((idx, k) => { next[idx] = ordered[k].c; });
+
+    const widths = [];
+    fielded.forEach((c) => {
+      const s = byField.get(String(c.field));
+      if (!s) return;
+      if (typeof s.visible === 'boolean') c.hidden = !s.visible;
+      const w = Number(s.width);
+      if (Number.isFinite(w) && w > 0) widths.push([c, w]);
+    });
+    if (!next.some((c) => !c.hidden && c._kind === 'data')) {
+      const first = next.find((c) => c._kind === 'data');
+      if (first) first.hidden = false;
+    }
+    columns = next;
+    if (widths.length) {
+      freeze();
+      widths.forEach(([c, w]) => { c._width = resizeCfg ? Math.max(minOf(c), Math.min(maxOf(c), Math.round(w))) : Math.round(w); });
+    }
+    renderColgroup();
+    renderHeader();
+    renderFilterRow();
+    renderBody(false);
+  }
+
+  function resetColumns() {
+    if (editState) discardEdit(true);
+    if (frozen) unfreeze();
+    else columns.forEach((c) => { delete c._width; });
+    if (initialCols) {
+      columns = initialCols.order.slice();
+      columns.forEach((c) => { c.hidden = initialCols.hidden.get(c); });
+    }
+    renderColgroup();
+    renderHeader();
+    renderFilterRow();
+    renderBody(false);
+    if (store) { try { store.remove(persistCfg.key); } catch (err) { /* ignore */ } }
+  }
 
   // --- Delete command ------------------------------------------------------------------------------------
 
-  function removeRow(row) {
+  // beforeDelete runs first (veto / take over, e.g. with your own confirmation), then the confirm dialog
+  function removeRow(row, source = 'button') {
     const doRemove = () => {
       const key = rowKey(row);
       selected.delete(key);
-      if (editState && editState.key === key) cancelEdit(true);
+      if (editState && editState.key === key) discardEdit(true);
       ds.remove((r) => r === row || rowKey(r) === key).catch((err) => {
         if (typeof options.onError === 'function') options.onError({ error: err, action: 'delete', grid: api, component: api });
       });
     };
-    if (!options.confirmDelete) { doRemove(); return; }
-    lkDialog({
-      title: 'Confirm',
-      content: options.confirmDelete,
-      confirmText: 'Delete',
-      destroyOnClose: true,
-      onConfirm: doRemove,
+    ask('delete', { row, key: rowKey(row), source }, () => {
+      const confirmText = confirmDeleteOf();
+      if (!confirmText) { doRemove(); return; }
+      lkDialog({
+        title: tx.tf('common.confirm'),
+        content: confirmText,
+        confirmText: tx.tf('common.delete'),
+        cancelText: tx.tf('common.cancel'),
+        destroyOnClose: true,
+        onConfirm: doRemove,
+      });
     });
   }
 
@@ -1788,34 +2939,56 @@ function createGrid(root, opts) {
 
   Object.defineProperties(api, {
     dataSource: { get: () => ds, enumerable: true },
-    columns: { get: () => columns.filter((c) => !c._auto).map(({ _id, _kind, ...c }) => c), enumerable: true },
+    columns: { get: () => columns.filter((c) => !c._auto).map(pub), enumerable: true },
     selectedRows: { get: () => Array.from(selected.values()), enumerable: true },
     selectedKeys: { get: () => Array.from(selected.keys()), enumerable: true },
     filters: { get: () => JSON.parse(JSON.stringify(columnFilters)), enumerable: true },
     isEditing: { get: () => !!editState, enumerable: true },
     editingRow: { get: () => editState?.row ?? null, enumerable: true },
     table: { get: () => tableEl, enumerable: true },
+    text: { get: () => tx.get(), set: (v) => tx.set(v), enumerable: true },
   });
+
+  // Re-apply every localized text to what is already rendered (locale / dictionary / `text` change).
+  // Selection, filters, sort, paging and an edit in progress are kept; an open column menu closes.
+  function refreshTexts() {
+    if (destroyed) return;
+    if (searchInput) {
+      searchInput.placeholder = tx.t('search.placeholder');
+      searchInput.setAttribute('aria-label', tx.tf('common.search'));
+    }
+    toolbarEl.querySelectorAll('[data-i18n]').forEach((btn) => {
+      const last = btn.lastChild;
+      if (last && last.nodeType === Node.TEXT_NODE) last.textContent = tx.t(btn.dataset.i18n);
+    });
+    loadingEl.title = tx.tf('common.loading');
+    hintEl.textContent = tx.t('reorder.hint');
+    if (pagerNav) pagerNav.setAttribute('aria-label', tx.t('pager.label'));
+    if (pageSizeLabel) pageSizeLabel.textContent = tx.t('pager.pageSize');
+    destroyHeaderCache();
+    renderHeader();
+    renderFilterRow();
+    renderBody(false);
+    renderPager();
+  }
 
   api.refresh = () => { renderBody(false); renderPager(); return api; };
   api.reload = () => (ds.canRead ? ds.load() : Promise.resolve(ds.view.slice()));
 
   api.select = (keysOrRows) => {
     const list = Array.isArray(keysOrRows) ? keysOrRows : [keysOrRows];
-    if (selectMode === 'single' && !hasSelectColumn()) selected.clear();
-    list.forEach((k) => {
-      const row = isObject(k) ? k : (ds.items.find((r) => rowKey(r) === k) || ds.view.find((r) => rowKey(r) === k));
-      if (row) selected.set(rowKey(row), row);
-    });
-    refreshSelectionView();
-    emitSelection();
+    requestSelection((next) => {
+      if (selectMode === 'single' && !hasSelectColumn()) next.clear();
+      list.forEach((k) => {
+        const row = isObject(k) ? k : (ds.items.find((r) => rowKey(r) === k) || ds.view.find((r) => rowKey(r) === k));
+        if (row) next.set(rowKey(row), row);
+      });
+    }, 'api', {});
     return api;
   };
 
   api.clearSelection = () => {
-    selected.clear();
-    refreshSelectionView();
-    emitSelection();
+    requestSelection((next) => next.clear(), 'api', {});
     return api;
   };
 
@@ -1827,13 +3000,24 @@ function createGrid(root, opts) {
     renderHeader();
     renderFilterRow();
     renderBody(false);
+    savePersist();
     return api;
   }
   api.showColumn = (field) => setColumnHidden(field, false);
   api.hideColumn = (field) => setColumnHidden(field, true);
 
+  // Column state: [{ field, width, order, visible }] — widths in px (null = not set), order = position among data columns
+  api.getColumnState = () => getColumnState();
+  api.setColumnState = (state) => {
+    restoring = true;
+    try { applyColumnState(state); } finally { restoring = false; }
+    savePersist();
+    return api;
+  };
+  api.resetColumns = () => { resetColumns(); return api; };
+
   api.setColumns = (defs) => {
-    if (editState) cancelEdit(true);
+    if (editState) discardEdit(true);
     destroyHeaderCache();
     buildColumns(defs);
     renderColgroup();
@@ -1844,41 +3028,52 @@ function createGrid(root, opts) {
   };
 
   api.search = (term) => {
-    searchTerm = String(term ?? '').trim();
-    if (searchInput) searchInput.value = searchTerm;
-    applyFilters();
+    const next = String(term ?? '').trim();
+    if (searchInput) searchInput.value = next;
+    changeFilters({ search: next }, 'api');
     return api;
   };
 
   // Programmatic column filter: filter('salary', { op: 'gte', value: 5000 }) — null clears
   api.filter = (field, rule) => {
-    if (rule == null || rule.value === '' || rule.value == null) delete columnFilters[field];
-    else columnFilters[field] = { ...rule };
-    applyFilters();
+    const filters = { ...columnFilters };
+    if (rule == null || rule.value === '' || rule.value == null) delete filters[field];
+    else filters[field] = { ...rule };
+    changeFilters({ filters }, 'api');
     return api;
   };
   api.clearFilters = () => {
-    Object.keys(columnFilters).forEach((k) => delete columnFilters[k]);
-    searchTerm = '';
-    if (searchInput) searchInput.value = '';
-    applyFilters();
+    changeFilters({ filters: {}, search: '' }, 'api');
     return api;
   };
-  api.sort = (field, dir) => { sortColumn(field, dir || null); return api; };
+  api.sort = (field, dir) => { sortColumn(field, dir || null, 'api'); return api; };
 
   api.editRow = (keyOrRow) => {
     const row = isObject(keyOrRow) ? keyOrRow
       : (ds.view.find((r) => rowKey(r) === keyOrRow) || ds.items.find((r) => rowKey(r) === keyOrRow));
-    if (row) startEdit(row, false);
+    if (row) startEdit(row, false, 'api');
     return api;
   };
-  api.addRow = (defaults = {}) => { startEdit(defaults, true); return api; };
-  api.saveRow = () => saveEdit();
-  api.cancelEdit = () => { cancelEdit(); return api; };
+  api.removeRow = (keyOrRow) => {
+    const row = isObject(keyOrRow) ? keyOrRow
+      : (ds.view.find((r) => rowKey(r) === keyOrRow) || ds.items.find((r) => rowKey(r) === keyOrRow));
+    if (row) removeRow(row, 'api');
+    return api;
+  };
+  api.addRow = (defaults = {}) => { startEdit(defaults, true, 'api'); return api; };
+  api.saveRow = () => saveEdit('api');
+  api.cancelEdit = () => { cancelEdit(false, 'api'); return api; };
 
   api.destroy = () => {
     if (destroyed) return;
     destroyed = true;
+    tx.destroy();
+    dragCleanup?.();
+    kbSession = null;
+    kbRow = null;
+    clearTimeout(movedTimer);
+    ghosts.forEach((g) => g.remove());
+    ghosts.clear();
     if (popupDialog) { const dlg = popupDialog; popupDialog = null; dlg.destroy(); }
     flushEditors(popupEditors);
     flushEditors(inlineEditors);
@@ -1894,7 +3089,8 @@ function createGrid(root, opts) {
     pageSizeDd?.destroy();
     root.textContent = '';
     originalChildren.forEach((n) => root.appendChild(n));
-    root.classList.remove('lk-datagrid--dense', 'lk-datagrid--scrollable', 'lk-datagrid--loading');
+    root.classList.remove('lk-datagrid--dense', 'lk-datagrid--scrollable', 'lk-datagrid--loading',
+      'lk-datagrid--resizing', 'lk-datagrid--dragging', 'lk-datagrid--measuring', ...featureClasses);
     if (addedRootClass) root.classList.remove('lk-datagrid');
   };
 
@@ -1913,6 +3109,15 @@ function createGrid(root, opts) {
   if (options.autoBind && ds.canRead && !ds.loading && !ds.items.length) {
     ds.load().catch(() => {});
   }
+
+  // Saved widths / order / visibility (lkStorage is async: applied as soon as it resolves; `grid.ready` waits for it)
+  api.ready = store
+    ? Promise.resolve().then(() => store.get(persistCfg.key, null)).then((state) => {
+      if (destroyed || !Array.isArray(state)) return;
+      restoring = true;
+      try { applyColumnState(state); } finally { restoring = false; }
+    }).catch(() => {})
+    : Promise.resolve();
 
   return api;
 }

@@ -89,7 +89,7 @@ LookDocs.render('#api', {
     'Three ways to apply a theme: at runtime with plain CSS (no rebuild), from JavaScript, or at build time in `src/scss/tokens/custom/*.scss` (compiled into `look.css`). See [Properties](#api-section-properties) for each technique, [CSS classes](#api-section-classes) for modifiers that switch component variables, and [CSS variables](#api-section-tokens) for every component-level variable.',
   ],
   notes: [
-    '**Dark mode** is not built in: there is no `prefers-color-scheme` rule, `data-theme` attribute or dark class in `look.css`. A dark theme is a set of surface/text/border token overrides — see the *Dark palette* entry below. A few component styles mix fixed colors (for example tonal chip text is mixed toward `#000`, carousel indicator dots are white), so check those when you design a dark palette.',
+    '**Dark mode** is built in: every colour token has a dark value under `[data-theme="dark"]` (on `<html>` or on any container). Switch with [lkTheme](composable-theme.html) (light / dark / system, remembered), or set the attribute yourself. `<html data-theme="system">` follows the OS without JavaScript. See the *Dark palette* entry below to tune it.',
     '**Reduced motion:** component styles include `prefers-reduced-motion: reduce` rules (button, carousel, chip, composables, datagrid, date, dropdown, list, modal, pagination, spinner, table) that shorten or remove animations — no token needed.',
   ],
 
@@ -198,16 +198,12 @@ LookDocs.render('#api', {
     },
     {
       name: 'Dark palette', type: 'CSS (token overrides)',
-      description: 'No dark theme ships with LookUI, but surfaces, text, borders, overlay and shadow color are all tokens. Override them (plus `color-scheme: dark` for native controls) on `:root`, inside `@media (prefers-color-scheme: dark)`, or on a scoped wrapper. Lighter brand shades usually read better on dark backgrounds.',
+      description: 'The dark palette ships in `look.css` under `:root[data-theme="dark"], [data-theme="dark"]` (brand and state colours are lighter, contrast text turns dark, shadows are stronger, `color-scheme: dark` is set). Override any key under the same selector to tune it; a `data-theme="dark"` container also works as a scoped dark region inside a light page. Fixed colours inside a few components (for example white carousel dots) stay as they are.',
       examples: [
-        { title: 'Scoped dark preview', run: true, code: `
+        { title: 'Scoped dark region', run: true, code: `
           const dark = document.createElement('div');
-          dark.style.cssText = [
-            'color-scheme:dark', '--lk-bg:#16161f', '--lk-bg-subtle:#1e1e2a', '--lk-surface:#2a2a38',
-            '--lk-text:#ececf3', '--lk-text-muted:#a0a0b0', '--lk-border:#3a3a4a', '--lk-border-strong:#5a5a6e',
-            '--lk-overlay:rgb(0 0 0 / 0.6)', '--lk-shadow-color:0 0 0', '--lk-primary:#8c9eff', '--lk-primary-dark:#7986cb',
-            'background:var(--lk-bg)', 'color:var(--lk-text)', 'padding:16px', 'border-radius:var(--lk-radius-xl)',
-          ].join(';');
+          dark.setAttribute('data-theme', 'dark');   // built-in palette, only inside this box
+          dark.style.cssText = 'padding:16px;border-radius:var(--lk-radius-xl)';
           dark.innerHTML =
             '<div style="background:var(--lk-bg-subtle);border:1px solid var(--lk-border);border-radius:var(--lk-radius-lg);padding:12px;display:flex;flex-direction:column;gap:10px">' +
               '<strong>Dark card</strong><span style="color:var(--lk-text-muted)">Muted text on --lk-bg-subtle</span>' +
@@ -217,22 +213,13 @@ LookDocs.render('#api', {
               '<span class="lk-chip lk-chip--positive lk-chip--filled">Paid</span></div>' +
             '</div>';
           container.appendChild(dark);` },
-        { title: 'Follow the OS setting', code: `
-          @media (prefers-color-scheme: dark) {
-            :root {
-              color-scheme: dark;
-              --lk-bg: #16161f;
-              --lk-bg-subtle: #1e1e2a;
-              --lk-surface: #2a2a38;
-              --lk-text: #ececf3;
-              --lk-text-muted: #a0a0b0;
-              --lk-border: #3a3a4a;
-              --lk-border-strong: #5a5a6e;
-            }
+        { title: 'Follow the OS (no JavaScript)', code: `
+          <html data-theme="system">   <!-- dark when the OS prefers dark -->` },
+        { title: 'Tune the dark palette', code: `
+          :root[data-theme="dark"] {
+            --lk-primary: #4db6ac;
+            --lk-bg: #0d0d12;
           }` },
-        { title: 'Toggle with an attribute', code: `
-          [data-theme="dark"] { color-scheme: dark; --lk-bg: #16161f; --lk-text: #ececf3; /* … */ }
-          document.documentElement.dataset.theme = 'dark';   // your own attribute, not built in` },
       ],
     },
     {

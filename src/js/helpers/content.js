@@ -15,6 +15,16 @@
  * Only load URLs you trust (inline handlers in the response still run).
  */
 
+import { lkI18n } from './i18n.js';
+
+lkI18n.define('content', { error: 'Failed to load content' });
+
+// Text option: string or () => string, evaluated every time it renders; wins over the registry
+function pick(v, key) {
+  const own = typeof v === 'function' ? v() : v;
+  return own != null ? String(own) : lkI18n.t(key);
+}
+
 let uid = 0;
 export function contentUid(prefix) {
   uid += 1;
@@ -65,7 +75,9 @@ function statusEl(cls, html) {
  * @param {Object} spec
  * @param {Object} [o]
  * @param {Object}   [o.ctx]          — passed to function content / transform / hooks
- * @param {string}   [o.loadingText]  — text beside the spinner while a URL loads
+ * @param {string|Function} [o.loadingText] — text beside the spinner while a URL loads (default: common.loading)
+ * @param {string|Function} [o.retryText]   — Retry button caption (default: common.retry)
+ * @param {string|Function} [o.errorText]   — message when the error has none (default: content.error)
  * @param {Function} [o.onLoad]       — (host) after content is in place
  * @param {Function} [o.onError]      — (error, host) when loading fails
  * @returns {{ promise: Promise<boolean>, destroy: Function, retry: Function }}
@@ -90,9 +102,10 @@ export function renderContent(host, spec, o = {}) {
     if (err?.name === 'AbortError') return false;
     clear();
     host.classList.add('lk-async--error');
-    const box = statusEl('lk-async__status--error', '<span class="lk-icon lk-icon--alert-triangle" aria-hidden="true"></span><span class="lk-async__message"></span><button type="button" class="lk-btn lk-btn--sm lk-btn--outline lk-async__retry">Retry</button>');
+    const box = statusEl('lk-async__status--error', '<span class="lk-icon lk-icon--alert-triangle" aria-hidden="true"></span><span class="lk-async__message"></span><button type="button" class="lk-btn lk-btn--sm lk-btn--outline lk-async__retry"></button>');
     box.setAttribute('role', 'alert');
-    box.querySelector('.lk-async__message').textContent = err?.message || 'Could not load the content.';
+    box.querySelector('.lk-async__message').textContent = err?.message || pick(o.errorText, 'content.error');
+    box.querySelector('.lk-async__retry').textContent = pick(o.retryText, 'common.retry');
     box.querySelector('.lk-async__retry').addEventListener('click', run);
     host.appendChild(box);
     o.onError?.(err, host);
@@ -110,7 +123,7 @@ export function renderContent(host, spec, o = {}) {
     host.classList.add('lk-async--loading');
     host.setAttribute('aria-busy', 'true');
     const status = statusEl('lk-async__status--loading', '<span class="lk-spinner lk-spinner--sm" aria-hidden="true"></span><span></span>');
-    status.lastChild.textContent = o.loadingText ?? 'Loading…';
+    status.lastChild.textContent = pick(o.loadingText, 'common.loading');
     host.appendChild(status);
     controller = new AbortController();
     const res = await fetch(spec.url, { ...(spec.fetchOptions || {}), signal: controller.signal });

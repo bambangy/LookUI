@@ -742,6 +742,22 @@ skills.selectedItems;       // [{ value, label }, …]</pre>
   LookDocs.render('#api', {
     name: 'lkDropdown',
     validateable: true,
+    textNamespace: 'dropdown',
+    guards: [
+      { name: 'beforeChange', signature: 'beforeChange(value | values, { source, component, item | items })', description: 'Runs when the user picks (`"select"`), removes a chip (`"remove"`) or clears (`"clear"`), before `onChange`. Single mode passes the new value (`null` for clear) and `item`; multiple mode passes the **resulting** array of values and `items` (plus the toggled `item`). Return `false` to veto: the old value stays (the panel still closes after a pick), a Promise to wait, or another value / array to replace it. Chip removal is a change too. Programmatic `value =` never asks.' },
+      { name: 'beforeOpen', signature: 'beforeOpen({ source, component })', description: 'Runs before the panel opens (`source: "user"` or `"api"` for `open()`). Return `false` to keep it closed or a Promise to wait.' },
+      { name: 'beforeClose', signature: 'beforeClose(reason, { source, reason, component })', description: 'Runs before a **user dismissal** closes the panel: `reason` is `"escape"`, `"outside"`, `"tab"`, `"toggle"` or `"manual"` (`close()`). Return `false` to keep it open. Closing after a pick or because the field became disabled / readonly is a consequence and is not asked.' },
+    ],
+    texts: [
+      { name: 'placeholder', default: 'Select…', description: 'Trigger text while nothing is selected. The `placeholder` option wins.' },
+      { name: 'searchPlaceholder', default: 'Search…', description: 'Placeholder of the search box (`useInput`). The `searchPlaceholder` option wins.' },
+      { name: 'searchLabel', default: 'Search options', description: 'Accessible name of the search box.' },
+      { name: 'listbox', default: 'Options', description: 'Accessible name of the option list.' },
+      { name: 'common.noResults', default: 'No results', description: 'Empty list text (shared key; the `noResultsText` option wins).' },
+      { name: 'common.loading', default: 'Loading…', description: 'Loading row (shared key; the `loadingText` option wins).' },
+      { name: 'common.clear', default: 'Clear', description: 'Accessible name of the clear button (shared key).' },
+      { name: 'common.remove', default: 'Remove', description: 'Accessible name of a chip remove button in `multiple` mode (shared key).' },
+    ],
     kind: 'Component',
     signature: 'const dd = Look.lkDropdown(element, options);',
     description: [

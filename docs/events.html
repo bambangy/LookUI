@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Overridable events</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Overridable events</h1>
+    <p style="opacity: 0.85;">before&lt;Action&gt; guards — veto, delay or replace what a user action is about to do</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">The idea</p>
+    <p class="demo-sub">Callbacks like <code>onChange</code> tell you what <em>happened</em>. Every user-driven action in LookUI also asks first: before it happens, a <strong>guard</strong> can stop it, wait for something asynchronous, or change what it will do. Each guard is available twice — as an option callback and as a cancelable DOM event — and both use the same name:</p>
+    <table class="api-params">
+      <thead><tr><th>Option callback</th><th>DOM event</th><th>Receives</th></tr></thead>
+      <tbody>
+        <tr><td><code>beforeChange(payload, ctx)</code></td><td><code>lk:before-change</code></td><td><code>payload</code> = what is about to happen (new value, files, page…), <code>ctx</code> = <code>{ source, component, … }</code></td></tr>
+        <tr><td><code>beforeClose(ctx)</code></td><td><code>lk:before-close</code></td><td>actions without a payload get <code>ctx</code> only (<code>ctx.reason</code> says why)</td></tr>
+      </tbody>
+    </table>
+    <p class="demo-sub" style="margin-top: var(--lk-space-3);">The DOM event bubbles from the component's element, so one listener on a <code>&lt;form&gt;</code> or <code>document</code> can govern a whole area; <code>event.detail</code> holds <code>ctx</code> and <code>payload</code>.</p>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">What a guard can do</p>
+    <table class="api-params">
+      <thead><tr><th>Do this</th><th>Callback</th><th>DOM event</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Cancel</td><td><code>return false</code></td><td><code>event.preventDefault()</code></td><td>Nothing happens, the after-callback (<code>onChange</code>, …) does not fire, the UI stays as it was.</td></tr>
+        <tr><td>Wait</td><td>return a <code>Promise</code></td><td>—</td><td>The action waits; resolving <code>false</code> cancels, anything else continues. A rejection or a thrown error counts as a veto.</td></tr>
+        <tr><td>Replace</td><td>return a new value</td><td>set <code>event.detail.payload</code></td><td>The action runs with your value (a filtered file list, a corrected page number…), where the action carries one.</td></tr>
+        <tr><td>Continue</td><td><code>undefined</code> / <code>true</code></td><td>do nothing</td><td>The action runs unchanged.</td></tr>
+      </tbody>
+    </table>
+    <p class="demo-sub" style="margin-top: var(--lk-space-3);">Programmatic changes that are not user actions (<code>component.value = x</code>, <code>card.expanded = true</code>) stay silent and unguarded. Methods that mirror a user action (<code>upload.add()</code>, <code>card.close()</code>) pass through the guard with <code>source: 'api'</code>.</p>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Try it</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div>
+        <input id="ev-up" type="file" multiple />
+        <p class="demo-sub" style="margin-top: var(--lk-space-2);"><code>beforeAdd</code> drops <code>.exe</code> files and prefixes the others — pick or drop a few files.</p>
+      </div>
+      <div>
+        <div class="lk-card" id="ev-card">
+          <div class="lk-card__header"><div class="lk-card__title">Ask before closing</div></div>
+          <div class="lk-card__body">Closing this card asks for confirmation (<code>beforeToggle</code>, async). Tick the box below to lock it with a DOM event instead.</div>
+        </div>
+        <label style="display: flex; gap: var(--lk-space-2); align-items: center; margin-top: var(--lk-space-2);"><input type="checkbox" id="ev-lock" /> Lock cards (DOM event <code>lk:before-toggle</code>)</label>
+      </div>
+    </div>
+    <div id="ev-out" class="demo-output" style="margin-top: var(--lk-space-4); min-height: 4rem;"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">Option callbacks</p>
+    <pre>Look.lkUpload('#files', {
+  multiple: true,
+  // replace the payload
+  beforeAdd(files, { source }) {
+    return files.filter((f) =&gt; !f.name.endsWith('.exe'));
+  },
+  // veto, asynchronously
+  async beforeRemove(files) {
+    return await askUser('Remove ' + files.length + ' file(s)?');   // false keeps them
+  },
+});
+
+Look.lkCard('#details', { beforeToggle: (nextOpen) =&gt; nextOpen || confirm('Close?') });</pre>
+  </div>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">DOM events (works with plain addEventListener / MVC)</p>
+    <pre>document.addEventListener('lk:before-change', (e) =&gt; {
+  const { component, source, payload } = e.detail;
+  if (component.el.closest('[data-readonly]')) e.preventDefault();        // cancel
+  if (Array.isArray(payload)) e.detail.payload = payload.slice(0, 3);    // replace
+});</pre>
+  </div>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Standard action names</p>
+    <table class="api-params">
+      <thead><tr><th>Action</th><th>Callback / event</th><th>Used for</th></tr></thead>
+      <tbody>
+        <tr><td>change</td><td><code>beforeChange</code> · <code>lk:before-change</code></td><td>committed value, selected slide, page, tab</td></tr>
+        <tr><td>open / close</td><td><code>beforeOpen</code> · <code>beforeClose(reason)</code></td><td>pickers, dropdowns, modals, dialogs, toasts — UI the user dismisses</td></tr>
+        <tr><td>show / hide</td><td><code>beforeShow</code> · <code>beforeHide(reason)</code></td><td>popups and indicators</td></tr>
+        <tr><td>toggle</td><td><code>beforeToggle</code></td><td>cards, list sub-menus</td></tr>
+        <tr><td>add / remove</td><td><code>beforeAdd</code> · <code>beforeRemove</code></td><td>files, chips, tabs, data source records</td></tr>
+        <tr><td>confirm / cancel</td><td><code>beforeConfirm</code> · <code>beforeCancel</code></td><td>dialogs, date picker OK</td></tr>
+        <tr><td>action</td><td><code>beforeAction</code></td><td>toolbar items, toast buttons</td></tr>
+        <tr><td>sort · filter · page · save · …</td><td><code>beforeSort</code> · <code>beforeFilter</code> · <code>beforePage</code> · <code>beforeSave</code></td><td>lkTable (these receive one event object)</td></tr>
+        <tr><td>submit</td><td><code>beforeSubmit</code></td><td>lkValidation</td></tr>
+        <tr><td>browse</td><td><code>beforeBrowse</code></td><td>lkUpload file dialog (must answer synchronously)</td></tr>
+      </tbody>
+    </table>
+    <p class="demo-sub" style="margin-top: var(--lk-space-3);">The exact guards of each component are listed under <strong>Overridable events</strong> on its documentation page. Older veto-by-return callbacks (<code>onSave</code>, <code>onConfirm</code>, chip <code>onRemove</code>) keep working and run through the same guard.</p>
+  </section>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'guard()',
+  kind: 'Helper',
+  signature: [
+    'import { guard, guardSync } from \'./helpers/guard.js\';',
+    'guard(el, opts, name, payload, ctx, proceed)',
+  ],
+  description: [
+    'For building your own components on the same convention (the helper is part of the library source; it is not exported on `Look`). `guard` runs `opts.before<Name>(payload, ctx)` (just `ctx` when `payload` is `undefined`), then dispatches the cancelable, bubbling DOM event `lk:before-<kebab-name>` on `el`, and calls `proceed(payload)` when neither vetoed.',
+    'It returns `true` when it proceeded synchronously, `false` when it was vetoed synchronously, or a Promise for an asynchronous guard. `guardSync` answers immediately as `{ allowed, payload }` and treats a Promise as "allowed" — use it where the DOM has already changed (a native checkbox) and must be reverted.',
+  ],
+});
+</script>
+<script>
+  const out = document.getElementById('ev-out');
+  const log = (s) => { out.textContent = (s + '\n' + out.textContent).split('\n').slice(0, 8).join('\n'); };
+
+  Look.lkUpload('#ev-up', {
+    label: 'Documents',
+    beforeAdd(files, { source }) {
+      const ok = files.filter((f) => !/\.exe$/i.test(f.name));
+      log('beforeAdd(' + source + '): ' + files.length + ' in, ' + ok.length + ' allowed');
+      return ok;
+    },
+    onChange: (v, c) => log('onChange(' + c.source + '): ' + v.length + ' file(s)'),
+  });
+
+  Look.lkCard('#ev-card', {
+    beforeToggle(next, { source }) {
+      log('beforeToggle(next=' + next + ', ' + source + ')');
+      if (next) return true;
+      return new Promise((resolve) => setTimeout(() => resolve(window.confirm('Close this card?')), 0));
+    },
+    onClose: (reason) => log('onClose: ' + reason),
+  });
+
+  const lock = document.getElementById('ev-lock');
+  document.addEventListener('lk:before-toggle', (e) => {
+    log('DOM lk:before-toggle (payload ' + e.detail.payload + ')');
+    if (lock.checked) { e.preventDefault(); log('  → vetoed by the lock'); }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Stepper (lkStepper)
+//
+//   .lk-stepper                       root (--horizontal | --vertical, --compact | --bar, --dense, --static)
+//   .lk-stepper__list                 <ol> of steps
+//   .lk-stepper__step                 <li> (--active | --done | --error | --pending, --disabled, --optional)
+//   .lk-stepper__head                 the step button (marker + label)
+//   .lk-stepper__marker / __title / __desc / __optional
+//   .lk-stepper__line                 connector to the next step (fills when the step is done)
+//   .lk-stepper__panels > __panel     one panel per step; the active one slides in, the old one slides out
+//   .lk-stepper__footer               Back / Next / Finish
+//
+// Panels enter and leave with keyframe animations (never a transition hide after an animated show).
+
+:root {
+  --lk-stepper-enter-duration: var(--lk-duration-slow);
+  --lk-stepper-exit-duration:  180ms;
+}
+
+.lk-stepper {
+  --lk-stepper-marker: 2rem;
+  --lk-stepper-line: 2px;
+  --lk-stepper-active: var(--lk-primary);
+  --lk-stepper-shift-x: 1.5rem;
+  --lk-stepper-shift-y: 0rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--lk-space-5);
+
+  &--dense {
+    --lk-stepper-marker: 1.5rem;
+    gap: var(--lk-space-3);
+  }
+
+  &__list {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    gap: var(--lk-space-2);
+    align-items: flex-start;
+  }
+
+  &__step {
+    position: relative;
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
+    align-items: center;
+    gap: var(--lk-space-2);
+
+    &--last { flex: 0 0 auto; }
+    &--last > .lk-stepper__line { display: none; }
+  }
+
+  &__head {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lk-space-2);
+    min-width: 0;
+    margin: 0;
+    padding: var(--lk-space-1);
+    border: 0;
+    border-radius: var(--lk-radius-md);
+    background: none;
+    color: var(--lk-text-muted);
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+    transition:
+      color var(--lk-duration-fast) var(--lk-easing-default),
+      background-color var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--lk-bg-subtle); }
+    &:focus-visible { outline: 2px solid var(--lk-stepper-active); outline-offset: 1px; }
+    &:disabled { cursor: not-allowed; opacity: 0.5; }
+    &[aria-disabled="true"] { cursor: default; }
+  }
+
+  &__marker {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--lk-stepper-marker);
+    height: var(--lk-stepper-marker);
+    border-radius: var(--lk-radius-full);
+    border: var(--lk-stepper-line) solid var(--lk-border-strong);
+    background: var(--lk-bg);
+    color: var(--lk-text-muted);
+    font-size: var(--lk-text-sm);
+    font-weight: var(--lk-weight-semibold);
+    line-height: 1;
+    transition:
+      background-color var(--lk-duration-base) var(--lk-easing-out),
+      border-color var(--lk-duration-base) var(--lk-easing-out),
+      color var(--lk-duration-base) var(--lk-easing-out),
+      transform var(--lk-duration-base) var(--lk-easing-spring);
+
+    .lk-icon { font-size: 1em; }
+  }
+
+  &__label {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: var(--lk-text-sm);
+    font-weight: var(--lk-weight-medium);
+    color: inherit;
+    overflow-wrap: anywhere;
+  }
+
+  &__desc,
+  &__optional {
+    font-size: var(--lk-text-xs);
+    color: var(--lk-text-muted);
+  }
+
+  &__line {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: var(--lk-space-4);
+    height: var(--lk-stepper-line);
+    border-radius: var(--lk-radius-full);
+    background: var(--lk-border);
+    overflow: hidden;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--lk-positive);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform var(--lk-duration-slow) var(--lk-easing-in-out);
+    }
+  }
+
+  // --- States ---
+  &__step--active {
+    > .lk-stepper__head { color: var(--lk-text); }
+    .lk-stepper__marker {
+      border-color: var(--lk-stepper-active);
+      background: var(--lk-stepper-active);
+      color: var(--lk-primary-contrast);
+    }
+  }
+
+  &__step--done {
+    > .lk-stepper__head { color: var(--lk-text); }
+    > .lk-stepper__line::after { transform: scaleX(1); }
+    &:not(.lk-stepper__step--active) .lk-stepper__marker {
+      border-color: var(--lk-positive);
+      background: var(--lk-positive);
+      color: var(--lk-positive-contrast);
+    }
+  }
+
+  &__step--error {
+    > .lk-stepper__head { color: var(--lk-negative); }
+    .lk-stepper__marker {
+      border-color: var(--lk-negative);
+      background: var(--lk-negative);
+      color: var(--lk-negative-contrast);
+    }
+  }
+
+  &__step--disabled .lk-stepper__title { text-decoration: line-through; text-decoration-thickness: 1px; }
+
+  // --- Panels ---
+  &__panels { position: relative; }
+
+  &__panel {
+    &--enter {
+      animation: lk-stepper-in var(--lk-stepper-enter-duration) var(--lk-easing-out) both;
+    }
+    &--leave {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      animation: lk-stepper-out var(--lk-stepper-exit-duration) var(--lk-easing-in) both;
+    }
+  }
+
+  &__message {
+    margin: 0;
+    color: var(--lk-negative);
+    font-size: var(--lk-text-sm);
+  }
+
+  &__footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--lk-space-3);
+  }
+
+  // --- Orientation ---
+  &--vertical {
+    --lk-stepper-shift-x: 0rem;
+    --lk-stepper-shift-y: 1rem;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--lk-space-6);
+    align-items: start;
+
+    > .lk-stepper__list { grid-column: 1; grid-row: 1 / span 4; flex-direction: column; gap: 0; }
+    > .lk-stepper__panels,
+    > .lk-stepper__message,
+    > .lk-stepper__footer { grid-column: 2; }
+
+    .lk-stepper__step { flex: none; flex-direction: column; align-items: flex-start; gap: 0; }
+    .lk-stepper__line {
+      flex: none;
+      min-width: 0;
+      width: var(--lk-stepper-line);
+      height: var(--lk-space-6);
+      margin-inline-start: calc(var(--lk-space-1) + (var(--lk-stepper-marker) - var(--lk-stepper-line)) / 2);
+
+      &::after { transform: scaleY(0); transform-origin: center top; }
+    }
+    .lk-stepper__step--done > .lk-stepper__line::after { transform: scaleY(1); }
+  }
+
+  // --- Variants ---
+  &--compact {
+    --lk-stepper-marker: 1.25rem;
+    .lk-stepper__marker { font-size: var(--lk-text-xs); }
+    .lk-stepper__desc { display: none; }
+  }
+
+  &--bar {
+    .lk-stepper__list { gap: var(--lk-space-2); }
+    .lk-stepper__step { flex-direction: column; align-items: stretch; gap: var(--lk-space-1); }
+    .lk-stepper__line { display: none; }
+    .lk-stepper__head { flex-direction: column; align-items: flex-start; padding: var(--lk-space-1) 0; }
+    .lk-stepper__marker {
+      width: 100%;
+      height: 0.25rem;
+      border: 0;
+      border-radius: var(--lk-radius-full);
+      background: var(--lk-border);
+      font-size: 0;
+      overflow: hidden;
+    }
+    .lk-stepper__step--done:not(.lk-stepper__step--active) .lk-stepper__marker { background: var(--lk-positive); }
+    .lk-stepper__step--active .lk-stepper__marker { background: var(--lk-stepper-active); }
+    .lk-stepper__step--error .lk-stepper__marker { background: var(--lk-negative); }
+    .lk-stepper__marker .lk-icon { display: none; }
+  }
+
+  &--static {
+    .lk-stepper__panel--enter,
+    .lk-stepper__panel--leave { animation: none; }
+  }
+}
+
+@keyframes lk-stepper-in {
+  from { opacity: 0; transform: translate3d(calc(var(--lk-stepper-shift-x) * var(--lk-stepper-dir, 1)), calc(var(--lk-stepper-shift-y) * var(--lk-stepper-dir, 1)), 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes lk-stepper-out {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to   { opacity: 0; transform: translate3d(calc(var(--lk-stepper-shift-x) * var(--lk-stepper-dir, 1) * -1), calc(var(--lk-stepper-shift-y) * var(--lk-stepper-dir, 1) * -1), 0); }
+}
+
+// Narrow screens: horizontal stepper keeps the markers, drops the descriptions and optional labels
+@media (max-width: 479.98px) {
+  .lk-stepper--horizontal {
+    .lk-stepper__desc,
+    .lk-stepper__optional { display: none; }
+    .lk-stepper__title { font-size: var(--lk-text-xs); }
+    .lk-stepper__step:not(.lk-stepper__step--active) .lk-stepper__title { display: none; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-stepper__panel--enter,
+  .lk-stepper__panel--leave { animation-duration: 1ms !important; }
+  .lk-stepper__marker,
+  .lk-stepper__line::after { transition-duration: 1ms !important; }
+}

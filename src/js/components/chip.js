@@ -2,10 +2,12 @@
 // Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Chip component factory
 
-import { resolveEl, applyBase, renamedOption } from "../helpers/base.js";
+import { resolveEl, applyBase } from "../helpers/base.js";
 import { qs, createElement } from "../core/index.js";
 import { lkIcon } from "./icon.js";
 import { readDurationMs } from "../helpers/motion.js";
+import { guard } from "../helpers/guard.js";
+import { bindText } from "../helpers/i18n.js";
 
 const COLORS = ["primary", "secondary", "accent", "positive", "warning", "negative", "info"];
 
@@ -26,12 +28,14 @@ const COLORS = ["primary", "secondary", "accent", "positive", "warning", "negati
  * @param {boolean}  [opts.square]    — rounded-rectangle shape
  * @param {boolean}  [opts.dense]     — compact size
  * @param {boolean}  [opts.removable] — show close button (default false)
- * @param {string}   [opts.removeLabel] — accessible label for the close button (default "Remove")
+ * @param {string}   [opts.removeLabel] — accessible label for the close button (default: the shared common.remove text)
+ * @param {Object}   [opts.text]      — text overrides (common.remove)
  * @param {boolean}  [opts.selected]  — initial selected state
  * @param {boolean}  [opts.disabled]  — initial disabled state
- * @param {Function} [opts.onRemove]  — (component) when removed; return `false` to keep the chip
+ * @param {Function} [opts.beforeRemove] — (component, { source, component }) => false | Promise; veto removal (DOM event 'lk:before-remove')
+ * @param {Function} [opts.beforeChange] — (selected, { source, component, prev }) => false | boolean | Promise; veto / replace a toggle (DOM event 'lk:before-change')
+ * @param {Function} [opts.onRemove]  — (component) when removed; return `false` to keep the chip (legacy veto, still honoured after beforeRemove)
  * @param {Function} [opts.onChange]  — (selected, { source, component }) when toggled (makes the chip a toggle button)
- * @param {Function} [opts.onSelect]  — deprecated alias of onChange
  * @param {Function} [opts.onClick]   — (event, { component }) plain click (makes the chip clickable)
  * @returns {Object}
  */
@@ -59,6 +63,15 @@ export function lkChip(el, opts = {}) {
   let ownsCloseBtn = false;
   let removed = false;
   let leaveTimer = null;
+  const tx = bindText("chip", opts.text, () => { applyCloseLabel(); });
+  let ownsCloseLabel = false;
+
+  function applyCloseLabel() {
+    if (!closeBtn || !ownsCloseLabel) return;
+    const text = labelEl.textContent.trim();
+    const base = opts.removeLabel || tx.tf("common.remove");
+    closeBtn.setAttribute("aria-label", `${base}${text ? ` ${text}` : ""}`);
+  }
   const ownedParts = [];
 
   // --- Label span ---------------------------------------------------------------
@@ -110,14 +123,15 @@ export function lkChip(el, opts = {}) {
     node.appendChild(closeBtn);
   }
   if (closeBtn && !closeBtn.hasAttribute("aria-label")) {
-    const text = labelEl.textContent.trim();
-    closeBtn.setAttribute("aria-label", `${opts.removeLabel || "Remove"}${text ? ` ${text}` : ""}`);
+    ownsCloseLabel = true;
+    applyCloseLabel();
   }
 
   // --- Interactivity -----------------------------------------------------------------
 
-  const onChange = renamedOption(opts, "onChange", "onSelect", "lkChip");
-  const interactive = !!(onChange || opts.onClick);
+  const onChange = opts.onChange;
+  const togglable = !!(onChange || typeof opts.beforeChange === "function");
+  const interactive = !!(togglable || opts.onClick);
   const hadTabindex = node.hasAttribute("tabindex");
   const hadRole = node.getAttribute("role");
   if (interactive && !hadTabindex && node.tagName !== "BUTTON") node.setAttribute("tabindex", "0");
@@ -126,7 +140,7 @@ export function lkChip(el, opts = {}) {
   function updateView() {
     node.classList.toggle("lk-chip--clickable", interactive);
     node.classList.toggle("lk-chip--selected", selected);
-    if (onChange) node.setAttribute("aria-pressed", String(selected));
+    if (togglable) node.setAttribute("aria-pressed", String(selected));
   }
 
   function isDisabled() {
@@ -134,36 +148,47 @@ export function lkChip(el, opts = {}) {
       || node.getAttribute("aria-disabled") === "true";
   }
 
-  /** Remove with a short exit animation. Returns false if onRemove vetoed it. */
-  function remove() {
+  /**
+   * Remove with a short exit animation. Returns false if a guard (beforeRemove / legacy onRemove)
+   * vetoed it, true when removed, or a Promise when an async guard decides later.
+   */
+  function remove(source = "api") {
     if (removed) return true;
-    if (typeof opts.onRemove === "function" && opts.onRemove(comp) === false) return false;
-    removed = true;
-    node.classList.add("lk-chip--leaving");
-    const ms = readDurationMs(node, "transition-duration", 0);
-    const finish = () => { leaveTimer = null; node.remove(); };
-    if (ms > 0) leaveTimer = setTimeout(finish, ms + 20);
-    else finish();
-    return true;
+    if (typeof source !== "string") source = "api";
+    let vetoed = false;
+    const r = guard(node, opts, "remove", comp, { source, component: comp }, () => {
+      if (typeof opts.onRemove === "function" && opts.onRemove(comp) === false) { vetoed = true; return; }
+      removed = true;
+      node.classList.add("lk-chip--leaving");
+      const ms = readDurationMs(node, "transition-duration", 0);
+      const finish = () => { leaveTimer = null; node.remove(); };
+      if (ms > 0) leaveTimer = setTimeout(finish, ms + 20);
+      else finish();
+    });
+    return vetoed ? false : r;
   }
 
   function onClose(e) {
     e.stopPropagation();
     if (isDisabled()) return;
-    remove();
+    remove("click");
   }
 
   // source: "click" (user) | "api" (toggle())
   function toggle(source = "api") {
-    if (!onChange || isDisabled()) return;
-    selected = !selected;
-    updateView();
-    onChange(selected, { source, component: comp });
+    if (!togglable || isDisabled()) return;
+    if (typeof source !== "string") source = "api";
+    const prev = selected;
+    guard(node, opts, "change", !prev, { source, component: comp, prev }, (next) => {
+      selected = !!next;
+      updateView();
+      if (onChange) onChange(selected, { source, component: comp });
+    });
   }
 
   function onClick(e) {
     if (isDisabled() || e.target.closest(".lk-chip__close")) return;
-    if (onChange) toggle("click");
+    if (togglable) toggle("click");
     if (typeof opts.onClick === "function") opts.onClick(e, { component: comp });
   }
 
@@ -174,7 +199,7 @@ export function lkChip(el, opts = {}) {
       node.click();
     } else if (closeBtn && (e.key === "Backspace" || e.key === "Delete")) {
       e.preventDefault();
-      remove();
+      remove("key");
     }
   }
 
@@ -188,13 +213,12 @@ export function lkChip(el, opts = {}) {
   updateView();
 
   Object.defineProperties(comp, {
+    text: { get() { return tx.get(); }, set(v) { tx.set(v); }, enumerable: true },
     label: {
       get() { return labelEl.textContent.trim(); },
       set(v) {
         labelEl.textContent = v == null ? "" : String(v);
-        if (closeBtn && ownsCloseBtn) {
-          closeBtn.setAttribute("aria-label", `${opts.removeLabel || "Remove"} ${labelEl.textContent}`.trim());
-        }
+        applyCloseLabel();
       },
       enumerable: true,
     },
@@ -217,6 +241,7 @@ export function lkChip(el, opts = {}) {
 
   comp.destroy = function () {
     clearTimeout(leaveTimer);
+    tx.destroy();
     if (closeBtn) closeBtn.removeEventListener("click", onClose);
     if (interactive) node.removeEventListener("click", onClick);
     node.removeEventListener("keydown", onKeydown);

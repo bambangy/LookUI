@@ -4,6 +4,8 @@
 
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { renderContent, hasContent, contentUid } from '../helpers/content.js';
+import { guard } from '../helpers/guard.js';
+import { bindText } from '../helpers/i18n.js';
 
 const RENDER_ALIASES = { once: 'lazy', first: 'lazy', always: 'eager', each: 'active', reload: 'active' };
 const VARIANTS = ['line', 'pill', 'box'];
@@ -38,8 +40,12 @@ function resolveContainer(ref) {
  * @param {string}  [opts.activation]   — 'auto' (arrow keys select, default) | 'manual' (arrows move focus, Enter/Space select)
  * @param {boolean} [opts.fill]         — stretch tabs over the full width
  * @param {boolean} [opts.dense]
- * @param {string}  [opts.loadingText]
- * @param {Function} [opts.beforeChange] — (next, { prev, source, component }) => false to cancel
+ * @param {string}  [opts.loadingText]  — text while a URL tab loads (default common.loading)
+ * @param {string}  [opts.retryText]    — Retry caption (default common.retry)
+ * @param {string}  [opts.errorText]    — error message when the failure has none
+ * @param {Object}  [opts.text]         — text overrides (common.loading, common.retry)
+ * @param {Function} [opts.beforeChange] — (next, { prev, source, component }) => false | tab | Promise; cancel or redirect a tab change (DOM event 'lk:before-change')
+ * @param {Function} [opts.beforeRemove] — (tab, { source, component }) => false | Promise; cancel removing a tab (DOM event 'lk:before-remove')
  * @param {Function} [opts.onChange]    — (name, { source, component, prev, tab }); prev = previous tab name
  * @param {Function} [opts.onLoad]      — (panel, { name, tab, component }) after a tab's content is in place
  * @param {Function} [opts.onError]     — (error, { name, panel, tab, component })
@@ -53,6 +59,7 @@ export function lkTabs(el, opts = {}) {
   const activation = opts.activation === 'manual' ? 'manual' : 'auto';
   const defaultRender = normRender(opts.render);
 
+  const tx = bindText('tabs', opts.text);
   const created = [];   // nodes this instance added (removed on destroy)
   const restore = [];   // undo functions for markup it changed
 
@@ -247,7 +254,9 @@ export function lkTabs(el, opts = {}) {
     if (!hasContent(t.spec) || t.handle) return;
     t.handle = renderContent(t.panel, t.spec, {
       ctx: { name: t.name, tab: publicTab(t), tabs: comp },
-      loadingText: opts.loadingText,
+      loadingText: opts.loadingText ?? (() => tx.tf('common.loading')),
+      retryText: opts.retryText ?? (() => tx.tf('common.retry')),
+      errorText: opts.errorText,
       onLoad: () => {
         const ctx = { name: t.name, tab: publicTab(t), component: comp };
         t.options.onLoad?.(t.panel, ctx);
@@ -298,10 +307,21 @@ export function lkTabs(el, opts = {}) {
       if (focus) t.li.focus({ preventScroll: true });
       return true;
     }
-    const prev = active;
-    if (!silent && typeof opts.beforeChange === 'function'
-      && opts.beforeChange(publicTab(t), { prev: publicTab(prev), source, component: comp }) === false) return false;
+    if (silent) return activate(t, { focus, silent, source });
+    return guard(node, opts, 'change', publicTab(t), { prev: publicTab(active), source, component: comp }, (next) => {
+      let target = t;
+      if (next && next !== true) {
+        const alt = find(next) || (next.el ? tabs.find((x) => x.li === next.el) : null);
+        if (alt) target = alt;
+      }
+      // An async guard may answer after the tab was removed / disabled or the component destroyed
+      if (destroyed || !tabs.includes(target) || target.disabled || target === active) return;
+      activate(target, { focus, silent, source });
+    });
+  }
 
+  function activate(t, { focus, silent, source }) {
+    const prev = active;
     if (prev) {
       prev.li.classList.remove('lk-tabs__tab--active');
       prev.li.setAttribute('aria-selected', 'false');
@@ -408,6 +428,8 @@ export function lkTabs(el, opts = {}) {
     container: { get() { return container; }, enumerable: true },
   });
 
+  Object.defineProperty(comp, 'text', { get() { return tx.get(); }, set(v) { tx.set(v); }, enumerable: true });
+
   comp.select = (ref) => select(ref);
   comp.get = (ref) => publicTab(find(ref));
   comp.panel = (ref) => find(ref)?.panel ?? null;
@@ -457,9 +479,15 @@ export function lkTabs(el, opts = {}) {
   };
 
   /** Remove a tab and its panel. The neighbour becomes active when it was the active one. */
-  comp.remove = (ref) => {
+  comp.remove = (ref, source = 'api') => {
     const t = find(ref);
     if (!t) return false;
+    return guard(node, opts, 'remove', publicTab(t), { source: typeof source === 'string' ? source : 'api', component: comp }, () => {
+      if (!destroyed && tabs.includes(t)) removeTab(t);
+    });
+  };
+
+  function removeTab(t) {
     const i = tabs.indexOf(t);
     if (t === active) {
       const others = tabs.filter((x) => x !== t && !x.disabled);
@@ -473,12 +501,12 @@ export function lkTabs(el, opts = {}) {
     if (t.ownLi) t.li.remove();
     tabs.splice(i, 1);
     placeIndicator();
-    return true;
-  };
+  }
 
   comp.destroy = () => {
     if (destroyed) return;
     destroyed = true;
+    tx.destroy();
     list.removeEventListener('click', onClick);
     list.removeEventListener('keydown', onKeydown);
     ro?.disconnect();

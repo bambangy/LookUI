@@ -1,0 +1,123 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Sortable (lkSortable) — drag-to-reorder visuals. Also hosts the small
+// lkClipboard feedback label (.lk-clipboard-tip), which has no component file of its own.
+//
+//   .lk-sortable                    container (added by lkSortable)
+//   .lk-sortable--dragging          every container taking part in a running drag
+//   .lk-sortable--source / --over   the container the item came from / is hovering
+//   .lk-sortable--disabled
+//   .lk-sortable__handle            handle element (touch-action: none)
+//   .lk-sortable__placeholder       the slot (the real item, dimmed) while a pointer drag runs
+//   .lk-sortable__item--picked      the item picked up with the keyboard
+//   .lk-sortable__ghost             floating copy that follows the pointer
+//   body.lk-sortable-dragging       while dragging (no text selection, grabbing cursor)
+
+.lk-sortable {
+  --lk-sortable-ghost-shadow: var(--lk-shadow-lg);
+  --lk-sortable-ghost-opacity: 0.96;
+  --lk-sortable-slot-opacity: 0.4;
+  --lk-sortable-ring: var(--lk-primary);
+
+  &--disabled { cursor: not-allowed; }
+
+  // Empty drop targets (kanban columns) stay hittable while a drag runs
+  &--dragging:empty {
+    min-height: calc(var(--lk-space-4) * 3);
+  }
+
+  &--over {
+    outline: 2px dashed var(--lk-sortable-ring);
+    outline-offset: 2px;
+    border-radius: var(--lk-radius);
+  }
+
+  &__handle {
+    touch-action: none;
+    cursor: grab;
+  }
+
+  &__placeholder {
+    opacity: var(--lk-sortable-slot-opacity);
+    outline: 2px dashed var(--lk-sortable-ring);
+    outline-offset: -2px;
+    transition: opacity var(--lk-duration-fast) var(--lk-easing-default);
+  }
+
+  &__item--picked {
+    outline: 2px solid var(--lk-sortable-ring);
+    outline-offset: 1px;
+    background-color: color-mix(in srgb, var(--lk-sortable-ring) 10%, transparent);
+  }
+
+  &__ghost {
+    opacity: var(--lk-sortable-ghost-opacity);
+    box-shadow: var(--lk-sortable-ghost-shadow);
+    border-radius: var(--lk-radius);
+    cursor: grabbing;
+    scale: 1.02;
+    will-change: transform;
+
+    > * { cursor: grabbing; }
+  }
+}
+
+// Items that can be grabbed
+.lk-sortable:not(.lk-sortable--disabled):not(.lk-sortable--handle) > :not(.lk-sortable__placeholder) { cursor: grab; }
+.lk-sortable--disabled > * { cursor: default; }
+
+// Focus ring for keyboard pick-up (items made focusable by lkSortable)
+.lk-sortable > :focus-visible,
+.lk-sortable .lk-sortable__handle:focus-visible {
+  outline: 2px solid var(--lk-sortable-ring);
+  outline-offset: 2px;
+}
+
+body.lk-sortable-dragging,
+body.lk-sortable-dragging * {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grabbing !important;
+}
+
+// ---------------------------------------------------------------------------
+// lkClipboard feedback label
+// ---------------------------------------------------------------------------
+.lk-clipboard-tip {
+  position: fixed;
+  z-index: var(--lk-z-tooltip);
+  padding: var(--lk-space-1) var(--lk-space-2);
+  font-size: var(--lk-text-xs);
+  font-weight: var(--lk-weight-medium);
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--lk-text-on-dark);
+  background: var(--lk-secondary-dark);
+  border-radius: var(--lk-radius);
+  box-shadow: var(--lk-shadow);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, calc(-100% + 4px));
+  transition:
+    opacity var(--lk-duration-base) var(--lk-easing-default),
+    transform var(--lk-duration-base) var(--lk-easing-default);
+
+  &.is-visible {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+  }
+
+  &--error {
+    color: var(--lk-negative-contrast);
+    background: var(--lk-negative);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-sortable__placeholder,
+  .lk-clipboard-tip {
+    transition: none;
+  }
+
+  .lk-sortable__ghost { scale: 1; }
+}

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Composable Org</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Org</h1>
+    <p style="opacity: 0.85;">Look.lkOrg(target, opts) — an organization chart: CEO &rarr; managers &rarr; reports, drawn as connected boxes, with CRUD, drag-and-drop re-parenting and a view-only mode</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Interactive — add / edit / delete + drag-and-drop</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      Hover a card for its add-report / edit / delete actions. Dragging a card onto another card's
+      row re-parents it (including onto a card with no reports yet — the empty row below it becomes
+      a drop target while a drag is active); dragging it between two siblings reorders it. Every
+      node is a real <code>{ id, parent, head, tail, prev, next, childCount, data }</code> record —
+      open the console and try <code>org1.get('ceo').head.next.data.title</code>.
+    </p>
+    <div id="org-interactive"></div>
+    <div id="org-interactive-out" class="demo-output" style="margin-top: var(--lk-space-3);">—</div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">View-only (<code>readOnly: true</code>)</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      Same data, no add/edit/delete affordances and no drag — but expand/collapse and clicking a
+      card to select it (e.g. to show a detail panel) still work.
+    </p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <div id="org-readonly"></div>
+      <div id="org-readonly-out" class="demo-output">Click a card…</div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Guards — <code>beforeMove</code> enforcing a business rule</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      This chart's <code>beforeMove</code> rejects any attempt to re-parent the CEO, and the log
+      below records every attempt. Try dragging the CEO card onto another card (rejected by the
+      app's own rule) and try dragging a manager onto one of their own reports (rejected
+      automatically — <code>lkOrg</code> prevents cycles regardless of <code>beforeMove</code>).
+      Both go through the exact same guard path as <code>org.move()</code>.
+    </p>
+    <div id="org-guard"></div>
+    <div id="org-guard-out" class="demo-output" style="margin-top: var(--lk-space-3); white-space: pre-line;">—</div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const org = Look.lkOrg('#chart', {
+  items: [{ id: 'ceo', title: 'Jane Doe', subtitle: 'CEO', children: [
+    { id: 'vp-eng', title: 'Sam Lee', subtitle: 'VP Engineering', children: [
+      { id: 'eng1', title: 'Ann', subtitle: 'Engineer' },
+    ] },
+  ] }],
+  onMove(node, ctx) { console.log(node.id, 'moved under', ctx.toParentId); },
+  onChange(items, ctx) { console.log(ctx.action, items); },
+});
+
+org.get('ceo').head.data.title;       // 'Sam Lee' — real linked pointers, not an array facade
+org.add('vp-eng', { title: 'New hire', subtitle: 'Engineer' });
+org.move('eng1', { parentId: 'ceo', index: 0 });
+org.remove('vp-eng', { strategy: 'promote' });   // vp-eng's reports move up to the CEO
+org.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkOrg',
+  textNamespace: 'org',
+  kind: 'Composable',
+  signature: 'const org = Look.lkOrg(target, options);',
+  description: [
+    'Builds an organization chart inside an empty `target`: boxes connected by CSS-drawn lines (nested flexbox + `::before`/`::after`, no SVG, no layout engine — flexbox centers children under their parent for free). The whole chart sits in a scrollable container so wide/deep charts do not blow out the page.',
+    '**The data model is a real linked tree.** Every loaded node is kept alive for the chart\'s lifetime as `{ id, parent, head, tail, prev, next, childCount, data }` — a node\'s children form their own doubly-linked list (`head`/`tail` bound it, each child\'s `prev`/`next` link to its siblings), not an array. Walking children is `for (let c = node.head; c; c = c.next)`, and `org.get(id)` hands you the live record, so `org.get(\'ceo\').head.next.data.title` works directly. Structural changes (`add`/`remove`/`move`, and dragging) relink these pointers in place rather than splicing an array.',
+    'Input stays ergonomic: a nested `items` array (or a single root object) with children under `childrenField`, or a flat array / [lkDataSource](datasource.html) + `parentField` (nested the same way [lkTree](composable-tree.html) does). `idField`/`titleField`/`subtitleField`/`imageField` map your record shape onto the card; `render(node, ctx)` replaces the card body entirely (a `Node` or plain text — never raw HTML).',
+    '**Three modes.** Interactive (default): hover/focus a card for add-report / edit / delete actions, opening a small built-in title/subtitle form (or your own `editor` function). Drag-and-drop: one [lkSortable](sortable.html) per sibling row, all sharing one group, so dragging a card into another row re-parents it and dragging it within a row reorders it — cycles (dropping a manager onto their own report) are rejected automatically. `readOnly: true` removes every CRUD affordance and skips building the `lkSortable` instances entirely, but expand/collapse and `select()` still work (they are navigation, not data changes).',
+    '**One guard path for every structural change.** A drag and a programmatic `move()` both end up calling the exact same internal relink + `beforeMove`/`onMove` — so a `beforeMove` veto reverts a drag visually exactly the way it blocks an API call.',
+  ],
+  params: [
+    { name: 'target', type: 'Element | string', description: 'Empty container the chart is built into (or a selector).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The chart instance.' },
+  options: [
+    { name: 'items', type: 'Array | Object', default: '—', description: 'A forest (array of root objects) or a single root object; children live under `childrenField`.' },
+    { name: 'dataSource', type: 'Object', default: '—', description: 'An [lkDataSource](datasource.html) instance or its options object (flat rows).' },
+    { name: 'parentField', type: 'string', default: '—', description: 'Flat rows: field holding the parent key (`null`/absent = root).' },
+    { name: 'childrenField', type: 'string', default: "'children'", description: 'Field holding a node\'s nested children on input, and in `toJSON()`.' },
+    { name: 'idField', type: 'string', default: "'id'", description: 'Field used as a stable identity; auto-generated when missing/duplicated.' },
+    { name: 'titleField', type: 'string', default: "'title'", description: 'Field rendered as the card\'s main line.' },
+    { name: 'subtitleField', type: 'string', default: "'subtitle'", description: 'Field rendered under the title.' },
+    { name: 'imageField', type: 'string', default: "'image'", description: 'Field with an avatar image URL (falls back to a user icon).' },
+    { name: 'render', type: 'Function', default: '—', description: '`(node, { component, expanded, selected }) => Node | text` replaces the default card body.' },
+    { name: 'readOnly', type: 'boolean', default: 'false', description: 'No add/edit/delete, no drag — expand/collapse and `select()` still work.' },
+    { name: 'dragDrop', type: 'boolean', default: 'true', description: 'Set `false` to keep the CRUD actions but skip building the `lkSortable` instances (forced `false` when `readOnly`).' },
+    { name: 'removeStrategy', type: "'cascade' | 'promote'", default: "'cascade'", description: '`remove()` / the delete button default: `\'cascade\'` removes the whole subtree; `\'promote\'` re-parents the removed node\'s own children up to its parent (or to the root, for a removed root).' },
+    { name: 'editor', type: 'Function', default: '—', description: '`(host, { node, mode: \'add\'|\'edit\', value, setValue, close }) => cleanup` replaces the built-in add/edit form. `node` is the edited node (`edit`) or the future parent (`add`, `null` for a new root); call `close(data)` to save or `close()` to cancel.' },
+    { name: 'expanded', type: 'Array | boolean', default: 'true', description: 'Ids initially expanded, or `true`/`false` for every branch.' },
+    { name: 'dense', type: 'boolean', default: 'false', description: 'Smaller cards and gaps.' },
+    { name: 'ariaLabel', type: 'string', default: '—', description: 'Accessible name of the chart root.' },
+    { name: 'text', type: 'Object', default: '{}', description: 'Per-instance text overrides — see **Text keys** below.' },
+    { name: 'beforeAdd', type: 'Function', default: '—', description: '`(data, { parentId, parent, source, component })`; `false` cancels, an object replaces the data about to be added.' },
+    { name: 'beforeUpdate', type: 'Function', default: '—', description: '`(changes, { node, prev, source, component })`; `prev` is the node\'s data before the change.' },
+    { name: 'beforeRemove', type: 'Function', default: '—', description: '`(node, { strategy, source, component })`.' },
+    { name: 'beforeMove', type: 'Function', default: '—', description: '`(moveInfo, { source, component })` — `moveInfo = { id, node, fromParentId, fromIndex, toParentId, toIndex }`. Fires for both a drag and `move()`; a veto reverts the drag visually.' },
+    { name: 'beforeToggle', type: 'Function', default: '—', description: '`(nextExpanded, { node, source, component })`.' },
+    { name: 'onAdd', type: 'Function', default: '—', description: '`(node, { parentId, source, component })`.' },
+    { name: 'onUpdate', type: 'Function', default: '—', description: '`(node, { prev, source, component })`.' },
+    { name: 'onRemove', type: 'Function', default: '—', description: '`(node, { strategy, promoted, source, component })` — `promoted` lists the children re-parented up (`\'promote\'` only).' },
+    { name: 'onMove', type: 'Function', default: '—', description: '`(node, { fromParentId, fromIndex, toParentId, toIndex, source, component })` — `source` is `\'drag\'`, `\'key\'` (keyboard reorder) or `\'api\'`.' },
+    { name: 'onToggle', type: 'Function', default: '—', description: '`(expanded, { node, source, component })`.' },
+    { name: 'onSelect', type: 'Function', default: '—', description: '`(node, { source, component })` on a card click or `select()`.' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(items, { action: \'add\'|\'update\'|\'remove\'|\'move\', source, component })` after any structural mutation — for a caller that just wants to persist the current tree.' },
+  ],
+  guards: [
+    { name: 'beforeAdd', signature: 'beforeAdd(data, ctx)', description: 'Runs before a node is created (API `add()` or the built-in/custom add form). Return `false` to cancel, or an object to replace the data.' },
+    { name: 'beforeUpdate', signature: 'beforeUpdate(changes, ctx)', description: 'Runs before a node\'s data is merged. Return `false` to cancel, or an object to replace the changes.' },
+    { name: 'beforeRemove', signature: 'beforeRemove(node, ctx)', description: 'Runs before a node (and, with `\'cascade\'`, its subtree) is removed.' },
+    { name: 'beforeMove', signature: 'beforeMove(moveInfo, ctx)', description: 'Runs before a re-parent/reorder commits — for a drag AND for `move()`. Return `false` to veto (a drag snaps back visually), or an object to replace `toParentId`/`toIndex`.' },
+    { name: 'beforeToggle', signature: 'beforeToggle(nextExpanded, ctx)', description: 'Runs before a branch expands or collapses.' },
+  ],
+  texts: [
+    { name: 'empty', default: 'No people yet', description: 'Shown when the chart has no roots.' },
+    { name: 'addChild', default: 'Add report', description: 'Add-report button label/title.' },
+    { name: 'expand', default: 'Expand', description: 'Toggle button label when collapsed.' },
+    { name: 'collapse', default: 'Collapse', description: 'Toggle button label when expanded.' },
+    { name: 'dropHint', default: 'Drop here', description: 'Shown inside an empty children row while a drag is active.' },
+    { name: 'cycleRejected', default: "A manager can't be moved under one of their own reports.", description: 'Reserved for apps that want to surface the cycle rejection; lkOrg itself just silently reverts the drag.' },
+    { name: 'fieldTitle', default: 'Name', description: 'Built-in form label for `titleField`.' },
+    { name: 'fieldSubtitle', default: 'Title', description: 'Built-in form label for `subtitleField`.' },
+    { name: 'titleRequired', default: 'Name is required', description: 'Built-in form validation message.' },
+    { name: 'dialogAddTitle', default: 'Add person', description: 'Built-in add dialog title.' },
+    { name: 'dialogEditTitle', default: 'Edit person', description: 'Built-in edit dialog title.' },
+    { name: 'confirmCascade', default: '{ one: "Remove {title}? Their report will be removed too.", other: "Remove {title}? Their {count} reports will be removed too." }', description: 'Delete confirmation, cascade strategy, with reports.' },
+    { name: 'confirmCascadeLeaf', default: 'Remove {title}?', description: 'Delete confirmation for a node with no reports.' },
+    { name: 'confirmPromote', default: '{ one: "…Their report will move up to {parentTitle}\'s team.", other: "…Their {count} reports will move up to {parentTitle}\'s team." }', description: 'Delete confirmation, promote strategy.' },
+    { name: 'confirmPromoteRoot', default: '{ one: "…Their report becomes a top-level person.", other: "…Their {count} reports become top-level people." }', description: 'Delete confirmation, promote strategy, removed node is a root.' },
+    { name: 'common.save / common.cancel / common.edit / common.delete / common.close', default: '—', description: 'Shared captions used by the built-in form and delete confirmation.' },
+  ],
+  properties: [
+    { name: 'items', type: 'Array', readonly: true, description: 'The current tree serialized back to plain nested objects (no circular references), rooted at an array of roots.' },
+    { name: 'selected', type: 'Object | null', description: 'The selected node record; assigning an id/node/`null` is silent.' },
+    { name: 'text', type: 'Object', description: 'Get/set the active text overrides.' },
+    { name: 'dataSource', type: 'Object', readonly: true, description: 'The resolved `lkDataSource` instance, or `null`.' },
+    { name: 'el / id / hidden / enabled', type: '—', description: 'Standard base properties; `el` is the `.lk-org` root.' },
+  ],
+  methods: [
+    { name: 'get', signature: 'get(id)', description: 'Returns the live node record (with `parent`/`head`/`tail`/`prev`/`next`), or `null`.' },
+    { name: 'getChildren', signature: 'getChildren(id)', description: 'Array of a node\'s children (`id` omitted/`null` = the roots), walked from `head`.' },
+    { name: 'getPath', signature: 'getPath(id)', description: 'Array of node records from the root down to `id` (inclusive).' },
+    { name: 'toJSON', signature: 'toJSON()', description: 'Same as the `items` property — plain nested objects.' },
+    { name: 'add', signature: 'add(parentId, data, { index }?) → Promise<node|null>', description: 'Adds a node under `parentId` (`null` = a new root). Goes through `beforeAdd`/`onAdd` with `source: \'api\'`; resolves `null` on a veto.' },
+    { name: 'update', signature: 'update(id, changes) → Promise<node|null>', description: 'Merges `changes` into the node\'s data. Goes through `beforeUpdate`/`onUpdate`.' },
+    { name: 'remove', signature: 'remove(id, { strategy }?) → Promise<boolean>', description: 'Removes a node (`strategy` overrides `removeStrategy`). Goes through `beforeRemove`/`onRemove`; resolves `false` on a veto.' },
+    { name: 'move', signature: 'move(id, { parentId, index }?) → Promise<node|null>', description: 'Re-parents and/or reorders a node (omit `parentId` to just reorder within its current parent). Goes through the same `beforeMove`/`onMove` a drag uses; resolves `null` on a veto or a cycle.' },
+    { name: 'expand', signature: 'expand(id)', description: 'Expands a branch. Guarded (`beforeToggle`), `source: \'api\'`.' },
+    { name: 'collapse', signature: 'collapse(id)', description: 'Collapses a branch.' },
+    { name: 'toggle', signature: 'toggle(id)', description: 'Expands or collapses depending on the current state.' },
+    { name: 'expandAll', signature: 'expandAll()', description: 'Expands every branch. Silent.' },
+    { name: 'collapseAll', signature: 'collapseAll()', description: 'Collapses every branch. Silent.' },
+    { name: 'select', signature: 'select(id)', description: 'Selects a node (or `null` to clear). Silent; fires `onSelect` only for a card click.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Destroys every `lkSortable` instance, closes any open editor, and removes the built DOM.' },
+  ],
+  classes: [
+    { name: '.lk-org[--dense][--readonly]', description: 'Root.' },
+    { name: '.lk-org__scroll / __forest', description: 'Scrollable viewport and the top-level (root) row.' },
+    { name: '.lk-org__node', description: 'One person\'s wrapper: card + its children row. Connector lines are drawn with `::before`/`::after` on this element.' },
+    { name: '.lk-org__card[--selected]', description: 'The visible box: media, title, subtitle, actions, toggle.' },
+    { name: '.lk-org__actions / __action[--add|--edit|--delete]', description: 'Hover/focus-revealed CRUD buttons.' },
+    { name: '.lk-org__toggle[--open]', description: 'Expand/collapse chevron, shown only when a node has reports.' },
+    { name: '.lk-org__collapse / __children', description: 'The `.lk-collapse` slide wrapper and the flex row of child `.lk-org__node`s.' },
+    { name: '.lk-org__status', description: 'Empty-state message.' },
+    { name: '.lk-org__form', description: 'Built-in add/edit form layout.' },
+  ],
+  tokens: [
+    { name: '--lk-org-gap-x', default: 'var(--lk-space-6)', description: 'Horizontal spacing between siblings.' },
+    { name: '--lk-org-gap-y', default: 'var(--lk-space-8)', description: 'Vertical gap (and connector length) between generations.' },
+    { name: '--lk-org-line', default: 'var(--lk-border-strong)', description: 'Connector line color.' },
+    { name: '--lk-org-card-w', default: '12rem', description: 'Card width.' },
+  ],
+});
+</script>
+<script>
+(function () {
+  function sampleItems() {
+    return [
+      { id: 'ceo', title: 'Jane Doe', subtitle: 'CEO', children: [
+        { id: 'vp-eng', title: 'Sam Lee', subtitle: 'VP Engineering', children: [
+          { id: 'eng1', title: 'Ann Cole', subtitle: 'Senior Engineer' },
+          { id: 'eng2', title: 'Bo Reyes', subtitle: 'Engineer' },
+        ] },
+        { id: 'vp-sales', title: 'Kim Park', subtitle: 'VP Sales', children: [
+          { id: 'sales1', title: 'Cy Nguyen', subtitle: 'Sales Rep' },
+        ] },
+        { id: 'vp-ops', title: 'Rae Morgan', subtitle: 'VP Operations' },
+      ] },
+    ];
+  }
+
+  // --- Demo 1: interactive CRUD + drag-and-drop ---
+  const out1 = document.getElementById('org-interactive-out');
+  const org1 = window.org1 = Look.lkOrg('#org-interactive', {
+    items: sampleItems(),
+    onAdd(node) { out1.textContent = 'added: ' + node.data.title; },
+    onUpdate(node) { out1.textContent = 'updated: ' + node.data.title; },
+    onRemove(node, ctx) { out1.textContent = 'removed: ' + node.data.title + ' (' + ctx.strategy + ')'; },
+    onMove(node, ctx) { out1.textContent = node.data.title + ' moved under ' + (ctx.toParentId || '(top level)'); },
+  });
+
+  // --- Demo 2: view-only ---
+  const out2 = document.getElementById('org-readonly-out');
+  Look.lkOrg('#org-readonly', {
+    items: sampleItems(),
+    readOnly: true,
+    onSelect(node) { out2.textContent = node ? (node.data.title + ' — ' + (node.data.subtitle || '')) : 'Click a card…'; },
+  });
+
+  // --- Demo 3: beforeMove guard ---
+  const out3 = document.getElementById('org-guard-out');
+  const log3 = [];
+  function logLine(s) {
+    log3.unshift(s);
+    out3.textContent = log3.slice(0, 6).join('\n');
+  }
+  Look.lkOrg('#org-guard', {
+    items: sampleItems(),
+    beforeMove(info) {
+      if (info.id === 'ceo') { logLine('rejected: the CEO cannot be re-parented'); return false; }
+      return true;
+    },
+    onMove(node, ctx) { logLine('moved: ' + node.data.title + ' -> ' + (ctx.toParentId || '(top level)')); },
+  });
+})();
+</script>
+</body>
+</html>

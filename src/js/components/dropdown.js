@@ -53,6 +53,12 @@
  * @param {string}  [opts.panelClass]         - extra class on the floating panel
  * @param {Array}   [opts.rules]              - validation rules (see helpers/validation.js)
  * @param {boolean} [opts.validate]           - validate when focus leaves the dropdown (panel closed)
+ * @param {Object}  [opts.text]               - text overrides (Look.i18n keys 'dropdown.*'); explicit placeholder / searchPlaceholder / noResultsText / loadingText win
+ * @param {Function} [opts.beforeChange]      - (value | values, { source, item | items, component }) guard: false vetoes, another value replaces
+ * @param {Function} [opts.beforeOpen]        - ({ source, component }) guard
+ * @param {Function} [opts.beforeClose]       - (reason, { source, reason, component }) guard for user dismissals
+ * @param {Function} [opts.onOpen]            - (component)
+ * @param {Function} [opts.onClose]           - (reason, component)
  */
 
 import { resolveEl, applyBase } from '../helpers/base.js';
@@ -60,6 +66,15 @@ import { wrapField, applyFieldProps } from '../helpers/field.js';
 import { createPresenceController, floatingZIndex } from '../helpers/motion.js';
 import { lkChip } from './chip.js';
 import { attachValidation } from '../helpers/validation.js';
+import { lkI18n, bindText } from '../helpers/i18n.js';
+import { guard } from '../helpers/guard.js';
+
+lkI18n.define('dropdown', {
+  placeholder: 'Select…',
+  searchPlaceholder: 'Search…',
+  searchLabel: 'Search options',
+  listbox: 'Options',
+});
 
 const EXIT_MS = 180;
 
@@ -128,13 +143,11 @@ export function lkDropdown(el, opts = {}) {
     required: false,
     readonly: false,
     disabled: false,
-    placeholder: 'Select…',
     value: undefined,
     items: [],
     valueField: 'value',
     labelField: 'label',
     useInput: false,
-    searchPlaceholder: 'Search…',
     debounce: 220,
     clearable: false,
     prepend: null,
@@ -151,8 +164,6 @@ export function lkDropdown(el, opts = {}) {
     maxChips: null,
     closeOnSelect: undefined,
     onChange: null,
-    noResultsText: 'No results',
-    loadingText: 'Loading…',
     template: null,
     selectedTemplate: null,
     searchFields: null,
@@ -169,6 +180,14 @@ export function lkDropdown(el, opts = {}) {
   }
   const multiple = !!options.multiple;
   const closeOnSelect = options.closeOnSelect ?? !multiple;
+
+  // --- Texts: explicit options (placeholder, searchPlaceholder, noResultsText, loadingText) win, then `text` / Look.i18n
+  let built = false;
+  let emptyIsError = false;
+  const tx = bindText('dropdown', opts.text, () => refreshTexts());
+  const txt = (key) => (opts[key] != null ? opts[key] : tx.t(key));
+  const txtEmpty = () => (opts.noResultsText != null ? opts.noResultsText : tx.tf('common.noResults'));
+  const txtLoading = () => (opts.loadingText != null ? opts.loadingText : tx.tf('common.loading'));
 
   // Enhancing a native <select> without explicit items: adopt its <option>s.
   if (anchor.tagName === 'SELECT' && !opts.items && !opts.transport) {
@@ -304,7 +323,7 @@ export function lkDropdown(el, opts = {}) {
   const clearBtn = document.createElement('button');
   clearBtn.type = 'button';
   clearBtn.className = 'lk-dropdown__clear';
-  clearBtn.setAttribute('aria-label', 'Clear');
+  clearBtn.setAttribute('aria-label', tx.tf('common.clear'));
   clearBtn.setAttribute('tabindex', '-1');
   clearBtn.hidden = true;
 
@@ -326,6 +345,7 @@ export function lkDropdown(el, opts = {}) {
   const panel = document.createElement('div');
   panel.className = `lk-dropdown__panel ${options.panelClass || ''}`.trim();
   panel.setAttribute('role', 'listbox');
+  panel.setAttribute('aria-label', txt('listbox'));
   if (multiple) {
     panel.setAttribute('aria-multiselectable', 'true');
     panel.classList.add('lk-dropdown__panel--multiple');
@@ -341,8 +361,9 @@ export function lkDropdown(el, opts = {}) {
     searchInput = document.createElement('input');
     searchInput.type = 'text';
     searchInput.className = 'lk-input lk-dropdown__search-input';
-    searchInput.placeholder = options.searchPlaceholder;
+    searchInput.placeholder = txt('searchPlaceholder');
     searchInput.setAttribute('autocomplete', 'off');
+    searchInput.setAttribute('aria-label', txt('searchLabel'));
     searchInput.setAttribute('spellcheck', 'false');
 
     searchWrap.appendChild(searchInput);
@@ -358,14 +379,14 @@ export function lkDropdown(el, opts = {}) {
   // Loading sentinel / spinner row
   const loadingEl = document.createElement('div');
   loadingEl.className = 'lk-dropdown__loading';
-  loadingEl.textContent = options.loadingText;
+  loadingEl.textContent = txtLoading();
   loadingEl.hidden = true;
   panel.appendChild(loadingEl);
 
   // Empty state
   const emptyEl = document.createElement('div');
   emptyEl.className = 'lk-dropdown__empty';
-  emptyEl.textContent = options.noResultsText;
+  emptyEl.textContent = txtEmpty();
   emptyEl.hidden = true;
   panel.appendChild(emptyEl);
 
@@ -420,6 +441,20 @@ export function lkDropdown(el, opts = {}) {
       }
     },
   });
+
+  // Re-apply every text to what is already rendered (locale switch / comp.text = …); state is untouched.
+  function refreshTexts() {
+    if (!built || destroyed) return;
+    clearBtn.setAttribute('aria-label', tx.tf('common.clear'));
+    panel.setAttribute('aria-label', txt('listbox'));
+    if (searchInput) {
+      searchInput.placeholder = txt('searchPlaceholder');
+      searchInput.setAttribute('aria-label', txt('searchLabel'));
+    }
+    loadingEl.textContent = txtLoading();
+    if (!emptyIsError) emptyEl.textContent = txtEmpty();
+    updateTriggerLabel(); // placeholder + chip remove labels
+  }
 
   // --- Remote transport -----------------------------------------------------
 
@@ -498,12 +533,13 @@ export function lkDropdown(el, opts = {}) {
           if (found) currentItem = found;
           updateTriggerLabel();
         }
+        emptyIsError = false; emptyEl.textContent = txtEmpty();
         hasMore = localItems.length < totalRemote;
         applyFilter(searchQuery);
         renderList(append);
       } catch (err) {
         if (err?.name !== 'AbortError' && seq === requestSeq && !destroyed) {
-          emptyEl.textContent = err.message || options.noResultsText;
+          emptyIsError = !!err.message; emptyEl.textContent = err.message || txtEmpty();
           emptyEl.hidden = false;
           listEl.hidden = true;
         }
@@ -684,16 +720,44 @@ export function lkDropdown(el, opts = {}) {
     if (emit) emitChange(source);
   }
 
+  const isThenable = (r) => r != null && typeof r.then === 'function';
+  const sameList = (a, b) => Array.isArray(a) && a.length === b.length && a.every((v, i) => String(v ?? '') === String(b[i] ?? ''));
+  const itemsOf = (values) => values.map((v) => selectedMap.get(String(v ?? '')) || localItems.find((i) => valueEquals(itemValue(i), v)) || null);
+
+  // Single mode: apply a committed value (the guard already said yes).
+  function commitSingle(val, item, source) {
+    currentValue = val;
+    currentItem  = item || localItems.find((i) => valueEquals(itemValue(i), val)) || null;
+    hiddenInput.value = val ?? '';
+    updateTriggerLabel();
+    refreshOptionStates();
+    emitChange(source);
+  }
+
+  // Every user-driven change goes through beforeChange(value | values, { source, item | items, component }).
+  // Returns guard()'s result: true (done), false (vetoed) or a Promise (async guard).
   function removeValue(val, { rerenderChips = true } = {}) {
     const key = String(val ?? '');
-    if (!selectedMap.has(key)) return;
-    selectedMap.delete(key);
-    selectedValues = selectedValues.filter((v) => String(v ?? '') !== key);
-    syncHiddenInputs();
-    if (rerenderChips) updateTriggerLabel();
-    else updateClearAndPlaceholder();
-    if (open) refreshOptionStates();
-    emitChange('remove');
+    if (!selectedMap.has(key)) return false;
+    const next = selectedValues.filter((v) => String(v ?? '') !== key);
+    let sync = true;
+    const result = guard(trigger, options, 'change', next.slice(),
+      { source: 'remove', component: comp, item: selectedMap.get(key) || null, items: itemsOf(next) },
+      (payload) => {
+        if (!sameList(payload, next)) {
+          if (Array.isArray(payload)) { setValues(payload); emitChange('remove'); }
+          return;
+        }
+        selectedMap.delete(key);
+        selectedValues = next;
+        syncHiddenInputs();
+        if (rerenderChips || !sync) updateTriggerLabel();
+        else updateClearAndPlaceholder();
+        if (open) refreshOptionStates();
+        emitChange('remove');
+      });
+    sync = false;
+    return result;
   }
 
   function toggleItem(item) {
@@ -702,12 +766,21 @@ export function lkDropdown(el, opts = {}) {
     if (selectedMap.has(key)) {
       removeValue(val);
     } else {
-      selectedValues.push(val);
-      selectedMap.set(key, item);
-      syncHiddenInputs();
-      updateTriggerLabel();
-      refreshOptionStates();
-      emitChange('select');
+      const next = selectedValues.concat([val]);
+      guard(trigger, options, 'change', next.slice(),
+        { source: 'select', component: comp, item, items: itemsOf(next).map((it, i) => (i === next.length - 1 ? item : it)) },
+        (payload) => {
+          if (!sameList(payload, next)) {
+            if (Array.isArray(payload)) { setValues(payload); emitChange('select'); }
+            return;
+          }
+          selectedValues.push(val);
+          selectedMap.set(key, item);
+          syncHiddenInputs();
+          updateTriggerLabel();
+          refreshOptionStates();
+          emitChange('select');
+        });
     }
     if (closeOnSelect) closePanel('select');
     else requestPositionUpdate();
@@ -716,27 +789,27 @@ export function lkDropdown(el, opts = {}) {
   function selectItem(item) {
     if (multiple) { toggleItem(item); return; }
     const val = itemValue(item);
-    currentValue = val;
-    currentItem  = item;
-    hiddenInput.value = val ?? '';
-    updateTriggerLabel();
-    refreshOptionStates();
-    closePanel('select');
-    emitChange('select');
+    const result = guard(trigger, options, 'change', val, { source: 'select', component: comp, item }, (payload) => {
+      // The panel closes first (as before), then the change is reported
+      closePanel('select');
+      commitSingle(payload, valueEquals(payload, val) ? item : null, 'select');
+    });
+    // A veto keeps the old value and still closes the panel; an async guard closes it when it answers "no"
+    if (result === false) closePanel('select');
+    else if (isThenable(result)) result.then((ok) => { if (ok === false) closePanel('select'); });
   }
 
   function clearValue() {
     if (multiple) {
-      setValues([], { emit: true });
-      requestPositionUpdate();
+      guard(trigger, options, 'change', [], { source: 'clear', component: comp, items: [] }, (payload) => {
+        setValues(Array.isArray(payload) ? payload : [], { emit: true, source: 'clear' });
+        requestPositionUpdate();
+      });
       return;
     }
-    currentValue = null;
-    currentItem  = null;
-    hiddenInput.value = '';
-    updateTriggerLabel();
-    refreshOptionStates();
-    emitChange('clear');
+    guard(trigger, options, 'change', null, { source: 'clear', component: comp, item: null }, (payload) => {
+      commitSingle(payload ?? null, null, 'clear');
+    });
   }
 
   function isLocked() {
@@ -747,7 +820,7 @@ export function lkDropdown(el, opts = {}) {
     const has = selectedValues.length > 0;
     triggerLabel.hidden = has;
     chipsEl.hidden = !has;
-    triggerLabel.textContent = options.placeholder;
+    triggerLabel.textContent = txt('placeholder');
     triggerLabel.classList.add('lk-dropdown__trigger-label--placeholder');
     clearBtn.hidden = !(options.clearable && has && !isLocked());
   }
@@ -771,10 +844,13 @@ export function lkDropdown(el, opts = {}) {
         color: options.chipColor,
         dense: true,
         removable,
+        removeLabel: tx.tf('common.remove'),
         onRemove() {
           // Overflow chip counts must update at once; otherwise let the chip animate out.
           const animate = overflow.length === 0;
-          removeValue(v, { rerenderChips: !animate });
+          const result = removeValue(v, { rerenderChips: !animate });
+          // Vetoed, or decided later by an async guard (the chips are re-rendered when it says yes)
+          if (result === false || isThenable(result)) return false;
           if (animate) {
             chipComps = chipComps.filter((c) => c !== chip);
             setTimeout(requestPositionUpdate, 220);
@@ -816,7 +892,7 @@ export function lkDropdown(el, opts = {}) {
     if (label && currentItem && typeof options.selectedTemplate === 'function') {
       triggerLabel.append(renderTemplate(options.selectedTemplate, currentItem, label));
     } else {
-      triggerLabel.textContent = label || options.placeholder;
+      triggerLabel.textContent = label || txt('placeholder');
     }
     triggerLabel.classList.toggle('lk-dropdown__trigger-label--placeholder', !label);
     clearBtn.hidden = !(options.clearable && hasClearableSelection);
@@ -886,8 +962,13 @@ export function lkDropdown(el, opts = {}) {
 
   // --- Open / close ---------------------------------------------------------
 
-  function openPanel() {
+  function openPanel(source = 'user') {
     if (open || options.disabled || trigger.disabled || trigger.hasAttribute('disabled') || options.readonly || destroyed) return;
+    guard(trigger, options, 'open', undefined, { source, component: comp }, doOpen);
+  }
+
+  function doOpen() {
+    if (open || destroyed) return;
     if (searchInput) {
       searchInput.value = '';
       searchQuery = '';
@@ -930,10 +1011,20 @@ export function lkDropdown(el, opts = {}) {
       listEl.addEventListener('scroll', onListScroll);
       panel.addEventListener('scroll', onListScroll);
     }
+    if (typeof options.onOpen === 'function') options.onOpen(comp);
   }
+
+  // Closes caused by a committed selection / state change are consequences, not user choices: only the
+  // user-dismissals below ask beforeClose(reason, { source: reason, reason, component }) first.
+  const GUARDED_CLOSE = new Set(['escape', 'outside', 'tab', 'toggle', 'manual', 'close']);
   function closePanel(reason = 'close') {
     if (!open || destroyed) return;
+    if (!GUARDED_CLOSE.has(reason)) { doClose(reason); return; }
+    guard(trigger, options, 'close', reason, { source: reason === 'manual' ? 'api' : reason, reason, component: comp }, () => doClose(reason));
+  }
 
+  function doClose(reason) {
+    if (!open || destroyed) return;
     open = false;
     trigger.setAttribute('aria-expanded', 'false');
     trigger.classList.remove('lk-dropdown__trigger--open');
@@ -953,6 +1044,7 @@ export function lkDropdown(el, opts = {}) {
     if (reason !== 'outside' && reason !== 'tab' && reason !== 'destroy') {
       trigger.focus();
     }
+    if (reason !== 'destroy' && typeof options.onClose === 'function') options.onClose(reason, comp);
   }
 
   // --- Infinite scroll ------------------------------------------------------
@@ -1230,7 +1322,7 @@ export function lkDropdown(el, opts = {}) {
   comp.clearError = field.clearError;
   comp.refreshLabels = field.refreshLabels;
 
-  comp.open  = () => openPanel();
+  comp.open  = () => openPanel('api');
   comp.close = () => closePanel('manual');
   comp.focus = (o) => trigger.focus(o);
 
@@ -1239,8 +1331,17 @@ export function lkDropdown(el, opts = {}) {
     panelEl: { get() { return panel; }, enumerable: true },
   });
 
+  Object.defineProperty(comp, 'text', {
+    get() { return tx.get(); },
+    set(v) { tx.set(v); },
+    enumerable: true,
+    configurable: true,
+  });
+  built = true;
+
   validation = attachValidation(comp, {
     opts,
+    t: tx.tf,
     getValue: () => (multiple ? selectedValues.slice() : currentValue),
     label: field.getLabel,
     labels: () => field.labels,
@@ -1261,6 +1362,7 @@ export function lkDropdown(el, opts = {}) {
   };
 
   comp.destroy = function () {
+    tx.destroy();
     validation.destroy();
     destroyed = true;
     if (open) closePanel('destroy');

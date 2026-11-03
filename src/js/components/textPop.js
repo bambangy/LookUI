@@ -38,6 +38,11 @@
  * @param {Array}   [opts.rules]          — validation rules (multiple: minLength / maxLength count the picks)
  * @param {boolean} [opts.validate]       — validate when focus leaves the field (popup closed)
  * @param {Function} [opts.onOpen] [opts.onClose]
+ * @param {Function} [opts.beforeChange]  — (value | values, { source, component, item | items }) guard; false vetoes, another value replaces
+ * @param {Function} [opts.beforeOpen]    — ({ source, component }) guard
+ * @param {Function} [opts.beforeClose]   — (reason, { source, reason, component }) guard for user dismissals (escape / outside / toggle / api)
+ * @param {Object}  [opts.text]           — text overrides (Look.i18n keys 'textpop.*'); explicit placeholder / searchPlaceholder win.
+ *   `comp.text` stays the read-only display string of the selection; assign an object to it to replace the overrides.
  * @returns {Object}
  */
 
@@ -50,6 +55,16 @@ import { lkTextbox } from './form.js';
 import { lkChip } from './chip.js';
 import { lkIcon } from './icon.js';
 import { attachValidation } from '../helpers/validation.js';
+import { lkI18n, bindText } from '../helpers/i18n.js';
+import { guard, guardSync } from '../helpers/guard.js';
+
+lkI18n.define('textpop', {
+  placeholder: 'Select…',
+  searchPlaceholder: 'Search…',
+  done: 'Done',
+  selected: { one: '{count} selected', other: '{count} selected' },
+  more: '+{count}',
+});
 
 function isObject(v) {
   return v != null && typeof v === 'object' && !Array.isArray(v);
@@ -84,9 +99,7 @@ export function lkTextPop(el, opts = {}) {
     value: undefined,
     label: null,
     name: null,
-    placeholder: 'Select…',
     title: null,
-    searchPlaceholder: 'Search…',
     clearable: true,
     pageable: true,
     pageSize: 8,
@@ -103,6 +116,14 @@ export function lkTextPop(el, opts = {}) {
     ...opts,
   };
   const multiple = !!options.multiple;
+
+  // Texts: explicit options win, then `text` / Look.i18n
+  let built = false;
+  const tx = bindText('textpop', opts.text, () => refreshTexts());
+  // The embedded grid shares the instance overrides that are meant for it ('table.*' and the shared 'common.*' / 'validation.*')
+  const tableText = () => Object.fromEntries(Object.entries(tx.get()).filter(([k]) => /^(table|common|validation)[.]/.test(k)));
+  const placeholderText = () => (opts.placeholder != null ? opts.placeholder : tx.t('placeholder'));
+  const searchText = () => (opts.searchPlaceholder != null ? opts.searchPlaceholder : tx.t('searchPlaceholder'));
 
   // --- Data source ----------------------------------------------------------
 
@@ -196,7 +217,7 @@ export function lkTextPop(el, opts = {}) {
   const clearBtn = document.createElement('button');
   clearBtn.type = 'button';
   clearBtn.className = 'lk-textpop__clear';
-  clearBtn.setAttribute('aria-label', 'Clear');
+  clearBtn.setAttribute('aria-label', tx.tf('common.clear'));
   clearBtn.tabIndex = -1;
   clearBtn.appendChild(lkIcon('close', { size: 'xs' }));
   const iconEl = lkIcon('search', { size: 'sm' });
@@ -255,6 +276,7 @@ export function lkTextPop(el, opts = {}) {
           color: options.chipColor,
           dense: true,
           removable: !locked(),
+          removeLabel: tx.tf('common.remove'),
           onRemove() {
             removeValue(k);
             return false; // removeValue re-renders the chips (and the +N counter)
@@ -268,18 +290,18 @@ export function lkTextPop(el, opts = {}) {
       if (overflow.length) {
         const more = document.createElement('span');
         more.className = 'lk-chip lk-chip--dense lk-textpop__more';
-        more.textContent = `+${overflow.length}`;
+        more.textContent = tx.t('more', { count: overflow.length });
         more.title = overflow.map((k) => textOf(rows.get(String(k)), k)).join(', ');
         chipsEl.appendChild(more);
       }
       chipsEl.hidden = !has;
       labelEl.hidden = has;
-      labelEl.textContent = options.placeholder;
+      labelEl.textContent = placeholderText();
       labelEl.classList.add('lk-textpop__label--placeholder');
     } else {
       chipsEl.hidden = true;
       labelEl.hidden = false;
-      labelEl.textContent = has ? textOf(rows.get(String(keys[0])), keys[0]) : options.placeholder;
+      labelEl.textContent = has ? textOf(rows.get(String(keys[0])), keys[0]) : placeholderText();
       labelEl.classList.toggle('lk-textpop__label--placeholder', !has);
       trigger.title = has ? labelEl.textContent : '';
     }
@@ -306,20 +328,49 @@ export function lkTextPop(el, opts = {}) {
     emitChange(source);
   }
 
+  const isThenable = (r) => r != null && typeof r.then === 'function';
+
+  /**
+   * Every user-driven change: beforeChange(value | values, { source, component, item | items }).
+   * nextKeys / nextRows (Map String(key) -> row) describe what is about to happen. A veto leaves the
+   * selection alone (the grid ticks are put back); a returned value replaces the new selection.
+   * @returns {boolean|Promise<boolean>} guard() result
+   */
+  function change(nextKeys, nextRows, source) {
+    const rowList = nextKeys.map((k) => nextRows.get(String(k)) || findRow(k) || null);
+    const payload = multiple ? nextKeys.slice() : (nextKeys.length ? nextKeys[0] : null);
+    const ctx = multiple ? { source, component: comp, items: rowList } : { source, component: comp, item: rowList[0] || null };
+    const result = guard(trigger, options, 'change', payload, ctx, (p) => {
+      const norm = multiple ? (Array.isArray(p) ? p : []) : (p == null ? [] : [p]);
+      const unchanged = norm.length === nextKeys.length && norm.every((k, i) => same(k, nextKeys[i]));
+      if (unchanged) {
+        keys = nextKeys.slice();
+        rows.clear();
+        nextKeys.forEach((k) => rows.set(String(k), nextRows.get(String(k)) || findRow(k) || null));
+      } else {
+        setValues(p);
+      }
+      if (grid) syncGridSelection();
+      commit(source);
+    });
+    if (result !== true && grid) {
+      syncGridSelection(); // vetoed / pending: show the committed selection
+      if (isThenable(result)) result.then((ok) => { if (ok === false && grid) syncGridSelection(); });
+    }
+    return result;
+  }
+
   function removeValue(k) {
     if (!rows.has(String(k))) return;
-    rows.delete(String(k));
-    keys = keys.filter((x) => !same(x, k));
-    if (grid) syncGridSelection();
-    commit('remove');
+    const nk = keys.filter((x) => !same(x, k));
+    const nr = new Map(rows);
+    nr.delete(String(k));
+    change(nk, nr, 'remove');
   }
 
   function clearAll() {
     if (!keys.length) return;
-    keys = [];
-    rows.clear();
-    if (grid) syncGridSelection();
-    commit('clear');
+    change([], new Map(), 'clear');
   }
 
   // --- Popup ----------------------------------------------------------------
@@ -328,6 +379,9 @@ export function lkTextPop(el, opts = {}) {
   let grid = null;
   let searchBox = null;
   let footCount = null;
+  let footClear = null;
+  let footDone = null;
+  let searchInputEl = null;
   let syncing = false;
   let stopResolve = null;
   const search = debounce((term) => grid?.search(term), 250);
@@ -340,7 +394,7 @@ export function lkTextPop(el, opts = {}) {
   }
 
   function updateFoot() {
-    if (footCount) footCount.textContent = `${keys.length} selected`;
+    if (footCount) footCount.textContent = tx.t('selected', { count: keys.length });
   }
 
   // Multiple: the grid only knows the rows on screen — merge its view into our keys
@@ -353,29 +407,29 @@ export function lkTextPop(el, opts = {}) {
     }
     const picked = new Set(selectedRows.map((r) => String(keyOf(r))));
     let changed = false;
+    let nk = keys.slice();
+    const nr = new Map(rows);
     grid.dataSource.view.forEach((row) => {
       const k = keyOf(row);
       const isOn = picked.has(String(k));
-      if (isOn && !rows.has(String(k))) {
-        keys.push(k);
-        rows.set(String(k), row);
+      if (isOn && !nr.has(String(k))) {
+        nk.push(k);
+        nr.set(String(k), row);
         changed = true;
-      } else if (!isOn && rows.has(String(k))) {
-        rows.delete(String(k));
-        keys = keys.filter((x) => !same(x, k));
+      } else if (!isOn && nr.has(String(k))) {
+        nr.delete(String(k));
+        nk = nk.filter((x) => !same(x, k));
         changed = true;
       }
     });
-    if (changed) commit();
+    if (changed) change(nk, nr, 'select');
   }
 
   function pick(row) {
     const k = keyOf(row);
     const changed = !(keys.length === 1 && same(keys[0], k));
-    keys = [k];
-    rows.clear();
-    rows.set(String(k), row);
-    if (changed) commit();
+    // The popup closes either way (a veto keeps the old value)
+    if (changed) change([k], new Map([[String(k), row]]), 'select');
     close();
   }
 
@@ -394,9 +448,10 @@ export function lkTextPop(el, opts = {}) {
     searchWrap.className = 'lk-textpop__search';
     const searchInput = document.createElement('input');
     searchInput.type = 'search';
-    searchInput.placeholder = options.searchPlaceholder;
-    searchInput.setAttribute('aria-label', options.searchPlaceholder);
+    searchInput.placeholder = searchText();
+    searchInput.setAttribute('aria-label', searchText());
     searchInput.autocomplete = 'off';
+    searchInputEl = searchInput;
     searchWrap.appendChild(searchInput);
     panel.appendChild(searchWrap);
     searchBox = lkTextbox(searchInput, { type: 'search', prepend: lkIcon('search', { size: 'sm' }) });
@@ -430,6 +485,7 @@ export function lkTextPop(el, opts = {}) {
       filterable: false,
       editable: false,
       autoBind: false,
+      text: tableText(),
       ...(options.table || {}),
       onChange: onGridChange,
       onRowClick({ row }) {
@@ -447,13 +503,15 @@ export function lkTextPop(el, opts = {}) {
       const clear = document.createElement('button');
       clear.type = 'button';
       clear.className = 'lk-btn lk-btn--sm lk-btn--ghost';
-      clear.textContent = 'Clear';
+      clear.textContent = tx.tf('common.clear');
       clear.addEventListener('click', clearAll);
       const done = document.createElement('button');
       done.type = 'button';
       done.className = 'lk-btn lk-btn--sm lk-btn--primary';
-      done.textContent = 'Done';
+      done.textContent = tx.t('done');
       done.addEventListener('click', () => close());
+      footClear = clear;
+      footDone = done;
       foot.append(footCount, clear, done);
       panel.appendChild(foot);
       updateFoot();
@@ -464,6 +522,13 @@ export function lkTextPop(el, opts = {}) {
       placement: 'bottom-left',
       toggleOnTrigger: false,
       closeOnOutside: false, // handled below: nested layers (pager, menus) count as inside
+      // One guard point for every user dismissal (escape, outside, toggle, comp.close()); consequences
+      // like picking a row ('close') or readonly / disabled / destroy are not asked.
+      beforeHide(reason) {
+        if (!GUARDED_CLOSE.has(reason)) return undefined;
+        const res = guardSync(trigger, options, 'close', reason, { source: reason === 'manual' ? 'api' : reason, reason, component: comp });
+        return res.allowed ? undefined : false;
+      },
       onHide(reason) {
         document.removeEventListener('pointerdown', onOutside, true);
         trigger.setAttribute('aria-expanded', 'false');
@@ -479,6 +544,8 @@ export function lkTextPop(el, opts = {}) {
     stopResolve = ds.subscribe(() => resolveRows());
   }
 
+  const GUARDED_CLOSE = new Set(['escape', 'outside', 'toggle', 'manual']);
+
   function onOutside(e) {
     const t = e.target;
     if (!proxy?.isOpen) return;
@@ -488,7 +555,12 @@ export function lkTextPop(el, opts = {}) {
     close('outside');
   }
 
-  function open() {
+  function open(source = 'user') {
+    if (locked() || (proxy && proxy.isOpen)) return;
+    guard(trigger, options, 'open', undefined, { source, component: comp }, doOpen);
+  }
+
+  function doOpen() {
     if (locked() || (proxy && proxy.isOpen)) return;
     if (!grid) build();
     const width = Math.min(Number(options.popupWidth) || 560, window.innerWidth - 16);
@@ -580,10 +652,13 @@ export function lkTextPop(el, opts = {}) {
       get() { return keys.map((k) => rows.get(String(k)) || null); },
       enumerable: true,
     },
+    // Read: the display text of the selection. Write an object: replace the text overrides (Look.i18n keys 'textpop.*')
     text: {
       get() { return keys.map((k) => textOf(rows.get(String(k)), k)).join(', '); },
+      set(v) { if (v && typeof v === 'object') tx.set(v); },
       enumerable: true,
     },
+    texts: { get() { return tx.get(); }, enumerable: true },
     multiple: { get() { return multiple; }, enumerable: true },
     isOpen: { get() { return !!proxy?.isOpen; }, enumerable: true },
     dataSource: { get() { return ds; }, enumerable: true },
@@ -643,7 +718,7 @@ export function lkTextPop(el, opts = {}) {
   if (options.readonly) comp.readonly = true;
   if (options.disabled) comp.disabled = true;
 
-  comp.open = open;
+  comp.open = () => open('api');
   comp.close = () => close('manual');
   comp.clear = () => clearAll();
   comp.focus = (o) => trigger.focus(o);
@@ -651,8 +726,25 @@ export function lkTextPop(el, opts = {}) {
   comp.clearError = field.clearError;
   comp.refreshLabels = field.refreshLabels;
 
+  // Locale switch / comp.text = {…}: re-apply every text to what is rendered (selection, open popup, typed search stay)
+  function refreshTexts() {
+    if (!built) return;
+    clearBtn.setAttribute('aria-label', tx.tf('common.clear'));
+    renderTrigger();
+    if (searchInputEl) {
+      searchInputEl.placeholder = searchText();
+      searchInputEl.setAttribute('aria-label', searchText());
+    }
+    if (footClear) footClear.textContent = tx.tf('common.clear');
+    if (footDone) footDone.textContent = tx.t('done');
+    if (grid && !(options.table && options.table.text)) grid.text = tableText();
+    updateFoot();
+  }
+  built = true;
+
   validation = attachValidation(comp, {
     opts,
+    t: tx.tf,
     getValue: () => (multiple ? keys.slice() : (keys.length ? keys[0] : null)),
     label: field.getLabel,
     labels: () => field.labels,
@@ -664,6 +756,7 @@ export function lkTextPop(el, opts = {}) {
   });
 
   comp.destroy = function () {
+    tx.destroy();
     validation.destroy();
     search.cancel();
     document.removeEventListener('pointerdown', onOutside, true);

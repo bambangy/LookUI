@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Autocomplete</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Autocomplete</h1>
+    <p style="opacity: 0.85;">lkAutocomplete(el, opts) — a text input with a suggestion popup (ARIA combobox)</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Static list &amp; open on focus</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="ac-basic" />
+      <input id="ac-focus" />
+    </div>
+    <div id="ac-basic-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Objects, template, hidden value, force selection</p>
+    <form id="ac-form" class="lk-card" novalidate>
+      <div class="lk-card__body" style="display: grid; gap: var(--lk-space-4); max-width: 32rem;">
+        <input id="ac-user" name="user_label" />
+        <input id="ac-country" />
+        <div class="demo-row" style="margin-bottom: 0;">
+          <button class="lk-btn lk-btn--primary" type="submit">Submit</button>
+          <button class="lk-btn lk-btn--ghost" type="reset">Reset</button>
+        </div>
+        <div id="ac-form-out" class="demo-output"></div>
+      </div>
+    </form>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Async source (debounced, abortable, error + retry)</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="ac-async" />
+      <div>
+        <label><input type="checkbox" id="ac-fail" /> Make the server fail</label>
+        <div id="ac-async-out" class="demo-output" style="margin-top: var(--lk-space-3);"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">States</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="ac-dis" value="Disabled" />
+      <input id="ac-ro" value="Read only" />
+      <input id="ac-dense" />
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const city = Look.lkAutocomplete('#city', {
+  label: 'City',
+  source: ['Amsterdam', 'Berlin', 'Bogotá'],      // strings, objects, an lkDataSource or a function
+  // source: (query, { signal }) =&gt; fetch('/api/cities?q=' + query, { signal }).then((r) =&gt; r.json()),
+  textField: 'text', valueField: 'value',
+  forceSelection: false,                           // true: free text reverts on blur
+  rules: ['required'],
+  onChange(value, { source, item }) { console.log(value, source, item); },
+});
+
+city.value;        // the text
+city.item;         // the picked suggestion (null while the text is free)
+city.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkAutocomplete',
+  textNamespace: 'autocomplete',
+  validateable: true,
+  kind: 'Component',
+  signature: 'const ac = Look.lkAutocomplete(inputElement, options);',
+  description: [
+    'Enhances a text input with a suggestion popup. The input stays the field (id, name, label, form post): its **value is the text**, free text is allowed unless `forceSelection` is set. The popup is an [lkPopupProxy](composable-popup-proxy.html) with live DOM, so it paints above dialogs and follows the input on scroll.',
+    '`source` is an array (strings or objects), an [lkDataSource](datasource.html) or a function `(query, { signal }) => items | Promise<items>`. Array and local data sources filter instantly (accent- and case-insensitive); function and server data sources are debounced by `delay`, the in-flight request is aborted (through `signal`) when a newer query starts and stale answers are dropped. Loading, no-results and error (with Retry) states are built in.',
+    'Accessibility: the input is `role="combobox"` with `aria-autocomplete="list"`, `aria-expanded`, `aria-controls` and `aria-activedescendant`; the popup is a `listbox` of `option`s and a polite live region announces the number of results. **Keys:** ArrowDown / ArrowUp open and move (wrapping), Home / End jump while navigating, Enter picks the highlighted suggestion, Escape closes (capture phase, so a surrounding dialog stays open), Tab only closes.',
+  ],
+  params: [
+    { name: 'inputElement', type: 'HTMLInputElement | string', description: 'The text input (or selector).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The autocomplete instance.' },
+  options: [
+    { name: 'source', type: 'Array | lkDataSource | Function', default: '—', description: 'Where suggestions come from. An lkDataSource with a read transport and `server.filter` is queried with `setFilter({ $search: query })` + `load()`; otherwise its `items` are filtered locally. A function result may be an array or `{ items }`.' },
+    { name: 'textField / valueField', type: 'string', default: "'text' / 'value'", description: 'Fields of object items: shown text and the value posted through `valueName`. Plain strings work as they are.' },
+    { name: 'limit', type: 'number', default: '10', description: 'Most suggestions shown (`0` / `Infinity`: all).' },
+    { name: 'minChars', type: 'number', default: '1', description: 'Shortest query that searches; shorter text closes the popup.' },
+    { name: 'delay', type: 'number', default: '250', description: 'Debounce in ms for function and server sources (`0`: immediate).' },
+    {
+      name: 'match', type: "'contains' | 'startsWith' | Function", default: "'contains'",
+      description: 'Local matching. A function receives `(item, query)` and returns a boolean.',
+    },
+    { name: 'template', type: 'Function', default: '—', description: '`(item, { query, index, component }) => Node | string` — option content. Text or DOM nodes only, never HTML strings. Default: the text with the match in `<mark>`.' },
+    { name: 'forceSelection', type: 'boolean', default: 'false', description: 'Only picked suggestions count. On blur the text either matches a suggestion exactly (it is picked) or reverts to the last pick / empty (`onChange` source `\'revert\'`).' },
+    { name: 'openOnFocus', type: 'boolean', default: 'false', description: 'Search with the current (also empty) text when the input gets focus.' },
+    { name: 'autoSelectFirst', type: 'boolean', default: 'false', description: 'Highlight the first suggestion so Enter picks it.' },
+    { name: 'noResults', type: 'boolean', default: 'true', description: 'Show the "No results" row (`false` closes the popup instead).' },
+    { name: 'valueName', type: 'string', default: '—', description: 'Creates a hidden input with this name posting the picked item\'s `valueField` (free text: the text).' },
+    { name: 'panelWidth / panelClass', type: 'number | string | string', default: "input width", description: 'Popup width (px number, CSS length or `\'auto\'`) and an extra class.' },
+    { name: 'label / name / placeholder / required / readonly / disabled / dense', type: '—', default: 'false', description: 'Standard field options.' },
+    { name: 'text', type: 'Object', default: '—', description: 'Per-instance text overrides.' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(value, { source, component, item })` — `source` is `\'input\'` (typing), `\'select\'` (pick), `\'clear\'`, `\'revert\'` (forceSelection) or `\'api\'` (`setValue`). Assigning `value` is silent.' },
+    { name: 'onOpen / onClose', type: 'Function', default: '—', description: '`onOpen(component)`, `onClose(reason, component)` — reason: `select`, `escape`, `outside`, `blur`, `tab`, `empty`, `api`, `destroy`.' },
+    { name: 'onLoad / onError', type: 'Function', default: '—', description: '`onLoad(items, { query, component })` when suggestions arrive, `onError(error, { query, component })` when the source fails.' },
+  ],
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange(value, { source, item, component })', description: 'Runs before a pick (`"select"`), `clear()` / `setValue()` (`"clear"` / `"api"`) and a forceSelection revert (`"revert"`). Return `false` to keep the text, a Promise to wait, or a string to replace the text. Typing is not guarded.' },
+    { name: 'beforeOpen', signature: 'beforeOpen({ source, component })', description: 'Runs before the popup opens. Return `false` to keep it closed.' },
+    { name: 'beforeClose', signature: 'beforeClose(reason, { source, component })', description: 'Runs before the popup closes (Escape, outside click, blur, pick, …). Return `false` to keep it open.' },
+  ],
+  texts: [
+    { name: 'label', default: 'Suggestions', description: 'Accessible name of the list when the field has no label.' },
+    { name: 'results', default: { one: '{count} result', other: '{count} results' }, description: 'Live-region announcement (plural on `count`).' },
+    { name: 'error', default: 'Could not load suggestions', description: 'Error row when the source rejects without a message. Also uses `common.loading`, `common.noResults` and `common.retry`.' },
+  ],
+  properties: [
+    { name: 'value', type: 'string', description: 'The input text. Setting it is silent and forgets the picked item.' },
+    { name: 'item', type: 'any', readonly: true, description: 'The picked suggestion (the raw item), or `null` while the text is free.' },
+    { name: 'items', type: 'Array', readonly: true, description: 'The suggestions on screen.' },
+    { name: 'isOpen / loading', type: 'boolean', readonly: true, description: 'Popup and request state.' },
+    { name: 'source / minChars', type: '—', description: 'Change at runtime (a new source closes the popup).' },
+    { name: 'panelEl / listEl', type: 'Element', readonly: true, description: 'The popup panel and the `listbox`.' },
+    { name: 'label / name / required / readonly / disabled / enabled / hidden', type: '—', description: 'Standard field properties. `el` is the input.' },
+  ],
+  methods: [
+    { name: 'open', signature: 'open()', description: 'Shows the suggestions for the current text.' },
+    { name: 'close', signature: 'close()', description: 'Closes the popup (reason `\'api\'`).' },
+    { name: 'search', signature: 'search([query])', description: 'Runs a query now (no debounce) and shows the result.' },
+    { name: 'setValue', signature: 'setValue(text)', description: 'Sets the text like a user action: guarded, fires `onChange` with source `\'api\'`.' },
+    { name: 'clear', signature: 'clear()', description: 'Empties the text (source `\'clear\'`).' },
+    { name: 'setError / clearError', signature: 'setError(message) / clearError()', description: 'Field error (see validation).' },
+    { name: 'focus', signature: 'focus()', description: 'Focuses the input.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Aborts requests, clears timers, removes the popup and hidden input and restores the input\'s attributes.' },
+  ],
+  classes: [
+    { name: '.lk-autocomplete__panel', description: 'The popup (a `.lk-popup-proxy__panel`); `--dense` variant.' },
+    { name: '.lk-autocomplete__list / __option', description: 'The listbox and its options (`--active`, `--disabled`).' },
+    { name: '.lk-autocomplete__mark', description: 'The highlighted match.' },
+    { name: '.lk-autocomplete__state', description: 'Loading / no-results / error row (`--loading`, `--empty`, `--error`).' },
+  ],
+  tokens: [
+    { name: '--lk-primary', default: '#5c6bc0', description: 'Active option, match highlight, focus ring.' },
+    { name: '--lk-bg / --lk-border', default: '#fff / #d0d0d8', description: 'Popup surface and border.' },
+    { name: '--lk-negative', default: '#e53935', description: 'Error row and error border.' },
+  ],
+});
+</script>
+<script>
+  const CITIES = ['Amsterdam', 'Barcelona', 'Berlin', 'Bogotá', 'Boston', 'Brussels', 'Budapest', 'Cairo', 'Copenhagen', 'Dublin', 'Lisbon', 'London', 'Madrid', 'Paris', 'Prague', 'Rome', 'Vienna'];
+  const out = document.getElementById('ac-basic-out');
+  Look.lkAutocomplete('#ac-basic', {
+    label: 'City', placeholder: 'Type to search…', source: CITIES,
+    onChange: (v, c) => { out.textContent = `${c.source}: ${JSON.stringify(v)}`; },
+  });
+  Look.lkAutocomplete('#ac-focus', { label: 'Open on focus (first suggestion highlighted)', openOnFocus: true, autoSelectFirst: true, limit: 6, source: CITIES });
+
+  const people = [
+    { text: 'Ada Lovelace', value: 'u1', role: 'Mathematician' },
+    { text: 'Alan Turing', value: 'u2', role: 'Computer scientist' },
+    { text: 'Grace Hopper', value: 'u3', role: 'Rear admiral' },
+    { text: 'Linus Torvalds', value: 'u4', role: 'Kernel maintainer' },
+    { text: 'Margaret Hamilton', value: 'u5', role: 'Software engineer' },
+  ];
+  const user = Look.lkAutocomplete('#ac-user', {
+    label: 'User', source: people, valueName: 'user_id', minChars: 0, openOnFocus: true, rules: ['required'], validate: true,
+    template(item, { query }) {
+      const row = document.createElement('span');
+      row.style.cssText = 'display:flex;flex-direction:column;line-height:1.25';
+      const name = document.createElement('strong'); name.textContent = item.text;
+      const role = document.createElement('small'); role.textContent = item.role; role.style.color = 'var(--lk-text-muted)';
+      row.append(name, role);
+      return row;
+    },
+  });
+  const country = Look.lkAutocomplete('#ac-country', {
+    label: 'Country (force selection)', forceSelection: true, source: ['Argentina', 'Belgium', 'Canada', 'Denmark', 'Egypt', 'France'],
+    rules: ['required'], validate: true,
+  });
+  const formOut = document.getElementById('ac-form-out');
+  document.getElementById('ac-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const r = Look.lkValidation(user, country);
+    formOut.textContent = r.hasError ? 'Invalid: ' + JSON.stringify(r.errors) : JSON.stringify(Object.fromEntries(new FormData(e.target)), null, 2);
+  });
+  document.getElementById('ac-form').addEventListener('reset', () => { formOut.textContent = ''; });
+
+  const asyncOut = document.getElementById('ac-async-out');
+  let requests = 0;
+  Look.lkAutocomplete('#ac-async', {
+    label: 'Remote search (800 ms latency)', delay: 300, minChars: 2,
+    source(query, { signal }) {
+      requests++;
+      const n = requests;
+      asyncOut.textContent = `request #${n}: "${query}"`;
+      return new Promise((resolve, reject) => {
+        const t = setTimeout(() => {
+          if (document.getElementById('ac-fail').checked) reject(new Error('Server unavailable'));
+          else resolve(CITIES.filter((c) => c.toLowerCase().includes(query.toLowerCase())));
+        }, 800);
+        signal.addEventListener('abort', () => { clearTimeout(t); asyncOut.textContent += ' (aborted)'; reject(new DOMException('aborted', 'AbortError')); });
+      });
+    },
+    onLoad: (items, { query }) => { asyncOut.textContent = `"${query}" -> ${items.length} result(s)`; },
+    onError: (err) => { asyncOut.textContent = 'error: ' + err.message; },
+  });
+
+  Look.lkAutocomplete('#ac-dis', { label: 'Disabled', disabled: true, source: CITIES });
+  Look.lkAutocomplete('#ac-ro', { label: 'Read only', readonly: true, source: CITIES });
+  Look.lkAutocomplete('#ac-dense', { label: 'Dense', dense: true, source: CITIES });
+</script>
+</body>
+</html>

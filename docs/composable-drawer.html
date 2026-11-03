@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Drawer</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Drawer</h1>
+    <p style="opacity: 0.85;">lkDrawer(opts) — a side panel that slides in from any edge; modal or non-blocking</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Sides</p>
+    <div class="demo-row">
+      <button class="lk-btn lk-btn--primary" data-side="right">Right</button>
+      <button class="lk-btn lk-btn--primary" data-side="left">Left</button>
+      <button class="lk-btn lk-btn--primary" data-side="top">Top</button>
+      <button class="lk-btn lk-btn--primary" data-side="bottom">Bottom</button>
+      <button class="lk-btn lk-btn--outline" data-side="start">Start (follows direction)</button>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Sizes</p>
+    <div class="demo-row">
+      <button class="lk-btn lk-btn--outline" data-size="sm">sm</button>
+      <button class="lk-btn lk-btn--outline" data-size="md">md</button>
+      <button class="lk-btn lk-btn--outline" data-size="lg">lg</button>
+      <button class="lk-btn lk-btn--outline" data-size="full">full</button>
+      <button class="lk-btn lk-btn--outline" data-size="22rem">22rem</button>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Form drawer with footer buttons</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-3);">The Save button validates and only closes when valid; the dropdown inside closes first on Escape.</p>
+    <div class="demo-row"><button id="d-form" class="lk-btn lk-btn--primary">Edit profile</button></div>
+    <div id="d-form-out" class="demo-output"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Non-modal, resizable, async content</p>
+    <div class="demo-row">
+      <button id="d-inline" class="lk-btn lk-btn--outline">Non-modal panel (page stays usable)</button>
+      <button id="d-resize" class="lk-btn lk-btn--outline">Resizable (drag or arrow keys)</button>
+      <button id="d-async" class="lk-btn lk-btn--outline">Content from a URL</button>
+      <button id="d-nested" class="lk-btn lk-btn--outline">Nested drawers</button>
+      <button id="d-guard" class="lk-btn lk-btn--outline">Guarded close</button>
+      <button id="d-calm" class="lk-btn lk-btn--outline">Calm (fade only)</button>
+    </div>
+    <div class="lk-field" style="max-width: 20rem; margin-top: var(--lk-space-3);"><input id="d-page-input" class="lk-input" placeholder="Still typeable while a non-modal drawer is open" /></div>
+    <div id="d-out" class="demo-output" style="margin-top: var(--lk-space-3);"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const drawer = Look.lkDrawer({
+  side: 'right',                 // 'left' | 'right' | 'top' | 'bottom' | 'start' | 'end'
+  size: 'md',                    // 'sm' | 'md' | 'lg' | 'full' | '30rem'
+  title: 'Edit profile',
+  content: { url: '/partials/profile.html', select: '#form' },   // or text, Node, (body) => …, { html }, { template }
+  buttons: [
+    { text: 'Cancel', closes: true },
+    { text: 'Save', type: 'primary', onClick: () => save() },    // return false to keep it open
+  ],
+  resizable: { min: 280, max: '60vw' },
+  beforeClose: (reason) => (dirty &amp;&amp; reason !== 'api' ? confirmDiscard() : true),
+  onClose(reason, component) { console.log(reason); },           // 'escape' | 'backdrop' | 'close' | 'button' | 'api'
+});
+
+drawer.close();  drawer.toggle();  drawer.setContent('…');
+drawer.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkDrawer',
+  textNamespace: 'drawer',
+  kind: 'Composable',
+  signature: 'const drawer = Look.lkDrawer(options);',
+  description: [
+    'A panel docked to one edge of the viewport, created from options without any existing markup (the modal sibling of [lkDialog](composable-dialog.html)). It opens immediately unless `open: false`.',
+    '**Modal** (default): backdrop, focus trap and body scroll lock. Escape and a click on the backdrop close it (each can be turned off). **`modal: false`** makes a non-blocking panel: no backdrop, no trap, no lock, the page behind stays interactive; Escape then only works while focus is inside the panel.',
+    '**Motion.** Opening and closing are keyframe animations in both directions: the panel slides in from its edge while fading, and slides back out. `animation: \'calm\'` (`.lk-drawer--calm`) fades only; `prefers-reduced-motion` shortens everything to a flash. **Stacking.** The drawer sits above the dialog or drawer it was opened from; dropdowns and popups inside it sit above the drawer. Escape closes the topmost layer only: an open dropdown inside first, then the drawer; a dialog underneath is left alone.',
+    '**Focus.** On open focus moves to the first focusable element of the body (or the close button, or the panel); on close it returns to the `opener`, or to whatever was focused when it opened. Under 480px wide, left / right drawers are full width unless a `size` was given explicitly.',
+  ],
+  params: [
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The drawer instance.' },
+  options: [
+    { name: 'side', type: "'left' | 'right' | 'top' | 'bottom' | 'start' | 'end'", default: "'right'", description: '`start` / `end` are resolved once, at creation, from the document direction (`end` is `left` in RTL); read the result from `side`.' },
+    { name: 'size', type: "'sm' | 'md' | 'lg' | 'full' | string | number", default: "'md'", description: 'Width (left / right) or height (top / bottom): 20rem / 28rem / 40rem / 100%, or any CSS length (a number is px).' },
+    { name: 'modal', type: 'boolean', default: 'true', description: 'Backdrop + focus trap + scroll lock. `false`: non-blocking.' },
+    { name: 'closeOnEscape / closeOnBackdrop', type: 'boolean', default: 'true', description: 'Dismiss with Escape / a click on the backdrop (modal only).' },
+    { name: 'closable', type: 'boolean', default: 'true', description: 'Header close button.' },
+    { name: 'title', type: 'string', default: '—', description: 'Header title; labels the panel (`aria-labelledby`). Without one the panel is labelled by the `label` text.' },
+    { name: 'content', type: 'string | Node | Function | Object', default: '—', description: 'Text, a Node, `(body, ctx) => Node | text | { html } | cleanup | Promise`, `{ url, select, fetchOptions, transform, scripts }`, `{ html }` or `{ template }`.' },
+    { name: 'footer / buttons', type: 'Node | Function / Array', default: '—', description: '`footer` is a Node or `(footerEl) => Node | text`. `buttons` is `[{ text, type: \'primary\' | \'secondary\' | \'outline\' | \'ghost\' | \'negative\', onClick(event, { component, button }), closes, disabled }]`; `closes: true` closes with reason `\'button\'` unless `onClick` returns `false` (or a Promise resolving `false`).' },
+    { name: 'resizable', type: 'boolean | { min, max }', default: 'false', description: 'A drag handle on the inner edge (`role="separator"`, focusable). Arrow keys resize by 16px (Shift: 64px), Home / End jump to the limits. `min` / `max` are px numbers or CSS lengths (`\'60vw\'`); default 240px … 90% of the viewport.' },
+    { name: 'animation', type: "'calm'", default: '—', description: 'Fade only, no slide.' },
+    { name: 'dense', type: 'boolean', default: 'false', description: 'Compact paddings.' },
+    { name: 'open', type: 'boolean', default: 'true', description: 'Open immediately.' },
+    { name: 'destroyOnClose', type: 'boolean', default: 'false', description: 'Destroy once the exit animation finished.' },
+    { name: 'autoFocus', type: 'boolean', default: 'true', description: 'Move focus into the panel on open.' },
+    { name: 'opener', type: 'Element | string', default: 'the focused element', description: 'Gets the focus back on close.' },
+    { name: 'mount / className', type: 'Element / string', default: 'document.body / —', description: 'Where the root lives and extra classes for it.' },
+    { name: 'text', type: 'Object', default: '—', description: 'Per-instance text overrides.' },
+    { name: 'onOpen', type: 'Function', default: '—', description: '`(component)` once it opened.' },
+    { name: 'onClose', type: 'Function', default: '—', description: '`(reason, component)` — reason `\'escape\'`, `\'backdrop\'`, `\'close\'` (header button), `\'button\'` (a footer button), `\'api\'` (`close()` / `toggle()`).' },
+    { name: 'onResize', type: 'Function', default: '—', description: '`(sizePx, { source: \'drag\' | \'key\', component })`. Assigning `size` is silent.' },
+    { name: 'onLoad / onError', type: 'Function', default: '—', description: '`(body, { component })` / `(error, { component })` for async content.' },
+    { name: 'onDestroy', type: 'Function', default: '—', description: '`(component)` after teardown (for owners cleaning up what they put in the body).' },
+  ],
+  guards: [
+    { name: 'beforeOpen', signature: 'beforeOpen({ source, component })', description: 'Runs when `open()` / `toggle()` is called. Return `false` to stay closed, or a Promise. DOM event `lk:before-open`.' },
+    { name: 'beforeClose', signature: "beforeClose(reason, { source, component })", description: 'Runs for every close: reason `"escape"`, `"backdrop"`, `"close"`, `"button"` or `"api"` (source `"user"` / `"api"`). Return `false` (or a Promise resolving false) to keep it open — e.g. unsaved changes. Returning a string replaces the reason. DOM event `lk:before-close`.' },
+    { name: 'beforeResize', signature: 'beforeResize(sizePx, { source, component })', description: 'Synchronous. Runs for each drag move / key press; return `false` to refuse that size or a number to replace it. DOM event `lk:before-resize`.' },
+  ],
+  texts: [
+    { name: 'closeLabel', default: 'common.close ("Close")', description: 'Aria label of the header close button (follows the shared `common.close` unless you set this key).' },
+    { name: 'label', default: 'Panel', description: 'Accessible name of the panel when there is no `title`.' },
+    { name: 'resize', default: 'Resize panel', description: 'Aria label of the resize handle.' },
+  ],
+  properties: [
+    { name: 'isOpen', type: 'boolean', readonly: true, description: 'True from `open()` until `close()` starts (not while the exit animation plays).' },
+    { name: 'side', type: 'string', readonly: true, description: 'Resolved physical side.' },
+    { name: 'size', type: 'number', description: 'Current size in px; assigning a length (number, \'30rem\', \'40vw\') resizes silently.' },
+    { name: 'el / panelEl / headerEl / titleEl / bodyEl / footerEl / handleEl', type: 'Element', readonly: true, description: 'Root (`.lk-drawer`), panel and parts. `panelEl` is what `lkDropdown` / `lkPopupProxy` stack above.' },
+    { name: 'text', type: 'Object', description: 'Instance text overrides (live).' },
+  ],
+  methods: [
+    { name: 'open', signature: 'open()', description: 'Open (the `beforeOpen` guard applies). Returns the instance.' },
+    { name: 'close', signature: "close(reason = 'api')", description: 'Close (the `beforeClose` guard applies).' },
+    { name: 'toggle', signature: 'toggle()', description: 'Open or close.' },
+    { name: 'setTitle / setContent / setFooter', signature: 'setTitle(text) / setContent(content) / setFooter(node)', description: 'Replace a part; content goes through the same renderer as the `content` option (the previous one is cleaned up).' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes the node, listeners, scroll lock and any pending fetch, returns focus when it was open, then calls `onDestroy`.' },
+  ],
+  classes: [
+    { name: '.lk-drawer', description: 'Root, fixed over the viewport (`--left | --right | --top | --bottom`, `--modal | --inline`, `--sm | --md | --lg | --full`, `--sized`, `--calm`, `--dense`, `--open`, `--closing`, `--resizing`).' },
+    { name: '.lk-drawer__backdrop / __panel', description: 'The dimmed layer and the sliding panel.' },
+    { name: '.lk-drawer__header / __title / __close / __body / __footer', description: 'Panel parts.' },
+    { name: '.lk-drawer__handle', description: 'Resize handle on the inner edge.' },
+  ],
+  tokens: [
+    { name: '--lk-drawer-size', default: '28rem', description: 'Width / height of the panel (set per size class or inline).' },
+    { name: '--lk-drawer-enter-duration / --lk-drawer-exit-duration', default: '380ms / 260ms', description: 'Slide in / out; the JS exit timer reads the latter.' },
+    { name: '--lk-drawer-enter-easing / --lk-drawer-exit-easing', default: 'ease-out / ease-in', description: 'Easings.' },
+    { name: '--lk-overlay', default: 'rgba(0,0,0,0.45)', description: 'Backdrop colour.' },
+    { name: '--lk-z-modal', default: '100', description: 'Base z-index; raised above the layer the drawer was opened from.' },
+  ],
+});
+</script>
+<script>
+  const out = document.getElementById('d-out');
+  const say = (t) => { out.textContent = t; };
+  const lorem = (n) => Array.from({ length: n }, (_, i) => 'Paragraph ' + (i + 1) + '. Drawers hold forms, filters, details or navigation next to the page the user is working on.').join('\n\n');
+  const body = (n) => (host) => { const d = document.createElement('div'); d.style.whiteSpace = 'pre-line'; d.textContent = lorem(n); return d; };
+
+  document.querySelectorAll('[data-side]').forEach((b) => b.addEventListener('click', () => {
+    Look.lkDrawer({ side: b.dataset.side, title: b.textContent + ' drawer', content: body(4), destroyOnClose: true, buttons: [{ text: 'Close', closes: true }], onClose: (r) => say('closed: ' + r) });
+  }));
+  document.querySelectorAll('[data-size]').forEach((b) => b.addEventListener('click', () => {
+    Look.lkDrawer({ size: b.dataset.size, title: 'Size ' + b.dataset.size, content: body(3), destroyOnClose: true });
+  }));
+
+  document.getElementById('d-form').addEventListener('click', () => {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:grid;gap:var(--lk-space-4);';
+    wrap.innerHTML = '<input id="df-name"><div id="df-role"></div>';
+    let nameC; let roleC;
+    const drawer = Look.lkDrawer({
+      title: 'Edit profile', content: wrap, destroyOnClose: true,
+      buttons: [
+        { text: 'Cancel', closes: true },
+        { text: 'Save', type: 'primary', onClick: () => {
+          const r = Look.lkValidation(nameC, roleC);
+          if (r.hasError) return false;
+          document.getElementById('d-form-out').textContent = 'Saved ' + nameC.value + ' / ' + roleC.value;
+          drawer.close('button');
+          return false;
+        } },
+      ],
+      onDestroy: () => { nameC?.destroy(); roleC?.destroy(); },
+    });
+    nameC = Look.lkTextbox('#df-name', { label: 'Name', rules: ['required'], validate: true });
+    roleC = Look.lkDropdown('#df-role', { label: 'Role', placeholder: 'Choose…', rules: ['required'], items: [{ value: 'dev', text: 'Developer' }, { value: 'des', text: 'Designer' }, { value: 'pm', text: 'Manager' }] });
+  });
+
+  document.getElementById('d-inline').addEventListener('click', () => {
+    Look.lkDrawer({ modal: false, side: 'right', size: 'sm', title: 'Inspector', content: 'Not modal: no backdrop, no focus trap, no scroll lock. Try typing in the field on the page.', destroyOnClose: true, onClose: (r) => say('closed: ' + r) });
+  });
+  document.getElementById('d-resize').addEventListener('click', () => {
+    Look.lkDrawer({ resizable: { min: 260, max: '70vw' }, title: 'Resizable', content: 'Drag the left edge, or focus it and use the arrow keys (Shift for bigger steps, Home / End).', destroyOnClose: true, onResize: (px, c) => say('resized to ' + Math.round(px) + 'px via ' + c.source) });
+  });
+  document.getElementById('d-async').addEventListener('click', () => {
+    Look.lkDrawer({ title: 'FAQ', size: 'lg', content: { url: 'partials/faq.html', select: '#faq' }, destroyOnClose: true });
+  });
+  document.getElementById('d-nested').addEventListener('click', () => {
+    const open2 = () => Look.lkDrawer({ title: 'Second drawer', size: 'sm', content: 'Sits above the first. Escape closes this one only.', destroyOnClose: true });
+    Look.lkDrawer({ title: 'First drawer', content: (h) => { const b = document.createElement('button'); b.className = 'lk-btn lk-btn--primary'; b.textContent = 'Open another'; b.addEventListener('click', open2); return b; }, destroyOnClose: true });
+  });
+  document.getElementById('d-guard').addEventListener('click', () => {
+    Look.lkDrawer({
+      title: 'Unsaved changes', content: 'Closing asks for confirmation (try Escape, the backdrop, the X).', destroyOnClose: true,
+      beforeClose: (reason) => reason === 'api' ? true : new Promise((resolve) => {
+        Look.lkDialog({ type: 'question', title: 'Discard?', content: 'Close without saving?', destroyOnClose: true, confirmText: 'Discard',
+          onConfirm: () => resolve(true), onCancel: () => resolve(false), onClose: () => resolve(false) });
+      }),
+    });
+  });
+  document.getElementById('d-calm').addEventListener('click', () => {
+    Look.lkDrawer({ animation: 'calm', title: 'Calm', content: 'Fades in and out without sliding.', destroyOnClose: true });
+  });
+</script>
+</body>
+</html>

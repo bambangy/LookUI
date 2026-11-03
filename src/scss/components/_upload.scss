@@ -1,0 +1,319 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Upload — lkUpload on <input type="file">
+// Structure:
+//   .lk-upload--field > .lk-input.lk-upload__control > .lk-upload__chips (chips | .lk-upload__placeholder) + .lk-upload__icon
+//   .lk-upload--box   > .lk-upload__drop > (.lk-upload__icon + __title + __hint) | .lk-upload__file
+//                     + .lk-upload__summary + .lk-collapse > ul.lk-upload__list > li.lk-upload__item
+// The native input stays in the DOM (form submit, native required) but is visually hidden.
+
+.lk-upload {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+
+  &__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  &__name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__size {
+    flex: none;
+    font-size: var(--lk-text-sm);
+    color: var(--lk-text-muted);
+  }
+
+  &__remove {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--lk-text-muted);
+    cursor: pointer;
+    transition:
+      background-color var(--lk-duration-fast) var(--lk-easing-default),
+      color var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover {
+      background: color-mix(in srgb, var(--lk-negative) 12%, transparent);
+      color: var(--lk-negative);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--lk-primary);
+      outline-offset: 1px;
+    }
+  }
+
+  // --- Field mode ---
+
+  &__control {
+    display: flex;
+    align-items: center;
+    gap: var(--lk-space-2);
+    box-sizing: border-box;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  &__chips {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--lk-space-1);
+    min-width: 0;
+
+    .lk-chip {
+      --lk-chip-height: 1.5rem;
+      min-width: 0;
+      max-width: min(100%, 14rem);
+    }
+  }
+
+  &__placeholder {
+    color: var(--lk-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &--field &__icon {
+    display: inline-flex;
+    flex: none;
+    color: var(--lk-text-muted);
+    transition: color var(--lk-duration-fast) var(--lk-easing-default);
+  }
+
+  &--field:hover &__icon,
+  &--field &__control:focus &__icon {
+    color: var(--lk-primary);
+  }
+
+  &--field.lk-upload--dragover &__control {
+    border-color: var(--lk-primary);
+    background: color-mix(in srgb, var(--lk-primary) 6%, var(--lk-bg));
+  }
+
+  // --- Box mode ---
+
+  &__drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--lk-space-2);
+    box-sizing: border-box;
+    min-height: 8rem;
+    padding: var(--lk-space-5);
+    border: 2px dashed var(--lk-border);
+    border-radius: var(--lk-radius-lg);
+    background: var(--lk-surface);
+    color: var(--lk-text);
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      border-color var(--lk-duration-fast) var(--lk-easing-default),
+      background-color var(--lk-duration-fast) var(--lk-easing-default),
+      box-shadow var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--lk-primary);
+      background: color-mix(in srgb, var(--lk-primary) 5%, var(--lk-surface));
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-primary) 20%, transparent);
+    }
+  }
+
+  &--box.lk-upload--dragover &__drop {
+    border-style: solid;
+    border-color: var(--lk-primary);
+    background: color-mix(in srgb, var(--lk-primary) 10%, var(--lk-surface));
+  }
+
+  &--box &__icon {
+    display: inline-flex;
+    color: var(--lk-primary);
+  }
+
+  &__title {
+    font-weight: var(--lk-weight-semibold);
+  }
+
+  &__hint {
+    font-size: var(--lk-text-sm);
+    color: var(--lk-text-muted);
+  }
+
+  // One selected file inside the box
+  &__file {
+    display: flex;
+    align-items: center;
+    gap: var(--lk-space-3);
+    max-width: 100%;
+    min-width: 0;
+
+    .lk-icon {
+      flex: none;
+      color: var(--lk-primary);
+    }
+  }
+
+  // Multiple: summary row + collapsible list under the box
+  &__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--lk-space-2);
+    width: 100%;
+    margin-top: var(--lk-space-2);
+    padding: var(--lk-space-1) 0;
+    border: 0;
+    background: transparent;
+    color: var(--lk-text-muted);
+    font: inherit;
+    font-size: var(--lk-text-sm);
+    cursor: pointer;
+
+    &[hidden] { display: none; }
+
+    &:disabled { cursor: default; }
+
+    &:focus-visible {
+      outline: 2px solid var(--lk-primary);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+  }
+
+  &__chevron {
+    display: inline-flex;
+    transition: transform var(--lk-duration-slow) var(--lk-easing-in-out);
+  }
+
+  &__summary[aria-expanded="true"] &__chevron {
+    transform: rotate(180deg);
+  }
+
+  &__listwrap[hidden] { display: none; }
+
+  &__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: var(--lk-border-width) solid var(--lk-border);
+    border-radius: var(--lk-radius);
+    background: var(--lk-bg);
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: var(--lk-space-3);
+    padding: var(--lk-space-2) var(--lk-space-3);
+    min-width: 0;
+
+    & + & {
+      border-top: var(--lk-border-width) solid var(--lk-border);
+    }
+
+    .lk-icon {
+      flex: none;
+      color: var(--lk-text-muted);
+    }
+  }
+
+  // --- States ---
+
+  &--error &__control,
+  &--error &__drop {
+    border-color: var(--lk-negative);
+  }
+
+  &--error &__drop:hover,
+  &--error &__drop:focus-visible {
+    background: color-mix(in srgb, var(--lk-negative) 5%, var(--lk-surface));
+  }
+
+  &--error &__control:focus,
+  &--error &__drop:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-negative) 20%, transparent);
+  }
+
+  &--readonly &__control,
+  &--readonly &__drop {
+    cursor: default;
+    background: var(--lk-surface);
+  }
+
+  &--readonly &__drop:hover,
+  &--readonly &__drop:focus-visible {
+    border-color: var(--lk-border);
+  }
+
+  &--readonly &__remove,
+  &--disabled &__remove {
+    display: none;
+  }
+
+  &--readonly &__icon {
+    opacity: 0.4;
+  }
+
+  &--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+
+    .lk-upload__control,
+    .lk-upload__drop {
+      pointer-events: none;
+      background: var(--lk-surface);
+    }
+  }
+
+  // --- Dense ---
+
+  &--dense &__drop {
+    min-height: 5.5rem;
+    padding: var(--lk-space-3);
+    gap: var(--lk-space-1);
+  }
+
+  &--dense &__item {
+    padding: var(--lk-space-1) var(--lk-space-2);
+    font-size: var(--lk-text-sm);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-upload__chevron,
+  .lk-upload__drop,
+  .lk-upload__remove {
+    transition: none;
+  }
+}

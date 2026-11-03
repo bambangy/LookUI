@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Theme</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <!-- No-flash: applies the stored theme before the first paint (this is the snippet the page documents) -->
+  <script>(function(){try{var m=localStorage.getItem('lk-theme')||'system';var r=m==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):m;var e=document.documentElement;e.setAttribute('data-theme',r);e.style.colorScheme=r;}catch(e){}})();</script>
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+  <style>
+    .theme-toggle { display: inline-flex; align-items: center; gap: var(--lk-space-2); }
+    .theme-toggle__glyph { font-size: 1.1em; line-height: 1; }
+    .theme-swatches { display: flex; flex-wrap: wrap; gap: var(--lk-space-2); }
+    .theme-swatches span { padding: var(--lk-space-2) var(--lk-space-3); border-radius: var(--lk-radius); font-size: var(--lk-text-xs); border: var(--lk-border-width) solid var(--lk-border); }
+  </style>
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Theme</h1>
+    <p style="opacity: 0.85;">Look.lkTheme(opts) — light, dark or follow the system; remembered across visits and tabs</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Switch the theme of this page</p>
+    <div class="demo-row">
+      <button id="th-toggle" class="lk-btn lk-btn--secondary theme-toggle" aria-label="Toggle dark mode"><span class="theme-toggle__glyph" aria-hidden="true"></span><span class="theme-toggle__text"></span></button>
+      <div id="th-modes" class="demo-row" style="margin: 0;" role="group" aria-label="Theme mode"></div>
+      <button id="th-cycle" class="lk-btn lk-btn--ghost">Cycle</button>
+    </div>
+    <div id="th-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">A scoped dark region</p>
+    <p class="demo-sub">Any container can carry <code>data-theme="dark"</code>: a dark region inside a light page. (The reverse, a light region inside a dark page, is not provided.)</p>
+    <div data-theme="dark" style="padding: var(--lk-space-5); border-radius: var(--lk-radius-xl); display: grid; gap: var(--lk-space-3); max-width: 28rem;">
+      <strong>Always dark</strong>
+      <input class="lk-input" placeholder="Input" aria-label="Demo input" />
+      <div class="demo-row" style="margin: 0;">
+        <button class="lk-btn lk-btn--primary">Primary</button>
+        <button class="lk-btn lk-btn--secondary">Secondary</button>
+        <span class="lk-chip lk-chip--positive">Chip</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Palette in use</p>
+    <div class="theme-swatches">
+      <span style="background: var(--lk-bg); color: var(--lk-text);">--lk-bg</span>
+      <span style="background: var(--lk-bg-subtle); color: var(--lk-text);">--lk-bg-subtle</span>
+      <span style="background: var(--lk-surface); color: var(--lk-text);">--lk-surface</span>
+      <span style="background: var(--lk-primary); color: var(--lk-primary-contrast);">--lk-primary</span>
+      <span style="background: var(--lk-positive); color: var(--lk-positive-contrast);">--lk-positive</span>
+      <span style="background: var(--lk-warning); color: var(--lk-warning-contrast);">--lk-warning</span>
+      <span style="background: var(--lk-negative); color: var(--lk-negative-contrast);">--lk-negative</span>
+      <span style="background: var(--lk-info); color: var(--lk-info-contrast);">--lk-info</span>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">No flash on load</p>
+    <p class="demo-sub">The page is rendered before your script runs, so the stored theme has to be applied from an inline script in <code>&lt;head&gt;</code>, before the stylesheet. Generate it with <code>Look.lkTheme.inlineScript({ ... })</code> or copy it:</p>
+    <div class="demo-usage">
+      <pre>&lt;script&gt;
+(function () {
+  try {
+    var mode = localStorage.getItem('lk-theme') || 'system';
+    var theme = mode === 'system'
+      ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : mode;
+    var root = document.documentElement;
+    root.setAttribute('data-theme', theme);
+    root.style.colorScheme = theme;
+  } catch (e) {}
+})();
+&lt;/script&gt;
+&lt;link rel="stylesheet" href="look.css"&gt;</pre>
+    </div>
+    <p class="demo-sub">Without JavaScript, <code>&lt;html data-theme="system"&gt;</code> follows the OS preference by itself.</p>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const theme = Look.lkTheme({
+  default: 'system',           // used when nothing is stored
+  onChange(mode, ctx) {        // ctx.source: 'user' | 'system' | 'api'
+    console.log(mode, ctx.resolved);
+  },
+});
+
+button.onclick = () =&gt; theme.toggle();    // light &lt;-&gt; dark
+theme.set('dark');                          // 'light' | 'dark' | 'system'
+theme.mode;       // what the user chose
+theme.resolved;   // 'light' | 'dark' — what is applied</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkTheme',
+  kind: 'Composable',
+  signature: 'const theme = Look.lkTheme(options);',
+  description: [
+    'Light / dark / system theming. It sets the **resolved** theme (`light` or `dark`) as an attribute on the target (default `<html data-theme="…">`) together with the matching `color-scheme`, remembers the choice in `localStorage`, follows `prefers-color-scheme` while the mode is `system`, and keeps other open tabs in sync through the `storage` event.',
+    'The dark palette itself lives in `look.css` under `:root[data-theme="dark"], [data-theme="dark"]`: lighter brand and state colours, dark surfaces, stronger shadows. It works on any container too, and `<html data-theme="system">` follows the OS without JavaScript. See [Theming](theming.html) to tune it. Add the no-flash `<head>` script above so the first paint already has the right theme.',
+    'A change also dispatches a bubbling `lk:theme-change` event on the target with `detail = { mode, resolved, source }`.',
+  ],
+  params: [
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The theme instance.' },
+  options: [
+    { name: 'attribute', type: 'string', default: "'data-theme'", description: 'Attribute that receives `light` / `dark`.' },
+    { name: 'target', type: 'Element | string', default: 'document.documentElement', description: 'Element that is themed.' },
+    { name: 'default', type: "'light' | 'dark' | 'system'", default: "'system'", description: 'Mode when nothing is stored.' },
+    { name: 'storageKey', type: 'string', default: "'lk-theme'", description: 'localStorage key (access is wrapped in try / catch, so private mode just means "not remembered").' },
+    { name: 'persist', type: 'boolean', default: 'true', description: '`false` neither stores nor syncs across tabs.' },
+    { name: 'modes', type: 'string[]', default: "['light','dark','system']", description: 'The modes `cycle()` goes through.' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(mode, { source, resolved, component })`. `source` is `\'user\'` (toggle / cycle), `\'api\'` (`set()`), or `\'system\'` (the OS preference or another tab changed it). It also fires when the mode stays `system` but the resolved theme flips. Assigning `mode` is silent.' },
+  ],
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange(mode, { source, resolved, component })', description: 'Runs before `set()`, `toggle()` or `cycle()` applies a mode. Return `false` to keep the current theme, a mode string to apply another one, or a Promise to wait. OS and cross-tab changes are not guarded.' },
+  ],
+  texts: [],
+  properties: [
+    { name: 'mode', type: "'light' | 'dark' | 'system'", description: 'The chosen mode. Assigning applies and stores it silently (no guard, no `onChange`).' },
+    { name: 'resolved', type: "'light' | 'dark'", readonly: true, description: 'What is applied right now.' },
+    { name: 'modes', type: 'string[]', readonly: true, description: 'The cycle order.' },
+    { name: 'el', type: 'Element', readonly: true, description: 'The themed element.' },
+  ],
+  methods: [
+    { name: 'set', signature: 'set(mode[, source])', returns: { type: 'Promise<boolean>', description: 'true when applied.' }, description: 'Chooses a mode (`source` defaults to `\'api\'`).' },
+    { name: 'toggle', signature: 'toggle([source])', returns: { type: 'Promise<boolean>' }, description: 'Flips light and dark based on what is shown now (so it also leaves `system`). `source` defaults to `\'user\'`.' },
+    { name: 'cycle', signature: 'cycle([source])', returns: { type: 'Promise<boolean>' }, description: 'Moves to the next of `modes`.' },
+    { name: 'Look.lkTheme.inlineScript', signature: 'Look.lkTheme.inlineScript({ attribute, storageKey, default })', returns: { type: 'string' }, description: 'Source of the tiny no-flash script for `<head>`.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes listeners and puts back the attribute and `color-scheme` the target had before.' },
+  ],
+  classes: [
+    { name: '[data-theme="dark"]', description: 'Dark palette; on `:root` it themes the page, on a container only that subtree (which also gets the dark background and text).' },
+    { name: '[data-theme="system"]', description: 'On `<html>`: follows `prefers-color-scheme` without JavaScript.' },
+  ],
+  tokens: [
+    { name: '--lk-bg / --lk-bg-subtle / --lk-surface', default: 'dark: #121218 / #1a1a22 / #262631', description: 'Dark surfaces.' },
+    { name: '--lk-text / --lk-text-muted', default: 'dark: #ececf1 / #a3a3b2', description: 'Dark text.' },
+    { name: '--lk-primary … --lk-info (+ -light / -dark / -contrast)', default: 'lighter in dark', description: 'Brand and state colours; contrast text turns dark.' },
+    { name: '--lk-secondary-dark / --lk-text-on-dark', default: 'dark: #cfd8dc / #14141c', description: 'The "inverse surface" pair (tooltips, slider bubble) flips to a light surface with dark text.' },
+    { name: '--lk-border / --lk-border-strong', default: 'dark: #34343f / #5a5a6c', description: 'Borders.' },
+    { name: '--lk-shadow-*', default: 'stronger', description: 'Shadows need more opacity on dark.' },
+  ],
+});
+</script>
+<script>
+  const out = document.getElementById('th-out');
+  const toggleBtn = document.getElementById('th-toggle');
+  const modesEl = document.getElementById('th-modes');
+  const glyph = { light: '☀', dark: '☾', system: '◐' };   // plain characters: no sun / moon icon in the icon set
+
+  const theme = Look.lkTheme({
+    onChange: (mode, ctx) => { paint(); out.textContent = `onChange(${mode}) — source: ${ctx.source}, resolved: ${ctx.resolved}`; },
+  });
+
+  theme.modes.forEach((m) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'lk-btn lk-btn--sm lk-btn--ghost';
+    b.textContent = m;
+    b.dataset.mode = m;
+    b.onclick = () => theme.set(m);
+    modesEl.appendChild(b);
+  });
+
+  function paint() {
+    toggleBtn.querySelector('.theme-toggle__glyph').textContent = glyph[theme.resolved];
+    toggleBtn.querySelector('.theme-toggle__text').textContent = theme.resolved === 'dark' ? 'Dark' : 'Light';
+    toggleBtn.setAttribute('aria-pressed', String(theme.resolved === 'dark'));
+    modesEl.querySelectorAll('button').forEach((b) => {
+      b.classList.toggle('lk-btn--primary', b.dataset.mode === theme.mode);
+      b.classList.toggle('lk-btn--ghost', b.dataset.mode !== theme.mode);
+      b.setAttribute('aria-pressed', String(b.dataset.mode === theme.mode));
+    });
+  }
+  paint();
+  out.textContent = `mode: ${theme.mode}, resolved: ${theme.resolved}`;
+
+  toggleBtn.onclick = () => theme.toggle();
+  document.getElementById('th-cycle').onclick = () => theme.cycle();
+</script>
+</body>
+</html>

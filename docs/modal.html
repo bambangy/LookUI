@@ -125,13 +125,20 @@ LookDocs.render('#api', {
     'Wires an existing modal markup block. With a `trigger`, clicking it **toggles** the modal; **Escape** closes it, a focus trap keeps **Tab** inside it, and focus returns to the previously focused element on close. The trigger\'s `aria-expanded` mirrors the state.',
     'lkModal only toggles classes on `modalElement`. Close buttons and overlay clicks are yours to wire (`btn.onclick = () => modal.close()`). For dialogs built from options — with confirm/cancel callbacks, status icons and auto-destroy — use [lkDialog](composable-dialog.html).',
     'Expected markup: a wrapper (`modalElement`) containing `.lk-modal-overlay > .lk-modal` with `__header`, `__body`, `__footer`. The wrapper receives `.lk-modal--open` / `.lk-modal--closing`; all visuals come from CSS.',
-    'Changed in 0.3.0: the signature was `lkModal(triggerElement, modalElement)`. The old two-argument order still works but logs a deprecation warning (removed in 1.0).',
   ],
   params: [
     { name: 'modalElement', type: 'Element | string', description: 'Wrapper element (or selector) that contains `.lk-modal-overlay`. The focus trap is attached here; focus goes to the inner `.lk-modal` (given `tabindex="-1"` if it has none).' },
     { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
   ],
   returns: { type: 'Object', description: '`{ el, id, hidden, enabled, open, close, toggle, isOpen, trigger, destroy }`. Throws if `modalElement` (or a given `trigger`) is not found.' },
+  textNamespace: 'modal',
+  texts: [
+    { name: 'close.label', default: 'Close', description: 'aria-label for `.lk-modal__close` buttons that do not carry their own `aria-label`. Re-applied when the locale changes.' },
+  ],
+  guards: [
+    { name: 'beforeOpen', signature: 'beforeOpen({ source, component })', description: 'Runs before the modal opens (trigger click, `open()`, `open: true`). Return `false` to keep it closed. `onOpen` fires only when allowed.' },
+    { name: 'beforeClose', signature: 'beforeClose(reason, { source, component })', description: 'Runs before the modal closes - Escape, the trigger toggle and `close(reason)` (your own close buttons / backdrop handlers that call `close()` too). Return `false` to keep it open. `onClose` fires only when allowed.' },
+  ],
   notes: [
     '**Motion contract.** Open adds `.lk-modal--open`: the overlay fades in over `--lk-modal-enter-duration` and the panel plays the SweetAlert2-style pop (`lk-modal-pop`, scale 0.7 → 1.05 → 0.95 → 1, 320 ms). Close swaps to `.lk-modal--closing`: the panel slides down 3rem while fading (`lk-modal-slide-out`) over `--lk-modal-exit-duration` (220 ms); lkModal removes `.lk-modal--closing` after that duration (read from CSS at close time, + 20 ms).',
     'Add `.lk-modal--calm` to the `.lk-modal` panel to opt out of pop/slide and use plain rise/fade transitions. `prefers-reduced-motion: reduce` shortens everything to 1 ms.',

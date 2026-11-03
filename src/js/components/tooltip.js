@@ -4,6 +4,7 @@
 
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { qs } from '../core/index.js';
+import { guard, guardSync } from '../helpers/guard.js';
 
 /**
  * Enhance a tooltip container with show/hide behavior.
@@ -11,6 +12,7 @@ import { qs } from '../core/index.js';
  * @param {Object} [opts]
  * @param {string}  [opts.content]  — tooltip text
  * @param {string}  [opts.position] — top|bottom|left|right (default 'top')
+ * @param {Function} [opts.beforeShow] — ({ source, component }) => false; veto showing (source 'hover' | 'focus' | 'api'); a veto keeps the tip hidden until the pointer / focus leaves (DOM event 'lk:before-show'). Evaluated synchronously for hover / focus.
  * @returns {Object}
  */
 export function lkTooltip(el, opts = {}) {
@@ -60,6 +62,27 @@ export function lkTooltip(el, opts = {}) {
   const comp = {};
   applyBase(comp, node);
 
+  // Hover / focus show the tip through CSS; a vetoed show hides it inline until the pointer / focus leaves.
+  let suppressed = false;
+  function setSuppressed(on) {
+    if (!contentEl || suppressed === on) return;
+    suppressed = on;
+    if (on) contentEl.style.setProperty('display', 'none');
+    else contentEl.style.removeProperty('display');
+  }
+  function tryShow(source) {
+    const g = guardSync(node, opts, 'show', undefined, { source, component: comp });
+    setSuppressed(!g.allowed);
+  }
+  const onEnter = () => tryShow('hover');
+  const onFocusIn = () => tryShow('focus');
+  const onLeave = () => { if (!node.matches(':focus-within')) setSuppressed(false); };
+  const onFocusOut = () => { if (!node.matches(':hover')) setSuppressed(false); };
+  node.addEventListener('mouseenter', onEnter);
+  node.addEventListener('focusin', onFocusIn);
+  node.addEventListener('mouseleave', onLeave);
+  node.addEventListener('focusout', onFocusOut);
+
   Object.defineProperties(comp, {
     content: {
       get() { return contentEl ? contentEl.textContent : ''; },
@@ -79,10 +102,20 @@ export function lkTooltip(el, opts = {}) {
     },
   });
 
-  comp.show = function () { node.classList.add('lk-tooltip--open'); };
+  comp.show = function () {
+    guard(node, opts, 'show', undefined, { source: 'api', component: comp }, () => {
+      setSuppressed(false);
+      node.classList.add('lk-tooltip--open');
+    });
+  };
   comp.hide = function () { node.classList.remove('lk-tooltip--open'); };
 
   comp.destroy = function () {
+    setSuppressed(false);
+    node.removeEventListener('mouseenter', onEnter);
+    node.removeEventListener('focusin', onFocusIn);
+    node.removeEventListener('mouseleave', onLeave);
+    node.removeEventListener('focusout', onFocusOut);
     node.classList.remove('lk-tooltip--open');
     if (addedRootClass) node.classList.remove('lk-tooltip');
     if (contentEl) {

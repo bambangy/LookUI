@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Bambang Yudhotomo — LookUI
 import { createPresenceController, floatingZIndex } from '../helpers/motion.js';
+import { guard } from '../helpers/guard.js';
 
 const LAYER_CLASS = 'lk-popup-proxy';
 const PANEL_CLASS = 'lk-popup-proxy__panel';
@@ -173,6 +174,8 @@ function getSideFromPlacement(placement) {
  * Supports text, HTML, Node, template, or existing element selector as content.
  * @param {Element|string} target
  * @param {Object} [opts={}]
+ * @param {Function} [opts.beforeShow] — guard ({ anchor, placement }, { source, component }); false cancels, a returned object may replace the anchor
+ * @param {Function} [opts.beforeHide] — guard (reason, { source, component }); false keeps it open
  * @returns {{ el: Element, panelEl: Element, show: Function, hide: Function, toggle: Function, setContent: Function, setPlacement: Function, updatePosition: Function, destroy: Function, isOpen: boolean }}
  */
 export function lkPopupProxy(target, opts = {}) {
@@ -195,6 +198,8 @@ export function lkPopupProxy(target, opts = {}) {
     open: false,
     onShow: null,
     onHide: null,
+    beforeShow: null,
+    beforeHide: null,
     ...opts,
   };
 
@@ -341,13 +346,13 @@ export function lkPopupProxy(target, opts = {}) {
     if (panel.contains(targetNode) || trigger.contains(targetNode)) return;
     if (anchorEl && anchorEl !== trigger && anchorEl.contains && anchorEl.contains(targetNode)) return;
 
-    hide('outside');
+    hide('outside', 'user');
   }
 
   function onDocumentKeydown(e) {
     if (!open || !options.closeOnEscape) return;
     if (e.key === 'Escape') {
-      hide('escape');
+      hide('escape', 'user');
     }
   }
 
@@ -365,7 +370,15 @@ export function lkPopupProxy(target, opts = {}) {
     document.removeEventListener('keydown', onDocumentKeydown);
   }
 
-  function show(anchor = trigger) {
+  function show(anchor = trigger, source = 'api') {
+    if (destroyed || open) return;
+    const from = anchor && anchor.getBoundingClientRect ? anchor : trigger;
+    guard(trigger, options, 'show', { anchor: from, placement }, { source, component: instance }, (next) => {
+      doShow(next && next.anchor && next.anchor.getBoundingClientRect ? next.anchor : from);
+    });
+  }
+
+  function doShow(anchor = trigger) {
     if (destroyed || open) return;
 
     if (!layer.isConnected) {
@@ -397,7 +410,12 @@ export function lkPopupProxy(target, opts = {}) {
     }
   }
 
-  function hide(reason = 'hide') {
+  function hide(reason = 'hide', source = 'api') {
+    if (destroyed || !open) return;
+    guard(trigger, options, 'hide', reason, { source, component: instance }, (next) => doHide(typeof next === 'string' ? next : reason));
+  }
+
+  function doHide(reason = 'hide') {
     if (destroyed || !open) return;
 
     open = false;
@@ -416,22 +434,22 @@ export function lkPopupProxy(target, opts = {}) {
     }
   }
 
-  function toggle(anchor = trigger) {
+  function toggle(anchor = trigger, source = 'api') {
     if (open) {
-      hide('toggle');
+      hide('toggle', source);
       return;
     }
 
-    show(anchor);
+    show(anchor, source);
   }
 
   function onTriggerClick(e) {
     if (!options.toggleOnTrigger) {
-      show(e.currentTarget || trigger);
+      show(e.currentTarget || trigger, 'user');
       return;
     }
 
-    toggle(e.currentTarget || trigger);
+    toggle(e.currentTarget || trigger, 'user');
   }
 
   function setContent(nextContent) {
@@ -448,7 +466,7 @@ export function lkPopupProxy(target, opts = {}) {
   function destroy() {
     if (destroyed) return;
 
-    hide('destroy');
+    doHide('destroy');
     destroyed = true;
 
     presence.destroy();
@@ -469,7 +487,7 @@ export function lkPopupProxy(target, opts = {}) {
   trigger.addEventListener('click', onTriggerClick);
 
   if (options.open) {
-    show(trigger);
+    doShow(trigger);
   } else {
     trigger.setAttribute('aria-expanded', 'false');
     trigger.setAttribute('aria-haspopup', 'dialog');

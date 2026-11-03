@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Color</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Color</h1>
+    <p style="opacity: 0.85;">lkColor(input, opts) — colour field with swatches, a native picker and optional opacity</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Basics</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="c-basic" />
+      <input id="c-alpha" />
+      <input id="c-custom" />
+    </div>
+    <div id="c-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+    <p style="font-size: var(--lk-text-sm); color: var(--lk-text-muted); margin-top: var(--lk-space-3);">
+      Type any colour too: <code>#f00</code>, <code>teal</code>, <code>rgb(20, 120, 200)</code>, <code>hsl(210 50% 40%)</code>.
+    </p>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Display format &amp; states</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="c-rgb" />
+      <input id="c-hsl" />
+      <input id="c-dense" />
+      <input id="c-dis" />
+      <input id="c-ro" />
+      <input id="c-err" />
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Form &amp; validation</p>
+    <form id="c-form" class="lk-card" novalidate>
+      <div class="lk-card__body" style="display: grid; gap: var(--lk-space-4); max-width: 24rem;">
+        <input id="c-f-brand" name="brand" />
+        <input id="c-f-accent" name="accent" />
+        <div class="demo-row" style="margin-bottom: 0;">
+          <button class="lk-btn lk-btn--primary" type="submit">Submit</button>
+        </div>
+        <div id="c-f-out" class="demo-output"></div>
+      </div>
+    </form>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const brand = Look.lkColor('#brand', {
+  alpha: true,                // opacity slider, 8-digit hex when not opaque
+  clearable: true,
+  format: 'hex',              // display: 'hex' | 'rgb' | 'hsl'
+  swatches: ['#ef4444', { value: '#22c55e', label: 'Green' }],
+  onChange(value, ctx) { console.log(value, ctx.source, ctx.rgb, ctx.hsl); },
+});
+
+brand.value;                  // '#3b82f6' | '#3b82f680' | null
+brand.value = 'rebeccapurple';// silent, lenient parsing
+brand.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkColor',
+  textNamespace: 'color',
+  validateable: true,
+  kind: 'Component',
+  signature: 'const color = Look.lkColor(inputElement, options);',
+  description: [
+    'A colour field: a swatch button, a text input and a popup ([lkPopupProxy](composable-popup-proxy.html)) with preset swatches, a native `<input type="color">` ("Custom…") and, with `alpha`, an opacity slider. Picking a swatch applies it and closes the popup; the custom picker and the slider apply on change.',
+    'The value is normalised lower-case hex: `\'#rrggbb\'`, or `\'#rrggbbaa\'` when `alpha` is on and the colour is not fully opaque. Parsing is lenient — 3 / 4 / 6 / 8 digit hex, rgb() / hsl() (comma or space syntax, percentages) and a canvas-free map of the common CSS names. A hidden input carries the value for form posts (the `name` moves to it).',
+  ],
+  params: [
+    { name: 'inputElement', type: 'HTMLInputElement | string', description: 'The input (or selector).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The color instance.' },
+  options: [
+    { name: 'value', type: 'string | null', default: "the input's value", description: 'Initial colour (any parseable syntax).' },
+    { name: 'swatches', type: 'Array<string | { value, label? }>', default: '18 preset colours', description: 'Preset palette; `[]` hides the grid. A `label` becomes the swatch\'s accessible name.' },
+    { name: 'alpha', type: 'boolean', default: 'false', description: 'Opacity slider; the value gets 8 digits while the colour is translucent. Without it any alpha in typed / set colours is dropped.' },
+    { name: 'format', type: "'hex' | 'rgb' | 'hsl'", default: "'hex'", description: 'Text shown in the input (the value itself is always hex).' },
+    { name: 'custom', type: 'boolean', default: 'true', description: 'Show the native "Custom…" colour picker.' },
+    { name: 'clearable', type: 'boolean', default: 'false', description: 'Show a clear button while a colour is set.' },
+    { name: 'placement / zIndex', type: 'string / number', default: "'bottom-left'", description: 'Popup placement and stacking.' },
+    { name: 'label / name / placeholder', type: 'string', default: '—', description: '`name` is the hidden input\'s name.' },
+    { name: 'required / readonly / disabled / dense', type: 'boolean', default: 'false', description: 'Initial states.' },
+    { name: 'rules / validate', type: 'Array / boolean', default: '—', description: 'Validation (an unparsable typed text is a built-in error).' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(value, { source, component, rgb, hsl, display })` — `source` is `\'swatch\'`, `\'custom\'` (native picker / slider), `\'input\'` (typed), `\'clear\'` or `\'api\'` (`setValue`, `clear`). `rgb` is `{ r, g, b, a }`, `hsl` is `{ h, s, l, a }`. Assigning `value` is silent.' },
+    { name: 'onOpen / onClose', type: 'Function', default: '—', description: '`onOpen(component)`; `onClose(reason, component)` with reason `\'select\' | \'escape\' | \'outside\' | \'toggle\' | \'close\'`.' },
+  ],
+  guards: [
+    { name: 'beforeOpen', signature: 'beforeOpen({ source, component })', description: 'Before the popup opens. Return `false` to keep it closed.' },
+    { name: 'beforeClose', signature: 'beforeClose(reason, { source, component })', description: 'Before the popup closes. Return `false` to keep it open.' },
+    { name: 'beforeChange', signature: 'beforeChange(value, { source, component, rgb, hsl, display })', description: 'Before a new colour is committed (swatch, picker, slider, typed text, clear, `setValue`). Return `false` to veto (swatch / text revert), a Promise, or another colour string to replace it. DOM event: `lk:before-change`.' },
+  ],
+  texts: [
+    { name: 'label', default: 'Color', description: 'Accessible name when there is no label.' },
+    { name: 'placeholder', default: 'Pick a color', description: 'Input placeholder.' },
+    { name: 'open', default: 'Choose color', description: 'Aria label of the swatch button.' },
+    { name: 'swatches', default: 'Preset colors', description: 'Aria label of the swatch grid.' },
+    { name: 'custom', default: 'Custom…', description: 'The native picker row.' },
+    { name: 'alpha', default: 'Opacity', description: 'Opacity slider label.' },
+    { name: 'invalid', default: 'Enter a valid color', description: 'Typed text could not be read. The clear button uses `common.clear`.' },
+  ],
+  properties: [
+    { name: 'value', type: 'string | null', description: 'Normalised hex. Setter is silent and lenient (invalid → `null`).' },
+    { name: 'rgb / hsl / display', type: '—', readonly: true, description: 'Channel objects and the text shown in the input.' },
+    { name: 'format / alpha / clearable / swatches', type: '—', description: 'Change at runtime.' },
+    { name: 'isOpen', type: 'boolean', readonly: true, description: 'Popup state.' },
+    { name: 'rootEl / panelEl / inputEl / hiddenEl', type: 'Element', readonly: true, description: 'The field box, popup panel, visible and hidden inputs.' },
+    { name: 'text', type: 'Object', description: 'Per-instance text overrides.' },
+    { name: 'label / name / required / readonly / disabled / enabled / hidden', type: '—', description: 'Standard field properties.' },
+  ],
+  methods: [
+    { name: 'open / close / toggle', signature: 'open()', description: 'Popup control (through the guards, source `\'api\'`).' },
+    { name: 'setValue', signature: 'setValue(value, source = "api")', description: 'Commits a colour through `beforeChange` and `onChange`.' },
+    { name: 'clear', signature: 'clear()', description: 'Commits `null`.' },
+    { name: 'validate / setValidation / clearValidation', signature: 'validate()', description: 'Validation API.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes the UI, the popup and restores the original input.' },
+  ],
+  classes: [
+    { name: '.lk-color', description: 'The field box (also `.lk-input-affix`); `--dense`, `--disabled`, `--readonly`, `--error`.' },
+    { name: '.lk-color__swatch / __fill / __input / __clear', description: 'Swatch button (`--empty`), its fill, the text input and the clear button.' },
+    { name: '.lk-color-panel', description: 'Popup content: `__grid`, `__swatch` (`--on`), `__custom`, `__picker`, `__alpha`, `__range`.' },
+  ],
+  tokens: [
+    { name: '--lk-color-value', default: 'set by JS', description: 'The colour painted by a swatch (an rgba() string).' },
+    { name: '--lk-primary', default: '#5c6bc0', description: 'Focus ring and selected swatch ring.' },
+    { name: '--lk-border / --lk-bg', default: 'theme', description: 'Swatch borders and the transparency checkerboard.' },
+  ],
+});
+</script>
+<script>
+  const out = document.getElementById('c-out');
+  const log = (l) => (v, c) => { out.textContent = l + ': ' + JSON.stringify(v) + ' (' + c.source + ') rgb=' + JSON.stringify(c.rgb); };
+  Look.lkColor('#c-basic', { label: 'Brand colour', value: '#3b82f6', onChange: log('basic') });
+  Look.lkColor('#c-alpha', { label: 'With opacity', value: '#ef444499', alpha: true, clearable: true, onChange: log('alpha') });
+  Look.lkColor('#c-custom', { label: 'Custom swatches', swatches: ['#0f172a', '#1e293b', { value: '#38bdf8', label: 'Sky' }, { value: '#facc15', label: 'Sun' }, '#f8fafc'], clearable: true, onChange: log('custom') });
+
+  Look.lkColor('#c-rgb', { label: 'rgb() display', format: 'rgb', value: '#22c55e' });
+  Look.lkColor('#c-hsl', { label: 'hsl() display', format: 'hsl', value: '#a855f7' });
+  Look.lkColor('#c-dense', { label: 'Dense', dense: true, value: '#f59e0b' });
+  Look.lkColor('#c-dis', { label: 'Disabled', value: '#ef4444', disabled: true });
+  Look.lkColor('#c-ro', { label: 'Readonly', value: '#14b8a6', readonly: true });
+  Look.lkColor('#c-err', { label: 'Required', required: true }).validate();
+
+  const brand = Look.lkColor('#c-f-brand', { label: 'Brand', required: true, validate: true });
+  const accent = Look.lkColor('#c-f-accent', { label: 'Accent (not white)', validate: true, rules: [(v) => (v === '#ffffff' ? 'White is not allowed' : true)] });
+  const fout = document.getElementById('c-f-out');
+  document.getElementById('c-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const r = Look.lkValidation(brand, accent);
+    fout.textContent = r.hasError ? 'Invalid: ' + JSON.stringify(r.errors) : JSON.stringify(Object.fromEntries(new FormData(e.target)));
+  });
+</script>
+</body>
+</html>

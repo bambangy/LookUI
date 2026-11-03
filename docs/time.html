@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Time</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Time</h1>
+    <p style="opacity: 0.85;">lkTime(input, opts) — time-of-day field with a picker popup</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Basics</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="t-basic" />
+      <input id="t-24" />
+      <input id="t-sec" />
+    </div>
+    <div id="t-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+    <p style="font-size: var(--lk-text-sm); color: var(--lk-text-muted); margin-top: var(--lk-space-3);">
+      Type a time too: <code>930</code>, <code>9.30 pm</code>, <code>21:05</code>, <code>12am</code>.
+    </p>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Range, step &amp; locale</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="t-range" />
+      <input id="t-step" />
+      <input id="t-dense" />
+    </div>
+    <div class="demo-row" style="margin-top: var(--lk-space-4);">
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="t-loc-en">Locale: en</button>
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="t-loc-id">Locale: id</button>
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="t-loc-de">Locale: de</button>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">States</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="t-dis" />
+      <input id="t-ro" />
+      <input id="t-err" />
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Form &amp; validation</p>
+    <form id="t-form" class="lk-card" novalidate>
+      <div class="lk-card__body" style="display: grid; gap: var(--lk-space-4); max-width: 24rem;">
+        <input id="t-f-start" name="start" />
+        <input id="t-f-end" name="end" />
+        <div class="demo-row" style="margin-bottom: 0;">
+          <button class="lk-btn lk-btn--primary" type="submit">Submit</button>
+        </div>
+        <div id="t-f-out" class="demo-output"></div>
+      </div>
+    </form>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const start = Look.lkTime('#start', {
+  format: 24,                // 12 | 24 (default: the locale's hour cycle)
+  minuteStep: 5,
+  seconds: false,
+  min: '08:00', max: '18:00',
+  onChange(value, ctx) { console.log(value, ctx.source, ctx.display, ctx.iso); },
+});
+
+start.value;                 // '14:30' | null  ('HH:mm', or 'HH:mm:ss' with seconds)
+start.value = '09:15';       // silent; also accepts a Date
+start.open();
+start.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkTime',
+  textNamespace: 'time',
+  validateable: true,
+  kind: 'Component',
+  signature: 'const time = Look.lkTime(inputElement, options);',
+  description: [
+    'A time-of-day field: a text input (typed entry is parsed leniently — `930`, `9.30 pm`, `21:05:07`) with a clock button that opens a popup built on [lkPopupProxy](composable-popup-proxy.html): hour / minute (/ second) selects, an AM/PM toggle and a Now / Cancel / OK footer. Popup choices are a draft; **OK** (or Enter) commits.',
+    'The value is a 24-hour string, `\'HH:mm\'` (or `\'HH:mm:ss\'` when `seconds` is on), or `null`. The displayed text uses `Intl.DateTimeFormat` with `Look.i18n.locale`; `format` defaults to the locale\'s hour cycle. A hidden input carries the 24h string for form posts (the `name` moves to it).',
+  ],
+  params: [
+    { name: 'inputElement', type: 'HTMLInputElement | string', description: 'The input (or selector).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The time instance.' },
+  options: [
+    { name: 'value', type: "string | Date | null", default: "the input's value", description: 'Initial value.' },
+    { name: 'format', type: '12 | 24', default: "from locale", description: 'Hour cycle for the display text and the popup (AM/PM toggle is shown for 12).' },
+    { name: 'minuteStep', type: 'number', default: '1', description: 'Step of the minute select (1–30). A typed time that is not on the step is kept as typed.' },
+    { name: 'seconds', type: 'boolean', default: 'false', description: 'Show seconds (select + display) and use `HH:mm:ss` values.' },
+    { name: 'min / max', type: 'string', default: '—', description: '`\'HH:mm\'` bounds. Out-of-range hours are disabled in the popup, OK is disabled for an out-of-range draft, and typed values are flagged by built-in `time.min` / `time.max` rules.' },
+    { name: 'locale', type: 'string', default: 'Look.i18n.locale', description: 'Fixes the display locale for this field.' },
+    { name: 'placement / zIndex', type: 'string / number', default: "'bottom-left'", description: 'Popup placement and stacking (passed to lkPopupProxy).' },
+    { name: 'label / name / placeholder', type: 'string', default: '—', description: '`name` is the hidden input\'s name.' },
+    { name: 'required / readonly / disabled / dense', type: 'boolean', default: 'false', description: 'Initial states.' },
+    { name: 'rules / validate', type: 'Array / boolean', default: '—', description: 'Validation (an unparsable typed text, `min` and `max` are built in).' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(value, { source, component, display, iso })` — `source` is `\'confirm\'` (OK), `\'input\'` (typed + Enter / blur), `\'now\'` or `\'api\'` (`setValue`, `clear`). Assigning `value` is silent.' },
+    { name: 'onConfirm', type: 'Function', default: '—', description: '`(value, { component, display, iso })` after the OK button committed.' },
+    { name: 'onOpen / onClose', type: 'Function', default: '—', description: '`onOpen(component)`; `onClose(reason, component)` with reason `\'confirm\' | \'cancel\' | \'now\' | \'escape\' | \'outside\' | \'toggle\' | \'close\'`.' },
+  ],
+  guards: [
+    { name: 'beforeOpen', signature: 'beforeOpen({ source, component })', description: 'Before the popup opens (button, Alt+ArrowDown, `open()`). Return `false` to keep it closed, or a Promise.' },
+    { name: 'beforeClose', signature: 'beforeClose(reason, { source, component })', description: 'Before the popup closes. Return `false` to keep it open (the draft stays).' },
+    { name: 'beforeChange', signature: 'beforeChange(value, { source, component, display, iso })', description: 'Before a new value is committed (OK, typed entry, Now, `setValue`). Return `false` to veto (the text reverts), a Promise, or a `\'HH:mm\'` string to replace the value. DOM event: `lk:before-change`.' },
+    { name: 'beforeConfirm', signature: 'beforeConfirm(value, { source: "confirm", component })', description: 'When OK / Enter in the popup is pressed, before `beforeChange`. Return `false` to keep the popup open (e.g. after a server check), or a time string to replace the draft.' },
+  ],
+  texts: [
+    { name: 'label', default: 'Time', description: 'Accessible name of the popup / button when there is no label.' },
+    { name: 'placeholder', default: 'Select time', description: 'Input placeholder.' },
+    { name: 'open', default: 'Choose time', description: 'Aria label of the clock button.' },
+    { name: 'hour / minute / second / meridiem', default: 'Hour / Minute / Second / AM or PM', description: 'Aria labels of the popup selects and the AM/PM group.' },
+    { name: 'am / pm', default: 'AM / PM', description: 'Texts of the AM/PM toggle (also accepted when typing).' },
+    { name: 'now', default: 'Now', description: 'Footer button. OK / Cancel use `common.ok` / `common.cancel`.' },
+    { name: 'invalid', default: 'Enter a valid time', description: 'Typed text could not be read.' },
+    { name: 'min / max', default: 'Time must be {min} or later / Time must be {max} or earlier', description: 'Range rule messages (`{min}` / `{max}` formatted for the locale).' },
+  ],
+  properties: [
+    { name: 'value', type: "string | null", description: '`\'HH:mm\'` / `\'HH:mm:ss\'`. Setter is silent and accepts a string, a Date or `null`.' },
+    { name: 'display / iso / date', type: '—', readonly: true, description: 'Formatted text, the 24h string, and a Date (1970-01-01 plus the time).' },
+    { name: 'format / minuteStep / seconds / min / max / locale', type: '—', description: 'Change at runtime.' },
+    { name: 'isOpen', type: 'boolean', readonly: true, description: 'Popup state.' },
+    { name: 'rootEl / panelEl / inputEl / hiddenEl', type: 'Element', readonly: true, description: 'The field box, the popup panel, the visible input and the hidden input.' },
+    { name: 'text', type: 'Object', description: 'Per-instance text overrides.' },
+    { name: 'label / name / required / readonly / disabled / enabled / hidden', type: '—', description: 'Standard field properties.' },
+  ],
+  methods: [
+    { name: 'open / close / toggle', signature: 'open()', description: 'Popup control (`close(reason)`). They go through the guards with source `\'api\'`.' },
+    { name: 'setValue', signature: 'setValue(value, source = "api")', description: 'Commits a value through `beforeChange` and `onChange`.' },
+    { name: 'clear', signature: 'clear()', description: 'Commits `null`.' },
+    { name: 'validate / setValidation / clearValidation', signature: 'validate()', description: 'Validation API.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes the UI, the popup and restores the original input.' },
+  ],
+  classes: [
+    { name: '.lk-time', description: 'The field box (also `.lk-input-affix`); `--dense`, `--disabled`, `--readonly`, `--error`.' },
+    { name: '.lk-time__input / __btn', description: 'The input and the clock button.' },
+    { name: '.lk-time-panel', description: 'Popup content: `__row`, `__select`, `__sep`, `__ampm` / `__ampm-btn`, `__footer`, `__summary`, `__actions`.' },
+  ],
+  tokens: [
+    { name: '--lk-primary', default: '#5c6bc0', description: 'Focus ring, selected AM/PM.' },
+    { name: '--lk-border / --lk-bg / --lk-radius-xl', default: 'theme', description: 'Popup border, fill and corners.' },
+  ],
+});
+</script>
+<script>
+  const out = document.getElementById('t-out');
+  const log = (l) => (v, c) => { out.textContent = l + ': ' + JSON.stringify(v) + ' (' + c.source + ', "' + c.display + '")'; };
+  Look.lkTime('#t-basic', { label: 'Start (locale default)', value: '14:30', onChange: log('basic') });
+  Look.lkTime('#t-24', { label: '24-hour', format: 24, value: '08:05', onChange: log('24h') });
+  Look.lkTime('#t-sec', { label: 'With seconds', format: 24, seconds: true, value: '23:59:30', onChange: log('sec') });
+
+  Look.lkTime('#t-range', { label: 'Office hours (08:00–18:00)', min: '08:00', max: '18:00', value: '09:00' });
+  Look.lkTime('#t-step', { label: '15-minute step', minuteStep: 15, value: '10:15' });
+  Look.lkTime('#t-dense', { label: 'Dense', dense: true, value: '12:00' });
+  ['en', 'id', 'de'].forEach((l) => { document.getElementById('t-loc-' + l).onclick = () => Look.i18n.use(l); });
+
+  Look.lkTime('#t-dis', { label: 'Disabled', value: '09:00', disabled: true });
+  Look.lkTime('#t-ro', { label: 'Readonly', value: '09:00', readonly: true });
+  Look.lkTime('#t-err', { label: 'Closing time', value: '07:00', min: '08:00' }).validate();
+
+  const start = Look.lkTime('#t-f-start', { label: 'Start', required: true, validate: true });
+  const end = Look.lkTime('#t-f-end', { label: 'End', required: true, validate: true,
+    rules: [(v) => (!v || !start.value || v > start.value ? true : 'End must be after start')] });
+  const fout = document.getElementById('t-f-out');
+  document.getElementById('t-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const r = Look.lkValidation(start, end);
+    fout.textContent = r.hasError ? 'Invalid: ' + JSON.stringify(r.errors) : JSON.stringify(Object.fromEntries(new FormData(e.target)));
+  });
+</script>
+</body>
+</html>

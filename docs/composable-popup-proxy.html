@@ -298,6 +298,10 @@ LookDocs.render('#api', {
     },
   ],
 
+  guards: [
+    { name: 'beforeShow', signature: 'beforeShow({ anchor, placement }, { source, component })', description: 'Runs before the popup opens (trigger click `source: "user"`, `show()` / `toggle()` `"api"`). Return `false` to keep it closed, or an object with another `anchor` to open there. A Promise is awaited.' },
+    { name: 'beforeHide', signature: 'beforeHide(reason, { source, component })', description: 'Runs before it closes (`reason`: `outside`, `escape`, `toggle`, `hide`, or the argument of `hide()`). Return `false` to keep it open. `destroy()` never asks.' },
+  ],
   properties: [
     { name: 'isOpen', type: 'boolean', readonly: true, description: 'Whether the popup is open (becomes `false` as soon as closing starts).' },
     { name: 'el', type: 'Element', readonly: true, description: 'The fixed full-viewport layer `.lk-popup-proxy` (pointer-events: none). Not in the DOM until the first open.' },

@@ -8,8 +8,11 @@ export * from './behaviors/index.js';
 export * from './components/index.js';
 export * from './composables/index.js';
 export { lkDataSource, createDataSource } from './helpers/dataSource.js';
+export { lkI18n, lkI18n as i18n } from './helpers/i18n.js';
+export { autoDispose, disposeAll, disposeWithin } from './helpers/registry.js';
+export { state, createState } from './helpers/state.js';
 
-export const version = '0.3.0';
+export const version = '0.4.0';
 export const author  = 'Bambang Yudhotomo';
 export const license = 'MIT';
 export const homepage = 'https://github.com/bambangy/LookUI';

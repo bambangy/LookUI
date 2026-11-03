@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Accordion</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Accordion</h1>
+    <p style="opacity: 0.85;">lkAccordion(el, opts) — a group of collapsible lkCard panels, single or multiple open</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Single open (existing markup)</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      Three <code>.lk-card</code> elements already in the page. <code>multiple: false</code> (the default) and
+      <code>collapsible: false</code> keep exactly one panel open — opening one slides the previous one shut at the
+      same time, and the last one can't be closed by clicking its own header.
+    </p>
+    <div id="acc-single" style="max-width: 32rem;">
+      <div class="lk-card">
+        <div class="lk-card__header"><div class="lk-card__title">Shipping</div></div>
+        <div class="lk-card__body">Free over $50, otherwise a flat $4.99. Delivery in 2–5 business days.</div>
+      </div>
+      <div class="lk-card" id="acc-single-disabled">
+        <div class="lk-card__header"><div class="lk-card__title">Returns (disabled item)</div></div>
+        <div class="lk-card__body">Accepted within 30 days, unused and in original packaging.</div>
+      </div>
+      <div class="lk-card">
+        <div class="lk-card__header"><div class="lk-card__title">Warranty</div></div>
+        <div class="lk-card__body">12 months against manufacturing defects.</div>
+      </div>
+    </div>
+    <div class="demo-row" style="margin-top: var(--lk-space-4);">
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="acc-single-disable">Disable "Returns"</button>
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="acc-single-enable">Enable "Returns"</button>
+      <span id="acc-single-out" class="demo-sub"></span>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Multiple open, built from <code>items</code>, <code>flush</code> variant</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      The container starts empty; the cards are built from <code>opts.items</code>. <code>multiple: true</code>
+      lets any number of panels stay open, and <code>variant: 'flush'</code> drops the outer card border/gap in
+      favor of a single divider between rows (good for a sidebar FAQ).
+    </p>
+    <div id="acc-multi" style="max-width: 32rem;"></div>
+    <div class="demo-row" style="margin-top: var(--lk-space-4);">
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="acc-multi-open">Open all</button>
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="acc-multi-close">Close all</button>
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="acc-multi-add">Add item</button>
+      <span id="acc-multi-out" class="demo-sub"></span>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Variants</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="gap: var(--lk-space-5); align-items: start;">
+      <div>
+        <p class="demo-sub">separated (default)</p>
+        <div id="acc-v-separated"></div>
+      </div>
+      <div>
+        <p class="demo-sub">bordered</p>
+        <div id="acc-v-bordered"></div>
+      </div>
+      <div>
+        <p class="demo-sub">flush</p>
+        <div id="acc-v-flush"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Guard — veto a close with <code>beforeToggle</code></p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      The "Terms" panel below refuses to close while its checkbox is unchecked — <code>beforeToggle</code> returns
+      <code>false</code> and the toggle (and the DOM event <code>lk:before-toggle</code>) is cancelled.
+    </p>
+    <div id="acc-guard" style="max-width: 32rem;"></div>
+    <div id="acc-guard-out" class="demo-output" style="margin-top: var(--lk-space-3);"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">HTML — existing cards</p>
+    <pre>&lt;div id="faq"&gt;
+  &lt;div class="lk-card"&gt;
+    &lt;div class="lk-card__header"&gt;&lt;div class="lk-card__title"&gt;Shipping&lt;/div&gt;&lt;/div&gt;
+    &lt;div class="lk-card__body"&gt;Free over $50.&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="lk-card" data-disabled&gt;…&lt;/div&gt;
+&lt;/div&gt;</pre>
+  </div>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const acc = Look.lkAccordion('#faq', {
+  multiple: false,
+  collapsible: true,
+  variant: 'separated',       // 'separated' | 'bordered' | 'flush'
+  open: 0,                    // index / id / array of them, initially open
+  beforeToggle(nextOpen, { item, source, component, reason }) {
+    if (reason === 'sibling') return true;   // a sibling being closed by single-mode
+    return true;                              // false cancels the whole toggle
+  },
+  onChange(openIds, { source, component, item, opened, closed }) {
+    console.log(openIds, source);             // source: 'click' | 'key' | 'api'
+  },
+});
+
+acc.open('shipping');   // by id, index or item reference
+acc.toggle(1);
+acc.openAll();           // no-op unless multiple: true
+acc.add({ title: 'New question', content: 'Answer…' });
+acc.destroy();           // restores the original markup</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkAccordion',
+  kind: 'Component',
+  signature: 'const accordion = Look.lkAccordion(container, options);',
+  description: [
+    'Groups several [lkCard](card.html) panels into an accordion. The container either already holds `.lk-card` children with a `.lk-card__header` (each one becomes a panel), or starts empty and gets its panels from `items`. Each panel is wired exactly like a standalone `lkCard` — the body slides open/closed with the shared `.lk-collapse` motion — but the accordion intercepts every toggle so it can coordinate siblings and run the guard before anything moves.',
+    '**Single vs. multiple.** With `multiple: false` (the default), opening a panel closes whichever sibling is open — both panels animate at the same time. Every sibling that would be closed is still asked through `beforeToggle` (with `reason: \'sibling\'`): if any sibling close is vetoed, the whole open is cancelled, so an item never ends up open next to one that refused to close. `collapsible: false` additionally forbids collapsing to zero open panels (closing the last one is a no-op).',
+    '**Keyboard** follows the WAI-ARIA accordion pattern on the headers: Up/Down moves between enabled headers, Home/End jump to the first/last, Enter/Space toggle the focused header.',
+  ],
+  params: [
+    { name: 'container', type: 'HTMLElement | string', description: 'The group container (or selector). May already contain `.lk-card` items, or stay empty and be filled from `items`.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The accordion instance.' },
+  options: [
+    { name: 'items', type: 'Array', default: '—', description: '`{ id?, title, subtitle?, content, html?, template?, url?, open?, disabled? }` built into an empty container. `content` / `html` / `template` / `url` follow the same [async content](composable-date.html) rules as lkTabs and lkCarousel; `url` content is fetched lazily, the first time the panel opens.' },
+    { name: 'multiple', type: 'boolean', default: 'false', description: 'Allow several panels open at once. `false` keeps opening one panel exclusive — it closes whichever sibling is open.' },
+    { name: 'collapsible', type: 'boolean', default: 'true', description: '`false` always keeps one panel open (the first enabled one if none is, closing the last open panel is a no-op).' },
+    { name: 'open', type: 'number | string | Array', default: '—', description: 'Index / id / array of them, initially open. Overrides any per-item `open` and `data-open` on existing markup.' },
+    {
+      name: 'variant', type: "'separated' | 'bordered' | 'flush'", default: "'separated'",
+      description: 'Layout between panels.',
+      values: [
+        ['separated', 'A gap between individually bordered cards (default).'],
+        ['bordered', 'One joined group — shared outer corners, no gap, a divider between items.'],
+        ['flush', 'No outer frame at all, only a divider between items (alias: `flush: true`).'],
+      ],
+    },
+    { name: 'chevron', type: 'boolean', default: 'true', description: 'Show the rotating chevron on each header (forwarded to every lkCard).' },
+    { name: 'dense', type: 'boolean', default: 'false', description: 'Compact header/body padding and text size.' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(openIds, { source, component, item, opened, closed })` after a user toggle (or an API call) goes through. `source` is `\'click\'`, `\'key\'` or `\'api\'`; `item` is the panel that was directly acted on, `opened`/`closed` list every panel that changed (siblings included in single mode). Assigning `value` is silent.' },
+  ],
+  guards: [
+    { name: 'beforeToggle', signature: 'beforeToggle(nextOpen, { item, source, component, reason })', description: 'Runs once per panel that is about to change — the panel being acted on directly, and (in single mode) every open sibling it would close, each with `reason: \'sibling\'`. Return `false` (or a Promise resolving `false`) to keep that panel as it is; vetoing any one of them — including a sibling — cancels the whole toggle, so a panel never opens next to a sibling that refused to close. Also the DOM event `lk:before-toggle` on the container.' },
+  ],
+  notes: 'lkAccordion has no text of its own (headers come from `title`/`subtitle`, the chevron is decorative) so there is nothing to localize — `beforeToggle` is its single guard.',
+  properties: [
+    { name: 'value', type: 'Array', description: 'Ids of the currently open panels. Assigning an id / array of ids is silent (no guard, no `onChange`).' },
+    { name: 'items', type: 'Array', readonly: true, description: 'Internal records for every panel (use `get()` for a stable reference by id/index).' },
+    { name: 'multiple', type: 'boolean', readonly: true, description: 'Resolved at creation.' },
+    { name: 'el / id / hidden / enabled', type: '—', description: 'Standard base properties.' },
+  ],
+  methods: [
+    { name: 'get', signature: 'get(ref)', description: 'Returns the panel record for an id, index, element or node inside it (`null` if not found).' },
+    { name: 'open', signature: 'open(ref)', description: 'Opens a panel (closing a sibling first in single mode). Goes through `beforeToggle`; fires `onChange` with `source: \'api\'`.' },
+    { name: 'close', signature: 'close(ref)', description: 'Closes a panel (no-op if it is the last open one and `collapsible: false`).' },
+    { name: 'toggle', signature: 'toggle(ref)', description: 'Opens or closes a panel depending on its current state.' },
+    { name: 'openAll', signature: 'openAll()', description: 'Opens every enabled panel. No-op unless `multiple: true`.' },
+    { name: 'closeAll', signature: 'closeAll()', description: 'Closes every open panel (keeps the first one if `collapsible: false`).' },
+    { name: 'enable', signature: 'enable(ref)', description: 'Re-enables a panel\'s header (keyboard + click).' },
+    { name: 'disable', signature: 'disable(ref)', description: 'Disables a panel\'s header; it is skipped by keyboard navigation and ignores clicks.' },
+    { name: 'add', signature: 'add(spec, index?)', description: 'Inserts a built panel (same shape as an `items` entry) at `index` (default: the end). Silent — no guard, no `onChange`.' },
+    { name: 'remove', signature: 'remove(ref)', description: 'Removes a panel and destroys its lkCard/content; re-opens a fallback panel if that left zero open and `collapsible: false`.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Destroys every lkCard, removes built panels, and restores markup panels + the container\'s original class attribute.' },
+  ],
+  classes: [
+    { name: '.lk-accordion[--separated|--bordered|--flush][--dense]', description: 'Root container and its layout/density modifiers.' },
+    { name: '.lk-accordion__item', description: 'Added to every panel (`.lk-card`); `.lk-accordion__item--disabled` dims a disabled header and blocks pointer events.' },
+    { name: '.lk-card / .lk-card__header / .lk-collapse', description: 'Each panel is a regular lkCard — see the [Card](card.html) page for its classes and the shared slide utility.' },
+  ],
+  tokens: [
+    { name: '--lk-space-2', default: '0.5rem', description: 'Gap between panels in the `separated` variant.' },
+    { name: '--lk-radius-lg', default: '0.5rem', description: 'Outer corners of the `bordered` variant.' },
+    { name: '--lk-duration-slow', default: '380ms', description: 'Slide + chevron rotation (shared with lkCard).' },
+  ],
+});
+</script>
+<script>
+(function () {
+  // --- Single, existing markup ---
+  const out1 = document.getElementById('acc-single-out');
+  const acc1 = Look.lkAccordion('#acc-single', {
+    collapsible: false,
+    onChange(openIds, ctx) { out1.textContent = `open: ${JSON.stringify(openIds)} (source ${ctx.source})`; },
+  });
+  document.getElementById('acc-single-disable').onclick = () => acc1.disable('acc-single-disabled');
+  document.getElementById('acc-single-enable').onclick = () => acc1.enable('acc-single-disabled');
+
+  // --- Multiple, built from items, flush ---
+  const out2 = document.getElementById('acc-multi-out');
+  let n = 0;
+  const acc2 = Look.lkAccordion('#acc-multi', {
+    multiple: true,
+    variant: 'flush',
+    items: [
+      { id: 'q1', title: 'How do I reset my password?', content: 'Use the "Forgot password" link on the sign-in page.' },
+      { id: 'q2', title: 'Can I change my plan later?', content: 'Yes, anytime from Billing → Plan.', open: true },
+      { id: 'q3', title: 'Do you offer refunds?', content: 'Within 14 days of purchase, no questions asked.' },
+    ],
+    onChange(openIds, ctx) { out2.textContent = `open: ${JSON.stringify(openIds)} (source ${ctx.source})`; },
+  });
+  document.getElementById('acc-multi-open').onclick = () => acc2.openAll();
+  document.getElementById('acc-multi-close').onclick = () => acc2.closeAll();
+  document.getElementById('acc-multi-add').onclick = () => acc2.add({ title: `Extra question ${++n}`, content: 'Added at runtime.' });
+
+  // --- Variants ---
+  const three = () => ([
+    { title: 'One', content: 'First panel.' },
+    { title: 'Two', content: 'Second panel.', open: true },
+    { title: 'Three', content: 'Third panel.' },
+  ]);
+  Look.lkAccordion('#acc-v-separated', { items: three() });
+  Look.lkAccordion('#acc-v-bordered', { items: three(), variant: 'bordered' });
+  Look.lkAccordion('#acc-v-flush', { items: three(), variant: 'flush' });
+
+  // --- Guard: veto a close ---
+  const guardOut = document.getElementById('acc-guard-out');
+  const termsBody = document.createElement('label');
+  termsBody.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  termsBody.append(cb, document.createTextNode('I agree to the terms'));
+  const acc3 = Look.lkAccordion('#acc-guard', {
+    collapsible: false,
+    items: [
+      { id: 'terms', title: 'Terms & Conditions', open: true, content: termsBody },
+      { id: 'more', title: 'More info', content: 'Nothing special here.' },
+    ],
+    beforeToggle(nextOpen, { item, reason }) {
+      if (item.id === 'terms' && !nextOpen && !cb.checked && reason !== 'sibling') {
+        guardOut.textContent = 'Blocked: check the box before closing "Terms & Conditions".';
+        return false;
+      }
+      return true;
+    },
+    onChange(openIds, ctx) { guardOut.textContent = `open: ${JSON.stringify(openIds)} (source ${ctx.source})`; },
+  });
+})();
+</script>
+</body>
+</html>

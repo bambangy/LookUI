@@ -1,0 +1,39 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Collapse — slide a block open/closed (animates to the content's real height).
+//   .lk-collapse[.lk-collapse--open] > .lk-collapse__inner > content
+// Used by lkCard (accordion header) and lkUpload (file list). Hidden content is
+// visibility:hidden so it leaves the tab order once the slide finishes.
+
+.lk-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--lk-duration-slow) var(--lk-easing-in-out),
+    opacity var(--lk-duration-base) var(--lk-easing-out),
+    visibility 0s linear var(--lk-duration-slow);
+
+  &--open {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    opacity: 1;
+    transition:
+      grid-template-rows var(--lk-duration-slow) var(--lk-easing-in-out),
+      opacity var(--lk-duration-base) var(--lk-easing-out),
+      visibility 0s;
+  }
+
+  &__inner {
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-collapse,
+  .lk-collapse--open {
+    transition: none;
+  }
+}

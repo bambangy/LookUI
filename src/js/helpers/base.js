@@ -3,6 +3,7 @@
 // Base widget mixin — shared imperative properties for all components
 
 import { qs } from '../core/index.js';
+import { registerInstance, unregisterInstance } from './registry.js';
 
 /**
  * Resolve an element reference from a selector string or Element.
@@ -31,9 +32,30 @@ export function resolveEl(el, caller) {
 export function applyBase(target, node, opts) {
   const hiddenTarget = opts?.hiddenTarget || node;
 
+  // Auto-dispose (Feature.md F-03): track the instance against its root element so
+  // Look.autoDispose(true) / disposeAll() / disposeWithin() can destroy() it later.
+  // `destroy` is an accessor so the factory's own `comp.destroy = fn` (assigned after
+  // this call) still works transparently — the setter wraps it with unregistration.
+  let userDestroy = null;
+  let destroyed = false;
+  registerInstance(node, target);
+  const wrappedDestroy = function (...args) {
+    if (destroyed) return undefined;
+    destroyed = true;
+    unregisterInstance(node, target);
+    return userDestroy?.apply(this, args);
+  };
+
   // Configurable so composite components can specialize them (e.g. enabled toggling inner controls)
   Object.defineProperties(target, {
     el: { value: node, enumerable: true },
+
+    destroy: {
+      get() { return userDestroy ? wrappedDestroy : undefined; },
+      set(fn) { userDestroy = fn; },
+      enumerable: true,
+      configurable: true,
+    },
 
     id: {
       get() { return node.id; },
@@ -76,7 +98,7 @@ export function applyBase(target, node, opts) {
 const warned = new Set();
 
 /**
- * Warn once per page about a deprecated API (kept working until 1.0).
+ * Warn once per page about a deprecated API.
  * @param {string} key — unique id, e.g. 'lkPagination.onPageChange'
  * @param {string} message
  */
@@ -84,7 +106,7 @@ export function deprecate(key, message) {
   if (warned.has(key)) return;
   warned.add(key);
   // eslint-disable-next-line no-console
-  console.warn(`Look: ${message} (deprecated in 0.3.0, removed in 1.0)`);
+  console.warn(`Look: ${message} (deprecated, will be removed in a future major version)`);
 }
 
 /**

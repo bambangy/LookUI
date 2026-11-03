@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Hotkeys</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+  <style>
+    kbd.hk { display: inline-block; min-width: 1.6em; padding: 0 var(--lk-space-2); font: inherit; font-size: var(--lk-text-xs); line-height: 1.7; text-align: center; color: var(--lk-text); background: var(--lk-bg-subtle); border: var(--lk-border-width) solid var(--lk-border-strong); border-bottom-width: 2px; border-radius: var(--lk-radius); }
+    .hk-table { border-collapse: collapse; }
+    .hk-table td { padding: var(--lk-space-2) var(--lk-space-4) var(--lk-space-2) 0; }
+  </style>
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Hotkeys</h1>
+    <p style="opacity: 0.85;">Look.lkHotkeys(map, opts) — keyboard shortcuts, key sequences and platform-aware labels</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Try the shortcuts</p>
+    <p class="demo-sub">Click anywhere on this page first, then press them. <code>mod</code> is <kbd class="hk">⌘</kbd> on macOS and <kbd class="hk">Ctrl</kbd> elsewhere.</p>
+    <table class="hk-table" id="hk-help"></table>
+    <div class="demo-row" style="margin-top: var(--lk-space-4);">
+      <input id="hk-input" class="lk-input" placeholder="Type here: plain keys are ignored, mod+k still works" style="max-width: 26rem;" />
+      <button id="hk-toggle" class="lk-btn lk-btn--secondary">Disable</button>
+    </div>
+    <div id="hk-out" class="demo-output" style="margin-top: var(--lk-space-4);">Waiting for a shortcut…</div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Labels for buttons and menus</p>
+    <div class="demo-row">
+      <button class="lk-btn lk-btn--secondary" id="hk-lbl-1"></button>
+      <button class="lk-btn lk-btn--secondary" id="hk-lbl-2"></button>
+      <button class="lk-btn lk-btn--secondary" id="hk-lbl-3"></button>
+    </div>
+    <p class="demo-sub">Labels come from <code>Look.lkHotkeys.format(keys)</code> and follow the active language: <button class="lk-btn lk-btn--ghost lk-btn--sm" id="hk-lang">Switch to Indonesian</button></p>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Guard</p>
+    <p class="demo-sub">With <code>beforeTrigger</code> you can ignore a shortcut (and leave the browser's default untouched). Here <kbd class="hk">alt+s</kbd> is allowed only while the box is checked.</p>
+    <label class="demo-row"><input type="checkbox" id="hk-allow" checked /> allow alt+s</label>
+    <div id="hk-guard-out" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const hk = Look.lkHotkeys({
+  'mod+k': (e) =&gt; openPalette(),
+  'mod+shift+p': () =&gt; togglePreview(),
+  'g i': () =&gt; go('inbox'),          // a sequence: press g, then i (1 s)
+  '?': () =&gt; showHelp(),
+  'escape': () =&gt; closeAll(),
+}, { scope: document, ignoreInputs: true });
+
+// or the array form with descriptions
+Look.lkHotkeys([
+  { keys: 'mod+s', handler: save, description: 'Save', allowInInputs: true },
+  { keys: 'delete', handler: remove, description: 'Delete row', scope: '#grid', when: () =&gt; hasSelection() },
+]);
+
+hk.list();                           // [{ keys, label, description }]
+Look.lkHotkeys.format('mod+shift+p');   // '⌘⇧P' on macOS, 'Ctrl+Shift+P' elsewhere
+hk.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkHotkeys',
+  textNamespace: 'hotkeys',
+  kind: 'Composable',
+  signature: 'const hotkeys = Look.lkHotkeys(map, options);',
+  description: [
+    'Registers keyboard shortcuts on the document (or on a scope element). A shortcut is modifiers joined with `+` followed by one key: `ctrl+shift+p`, `alt+enter`, `escape`, `up`, `?`, `/`. **`mod`** means Cmd on macOS and Ctrl everywhere else, so one definition works on both. A space separates the steps of a **sequence** (`g i`): the next key must follow within 1 second.',
+    '**Normalisation**: letters and digits match the physical key (`KeyK`), so `mod+k` works on any keyboard layout and while Shift or Caps Lock is on (Shift is a separate modifier you have to ask for); symbols such as `?` or `/` match the character that is typed, with Shift ignored. Names: `esc`/`escape`, `enter`/`return`, `space`, `tab`, `backspace`, `delete`, `up`/`down`/`left`/`right`, `home`, `end`, `pageup`, `pagedown`, `plus`, `f1`…`f12`.',
+    'While the user types in an input, textarea, select or contentEditable element, shortcuts **without** ctrl / alt / meta are ignored (`ignoreInputs`). Handled shortcuts call `preventDefault()` unless you turn it off. Use `format()` to label buttons and menus with the shortcut in the user\'s platform style and language.',
+  ],
+  params: [
+    { name: 'map', type: 'Object | Array', optional: true, description: '`{ keys: handler }`, or an array of `{ keys, handler, description?, scope?, when?, allowInInputs?, preventDefault? }`. More can be added with `add()`.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The hotkeys instance.' },
+  options: [
+    { name: 'scope', type: 'Element | Document', default: 'document', description: 'Where keydown is listened to (an element receives keys while focus is inside it).' },
+    { name: 'ignoreInputs', type: 'boolean', default: 'true', description: 'Ignore shortcuts without ctrl / alt / meta while typing in form fields.' },
+    { name: 'allowInInputs', type: 'boolean', default: 'false', description: 'Never ignore (per shortcut: `allowInInputs` in the array form or in `add()` meta).' },
+    { name: 'preventDefault', type: 'boolean', default: 'true', description: 'Call `event.preventDefault()` for handled shortcuts (also per shortcut).' },
+    { name: 'allowRepeat', type: 'boolean', default: 'false', description: 'Also fire on auto-repeated keydown events.' },
+    { name: 'enabled', type: 'boolean', default: 'true', description: 'Initial state.' },
+    { name: 'capture', type: 'boolean', default: 'false', description: 'Listen in the capture phase (to run before components that stop propagation).' },
+    { name: 'mac', type: 'boolean', default: 'auto', description: 'Force macOS (⌘, ⌥, ⇧, ⌃ symbols) or not.' },
+    { name: 'text', type: 'Object', default: '—', description: 'Per-instance key names for `format()`.' },
+    { name: 'handler', type: 'Function', default: '—', description: '`(event, { keys, component })`: the function of a shortcut.' },
+  ],
+  guards: [
+    { name: 'beforeTrigger', signature: 'beforeTrigger({ keys, event, component })', description: 'Runs before a handler. Return `false` (or `preventDefault()` on the DOM event `lk:before-trigger`) to ignore the shortcut: the handler does not run and the keyboard event is **not** prevented, so the browser default still happens. A Promise delays the handler (the event can no longer be prevented then).' },
+  ],
+  texts: [
+    { name: 'then', default: 'then', description: 'Joins the steps of a sequence in `format("g i")`.' },
+    { name: 'key.ctrl / key.shift / key.alt / key.meta', default: 'Ctrl / Shift / Alt / Win', description: 'Modifier names on non-Mac platforms (Mac uses ⌃ ⇧ ⌥ ⌘).' },
+    { name: 'key.enter / key.escape / key.space / key.tab', default: 'Enter / Esc / Space / Tab', description: 'Key names.' },
+    { name: 'key.backspace / key.delete', default: 'Backspace / Del', description: 'Key names.' },
+    { name: 'key.up / key.down / key.left / key.right', default: '↑ ↓ ← →', description: 'Arrow keys.' },
+    { name: 'key.home / key.end / key.pageup / key.pagedown / key.plus', default: 'Home / End / PgUp / PgDn / +', description: 'Key names.' },
+  ],
+  properties: [
+    { name: 'enabled', type: 'boolean', description: 'Turn the shortcuts on / off.' },
+    { name: 'mac', type: 'boolean', readonly: true, description: 'Whether macOS style is used.' },
+    { name: 'text', type: 'Object', description: 'Text overrides, assignable.' },
+  ],
+  methods: [
+    { name: 'add', signature: 'add(keys, handler, meta)', returns: { type: 'Function', description: 'Removes this shortcut.' }, description: '`meta`: `{ description, scope, when, allowInInputs, preventDefault }`. Later registrations win over earlier ones for the same keys.' },
+    { name: 'remove', signature: 'remove(keys[, handler])', description: 'Removes every shortcut with these keys (or just the one with this handler).' },
+    { name: 'enable / disable', signature: 'enable() / disable()', description: 'Switch listening on / off.' },
+    { name: 'list', signature: 'list()', returns: { type: 'Array', description: '`[{ keys, label, description }]`' }, description: 'The registered shortcuts, handy for a help dialog.' },
+    { name: 'format', signature: 'format(keys)', returns: { type: 'string' }, description: 'Pretty label, e.g. `⌘K` or `Ctrl+K`, `G then I`.' },
+    { name: 'Look.lkHotkeys.format', signature: 'Look.lkHotkeys.format(keys[, { mac }])', returns: { type: 'string' }, description: 'Static version, for labelling UI without an instance. Uses the active `Look.i18n` language.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes the listener and the pending sequence timer.' },
+  ],
+  classes: [
+    { name: '(none)', description: 'lkHotkeys has no markup of its own. The demo styles its `<kbd>` keys with LookUI tokens.' },
+  ],
+  tokens: [],
+});
+</script>
+<script>
+  const out = document.getElementById('hk-out');
+  const say = (m) => { out.textContent = m; };
+  const hk = Look.lkHotkeys([
+    { keys: 'mod+k', description: 'Open the command palette', handler: () => say('mod+k — command palette'), allowInInputs: true },
+    { keys: 'mod+shift+p', description: 'Toggle preview', handler: () => say('mod+shift+p — preview') },
+    { keys: 'g i', description: 'Go to inbox (sequence)', handler: () => say('g i — inbox') },
+    { keys: 'g h', description: 'Go home (sequence)', handler: () => say('g h — home') },
+    { keys: '?', description: 'Show help', handler: () => say('? — help') },
+    { keys: 'escape', description: 'Close everything', handler: () => say('escape') },
+  ]);
+
+  const help = document.getElementById('hk-help');
+  const renderHelp = () => {
+    help.innerHTML = '';
+    hk.list().forEach((l) => {
+      const tr = document.createElement('tr');
+      const k = document.createElement('td');
+      l.label.split(/(?<=\S) (?=\S)/).forEach((part, i) => {
+        if (i) k.append(' ');
+        const kb = document.createElement('kbd'); kb.className = 'hk'; kb.textContent = part; k.append(kb);
+      });
+      const d = document.createElement('td'); d.textContent = l.description;
+      tr.append(k, d); help.append(tr);
+    });
+  };
+  renderHelp();
+  Look.i18n.onChange(renderHelp);
+
+  document.getElementById('hk-toggle').onclick = (e) => {
+    hk.enabled = !hk.enabled;
+    e.target.textContent = hk.enabled ? 'Disable' : 'Enable';
+    say(hk.enabled ? 'enabled' : 'disabled — shortcuts are ignored');
+  };
+
+  const labels = [['hk-lbl-1', 'Search', 'mod+k'], ['hk-lbl-2', 'Preview', 'mod+shift+p'], ['hk-lbl-3', 'Close', 'escape']];
+  const renderLabels = () => labels.forEach(([id, name, keys]) => {
+    document.getElementById(id).textContent = `${name}  ${Look.lkHotkeys.format(keys)}`;
+  });
+  renderLabels();
+  Look.i18n.set('id', { 'hotkeys.key.escape': 'Keluar', 'hotkeys.key.ctrl': 'Ctrl', 'hotkeys.then': 'lalu' });
+  Look.i18n.onChange(renderLabels);
+  const lang = document.getElementById('hk-lang');
+  lang.onclick = () => {
+    const toId = Look.i18n.locale === 'en';
+    Look.i18n.use(toId ? 'id' : 'en');
+    lang.textContent = toId ? 'Switch to English' : 'Switch to Indonesian';
+  };
+
+  const allow = document.getElementById('hk-allow');
+  const gOut = document.getElementById('hk-guard-out');
+  Look.lkHotkeys({ 'alt+s': () => { gOut.textContent = 'alt+s handled'; } }, {
+    beforeTrigger: ({ keys }) => {
+      if (!allow.checked) { gOut.textContent = keys + ' ignored by beforeTrigger (default not prevented)'; return false; }
+      return undefined;
+    },
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Org chart — nested flexbox tree with CSS-drawn connector lines (no SVG, no
+// hand-written layout engine: flexbox centers children under their parent and
+// reflows naturally on add/remove/collapse/resize).
+
+.lk-org {
+  --lk-org-gap-x: var(--lk-space-6);
+  --lk-org-gap-y: var(--lk-space-8);
+  --lk-org-line: var(--lk-border-strong);
+  --lk-org-card-w: 12rem;
+
+  position: relative;
+  background: var(--lk-bg-subtle, var(--lk-bg));
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius-lg);
+}
+
+.lk-org--dense {
+  --lk-org-gap-x: var(--lk-space-4);
+  --lk-org-gap-y: var(--lk-space-6);
+  --lk-org-card-w: 9.5rem;
+}
+
+.lk-org__scroll {
+  overflow: auto;
+  padding: var(--lk-space-6) var(--lk-space-5);
+}
+
+.lk-org__forest {
+  display: flex;
+  justify-content: center;
+  gap: 0; // continuity of the connector lines relies on padding, not `gap`
+  width: max-content;
+  min-width: 100%;
+}
+
+.lk-org__status {
+  padding: var(--lk-space-6);
+  text-align: center;
+  color: var(--lk-text-muted);
+}
+
+// --- Node (one person + their subtree) --------------------------------------------------
+
+.lk-org__node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding: 0 calc(var(--lk-org-gap-x) / 2);
+}
+
+// Reserve the connector gap above every non-root node (a root has no incoming line).
+.lk-org__children > .lk-org__node {
+  padding-top: var(--lk-org-gap-y);
+}
+
+.lk-org__card-wrap {
+  position: relative;
+}
+
+.lk-org__card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: var(--lk-org-card-w);
+  background: var(--lk-bg);
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius-md);
+  box-shadow: var(--lk-shadow-sm, none);
+  cursor: grab;
+  user-select: none;
+  transition: box-shadow var(--lk-duration-fast) var(--lk-easing-default), border-color var(--lk-duration-fast) var(--lk-easing-default);
+
+  &:hover,
+  &:focus-within {
+    border-color: var(--lk-primary);
+    box-shadow: var(--lk-shadow-md, var(--lk-shadow));
+  }
+}
+
+.lk-org__card--selected {
+  border-color: var(--lk-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--lk-primary) 30%, transparent);
+}
+
+.lk-org__body {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-3);
+  padding: var(--lk-space-3);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.lk-org__media {
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--lk-radius-full, 50%);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--lk-bg-muted, color-mix(in srgb, var(--lk-text) 8%, transparent));
+  color: var(--lk-text-muted);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.lk-org__text {
+  min-width: 0;
+}
+
+.lk-org__title {
+  font-size: var(--lk-text-sm);
+  font-weight: var(--lk-weight-semibold);
+  line-height: var(--lk-leading-tight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lk-org__subtitle {
+  font-size: var(--lk-text-xs);
+  color: var(--lk-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// --- Actions (add child / edit / delete) — revealed on hover/focus ----------------------
+
+.lk-org__actions {
+  position: absolute;
+  top: calc(-1 * var(--lk-space-3));
+  right: var(--lk-space-2);
+  display: flex;
+  gap: var(--lk-space-1);
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity var(--lk-duration-fast) var(--lk-easing-default), transform var(--lk-duration-fast) var(--lk-easing-default);
+  pointer-events: none;
+}
+
+.lk-org__card:hover > .lk-org__actions,
+.lk-org__card:focus-within > .lk-org__actions {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.lk-org__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--lk-radius-full, 50%);
+  border: var(--lk-border-width) solid var(--lk-border);
+  background: var(--lk-bg);
+  color: var(--lk-text-muted);
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    color: var(--lk-primary);
+    border-color: var(--lk-primary);
+  }
+
+  &--delete:hover {
+    color: var(--lk-negative);
+    border-color: var(--lk-negative);
+  }
+}
+
+// --- Toggle (expand / collapse) ----------------------------------------------------------
+
+.lk-org__toggle {
+  position: absolute;
+  bottom: calc(-1 * var(--lk-space-3));
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: var(--lk-radius-full, 50%);
+  border: var(--lk-border-width) solid var(--lk-org-line);
+  background: var(--lk-bg);
+  color: var(--lk-text-muted);
+  cursor: pointer;
+  padding: 0;
+  z-index: 1;
+
+  .lk-icon {
+    transition: transform var(--lk-duration-fast) var(--lk-easing-default);
+  }
+
+  &--open .lk-icon {
+    transform: rotate(180deg);
+  }
+
+  &:hover {
+    color: var(--lk-primary);
+    border-color: var(--lk-primary);
+  }
+}
+
+// --- Children row + connectors ------------------------------------------------------------
+
+.lk-org__collapse {
+  width: 100%;
+}
+
+.lk-org__children {
+  display: flex;
+  justify-content: center;
+}
+
+// Horizontal bar connecting siblings: each child draws a trimmed segment of it, at the
+// very top of its own reserved gap (= its parent's card-bottom, since nothing sits
+// between a card and its children row) — combined they span first-child-center to
+// last-child-center without any JS measuring the row's width.
+.lk-org__children > .lk-org__node::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--lk-border-width-2, 2px);
+  background: var(--lk-org-line);
+}
+
+.lk-org__children > .lk-org__node:first-child::before { left: 50%; width: 50%; }
+.lk-org__children > .lk-org__node:last-child::before { width: 50%; }
+.lk-org__children > .lk-org__node:only-child::before { display: none; }
+
+// Drop-into-this-child stem: from the shared bar down to this child's own card.
+.lk-org__children > .lk-org__node::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--lk-border-width-2, 2px);
+  height: var(--lk-org-gap-y);
+  background: var(--lk-org-line);
+  transform: translateX(-50%);
+}
+
+// --- Drag and drop -------------------------------------------------------------------------
+
+.lk-org--dragging .lk-org__children {
+  outline: 1px dashed transparent;
+}
+
+.lk-org--dragging .lk-org__children:empty {
+  outline: var(--lk-border-width-2, 2px) dashed var(--lk-border-strong);
+  border-radius: var(--lk-radius-md);
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lk-org__children:empty::after {
+  content: attr(data-drop-hint);
+  display: none;
+  font-size: var(--lk-text-xs);
+  color: var(--lk-text-muted);
+}
+
+.lk-org--dragging .lk-org__children:empty::after {
+  display: block;
+}
+
+.lk-org__children.lk-sortable--over {
+  background: color-mix(in srgb, var(--lk-primary) 6%, transparent);
+  border-radius: var(--lk-radius-md);
+}
+
+// --- Read-only mode --------------------------------------------------------------------------
+
+.lk-org--readonly .lk-org__card {
+  cursor: default;
+}
+
+// --- Built-in add/edit form ------------------------------------------------------------------
+
+.lk-org__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lk-space-3);
+  min-width: 18rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-org__card,
+  .lk-org__actions,
+  .lk-org__toggle .lk-icon {
+    transition: none;
+  }
+}

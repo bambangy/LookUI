@@ -202,3 +202,46 @@
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-negative) 20%, transparent);
   }
 }
+
+// Password reveal (lkTextbox `reveal: true`) — eye button at the end of the affix box
+.lk-input__reveal {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  padding: 0 var(--lk-space-3);
+  border: 0;
+  background: transparent;
+  color: var(--lk-text-muted);
+  cursor: pointer;
+  transition: color var(--lk-duration-fast) var(--lk-easing-default);
+
+  &[hidden] { display: none; }
+
+  &:hover { color: var(--lk-primary); }
+
+  &:focus-visible {
+    outline: 2px solid var(--lk-primary);
+    outline-offset: -2px;
+  }
+}
+
+.lk-input-affix:has(> .lk-input:disabled) .lk-input__reveal {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.lk-input-affix:has(> .lk-input--dense) .lk-input__reveal {
+  padding: 0 var(--lk-space-2);
+}
+
+// Autosizing textarea (lkTextbox `autosize`) — height is driven by JS; no manual handle
+.lk-input--autosize {
+  resize: none;
+  overflow-y: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-input__reveal { transition: none; }
+}

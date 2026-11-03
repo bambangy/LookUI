@@ -293,6 +293,8 @@ const unmatched = form.setErrors({ email: ['Already registered'], token: 'Expire
 <script>
 LookDocs.render('#api', {
   name: 'lkValidation',
+  textNamespace: 'validation',
+  noTextOption: true,
   kind: 'Composable',
   signature: 'const form = Look.lkValidation(component, component, …[, options]);',
   description: [
@@ -308,8 +310,15 @@ LookDocs.render('#api', {
     { name: 'focusFirst', type: 'boolean', default: 'true', description: 'Focus the first invalid component after `validate()`, `validateAsync()`, `setErrors()` and a failed `submit()`.' },
     { name: 'scroll', type: 'boolean', default: 'true', description: 'Scroll that component into view.' },
     { name: 'loading', type: 'Element | string', default: '—', description: 'Element (or selector) covered by an lkInnerLoading while `submit()` waits for the handler.' },
-    { name: 'loadingText', type: 'string', default: "'Saving…'", description: 'Text of that loading overlay.' },
+    { name: 'loadingText', type: 'string', default: "'Saving…'", description: 'Text of that loading overlay (wins over the `validation.saving` text).' },
     { name: 'fields', type: 'Object', default: '—', description: 'Server key → component, for error keys that differ from `component.name` (e.g. `{ \'contact.mobile\': phone }`).' },
+  ],
+  guards: [
+    { name: 'beforeSubmit', signature: 'beforeSubmit({ source, component })', description: 'Runs at the start of `submit(handler)`, before any validation or the handler. Return `false` (or a Promise resolving `false`) to cancel: `submit()` resolves `{ ok: false, reason: "cancelled" }`.' },
+  ],
+  texts: [
+    { name: 'saving', default: 'Saving…', description: 'Loading overlay text during `submit()` (the `loadingText` option wins).' },
+    { name: 'submitError', default: 'Something went wrong', description: '`message` of a failed `submit()` when the error carries none.' },
   ],
   properties: [
     { name: 'submitting', type: 'boolean', readonly: true, description: '`true` while `submit()` runs.' },

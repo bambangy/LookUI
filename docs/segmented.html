@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Segmented</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Segmented</h1>
+    <p style="opacity: 0.85;">lkSegmented(el, opts) — segmented button group (single or multiple) with a sliding indicator</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Single (from items)</p>
+    <div class="demo-row"><div id="s-single"></div></div>
+    <div id="s-out" class="demo-output"></div>
+    <p style="font-size: var(--lk-text-sm); color: var(--lk-text-muted); margin-top: var(--lk-space-3);">Focus a segment and use the arrow keys / Home / End (roving tabindex).</p>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Multiple</p>
+    <div class="demo-row"><div id="s-multi"></div></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Sizes, dense &amp; block</p>
+    <div style="display: grid; gap: var(--lk-space-4); max-width: 32rem;">
+      <div id="s-sm"></div>
+      <div id="s-lg"></div>
+      <div id="s-dense"></div>
+      <div id="s-block"></div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">From markup (buttons and radios)</p>
+    <div class="demo-row" style="align-items: flex-start; gap: var(--lk-space-6);">
+      <div id="s-btns">
+        <button data-value="list">List</button>
+        <button data-value="grid">Grid</button>
+        <button data-value="board" data-disabled>Board</button>
+      </div>
+      <div id="s-radios">
+        <label><input type="radio" name="plan" value="free"> Free</label>
+        <label><input type="radio" name="plan" value="pro" checked> Pro</label>
+        <label><input type="radio" name="plan" value="team"> Team</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Guard, states &amp; validation</p>
+    <div class="demo-row" style="align-items: flex-start; gap: var(--lk-space-6);">
+      <div id="s-guard"></div>
+      <div id="s-dis"></div>
+      <div id="s-ro"></div>
+      <div id="s-req"></div>
+    </div>
+    <div id="s-gout" class="demo-output"></div>
+    <div class="demo-row" style="margin-top: var(--lk-space-3);">
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="s-add">add()</button>
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="s-toggle">Toggle "Month"</button>
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="s-validate">validate()</button>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const view = Look.lkSegmented('#view', {
+  items: [
+    { value: 'day',   label: 'Day' },
+    { value: 'week',  label: 'Week',  icon: 'calendar' },
+    { value: 'month', label: 'Month', disabled: true },
+  ],
+  value: 'day',
+  name: 'view',                // hidden input for form posts
+  onChange(value, ctx) { console.log(value, ctx.source, ctx.item); },
+  beforeChange(value) { return confirm('Switch view?'); },
+});
+
+view.value = 'week';           // silent
+view.add({ value: 'year', label: 'Year' });
+view.disable('month');
+view.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkSegmented',
+  textNamespace: 'segmented',
+  validateable: true,
+  kind: 'Component',
+  signature: 'const seg = Look.lkSegmented(element, options);',
+  description: [
+    'A segmented button group. The element is a container whose children are `<button data-value>` or `<label><input type="radio|checkbox"></label>` markup, or an empty container filled from `items`. **Single** mode has radiogroup semantics (arrow keys move *and* select, roving tabindex) and a sliding indicator that uses the shared motion tokens; **`multiple`** mode makes toggle buttons (`aria-pressed`) and `value` an array.',
+    'With button / items markup, `name` adds hidden input(s) for form posts (one per selected value in multiple mode). With radio / checkbox markup the native inputs stay in place and keep their `name`; their `change` events are routed through the guard (a veto puts the native state back). `destroy()` restores the enhanced markup.',
+  ],
+  params: [
+    { name: 'element', type: 'Element | string', description: 'The container (or selector).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The segmented instance.' },
+  options: [
+    { name: 'items', type: 'Array<{ value, label?, icon?, disabled?, title? }>', default: '—', description: 'Build the segments (the container should be empty). `icon` is a Look icon name. Omit to enhance existing markup.' },
+    { name: 'multiple', type: 'boolean', default: 'false', description: 'Toggle buttons; `value` is an array.' },
+    { name: 'value', type: 'any | any[]', default: 'from markup', description: 'Initial value (single: one value; multiple: an array).' },
+    { name: 'name', type: 'string', default: '—', description: 'Hidden input name (or the radios\' / checkboxes\' native name).' },
+    { name: 'size / dense / block', type: "'sm' | 'lg' / boolean / boolean", default: '—', description: 'Size variants; `block` is full width with equal segments.' },
+    { name: 'label', type: 'string', default: '—', description: 'Creates the `.lk-field` wrapper with a label (`aria-labelledby`); clicking it focuses the group.' },
+    { name: 'required / readonly / disabled', type: 'boolean', default: 'false', description: 'Initial states.' },
+    { name: 'rules / validate', type: 'Array / boolean', default: '—', description: 'Validation; rules receive the value (an array in multiple mode).' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(value, { source, component, item })` — `source` is `\'click\'` (pointer), `\'keyboard\'` (arrows, Home/End, Enter/Space) or `\'api\'` (`setValue`). `item` is the segment that changed. Assigning `value` is silent.' },
+  ],
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange(value, { source, component, item })', description: 'Before the selection changes (click, keyboard, `setValue`). `value` is what the selection would become. Return `false` to veto — the old selection and the indicator stay; a Promise to wait; another value (or array) to replace it. DOM event: `lk:before-change`.' },
+  ],
+  texts: [
+    { name: 'required', default: 'Select an option', description: 'Message of the `required` rule (single).' },
+    { name: 'required.multiple', default: 'Select at least one option', description: 'Message of the `required` rule in multiple mode.' },
+  ],
+  properties: [
+    { name: 'value', type: 'any | any[] | null', description: 'Current value. Setter is silent; unknown values are ignored.' },
+    { name: 'item / items', type: 'Object / Array', readonly: true, description: 'The selected item spec and all item specs.' },
+    { name: 'multiple', type: 'boolean', readonly: true, description: 'Resolved at creation.' },
+    { name: 'indicatorEl', type: 'Element', readonly: true, description: 'The sliding indicator (single mode).' },
+    { name: 'text', type: 'Object', description: 'Per-instance text overrides.' },
+    { name: 'label / name / required / readonly / disabled / enabled / hidden', type: '—', description: 'Standard field properties. `el` is the container.' },
+  ],
+  methods: [
+    { name: 'setValue', signature: 'setValue(value, source = "api")', description: 'Changes the selection through the guard and `onChange`.' },
+    { name: 'add', signature: 'add({ value, label, icon, disabled }, index?)', description: 'Inserts a segment.' },
+    { name: 'remove', signature: 'remove(value)', description: 'Removes a segment.' },
+    { name: 'enable / disable', signature: 'disable(value)', description: 'Enables / disables one segment (disabling the selected one deselects it).' },
+    { name: 'get', signature: 'get(value)', description: 'The segment\'s element.' },
+    { name: 'validate / setValidation / clearValidation', signature: 'validate()', description: 'Validation API.' },
+    { name: 'focus / destroy', signature: 'destroy()', description: '`destroy()` removes built segments, the indicator and hidden inputs and restores enhanced markup exactly.' },
+  ],
+  classes: [
+    { name: '.lk-segmented', description: 'The group; `--multiple`, `--dense`, `--sm`, `--lg`, `--block`, `--ready`, `--readonly`, `--disabled`, `--error`.' },
+    { name: '.lk-segmented__item', description: 'A segment (`--on`, `--disabled`); `__label` for its text, `__input` for the hidden native radio / checkbox.' },
+    { name: '.lk-segmented__indicator', description: 'The sliding marker (single mode), positioned by `--lk-seg-x / -y / -w / -h`.' },
+  ],
+  tokens: [
+    { name: '--lk-seg-duration / --lk-seg-easing', default: 'var(--lk-duration-base) / var(--lk-easing-out)', description: 'Indicator slide; set on `.lk-segmented`.' },
+    { name: '--lk-surface / --lk-bg', default: 'theme', description: 'Track and indicator fill.' },
+    { name: '--lk-primary', default: '#5c6bc0', description: 'Focus ring.' },
+  ],
+});
+</script>
+<script>
+  const items = [{ value: 'day', label: 'Day' }, { value: 'week', label: 'Week', icon: 'calendar' }, { value: 'month', label: 'Month' }];
+  const sout = document.getElementById('s-out');
+  Look.lkSegmented('#s-single', { items, value: 'week', onChange: (v, c) => { sout.textContent = 'single: ' + JSON.stringify(v) + ' (' + c.source + ')'; } });
+  Look.lkSegmented('#s-multi', { items: [{ value: 'mon', label: 'Mon' }, { value: 'tue', label: 'Tue' }, { value: 'wed', label: 'Wed' }, { value: 'thu', label: 'Thu' }, { value: 'fri', label: 'Fri' }], multiple: true, value: ['mon', 'wed'],
+    onChange: (v) => { sout.textContent = 'multiple: ' + JSON.stringify(v); } });
+  Look.lkSegmented('#s-sm', { items, size: 'sm', value: 'day' });
+  Look.lkSegmented('#s-lg', { items, size: 'lg', value: 'month' });
+  Look.lkSegmented('#s-dense', { items, dense: true, value: 'week' });
+  Look.lkSegmented('#s-block', { items, block: true, value: 'day' });
+
+  Look.lkSegmented('#s-btns', { value: 'list' });
+  Look.lkSegmented('#s-radios', {});
+
+  const gout = document.getElementById('s-gout');
+  const guarded = Look.lkSegmented('#s-guard', { label: 'Guarded (asks first)', items, value: 'day',
+    beforeChange: (v) => { const okay = window.confirm('Switch to "' + v + '"?'); gout.textContent = 'beforeChange("' + v + '") -> ' + okay; return okay; } });
+  Look.lkSegmented('#s-dis', { label: 'Disabled', items, value: 'day', disabled: true });
+  Look.lkSegmented('#s-ro', { label: 'Readonly', items, value: 'week', readonly: true });
+  const req = Look.lkSegmented('#s-req', { label: 'Required', items, required: true });
+  let n = 0;
+  document.getElementById('s-add').onclick = () => guarded.add({ value: 'extra' + (++n), label: 'Extra ' + n });
+  document.getElementById('s-toggle').onclick = () => { const el = guarded.get('month'); el.disabled ? guarded.enable('month') : guarded.disable('month'); };
+  document.getElementById('s-validate').onclick = () => { req.validate(); };
+</script>
+</body>
+</html>

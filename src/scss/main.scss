@@ -20,6 +20,7 @@
 @use 'tokens/color'      as token-color;
 @use 'tokens/typography' as token-typography;
 @use 'tokens/layout'     as token-layout;
+@use 'tokens/dark'       as token-dark;
 
 // 2. Custom token overrides (edit tokens/custom/ files to apply your theme)
 @use 'tokens/custom/color'      as custom-color;
@@ -36,7 +37,9 @@
 @use 'layout/page';
 
 // 5. Components
+@use 'components/accordion';
 @use 'components/async';
+@use 'components/autocomplete';
 @use 'components/avatar';
 @use 'components/badge';
 @use 'components/bar';
@@ -46,31 +49,46 @@
 @use 'components/carousel';
 @use 'components/checkbox';
 @use 'components/chip';
+@use 'components/collapse';
+@use 'components/color';
 @use 'components/composable';
 @use 'components/datagrid';
 @use 'components/date';
+@use 'components/drawer';
 @use 'components/dropdown';
+@use 'components/editor';
+@use 'components/floating';
 @use 'components/icon';
 @use 'components/input';
 @use 'components/list';
+@use 'components/menu';
 @use 'components/modal';
+@use 'components/number';
+@use 'components/org';
 @use 'components/pagination';
 @use 'components/phone';
 @use 'components/progress';
 @use 'components/radio';
 @use 'components/rating';
+@use 'components/segmented';
 @use 'components/select';
 @use 'components/slider';
+@use 'components/sortable';
 @use 'components/spinner';
 @use 'components/splitter';
+@use 'components/stepper';
 @use 'components/switch';
 @use 'components/table';
 @use 'components/tabs';
+@use 'components/taginput';
 @use 'components/textpop';
+@use 'components/time';
 @use 'components/timeline';
 @use 'components/toast';
 @use 'components/toolbar';
 @use 'components/tooltip';
+@use 'components/tree';
+@use 'components/upload';
 
 // 6. Utilities
 @use 'utilities/spacing';

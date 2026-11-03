@@ -20,20 +20,87 @@
     </h1>
     <nav class="demo-hero__links" aria-label="Get started">
       <a class="lk-btn lk-btn--primary" href="#quick-start">Quick start</a>
+      <a class="lk-btn lk-btn--outline" href="#catalog">Browse components</a>
       <a class="lk-btn lk-btn--outline" href="interactive-cookbook.html">Interactive cookbook</a>
       <a class="lk-btn lk-btn--ghost" href="https://github.com/bambangy/LookUI">GitHub</a>
     </nav>
+    <div class="hero-stats">
+      <span class="hero-stats__item"><strong id="hero-stat-count">90+</strong> components &amp; composables</span>
+      <span class="hero-stats__item"><strong>0</strong> runtime dependencies</span>
+      <span class="hero-stats__item"><strong>1</strong> callback convention</span>
+      <span class="hero-stats__item"><strong>MIT</strong> licensed</span>
+    </div>
   </div>
 </header>
 
 <main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
 
+  <!-- Why LookUI ---------------------------------------------------------------------- -->
+  <section style="margin-bottom: var(--lk-space-9);">
+    <p class="demo-section__title">Why LookUI</p>
+    <h2 style="margin-top: 0; margin-bottom: var(--lk-space-2);">Built for plain JavaScript — not in spite of it</h2>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-6); max-width: 60ch;">
+      Most UI kits assume a framework underneath. LookUI assumes nothing: it's a set of factories that bind to the markup
+      you already have, in whatever stack you already run — server-rendered MVC, a CMS theme, a jQuery-era page, or a
+      modern bundler.
+    </p>
+    <div class="pros-grid">
+      <div class="lk-card pros-card">
+        <div class="pros-card__icon"><span class="lk-icon lk-icon--check" aria-hidden="true"></span></div>
+        <h3>Any stack, no framework</h3>
+        <p>Vanilla JS and CSS — no React, Vue or Angular runtime to install or keep in sync. Call a factory on your own element and it works.</p>
+      </div>
+      <div class="lk-card pros-card">
+        <div class="pros-card__icon"><span class="lk-icon lk-icon--download" aria-hidden="true"></span></div>
+        <h3>No build step required</h3>
+        <p>One <code>&lt;link&gt;</code> and one <code>&lt;script&gt;</code> is a complete install. ESM and CommonJS builds are there too when you do use a bundler.</p>
+      </div>
+      <div class="lk-card pros-card">
+        <div class="pros-card__icon"><span class="lk-icon lk-icon--mail" aria-hidden="true"></span></div>
+        <h3>Localization is core</h3>
+        <p>Every label, placeholder and message in every component routes through <code>Look.i18n</code> — translate one field or a whole app, with live locale switching.</p>
+      </div>
+      <div class="lk-card pros-card">
+        <div class="pros-card__icon"><span class="lk-icon lk-icon--circle-info" aria-hidden="true"></span></div>
+        <h3>Every action is overridable</h3>
+        <p><code>before&lt;Action&gt;</code> guards and <code>lk:before-*</code> DOM events let you veto, delay or rewrite what a click, drop or submit is about to do — no forking required.</p>
+      </div>
+      <div class="lk-card pros-card">
+        <div class="pros-card__icon"><span class="lk-icon lk-icon--circle-check" aria-hidden="true"></span></div>
+        <h3>Validation &amp; a11y built in</h3>
+        <p>Rules, async rules and server-error mapping ship with every form control; keyboard navigation, ARIA roles and focus traps ship with every interactive one.</p>
+      </div>
+      <div class="lk-card pros-card">
+        <div class="pros-card__icon"><span class="lk-icon lk-icon--refresh" aria-hidden="true"></span></div>
+        <h3>One convention, everywhere</h3>
+        <p>Learn <code>onChange(value, ctx)</code>, <code>destroy()</code> and the guard pattern once — they work the same on every one of the 90+ pieces in the library.</p>
+      </div>
+    </div>
+
+    <div class="lk-card" style="margin-top: var(--lk-space-5); overflow-x: auto;">
+      <div class="lk-card__body">
+        <p class="demo-sub" style="margin-top: 0;">How that compares to a typical framework-bound component library:</p>
+        <table class="compare-table">
+          <thead>
+            <tr><th>Concern</th><th>LookUI</th><th>Typical framework UI kit</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Framework</th><td>None — vanilla JS</td><td>Requires React, Vue or Angular at runtime</td></tr>
+            <tr><th scope="row">Install</th><td>One CSS + one JS file, or npm/ESM</td><td>Bundler and framework setup required first</td></tr>
+            <tr><th scope="row">Localization</th><td>Built in (<code>Look.i18n</code>), live switching</td><td>Usually a separate i18n library glued on</td></tr>
+            <tr><th scope="row">Overriding behavior</th><td>A <code>before&lt;Action&gt;</code> guard + DOM event on every action</td><td>Varies per component — often prop‑drilling or wrapper components</td></tr>
+            <tr><th scope="row">Form validation</th><td>Built in, incl. async rules + server‑error mapping</td><td>Often a separate form/validation library</td></tr>
+            <tr><th scope="row">Where it runs</th><td>Any stack — MVC, a CMS, plain HTML, or inside any frontend framework</td><td>Mostly locked to its own framework's rendering model</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <!-- Quick start ------------------------------------------------------------------- -->
   <section id="quick-start" style="margin-bottom: var(--lk-space-9);">
-    <h2 style="margin-bottom: var(--lk-space-2);">Quick start</h2>
-    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-5);">
-      No build step and no dependencies: one CSS file, one JS file, then call factories on your own markup.
-    </p>
+    <p class="demo-section__title">Quick start</p>
+    <h2 style="margin-top: 0; margin-bottom: var(--lk-space-5);">No build step and no dependencies</h2>
 
     <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
       <div class="demo-usage" style="margin: 0;">
@@ -95,6 +162,8 @@ import { lkTextbox, lkDropdown, lkValidation, lkToast } from '@lookui/core';</pr
           <div class="lk-card__body" style="display: grid; gap: var(--lk-space-2);">
             <strong>Next steps</strong>
             <a href="validation.html">Validation guide — rules, validate-on-blur, lkValidation, server errors &rarr;</a>
+            <a href="localization.html">Localization — translate every text with Look.i18n &rarr;</a>
+            <a href="events.html">Overridable events — before&lt;Action&gt; guards &rarr;</a>
             <a href="interactive-cookbook.html">Interactive cookbook — end-to-end recipes &rarr;</a>
             <a href="customize.html">Custom theme file — colors, spacing, sizes &rarr;</a>
             <a href="datasource.html">lkDataSource — data, paging and remote transport &rarr;</a>
@@ -104,9 +173,7 @@ import { lkTextbox, lkDropdown, lkValidation, lkToast } from '@lookui/core';</pr
     </div>
   </section>
 
-  <h2 style="margin-bottom: var(--lk-space-6);">Component Examples</h2>
-
-  <div class="lk-card" style="margin-bottom: var(--lk-space-7);">
+  <div class="lk-card" style="margin-bottom: var(--lk-space-9);">
     <div class="lk-card__body" style="display:flex;align-items:center;justify-content:space-between;gap:var(--lk-space-3);flex-wrap:wrap;">
       <div>
         <strong style="display:block;">Interactive Cookbook</strong>
@@ -116,219 +183,82 @@ import { lkTextbox, lkDropdown, lkValidation, lkToast } from '@lookui/core';</pr
     </div>
   </div>
 
-  <!-- Tokens & Layout -->
-  <p class="demo-section__title">Tokens &amp; Layout</p>
-  <div class="lk-grid lk-grid--cols-1 lk-grid--cols-sm-2 lk-grid--cols-md-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
-    <a href="tokens.html" class="demo-nav-card">
-      <strong>Design Tokens</strong>
-      <span>Color palette, typography, spacing, radius</span>
-    </a>
-    <a href="layout.html" class="demo-nav-card">
-      <strong>Layout &amp; Utilities</strong>
-      <span>Grid, flex, spacing, responsive</span>
-    </a>
-    <a href="migration.html" class="demo-nav-card">
-      <strong>Upgrading to 0.3</strong>
-      <span>One callback convention: onChange(value, ctx) — what changed per component</span>
-    </a>
-    <a href="customize.html" class="demo-nav-card">
-      <strong>Custom Theme File</strong>
-      <span>Your own CSS file: replace colors, spacing, sizes · where to include it</span>
-    </a>
-    <a href="theming.html" class="demo-nav-card">
-      <strong>Theming</strong>
-      <span>Runtime &amp; build-time overrides</span>
-    </a>
-  </div>
+  <!-- Find the right component --------------------------------------------------------- -->
+  <section style="margin-bottom: var(--lk-space-9);">
+    <p class="demo-section__title">Find the right component</p>
+    <h2 style="margin-top: 0; margin-bottom: var(--lk-space-5);">Start from what you're building</h2>
+    <div class="usecase-grid">
+      <div class="lk-card usecase-card">
+        <h3>Building a form</h3>
+        <p>Data entry screens, settings pages, sign-up flows. Start with the inputs, add rules, and let <code>lkValidation</code> tie them together.</p>
+        <div class="usecase-card__links">
+          <a href="textbox.html">Textbox</a><a href="dropdown.html">Dropdown</a><a href="upload.html">Upload</a><a href="validation.html">Validation</a><a href="composable-form.html">Form</a>
+        </div>
+      </div>
+      <div class="lk-card usecase-card">
+        <h3>Showing &amp; editing data</h3>
+        <p>Grids, lookups and lists backed by real data. <code>lkDataSource</code> drives paging, sorting and remote sync underneath.</p>
+        <div class="usecase-card__links">
+          <a href="table.html">Table</a><a href="composable-tree.html">Tree</a><a href="textpop.html">TextPop</a><a href="datasource.html">DataSource</a>
+        </div>
+      </div>
+      <div class="lk-card usecase-card">
+        <h3>Navigating your app</h3>
+        <p>Multi-view interfaces, dashboards, admin panels. Structure and wayfinding without a router dictating your markup.</p>
+        <div class="usecase-card__links">
+          <a href="tabs.html">Tabs</a><a href="composable-menu.html">Menu</a><a href="breadcrumbs.html">Breadcrumbs</a><a href="composable-drawer.html">Drawer</a><a href="pagination.html">Pagination</a>
+        </div>
+      </div>
+      <div class="lk-card usecase-card">
+        <h3>Giving feedback</h3>
+        <p>Tell people what just happened, or that something is happening, without blocking the rest of the page.</p>
+        <div class="usecase-card__links">
+          <a href="composable-toast.html">Toast</a><a href="composable-dialog.html">Dialog</a><a href="progress.html">Progress</a><a href="composable-loading.html">Loading</a>
+        </div>
+      </div>
+      <div class="lk-card usecase-card">
+        <h3>Visualizing structure &amp; hierarchy</h3>
+        <p>Org charts, nested menus, collapsible groups — anything where relationships matter as much as the data.</p>
+        <div class="usecase-card__links">
+          <a href="composable-org.html">Org chart</a><a href="composable-tree.html">Tree</a><a href="accordion.html">Accordion</a><a href="list.html">List</a>
+        </div>
+      </div>
+      <div class="lk-card usecase-card">
+        <h3>Reordering &amp; restructuring</h3>
+        <p>Let people rearrange a list, a grid's rows, or a whole org chart by dragging — or with the keyboard.</p>
+        <div class="usecase-card__links">
+          <a href="sortable.html">Sortable</a><a href="composable-org.html">Org chart</a><a href="table.html">Table</a>
+        </div>
+      </div>
+      <div class="lk-card usecase-card">
+        <h3>Going global &amp; on-brand</h3>
+        <p>Ship one build that adapts to language, light/dark appearance, and your own design tokens.</p>
+        <div class="usecase-card__links">
+          <a href="localization.html">Localization</a><a href="composable-theme.html">Theme</a><a href="customize.html">Custom theme</a><a href="tokens.html">Design tokens</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <!-- Form Components -->
-  <p class="demo-section__title">Form Components</p>
-  <div class="lk-grid lk-grid--cols-1 lk-grid--cols-sm-2 lk-grid--cols-md-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
-    <a href="textbox.html" class="demo-nav-card">
-      <strong>Textbox</strong>
-      <span>Input &amp; textarea with validation</span>
-    </a>
-    <a href="dropdown.html" class="demo-nav-card">
-      <strong>Dropdown</strong>
-      <span>Custom select — search, remote data, infinite scroll</span>
-    </a>
-    <a href="checkbox.html" class="demo-nav-card">
-      <strong>Checkbox</strong>
-      <span>Custom styled checkboxes</span>
-    </a>
-    <a href="radio.html" class="demo-nav-card">
-      <strong>Radio</strong>
-      <span>Custom styled radio buttons</span>
-    </a>
-    <a href="switch.html" class="demo-nav-card">
-      <strong>Switch</strong>
-      <span>Toggle switch component</span>
-    </a>
-    <a href="phone.html" class="demo-nav-card">
-      <strong>Phone</strong>
-      <span>Country flag + dial code dropdown joined to a numeric input</span>
-    </a>
-    <a href="textpop.html" class="demo-nav-card">
-      <strong>TextPop</strong>
-      <span>Lookup field — searchable grid popup, single or multi (chips)</span>
-    </a>
-    <a href="validation.html" class="demo-nav-card">
-      <strong>Validation</strong>
-      <span>Rules, validate on blur, lkValidation for forms, server errors</span>
-    </a>
-  </div>
+  <!-- Searchable catalog ---------------------------------------------------------------- -->
+  <section id="catalog" style="margin-bottom: var(--lk-space-9);">
+    <p class="demo-section__title">Browse everything</p>
+    <h2 style="margin-top: 0; margin-bottom: var(--lk-space-5);">Every component, composable and guide</h2>
 
-  <!-- UI Components -->
-  <p class="demo-section__title">UI Components</p>
-  <div class="lk-grid lk-grid--cols-1 lk-grid--cols-sm-2 lk-grid--cols-md-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
-    <a href="button.html" class="demo-nav-card">
-      <strong>Button</strong>
-      <span>Variants, sizes, groups, dropdown</span>
-    </a>
-    <a href="modal.html" class="demo-nav-card">
-      <strong>Modal</strong>
-      <span>Dialog with focus trap</span>
-    </a>
-    <a href="card.html" class="demo-nav-card">
-      <strong>Card</strong>
-      <span>Bordered, raised, dense</span>
-    </a>
-    <a href="avatar.html" class="demo-nav-card">
-      <strong>Avatar</strong>
-      <span>Sizes, shapes, groups</span>
-    </a>
-    <a href="badge.html" class="demo-nav-card">
-      <strong>Badge</strong>
-      <span>Colors, outline, dot</span>
-    </a>
-    <a href="bar.html" class="demo-nav-card">
-      <strong>Bar</strong>
-      <span>App bar, dense, variants</span>
-    </a>
-    <a href="breadcrumbs.html" class="demo-nav-card">
-      <strong>Breadcrumbs</strong>
-      <span>Separators, dense</span>
-    </a>
-    <a href="list.html" class="demo-nav-card">
-      <strong>List</strong>
-      <span>Nested submenu + accordion menu</span>
-    </a>
-    <a href="spinner.html" class="demo-nav-card">
-      <strong>Spinner</strong>
-      <span>Sizes, colors, on-dark</span>
-    </a>
-    <a href="timeline.html" class="demo-nav-card">
-      <strong>Timeline</strong>
-      <span>Event timeline, dense</span>
-    </a>
-    <a href="toolbar.html" class="demo-nav-card">
-      <strong>Toolbar</strong>
-      <span>Button groups, separators</span>
-    </a>
-    <a href="icon.html" class="demo-nav-card">
-      <strong>Icon</strong>
-      <span>SVG icon set, sizes, colors</span>
-    </a>
-  </div>
+    <div class="catalog-controls">
+      <div class="lk-input-affix">
+        <span class="lk-input-affix__prepend"><span class="lk-icon lk-icon--search" aria-hidden="true"></span></span>
+        <input id="catalog-search" class="lk-input lk-input--affixed" type="search"
+               placeholder="Search by name or need — “date”, “drag”, “chart”, “validate”…" aria-label="Search components, composables and guides" />
+      </div>
+      <div id="catalog-filters" class="catalog-filters" role="group" aria-label="Filter by category"></div>
+    </div>
 
-  <!-- Interactive Components -->
-  <p class="demo-section__title">Interactive Components (JS)</p>
-  <div class="lk-grid lk-grid--cols-1 lk-grid--cols-sm-2 lk-grid--cols-md-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
-    <a href="tabs.html" class="demo-nav-card">
-      <strong>Tabs</strong>
-      <span>Line, pill, box · vertical · URL/HTML/text panels, render modes</span>
-    </a>
-    <a href="carousel.html" class="demo-nav-card">
-      <strong>Carousel</strong>
-      <span>Slide navigation, autoplay, async (URL) content</span>
-    </a>
-    <a href="slider.html" class="demo-nav-card">
-      <strong>Slider</strong>
-      <span>Drag value, min/max/step</span>
-    </a>
-    <a href="tooltip.html" class="demo-nav-card">
-      <strong>Tooltip</strong>
-      <span>Positions, show/hide</span>
-    </a>
-    <a href="rating.html" class="demo-nav-card">
-      <strong>Rating</strong>
-      <span>Click-to-rate, readonly</span>
-    </a>
-    <a href="chip.html" class="demo-nav-card">
-      <strong>Chip</strong>
-      <span>Removable, selectable</span>
-    </a>
-    <a href="pagination.html" class="demo-nav-card">
-      <strong>Pagination</strong>
-      <span>Auto-generated page nav</span>
-    </a>
-    <a href="progress.html" class="demo-nav-card">
-      <strong>Progress</strong>
-      <span>Determinate, indeterminate</span>
-    </a>
-    <a href="splitter.html" class="demo-nav-card">
-      <strong>Splitter</strong>
-      <span>Drag-to-resize panes</span>
-    </a>
-    <a href="table.html" class="demo-nav-card">
-      <strong>Table</strong>
-      <span>Sortable columns</span>
-    </a>
-  </div>
+    <p id="catalog-count" class="catalog-count"></p>
+    <div id="catalog-grid" class="catalog-grid"></div>
+    <p id="catalog-empty" class="catalog-empty">No matches — try a different word, or clear the filters.</p>
+  </section>
 
-  <!-- Composables & Data -->
-  <p class="demo-section__title">Composables &amp; Data</p>
-  <div class="lk-grid lk-grid--cols-1 lk-grid--cols-sm-2 lk-grid--cols-md-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
-    <a href="composables.html" class="demo-nav-card">
-      <strong>Composable Suite</strong>
-      <span>Launcher page for all composable demos</span>
-    </a>
-    <a href="composable-date.html" class="demo-nav-card">
-      <strong>Composable Date</strong>
-      <span>Programmatic date picker</span>
-    </a>
-    <a href="composable-dialog.html" class="demo-nav-card">
-      <strong>Composable Dialog</strong>
-      <span>Programmatic modal dialog</span>
-    </a>
-<a href="composable-toast.html" class="demo-nav-card">
-      <strong>Composable Toast</strong>
-      <span>Stacked top/bottom notifications</span>
-    </a>
-    <a href="composable-loading.html" class="demo-nav-card">
-      <strong>Composable Loading</strong>
-      <span>Fullscreen loading overlay</span>
-    </a>
-    <a href="composable-inner-loading.html" class="demo-nav-card">
-      <strong>Inner Loading</strong>
-      <span>Loading state scoped to target</span>
-    </a>
-    <a href="composable-ping-badge.html" class="demo-nav-card">
-      <strong>Ping Badge</strong>
-      <span>Pulse badge for notifications</span>
-    </a>
-    <a href="composable-shimmer.html" class="demo-nav-card">
-      <strong>Shimmer</strong>
-      <span>Animated shimmer overlay</span>
-    </a>
-    <a href="composable-storage.html" class="demo-nav-card">
-      <strong>Storage</strong>
-      <span>Namespaced async storage helper</span>
-    </a>
-    <a href="datasource.html" class="demo-nav-card">
-      <strong>DataSource</strong>
-      <span>Reactive data model demo</span>
-    </a>
-  </div>
-
-  <!-- Page Templates -->
-  <p class="demo-section__title">Page Templates</p>
-  <div class="lk-grid lk-grid--cols-1 lk-grid--cols-sm-2 lk-grid--cols-md-3" style="margin-bottom: var(--lk-space-8); gap: var(--lk-space-3);">
-    <a href="templates/index.html" class="demo-nav-card">
-      <strong>All Templates</strong>
-      <span>Single page, e-commerce, dashboard, article, about</span>
-    </a>
-  </div>
 </main>
 
 <script src="../dist/look.js"></script>
@@ -346,11 +276,171 @@ import { lkTextbox, lkDropdown, lkValidation, lkToast } from '@lookui/core';</pr
     Look.lkToast({ type: 'positive', title: 'Welcome!', message: qsEmail.value });
   });
 </script>
+<script>
+// ---------------------------------------------------------------------------
+// Searchable catalog of every docs page. One source of truth, no separate
+// per-category markup to keep in sync by hand.
+// ---------------------------------------------------------------------------
+(function () {
+  const CATEGORIES = ['Form & Input', 'Data & Structure', 'Navigation & Overlays', 'Actions & Feedback', 'Interaction & Utilities', 'Guides', 'Templates'];
+
+  const CATALOG = [
+    // Form & Input
+    { name: 'Textbox', href: 'textbox.html', cat: 'Form & Input', desc: 'Input & textarea with validation, autosize, password reveal.', kw: 'text input field autosize password reveal' },
+    { name: 'Dropdown', href: 'dropdown.html', cat: 'Form & Input', desc: 'Custom select — search, templates, remote data, infinite scroll.', kw: 'select combobox multiple chips' },
+    { name: 'Checkbox', href: 'checkbox.html', cat: 'Form & Input', desc: 'Custom styled checkboxes with validation.', kw: 'boolean toggle' },
+    { name: 'Radio', href: 'radio.html', cat: 'Form & Input', desc: 'Custom styled radio buttons.', kw: 'choice group option' },
+    { name: 'Switch', href: 'switch.html', cat: 'Form & Input', desc: 'Toggle switch component.', kw: 'boolean on off toggle' },
+    { name: 'Phone', href: 'phone.html', cat: 'Form & Input', desc: 'Country flag + dial code dropdown joined to a numeric input.', kw: 'telephone international e164' },
+    { name: 'TextPop', href: 'textpop.html', cat: 'Form & Input', desc: 'Lookup field — searchable grid popup, single or multi (chips).', kw: 'lookup search select grid picker' },
+    { name: 'Upload', href: 'upload.html', cat: 'Form & Input', desc: 'File input as a chip field or drag-and-drop box — accept, max size, multiple.', kw: 'file dropzone attachment image' },
+    { name: 'Number', href: 'number.html', cat: 'Form & Input', desc: 'Locale-formatted numeric, currency, percent and unit input with spinners.', kw: 'currency money percent unit spinner stepper' },
+    { name: 'Time', href: 'time.html', cat: 'Form & Input', desc: 'Typed entry or a popup time picker — 12/24h, minute step, seconds.', kw: 'clock hour minute schedule' },
+    { name: 'Color', href: 'color.html', cat: 'Form & Input', desc: 'Swatch grid, custom picker and opacity in a popup.', kw: 'colour hex rgb hsl swatch picker' },
+    { name: 'Segmented', href: 'segmented.html', cat: 'Form & Input', desc: 'Segmented button group — single sliding selection or multiple toggle.', kw: 'toggle group switcher tabs filter' },
+    { name: 'Autocomplete', href: 'autocomplete.html', cat: 'Form & Input', desc: 'Suggestion listbox — local, remote or async source, match highlighting.', kw: 'typeahead suggestions search combobox' },
+    { name: 'Tag input', href: 'taginput.html', cat: 'Form & Input', desc: 'Chip-based free-text tags with optional autocomplete suggestions.', kw: 'tags chips multi keywords' },
+    { name: 'Date', href: 'composable-date.html', cat: 'Form & Input', desc: 'Programmatic date / date-time / range picker with holidays and disabled rules.', kw: 'calendar datepicker range time' },
+    { name: 'Editor', href: 'editor.html', cat: 'Form & Input', desc: 'WYSIWYG rich-text HTML editor with a toolbar, source view and a built-in sanitizer.', kw: 'wysiwyg rich text html editor contenteditable sanitize toolbar' },
+    { name: 'Slider', href: 'slider.html', cat: 'Form & Input', desc: 'Drag or keyboard to set a value on a track — min/max/step.', kw: 'range input track thumb drag' },
+
+    // Data & Structure
+    { name: 'Table', href: 'table.html', cat: 'Data & Structure', desc: 'Sortable, filterable, editable data grid — paging, column resize/reorder, row reorder.', kw: 'grid datagrid spreadsheet crud excel' },
+    { name: 'Tree', href: 'composable-tree.html', cat: 'Data & Structure', desc: 'Nested tree view — selection, tri-state checkboxes, lazy loading, filter.', kw: 'hierarchy nested checkbox lazy filetree' },
+    { name: 'Org chart', href: 'composable-org.html', cat: 'Data & Structure', desc: 'Organization chart with drag-and-drop restructuring, CRUD editing, and a view-only mode.', kw: 'organization hierarchy manager reports chart linked tree crud dragdrop' },
+    { name: 'DataSource', href: 'datasource.html', cat: 'Data & Structure', desc: 'Reactive data model — filter, sort, paging, CRUD, remote transport.', kw: 'state model fetch rest api' },
+    { name: 'Accordion', href: 'accordion.html', cat: 'Data & Structure', desc: 'Grouped collapsible panels — single or multiple open, guards.', kw: 'collapse expand faq panels' },
+    { name: 'Card', href: 'card.html', cat: 'Data & Structure', desc: 'Bordered, raised, dense — with an optional accordion header.', kw: 'box panel container' },
+    { name: 'List', href: 'list.html', cat: 'Data & Structure', desc: 'Nested submenu + accordion-style menu list.', kw: 'sidebar nav menu nested' },
+    { name: 'Timeline', href: 'timeline.html', cat: 'Data & Structure', desc: 'Event timeline, dense.', kw: 'history activity log steps' },
+    { name: 'Avatar', href: 'avatar.html', cat: 'Data & Structure', desc: 'Sizes, shapes, groups.', kw: 'profile picture user image' },
+    { name: 'Carousel', href: 'carousel.html', cat: 'Data & Structure', desc: 'Slide navigation, autoplay, async (URL) content.', kw: 'slider gallery slideshow' },
+    { name: 'Splitter', href: 'splitter.html', cat: 'Data & Structure', desc: 'Drag-to-resize panes.', kw: 'resizable panel layout' },
+    { name: 'Sortable', href: 'sortable.html', cat: 'Data & Structure', desc: 'Drag-to-reorder lists, grids and table rows — pointer and keyboard.', kw: 'drag drop reorder dnd' },
+
+    // Navigation & Overlays
+    { name: 'Tabs', href: 'tabs.html', cat: 'Navigation & Overlays', desc: 'Line, pill, box · vertical · URL/HTML/text panels, render modes.', kw: 'panels switcher navigation' },
+    { name: 'Modal', href: 'modal.html', cat: 'Navigation & Overlays', desc: 'Dialog with focus trap.', kw: 'popup overlay window' },
+    { name: 'Drawer', href: 'composable-drawer.html', cat: 'Navigation & Overlays', desc: 'Modal or non-blocking side panel, resizable edge.', kw: 'sidebar slideover panel' },
+    { name: 'Menu', href: 'composable-menu.html', cat: 'Navigation & Overlays', desc: 'Dropdown / context menu with submenus, checkboxes and radios.', kw: 'contextmenu dropdown nested' },
+    { name: 'Breadcrumbs', href: 'breadcrumbs.html', cat: 'Navigation & Overlays', desc: 'Separators, dense.', kw: 'path trail navigation' },
+    { name: 'Pagination', href: 'pagination.html', cat: 'Navigation & Overlays', desc: 'Auto-generated page navigation.', kw: 'pages next previous' },
+    { name: 'Tooltip', href: 'tooltip.html', cat: 'Navigation & Overlays', desc: 'Positions, show/hide.', kw: 'hint popover hover' },
+    { name: 'Bar', href: 'bar.html', cat: 'Navigation & Overlays', desc: 'App bar, dense, variants.', kw: 'header toolbar appbar' },
+    { name: 'Toolbar', href: 'toolbar.html', cat: 'Navigation & Overlays', desc: 'Button groups, menus and embedded controls built from JS.', kw: 'actions buttons ribbon' },
+    { name: 'Floating', href: 'composable-floating.html', cat: 'Navigation & Overlays', desc: 'A persistent element pinned to a screen corner — FAB, chat launcher, scroll-to-top.', kw: 'fab fixed corner widget launcher action button' },
+
+    // Actions & Feedback
+    { name: 'Button', href: 'button.html', cat: 'Actions & Feedback', desc: 'Variants, sizes, groups, dropdown.', kw: 'action click cta' },
+    { name: 'Toast', href: 'composable-toast.html', cat: 'Actions & Feedback', desc: 'Stacked top/bottom notifications.', kw: 'snackbar notification alert' },
+    { name: 'Dialog', href: 'composable-dialog.html', cat: 'Actions & Feedback', desc: 'Programmatic confirm / alert / status dialog.', kw: 'confirm alert prompt sweetalert' },
+    { name: 'Progress', href: 'progress.html', cat: 'Actions & Feedback', desc: 'Determinate, indeterminate.', kw: 'loading bar percent' },
+    { name: 'Spinner', href: 'spinner.html', cat: 'Actions & Feedback', desc: 'Sizes, colors, on-dark.', kw: 'loading busy spin' },
+    { name: 'Loading', href: 'composable-loading.html', cat: 'Actions & Feedback', desc: 'Fullscreen loading overlay.', kw: 'busy blocking overlay' },
+    { name: 'Inner Loading', href: 'composable-inner-loading.html', cat: 'Actions & Feedback', desc: 'Loading state scoped to a target element.', kw: 'busy section skeleton' },
+    { name: 'Ping Badge', href: 'composable-ping-badge.html', cat: 'Actions & Feedback', desc: 'Pulse badge for notifications.', kw: 'dot indicator alert' },
+    { name: 'Shimmer', href: 'composable-shimmer.html', cat: 'Actions & Feedback', desc: 'Animated shimmer overlay.', kw: 'skeleton placeholder loading' },
+    { name: 'Rating', href: 'rating.html', cat: 'Actions & Feedback', desc: 'Click-to-rate, readonly.', kw: 'stars review score' },
+    { name: 'Chip', href: 'chip.html', cat: 'Actions & Feedback', desc: 'Removable, selectable.', kw: 'tag pill badge' },
+    { name: 'Badge', href: 'badge.html', cat: 'Actions & Feedback', desc: 'Colors, outline, dot.', kw: 'label count indicator' },
+
+    // Interaction & Utilities
+    { name: 'Validation', href: 'validation.html', cat: 'Interaction & Utilities', desc: 'Rules, validate on blur, lkValidation for forms, server errors.', kw: 'rules required async errors' },
+    { name: 'Form', href: 'composable-form.html', cat: 'Interaction & Utilities', desc: 'Form helper — field registry, dirty tracking, submit with validation and server errors.', kw: 'submit dirty serialize formdata' },
+    { name: 'Stepper', href: 'composable-stepper.html', cat: 'Interaction & Utilities', desc: 'Multi-step wizard with per-step validation.', kw: 'wizard steps onboarding' },
+    { name: 'Clipboard', href: 'composable-clipboard.html', cat: 'Interaction & Utilities', desc: 'Copy-to-clipboard trigger with tip/toast feedback.', kw: 'copy paste share' },
+    { name: 'Hotkeys', href: 'composable-hotkeys.html', cat: 'Interaction & Utilities', desc: 'Keyboard shortcuts and key sequences.', kw: 'shortcut keyboard accelerator' },
+    { name: 'Theme', href: 'composable-theme.html', cat: 'Interaction & Utilities', desc: 'Light / dark / system theme switcher, no-flash inline script.', kw: 'dark mode light appearance' },
+    { name: 'Storage', href: 'composable-storage.html', cat: 'Interaction & Utilities', desc: 'Namespaced async storage helper.', kw: 'localstorage persist cache' },
+    { name: 'Icon', href: 'icon.html', cat: 'Interaction & Utilities', desc: 'SVG icon set, sizes, colors, runtime registry.', kw: 'svg glyph symbol' },
+    { name: 'Popup Proxy', href: 'composable-popup-proxy.html', cat: 'Interaction & Utilities', desc: 'Adaptive anchored popup used to build dropdowns, menus and pickers.', kw: 'anchor floating positioning' },
+
+    // Guides
+    { name: 'Design Tokens', href: 'tokens.html', cat: 'Guides', desc: 'Color palette, typography, spacing, radius.', kw: 'css variables theme' },
+    { name: 'Layout & Utilities', href: 'layout.html', cat: 'Guides', desc: 'Grid, flex, spacing, responsive utilities.', kw: 'css layout responsive' },
+    { name: 'Custom Theme File', href: 'customize.html', cat: 'Guides', desc: 'Your own CSS file: replace colors, spacing, sizes · where to include it.', kw: 'branding customization override' },
+    { name: 'Theming', href: 'theming.html', cat: 'Guides', desc: 'Runtime & build-time overrides, generated theme file.', kw: 'tokens scss variables' },
+    { name: 'Localization', href: 'localization.html', cat: 'Guides', desc: 'Look.i18n — translate every label, placeholder and message, live locale switching.', kw: 'i18n translation language locale' },
+    { name: 'Overridable events', href: 'events.html', cat: 'Guides', desc: 'before<Action> guards and lk:before-* DOM events — veto, delay or replace actions.', kw: 'guard cancel veto hook' },
+    { name: 'Upgrading to 0.3 / 0.4', href: 'migration.html', cat: 'Guides', desc: 'One callback convention, localization and guards — what changed per component.', kw: 'migration changelog breaking' },
+
+    // Templates
+    { name: 'Page Templates', href: 'templates/index.html', cat: 'Templates', desc: 'Single page, e-commerce, dashboard, article, about — built with LookUI.', kw: 'starter example boilerplate' },
+  ];
+
+  const grid = document.getElementById('catalog-grid');
+  const filtersEl = document.getElementById('catalog-filters');
+  const searchEl = document.getElementById('catalog-search');
+  const countEl = document.getElementById('catalog-count');
+  const emptyEl = document.getElementById('catalog-empty');
+  document.getElementById('hero-stat-count').textContent = CATALOG.length + '+';
+
+  let activeCat = 'All';
+
+  function makeChip(label) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'lk-chip lk-chip--clickable';
+    btn.textContent = label;
+    btn.addEventListener('click', () => {
+      activeCat = label;
+      renderFilters();
+      applyFilter();
+    });
+    return btn;
+  }
+
+  function renderFilters() {
+    filtersEl.innerHTML = '';
+    ['All', ...CATEGORIES].forEach((label) => {
+      const chip = makeChip(label);
+      if (label === activeCat) chip.classList.add('lk-chip--filled', 'lk-chip--selected');
+      filtersEl.appendChild(chip);
+    });
+  }
+
+  function cardFor(item) {
+    const a = document.createElement('a');
+    a.href = item.href;
+    a.className = 'demo-nav-card catalog-card';
+    a.dataset.cat = item.cat;
+    a.dataset.text = (item.name + ' ' + item.desc + ' ' + item.cat + ' ' + item.kw).toLowerCase();
+
+    const tag = document.createElement('span');
+    tag.className = 'catalog-card__tag';
+    tag.textContent = item.cat;
+
+    const name = document.createElement('strong');
+    name.textContent = item.name;
+
+    const desc = document.createElement('span');
+    desc.textContent = item.desc;
+
+    a.append(tag, name, desc);
+    return a;
+  }
+
+  CATALOG.forEach((item) => grid.appendChild(cardFor(item)));
+
+  function applyFilter() {
+    const q = searchEl.value.trim().toLowerCase();
+    const terms = q.split(/\s+/).filter(Boolean);
+    let visible = 0;
+    grid.querySelectorAll('.catalog-card').forEach((card) => {
+      const matchesCat = activeCat === 'All' || card.dataset.cat === activeCat;
+      const matchesSearch = !terms.length || terms.every((t) => card.dataset.text.includes(t));
+      const show = matchesCat && matchesSearch;
+      card.classList.toggle('is-hidden', !show);
+      if (show) visible += 1;
+    });
+    countEl.textContent = visible + ' of ' + CATALOG.length + (activeCat === 'All' ? '' : ' in ' + activeCat);
+    emptyEl.classList.toggle('is-visible', visible === 0);
+  }
+
+  renderFilters();
+  applyFilter();
+  searchEl.addEventListener('input', applyFilter);
+})();
+</script>
 </body>
 </html>
-
-
-
-
-
-

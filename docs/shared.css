@@ -174,3 +174,208 @@
   gap: var(--lk-space-3);
   margin-top: var(--lk-space-4);
 }
+
+/* Hero stat badges ---------------------------------------------------- */
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lk-space-2) var(--lk-space-5);
+  margin-top: var(--lk-space-5);
+  padding-top: var(--lk-space-5);
+  border-top: var(--lk-border-width) solid var(--lk-border);
+}
+
+.hero-stats__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--lk-space-2);
+  font-size: var(--lk-text-sm);
+  color: var(--lk-text-muted);
+}
+
+.hero-stats__item strong {
+  font-size: var(--lk-text-lg);
+  color: var(--lk-text);
+}
+
+/* "Why LookUI" feature cards ------------------------------------------ */
+.pros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--lk-space-4);
+}
+
+.pros-card {
+  padding: var(--lk-space-5);
+}
+
+.pros-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--lk-radius-lg);
+  background: color-mix(in srgb, var(--lk-primary) 14%, transparent);
+  color: var(--lk-primary);
+  margin-bottom: var(--lk-space-3);
+}
+
+.pros-card h3 {
+  font-size: var(--lk-text-base);
+  margin: 0 0 var(--lk-space-2);
+}
+
+.pros-card p {
+  font-size: var(--lk-text-sm);
+  color: var(--lk-text-muted);
+  margin: 0;
+  line-height: var(--lk-leading-relaxed);
+}
+
+/* Comparison table ------------------------------------------------------ */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--lk-text-sm);
+}
+
+.compare-table th,
+.compare-table td {
+  text-align: left;
+  padding: var(--lk-space-3) var(--lk-space-4);
+  border-bottom: var(--lk-border-width) solid var(--lk-border);
+  vertical-align: top;
+}
+
+.compare-table thead th {
+  color: var(--lk-text-muted);
+  font-weight: var(--lk-weight-semibold);
+  text-transform: uppercase;
+  font-size: var(--lk-text-xs);
+  letter-spacing: var(--lk-tracking-wider);
+}
+
+.compare-table tbody th {
+  font-weight: var(--lk-weight-medium);
+  white-space: nowrap;
+}
+
+.compare-table td:nth-child(2) {
+  color: var(--lk-primary);
+}
+
+.compare-table td:nth-child(3) {
+  color: var(--lk-text-muted);
+}
+
+/* "Find the right component" use-case cards ---------------------------- */
+.usecase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--lk-space-4);
+}
+
+.usecase-card {
+  padding: var(--lk-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lk-space-3);
+}
+
+.usecase-card h3 {
+  font-size: var(--lk-text-base);
+  margin: 0;
+}
+
+.usecase-card p {
+  font-size: var(--lk-text-sm);
+  color: var(--lk-text-muted);
+  margin: 0;
+  line-height: var(--lk-leading-relaxed);
+}
+
+.usecase-card__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lk-space-2);
+  margin-top: auto;
+}
+
+.usecase-card__links a {
+  font-size: var(--lk-text-xs);
+  padding: var(--lk-space-1) var(--lk-space-3);
+  border-radius: var(--lk-radius-full);
+  background: var(--lk-bg-subtle);
+  border: var(--lk-border-width) solid var(--lk-border);
+  color: var(--lk-text);
+  text-decoration: none;
+}
+
+.usecase-card__links a:hover {
+  border-color: var(--lk-primary);
+  color: var(--lk-primary);
+}
+
+/* Searchable catalog ----------------------------------------------------- */
+.catalog-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lk-space-3);
+  align-items: center;
+  margin-bottom: var(--lk-space-5);
+}
+
+.catalog-controls .lk-input-affix {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.catalog-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lk-space-2);
+}
+
+.catalog-count {
+  font-size: var(--lk-text-sm);
+  color: var(--lk-text-muted);
+  margin-bottom: var(--lk-space-4);
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: var(--lk-space-3);
+}
+
+.catalog-card {
+  position: relative;
+  padding-top: var(--lk-space-6);
+}
+
+.catalog-card__tag {
+  position: absolute;
+  top: var(--lk-space-3);
+  right: var(--lk-space-3);
+  font-size: 0.6875rem;
+  font-weight: var(--lk-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--lk-tracking-wider);
+  color: var(--lk-text-muted);
+}
+
+.catalog-card.is-hidden {
+  display: none;
+}
+
+.catalog-empty {
+  display: none;
+  padding: var(--lk-space-7) 0;
+  text-align: center;
+  color: var(--lk-text-muted);
+}
+
+.catalog-empty.is-visible {
+  display: block;
+}

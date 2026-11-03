@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Stepper</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Stepper</h1>
+    <p style="opacity: 0.85;">lkStepper(target, opts) — a multi-step flow with validation, lazy panels and Back / Next / Finish</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Wizard with validation (linear)</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">Step 1 validates its <code>fields</code>, step 2 an async <code>validate()</code> (type <code>ok</code>), step 3 is optional. Later steps are locked until the one before is done; finished steps can be clicked to go back.</p>
+    <div id="wz" class="lk-card"><div class="lk-card__body"></div></div>
+    <div id="wz-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Vertical, non-linear, lazy URL content</p>
+    <div id="vt"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Variants and dense</p>
+    <div class="lk-grid lk-grid--cols-1" style="gap: var(--lk-space-6);">
+      <div id="v-compact"></div>
+      <div id="v-bar"></div>
+      <div id="v-dense"></div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Enhancing markup (<code>data-step</code>)</p>
+    <div id="en">
+      <section data-step data-title="Account" data-description="Pick a name"><p>Existing panel one.</p></section>
+      <section data-step="Profile" data-optional><p>Existing panel two (optional).</p></section>
+      <section data-step data-title="Review" data-icon="check"><p>Existing panel three.</p></section>
+    </div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const wizard = Look.lkStepper('#wizard', {
+  linear: true,                         // only the next step is reachable by click
+  steps: [
+    { id: 'account', title: 'Account', description: 'Who are you?',
+      content: (panel) => buildAccountForm(panel),
+      fields: [email, password] },      // validated (async rules awaited) when leaving forward
+    { id: 'plan', title: 'Plan', content: { url: '/partials/plan.html' },   // lazy: fetched on first visit
+      validate: async () => (await planAvailable()) || 'That plan is full' },
+    { id: 'extras', title: 'Extras', optional: true, content: 'Anything else?' },
+    { id: 'confirm', title: 'Confirm', content: { template: '#confirm-tpl' } },
+  ],
+  beforeChange: (next, { prev, direction, source }) => true,    // false vetoes, a step id / index redirects
+  onChange(step, { source, prev }) { console.log(prev.id, '→', step.id, source); },
+  onComplete({ component }) { save(); },
+});
+
+await wizard.next();  wizard.goTo('plan');  wizard.setStatus('plan', 'error');
+wizard.current = 0;   // silent
+wizard.destroy();     // enhanced markup is put back exactly</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkStepper',
+  textNamespace: 'stepper',
+  kind: 'Composable',
+  signature: 'const stepper = Look.lkStepper(target, options);',
+  description: [
+    'A row (or column) of step headers with one panel per step, optional Back / Next / Finish buttons and a connector line that fills as steps are completed. Build it from `steps` inside an empty container, or give it a container holding `[data-step]` panels and it enhances them (they are moved into the stepper and put back by `destroy()`).',
+    '**Validation.** Leaving a step **forward** (Next, clicking a later step, `next()`, `goTo()`, `complete()`) runs the step\'s checks first: its `fields` (an [lkValidation](validation.html) over those components, async rules awaited), then its `validate()` function. A failing step keeps the user where they are and is marked as an error; a string returned from `validate()` is shown under the panel. Going back never validates. Only when the checks pass does the `beforeChange` guard run, so a veto or a redirect always concerns a step that was legitimately left.',
+    '**Linear** (default): the next step is reachable by click only when everything before it is completed (or optional / disabled); earlier steps can always be revisited. Programmatic calls ignore this but still validate. Panels render lazily on the first visit; the leaving panel slides out and the new one slides in (keyframe animations in both directions, honouring reduced motion).',
+    '**Accessibility.** Headers are `<button>`s inside an `<ol>`; the active one has `aria-current="step"`, each panel is a `role="region"` labelled by its header, and a polite live region announces "Step 2 of 4". Arrow keys, Home and End move focus between enabled headers; Enter / Space activate.',
+  ],
+  params: [
+    { name: 'target', type: 'Element | string', description: 'Container to build in, or a container holding `[data-step]` sections (attributes: `data-title`, `data-description`, `data-icon`, `data-id`, `data-optional`, `data-disabled`; `data-step="Title"` works too).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The stepper instance.' },
+  options: [
+    {
+      name: 'steps', type: 'Array', default: '—',
+      description: '`{ id, title, description, icon, content, optional, disabled, fields, validate, render, panel }`. `content` is text, a Node, `(panel, ctx) => Node | text | { html } | cleanup | Promise`, `{ url, select, … }`, `{ html }` or `{ template }`. `fields` are validateable components, `validate(step, { source, component })` returns `true`, `false`, an error message or a Promise of those. With `data-step` markup, `steps[i]` is merged into section i.',
+    },
+    { name: 'current', type: 'number | string', default: '0', description: 'First step (index or id). In linear mode earlier steps count as completed.' },
+    { name: 'linear', type: 'boolean', default: 'true', description: 'Lock steps beyond the next one.' },
+    { name: 'orientation', type: "'horizontal' | 'vertical'", default: "'horizontal'", description: 'Layout; vertical puts the headers in a column beside the panels.' },
+    { name: 'variant', type: "'default' | 'compact' | 'bar'", default: "'default'", description: 'Numbered circles / small markers without descriptions / segmented progress bars.' },
+    { name: 'buttons', type: 'boolean', default: 'true', description: 'Render the Back / Next / Finish footer (`false`: drive it with the API).' },
+    { name: 'render', type: "'lazy' | 'eager'", default: "'lazy'", description: 'Render panel content on first visit or all at once; a step can override with its own `render`.' },
+    { name: 'animation', type: "'slide' | 'none'", default: "'slide'", description: 'Panel transition.' },
+    { name: 'dense', type: 'boolean', default: 'false', description: 'Compact markers and buttons.' },
+    { name: 'text', type: 'Object', default: '—', description: 'Per-instance text overrides.' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(step, { source, component, prev })` — `source` is `\'next\'` / `\'prev\'` (footer buttons), `\'click\'` (a header) or `\'api\'`. Assigning `current`, `reset()` and the initial step are silent. `step` / `prev` are `{ id, index, title, status, panel, … }`.' },
+    { name: 'onComplete', type: 'Function', default: '—', description: '`({ component, source })` — the Finish button (`\'finish\'`) or `complete()` (`\'api\'`) passed validation and `beforeComplete`.' },
+    { name: 'onError', type: 'Function', default: '—', description: '`(error, { step, source, component })` — `source` `\'validate\'` when a `validate()` function threw / rejected or a field\'s async rule failed, `\'load\'` when a URL panel failed to load.' },
+    { name: 'onLoad', type: 'Function', default: '—', description: '`(panel, { step, component })` after lazy content is in place.' },
+  ],
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange(next, { prev, direction, source, component })', description: 'Runs after the step being left validated (forward moves). `direction` is `"forward"` or `"backward"`. Return `false` to stay, a Promise to wait, or another step (its object, id or index) to redirect there instead — the same semantics as [lkTabs](tabs.html). DOM event `lk:before-change` on the root.' },
+    { name: 'beforeComplete', signature: 'beforeComplete({ source, component })', description: 'Runs when finishing, after the last step validated. Return `false` (or a Promise resolving false) to cancel `onComplete`. DOM event `lk:before-complete`.' },
+  ],
+  texts: [
+    { name: 'label', default: 'Steps', description: 'Accessible name of the step list.' },
+    { name: 'back', default: 'Back', description: 'Back button.' },
+    { name: 'next', default: 'Next', description: 'Next button.' },
+    { name: 'finish', default: 'Finish', description: 'Finish button (last step).' },
+    { name: 'optional', default: 'Optional', description: 'Label under an optional step.' },
+    { name: 'status', default: 'Step {current} of {total}', description: 'Live-region announcement (`{current}`, `{total}`; may be a plural object).' },
+    { name: 'state.done', default: 'Completed', description: 'Screen-reader text of a completed step.' },
+    { name: 'state.error', default: 'Has errors', description: 'Screen-reader text of a step with errors.' },
+    { name: 'common.loading / common.retry', default: 'Loading… / Retry', description: 'URL panels (shared texts).' },
+  ],
+  properties: [
+    { name: 'current', type: 'number', description: 'Index of the active step. Assigning an index or id moves there silently (no validation, no guards, no `onChange`).' },
+    { name: 'currentStep', type: 'Object', readonly: true, description: 'Public object of the active step.' },
+    { name: 'steps', type: 'Array', readonly: true, description: 'Public objects of every step: `{ id, index, title, description, optional, disabled, status: \'active\' | \'done\' | \'error\' | \'pending\', panel, headEl, el }`.' },
+    { name: 'completed', type: 'string[]', description: 'Ids of completed steps; assignable (array or Set of ids / indexes).' },
+    { name: 'isComplete', type: 'boolean', readonly: true, description: 'Finished and not moved since.' },
+    { name: 'busy', type: 'boolean', readonly: true, description: 'A validation / guard is running (the root has `aria-busy`); further requests are ignored meanwhile.' },
+    { name: 'el / listEl / panelsEl / footerEl', type: 'Element', readonly: true, description: 'Root and parts.' },
+  ],
+  methods: [
+    { name: 'next / prev', signature: 'next() / prev()', description: 'Move to the next / previous enabled step. Resolve `true` when the step changed (validation and guards apply forward); source `\'api\'`.' },
+    { name: 'goTo', signature: 'goTo(ref, { validate: true })', description: 'Go to a step (index or id). `validate: false` skips the forward validation (the guard still runs).' },
+    { name: 'complete', signature: 'complete()', description: 'Validate the current step, run `beforeComplete`, fire `onComplete`. Resolves a boolean.' },
+    { name: 'reset', signature: 'reset()', description: 'Back to the first enabled step; clears completed / error marks. Silent.' },
+    { name: 'get / panel', signature: 'get(ref) / panel(ref)', description: 'Public step object / its panel element.' },
+    { name: 'setStatus', signature: "setStatus(ref, 'error' | 'done' | 'pending' | null)", description: 'Mark a step (e.g. after a server check). `null` clears an error.' },
+    { name: 'enable / disable', signature: 'enable(ref) / disable(ref)', description: 'Disabled steps are skipped by next / prev and cannot be clicked.' },
+    { name: 'add / remove', signature: 'add(spec, index?) / remove(ref)', description: 'Edit the step list; removing the active step moves silently to a neighbour.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes every node it built, cancels animations and fetches, and puts enhanced sections back exactly as they were.' },
+  ],
+  classes: [
+    { name: '.lk-stepper', description: 'Root (`--horizontal`, `--vertical`, `--compact`, `--bar`, `--dense`, `--static`).' },
+    { name: '.lk-stepper__step', description: 'A step `<li>` (`--active`, `--done`, `--error`, `--pending`, `--disabled`, `--optional`, `--last`).' },
+    { name: '.lk-stepper__head / __marker / __title / __desc / __optional', description: 'The header button and its parts.' },
+    { name: '.lk-stepper__line', description: 'Connector to the next step; fills when the step is done.' },
+    { name: '.lk-stepper__panels / __panel', description: 'Panel host and panels (`__panel--enter`, `__panel--leave` while sliding).' },
+    { name: '.lk-stepper__message / __footer', description: 'Validation message and button row.' },
+  ],
+  tokens: [
+    { name: '--lk-stepper-marker', default: '2rem', description: 'Marker size (set on `.lk-stepper`).' },
+    { name: '--lk-stepper-active', default: 'var(--lk-primary)', description: 'Active step colour.' },
+    { name: '--lk-stepper-enter-duration / --lk-stepper-exit-duration', default: '380ms / 180ms', description: 'Panel slide in / out; the JS exit timer reads the latter.' },
+    { name: '--lk-positive / --lk-negative', default: '#43a047 / #e53935', description: 'Done and error colours.' },
+  ],
+});
+</script>
+<script>
+  // --- Wizard ---
+  const wz = document.querySelector('#wz .lk-card__body');
+  const wzOut = document.getElementById('wz-out');
+  const email = document.createElement('input');
+  const pw = document.createElement('input');
+  const wzForm = document.createElement('div');
+  wzForm.style.cssText = 'display:grid;gap:var(--lk-space-4);max-width:24rem;';
+  wzForm.append(email, pw);
+  const emailC = Look.lkTextbox(email, { label: 'E-mail', rules: ['required', 'email'], validate: true });
+  const pwC = Look.lkTextbox(pw, { label: 'Password', type: 'password', rules: ['required', { minLength: 6 }], validate: true });
+  const code = document.createElement('input');
+  const codeWrap = document.createElement('div');
+  codeWrap.style.maxWidth = '24rem';
+  codeWrap.appendChild(code);
+  const codeC = Look.lkTextbox(code, { label: 'Type "ok" to continue' });
+  const wizard = Look.lkStepper(wz, {
+    steps: [
+      { id: 'account', title: 'Account', description: 'E-mail and password', content: wzForm, fields: [emailC, pwC] },
+      { id: 'verify', title: 'Verify', description: 'Async check', content: codeWrap,
+        validate: async () => { await new Promise((r) => setTimeout(r, 400)); return codeC.value === 'ok' || 'That is not the code'; } },
+      { id: 'extras', title: 'Extras', optional: true, content: 'Nothing required here — just continue.' },
+      { id: 'done', title: 'Confirm', content: (panel) => { const p = document.createElement('p'); p.textContent = 'Ready to create the account for ' + emailC.value; return p; }, render: 'lazy' },
+    ],
+    onChange: (st, c) => { wzOut.textContent = 'onChange → ' + st.id + ' (source ' + c.source + ', from ' + c.prev.id + ')'; },
+    onComplete: () => { wzOut.textContent = 'onComplete — account created'; },
+  });
+
+  // --- Vertical, non-linear, URL content ---
+  Look.lkStepper('#vt', {
+    orientation: 'vertical', linear: false,
+    steps: [
+      { id: 'a', title: 'Intro', description: 'Plain text', content: 'Non-linear: every step is clickable.' },
+      { id: 'b', title: 'From a URL', description: 'Fetched lazily (needs http)', content: { url: 'partials/faq.html', select: '#faq' } },
+      { id: 'c', title: 'Locked', disabled: true, content: 'You will not see this.' },
+      { id: 'd', title: 'Last', content: 'The end.' },
+    ],
+  });
+
+  // --- Variants ---
+  const three = (extra) => Object.assign({
+    current: 1,
+    steps: [{ title: 'One', description: 'First', content: 'Panel one' }, { title: 'Two', description: 'Second', content: 'Panel two' }, { title: 'Three', description: 'Third', content: 'Panel three' }],
+  }, extra);
+  Look.lkStepper('#v-compact', three({ variant: 'compact' }));
+  Look.lkStepper('#v-bar', three({ variant: 'bar' }));
+  Look.lkStepper('#v-dense', three({ dense: true }));
+
+  // --- Enhance ---
+  Look.lkStepper('#en', {});
+</script>
+</body>
+</html>

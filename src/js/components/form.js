@@ -5,6 +5,48 @@
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { wrapField, applyFieldProps } from '../helpers/field.js';
 import { attachValidation } from '../helpers/validation.js';
+import { lkI18n, bindText } from '../helpers/i18n.js';
+import { guardSync } from '../helpers/guard.js';
+import { lkIcon } from './icon.js';
+
+// Form components have almost no texts of their own; they still honour `opts.text` / Look.i18n
+// for the validation messages (shared 'validation.*' keys + the checkable "required" texts).
+lkI18n.define('textbox', {
+  showPassword: 'Show password',
+  hidePassword: 'Hide password',
+});
+lkI18n.define('checkbox', { required: 'This option is required' });
+lkI18n.define('radio', { required: 'Please choose an option' });
+lkI18n.define('switch', { required: 'This option is required' });
+
+function exposeText(comp, tx) {
+  Object.defineProperty(comp, 'text', {
+    get() { return tx.get(); },
+    set(v) { tx.set(v); },
+    enumerable: true,
+    configurable: true,
+  });
+}
+
+/**
+ * `beforeChange(checked, { source: 'change', component, event })` for native checkables.
+ * The native value has already changed when the event fires: a veto puts it back (and the event is
+ * swallowed, so onChange / re-validation do not run). A returned boolean replaces the new state.
+ * Registered in the capture phase on the input so it runs before every other change listener.
+ */
+function bindCheckableGuard(comp, node, opts, { revert, replace }) {
+  const handler = (event) => {
+    const res = guardSync(node, opts, 'change', node.checked, { source: 'change', component: comp, event });
+    if (!res.allowed) {
+      event.stopImmediatePropagation();
+      revert();
+      return;
+    }
+    if (typeof res.payload === 'boolean' && res.payload !== node.checked) replace(res.payload);
+  };
+  node.addEventListener('change', handler, true);
+  return () => node.removeEventListener('change', handler, true);
+}
 
 // Validation options shared by every form component (see helpers/validation.js):
 //   rules: [(value, comp) => true | 'message', 'required', { min, max, minLength, maxLength, pattern, email, message }]
@@ -40,14 +82,15 @@ function setAffixContent(slot, content) {
   append(content);
 }
 // Checkbox / switch: the value is `checked`; "required" means it must be on
-function attachCheckableValidation(comp, node, field, opts) {
+function attachCheckableValidation(comp, node, field, opts, tx) {
   return attachValidation(comp, {
     opts,
+    t: tx.tf,
     getValue: () => node.checked,
     label: field.getLabel,
     labels: () => field.labels,
     required: () => node.required,
-    requiredMessage: () => 'This option is required',
+    requiredMessage: () => tx.t('required'),
     roots: () => [field.wrapper || node],
     changeTargets: [node],
     setError: field.setError,
@@ -98,18 +141,24 @@ function radioGroup(node) {
  * @param {boolean} [opts.validate] — validate when focus leaves the field
  * @param {Function} [opts.onInput]  — (value, { source: 'input', component, event }) on every keystroke
  * @param {Function} [opts.onChange] — (value, { source: 'change', component, event }) when the change is committed (blur / Enter)
+ * @param {boolean|{maxRows?: number}} [opts.autosize] — <textarea>: grows with its content (never below the CSS min-height); with `maxRows` it scrolls beyond that many rows
+ * @param {boolean} [opts.reveal] — password input: an eye button (inside the affix box) toggles password / text; texts 'textbox.showPassword' / 'textbox.hidePassword'
  * @returns {Object}
  */
 export function lkTextbox(el, opts = {}) {
   const node = resolveEl(el, 'lkTextbox');
   node.classList.add('lk-input');
   let inputType = node.tagName === 'INPUT' ? node.type : '';
+  let revealBtn = null;
+  let revealed = false;
   function applyInputType(nextType) {
     if (node.tagName !== 'INPUT') return;
     const requested = (nextType == null || nextType === '') ? 'text' : String(nextType).toLowerCase();
     node.setAttribute('type', requested);
     // Browser normalizes unsupported types back to text.
     inputType = node.type;
+    revealed = false;
+    syncReveal();
   }
   if (node.tagName === 'INPUT') {
     applyInputType(opts.type ?? node.getAttribute('type') ?? 'text');
@@ -165,8 +214,121 @@ export function lkTextbox(el, opts = {}) {
     },
   });
   comp.focus = (o) => node.focus(o);
+  const tx = bindText('textbox', opts.text, () => refreshTexts());
+  exposeText(comp, tx);
+
+  // --- autosize (<textarea>) --------------------------------------------------------------
+  const autosize = node.tagName === 'TEXTAREA' && opts.autosize ? opts.autosize : null;
+  const maxRows = autosize && typeof autosize === 'object' && Number(autosize.maxRows) > 0 ? Number(autosize.maxRows) : 0;
+  const sizeBackup = { height: node.style.height, overflowY: node.style.overflowY, resize: node.style.resize };
+  let lastWidth = -1;
+  let resizeObserver = null;
+  let ownValue = null;
+  function autosizeNow() {
+    if (!autosize || !node.isConnected) return;
+    const cs = getComputedStyle(node);
+    node.style.height = 'auto';
+    const borderY = parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+    const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    const borderBox = cs.boxSizing === 'border-box';
+    let h = node.scrollHeight + (borderBox ? borderY : -padY);
+    let scroll = false;
+    if (maxRows) {
+      const lh = parseFloat(cs.lineHeight) || (parseFloat(cs.fontSize) * 1.2);
+      const cap = lh * maxRows + (borderBox ? padY + borderY : 0);
+      if (h > cap) { h = cap; scroll = true; }
+    }
+    node.style.height = `${Math.ceil(h)}px`;
+    node.style.overflowY = scroll ? 'auto' : 'hidden';
+  }
+  if (autosize) {
+    node.style.resize = 'none';
+    node.classList.add('lk-input--autosize');
+    node.addEventListener('input', autosizeNow);
+    // programmatic `value =` (the component's and the element's own) re-measures too
+    const proto = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(node), 'value');
+    if (proto && proto.set) {
+      ownValue = true;
+      Object.defineProperty(node, 'value', {
+        get() { return proto.get.call(node); },
+        set(v) { proto.set.call(node, v); autosizeNow(); },
+        configurable: true,
+      });
+    }
+    if (typeof ResizeObserver === 'function') {
+      resizeObserver = new ResizeObserver(() => {
+        const w = node.clientWidth;
+        if (w !== lastWidth) { lastWidth = w; autosizeNow(); }
+      });
+      resizeObserver.observe(node);
+    }
+    autosizeNow();
+    requestAnimationFrame(autosizeNow);
+  }
+
+  // --- reveal (password) ----------------------------------------------------------------------
+  function syncReveal() {
+    if (!revealBtn) return;
+    const isPw = inputType === 'password';
+    revealBtn.hidden = !isPw;
+    if (!isPw) revealed = false;
+    node.setAttribute('type', revealed && isPw ? 'text' : inputType);
+    revealBtn.setAttribute('aria-pressed', String(revealed));
+    revealBtn.setAttribute('aria-label', tx.t(revealed ? 'hidePassword' : 'showPassword'));
+    revealBtn.replaceChildren(lkIcon(revealed ? 'eye-off' : 'eye'));
+    affixWrap.classList.toggle('lk-input-affix--has-reveal', isPw);
+  }
+  function setRevealed(next, keepFocus) {
+    if (!revealBtn || inputType !== 'password' || node.disabled) return;
+    const focused = keepFocus || document.activeElement === node;
+    const start = node.selectionStart;
+    const end = node.selectionEnd;
+    revealed = !!next;
+    syncReveal();
+    if (focused) {
+      node.focus();
+      try { node.setSelectionRange(start, end); } catch { /* type switched mid-way */ }
+    }
+  }
+  const onRevealDown = (e) => { e.preventDefault(); }; // keep focus (and caret) in the input
+  const onRevealClick = () => setRevealed(!revealed, document.activeElement === node);
+  if (opts.reveal && node.tagName === 'INPUT') {
+    revealBtn = document.createElement('button');
+    revealBtn.type = 'button';
+    revealBtn.className = 'lk-input__reveal';
+    revealBtn.addEventListener('mousedown', onRevealDown);
+    revealBtn.addEventListener('click', onRevealClick);
+    affixWrap.appendChild(revealBtn);
+    syncReveal();
+  }
+  Object.defineProperty(comp, 'revealed', {
+    get() { return revealed; },
+    set(v) { setRevealed(v, false); },
+    enumerable: true,
+  });
+  function refreshTexts() {
+    if (revealBtn) syncReveal();
+    autosizeNow();
+  }
+  // beforeChange(value, { source: 'change', component, event }) guards the committed change (blur / Enter);
+  // a veto restores the last committed value. (Per-keystroke control: use the native `beforeinput` event.)
+  let committed = node.value;
+  const syncCommitted = () => { committed = node.value; };
+  const onGuardChange = (event) => {
+    const res = guardSync(node, opts, 'change', node.value, { source: 'change', component: comp, event });
+    if (!res.allowed) {
+      event.stopImmediatePropagation();
+      node.value = committed;
+      return;
+    }
+    if (res.payload !== node.value && res.payload != null) node.value = String(res.payload);
+    committed = node.value;
+  };
+  node.addEventListener('focus', syncCommitted);
+  node.addEventListener('change', onGuardChange, true);
   const validation = attachValidation(comp, {
     opts,
+    t: tx.tf,
     getValue: () => node.value,
     label: field.getLabel,
     labels: () => field.labels,
@@ -179,8 +341,30 @@ export function lkTextbox(el, opts = {}) {
   const unbindChange = bindChangeCallbacks(comp, node, opts, () => node.value);
   comp.destroy = function () {
     unbindChange();
+    node.removeEventListener('focus', syncCommitted);
+    node.removeEventListener('change', onGuardChange, true);
+    tx.destroy();
     validation.destroy();
+    if (revealBtn) {
+      revealBtn.removeEventListener('mousedown', onRevealDown);
+      revealBtn.removeEventListener('click', onRevealClick);
+      revealBtn.remove();
+      revealBtn = null;
+      if (revealed) node.setAttribute('type', inputType);
+      affixWrap.classList.remove('lk-input-affix--has-reveal');
+    }
+    if (autosize) {
+      node.removeEventListener('input', autosizeNow);
+      resizeObserver?.disconnect();
+      if (ownValue) delete node.value;
+      node.style.height = sizeBackup.height;
+      node.style.overflowY = sizeBackup.overflowY;
+      node.style.resize = sizeBackup.resize;
+      node.classList.remove('lk-input--autosize');
+      if (!node.getAttribute('style')) node.removeAttribute('style');
+    }
     node.classList.remove('lk-input', 'lk-input--error', 'lk-input--affixed');
+    if (!node.getAttribute('class')) node.removeAttribute('class');
     node.removeAttribute('aria-invalid');
     if (affixWrap.parentNode) {
       affixWrap.parentNode.insertBefore(node, affixWrap);
@@ -229,11 +413,19 @@ export function lkCheckbox(el, opts = {}) {
   comp.toggle = function () { node.checked = !node.checked; };
   comp.focus = (o) => node.focus(o);
 
-  const validation = attachCheckableValidation(comp, node, field, opts);
+  const tx = bindText('checkbox', opts.text);
+  exposeText(comp, tx);
+  const unbindGuard = bindCheckableGuard(comp, node, opts, {
+    revert: () => { node.checked = !node.checked; },
+    replace: (v) => { node.checked = v; },
+  });
+  const validation = attachCheckableValidation(comp, node, field, opts, tx);
   const unbindChange = bindChangeCallbacks(comp, node, opts, () => node.checked);
 
   comp.destroy = function () {
     unbindChange();
+    unbindGuard();
+    tx.destroy();
     validation.destroy();
     node.classList.remove('lk-checkbox', 'lk-input--error');
     node.removeAttribute('aria-invalid');
@@ -277,15 +469,33 @@ export function lkRadio(el, opts = {}) {
   });
   comp.focus = (o) => node.focus(o);
 
+  const tx = bindText('radio', opts.text);
+  exposeText(comp, tx);
   // A radio validates its whole group (same name, same form): the value is the checked one
   const group = () => radioGroup(node);
+  // beforeChange(value, …): a veto re-checks the radio that was selected before (tracked per group)
+  let lastChecked = group().find((r) => r.checked && r !== node) || (node.checked ? node : null);
+  const trackGroup = () => { const c = group().find((r) => r.checked); if (c) lastChecked = c; };
+  const groupEls = group();
+  const onGroupChange = (event) => { if (event.target !== node) trackGroup(); };
+  groupEls.forEach((r) => r.addEventListener('change', onGroupChange));
+  const unbindGuard = bindCheckableGuard(comp, node, opts, {
+    revert: () => {
+      if (lastChecked && lastChecked !== node && lastChecked.isConnected) lastChecked.checked = true;
+      else node.checked = false;
+    },
+    replace: (v) => { node.checked = v; },
+  });
+  const onAllowed = () => { lastChecked = node.checked ? node : lastChecked; };
+  node.addEventListener('change', onAllowed);
   const validation = attachValidation(comp, {
     opts,
+    t: tx.tf,
     getValue: () => group().find((r) => r.checked)?.value ?? null,
     label: field.getLabel,
     labels: () => field.labels,
     required: () => group().some((r) => r.required),
-    requiredMessage: () => 'Please choose an option',
+    requiredMessage: () => tx.t('required'),
     roots: () => group().map((r) => r.closest('.lk-field') || r),
     changeTargets: group(),
     setError: field.setError,
@@ -296,6 +506,10 @@ export function lkRadio(el, opts = {}) {
 
   comp.destroy = function () {
     unbindChange();
+    unbindGuard();
+    node.removeEventListener('change', onAllowed);
+    groupEls.forEach((r) => r.removeEventListener('change', onGroupChange));
+    tx.destroy();
     validation.destroy();
     node.classList.remove('lk-radio', 'lk-input--error');
     node.removeAttribute('aria-invalid');
@@ -355,11 +569,19 @@ export function lkSwitch(el, opts = {}) {
   };
   comp.focus = (o) => node.focus(o);
 
-  const validation = attachCheckableValidation(comp, node, field, opts);
+  const tx = bindText('switch', opts.text);
+  exposeText(comp, tx);
+  const unbindGuard = bindCheckableGuard(comp, node, opts, {
+    revert: () => { node.checked = !node.checked; node.setAttribute('aria-checked', String(node.checked)); },
+    replace: (v) => { node.checked = v; },
+  });
+  const validation = attachCheckableValidation(comp, node, field, opts, tx);
   const unbindChange = bindChangeCallbacks(comp, node, opts, () => node.checked);
 
   comp.destroy = function () {
     unbindChange();
+    unbindGuard();
+    tx.destroy();
     validation.destroy();
     node.removeEventListener('change', onToggle);
     node.classList.remove('lk-switch', 'lk-input--error');

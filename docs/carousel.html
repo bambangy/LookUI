@@ -243,6 +243,17 @@ LookDocs.render('#api', {
     { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
   ],
   returns: { type: 'Object', description: 'The carousel instance with the properties and methods below.' },
+  textNamespace: 'carousel',
+  texts: [
+    { name: 'previous', default: 'Previous slide', description: 'aria-label of the built previous arrow.' },
+    { name: 'next', default: 'Next slide', description: 'aria-label of the built next arrow.' },
+    { name: 'dot', default: 'Go to slide {index}', description: 'aria-label of each built dot (a slide `label` wins).' },
+    { name: 'slide', default: 'Slide {index} of {total}', description: 'aria-label of each slide built from `slides` (a slide `label` wins).' },
+    { name: 'loadError', default: 'Could not load the slides.', description: 'Message when the slide list fails to load and the error has no message. Loading and Retry captions use `common.loading` / `common.retry` (or `loadingText` / `retryText`).' },
+  ],
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange(index, { source, prev, slide, component })', description: 'Runs before the active slide changes - arrows, dots, keys, swipe, autoplay (`source: "autoplay"`; a vetoed tick is skipped) and API calls (`source: "api"`). Return `false` to stay (a swipe snaps back), or a number to go to another slide. `onChange` fires only when allowed.' },
+  ],
 
   options: [
     {

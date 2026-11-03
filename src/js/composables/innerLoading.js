@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Bambang Yudhotomo — LookUI
 import { createPresenceController } from '../helpers/motion.js';
+import { lkI18n } from '../helpers/i18n.js';
+
+lkI18n.define('loading', { label: () => lkI18n.t('common.loading') });
+
+// text option: string | true (default 'Loading…') | () => string — re-evaluated on locale change
+const resolveText = (v) => (typeof v === 'function' ? String(v()) : v === true ? lkI18n.t('loading.label') : v ? String(v) : '');
 
 const EXIT_MS = 360;
 
@@ -70,9 +76,11 @@ export function lkInnerLoading(target, opts = {}) {
     body.appendChild(spinner);
   }
 
+  let labelEl = null;
   if (options.text) {
     const label = document.createElement('div');
-    label.textContent = options.text;
+    label.textContent = resolveText(options.text);
+    labelEl = label;
     label.style.fontSize = 'var(--lk-text-sm)';
     body.appendChild(label);
   }
@@ -86,6 +94,15 @@ export function lkInnerLoading(target, opts = {}) {
 
   panel.appendChild(body);
   overlay.appendChild(panel);
+
+  overlay.setAttribute('role', 'status');
+  const syncLabel = () => {
+    const txt = resolveText(options.text);
+    overlay.setAttribute('aria-label', txt || lkI18n.t('loading.label'));
+    if (labelEl) labelEl.textContent = txt;
+  };
+  syncLabel();
+  const offI18n = lkI18n.onChange(syncLabel);
 
   let visible = false;
   let destroyed = false;
@@ -143,6 +160,7 @@ export function lkInnerLoading(target, opts = {}) {
     hide();
     destroyed = true;
     presence.destroy();
+    offI18n();
 
     if (overlay.parentNode) {
       overlay.parentNode.removeChild(overlay);

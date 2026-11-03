@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Tag input</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Tag input</h1>
+    <p style="opacity: 0.85;">lkTagInput(el, opts) — type and press Enter to turn text into removable chips</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Basic</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="tg-basic" />
+      <input id="tg-sep" />
+    </div>
+    <div id="tg-basic-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+    <p style="margin-top: var(--lk-space-3); color: var(--lk-text-muted); font-size: var(--lk-text-sm);">
+      Enter or comma adds, pasting <code>a, b, c</code> (or one per line) adds all, Backspace on the empty field arms the last tag and a second Backspace removes it.
+    </p>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Limits &amp; validation</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="tg-limits" />
+      <input id="tg-email" />
+    </div>
+    <div id="tg-limits-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">With suggestions</p>
+    <div style="max-width: 32rem;"><input id="tg-source" /></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">States</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="tg-dis" />
+      <input id="tg-ro" />
+      <input id="tg-dense" />
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Form</p>
+    <form id="tg-form" class="lk-card" novalidate>
+      <div class="lk-card__body" style="display: grid; gap: var(--lk-space-4); max-width: 32rem;">
+        <input id="tg-form-tags" name="skills" />
+        <div class="demo-row" style="margin-bottom: 0;">
+          <button class="lk-btn lk-btn--primary" type="submit">Submit</button>
+          <button class="lk-btn lk-btn--ghost" type="reset">Reset</button>
+        </div>
+        <div id="tg-form-out" class="demo-output"></div>
+      </div>
+    </form>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const tags = Look.lkTagInput('#skills', {
+  label: 'Skills',
+  name: 'skills',                       // one hidden input per tag
+  maxTags: 5,
+  separators: ['Enter', ','],           // also 'Tab', ' ', ';' …
+  transform: (t) =&gt; t.toLowerCase(),
+  validateTag: (t) =&gt; /^[\w-]+$/.test(t) || 'Letters, digits and dashes only',
+  source: ['javascript', 'typescript', 'rust'],   // optional suggestions
+  rules: [{ minLength: 1, message: 'Add a skill' }],
+  onChange(value, { source, added, removed }) { console.log(value, source); },
+  onReject(rejected) { console.log(rejected); },   // return false to hide the inline message
+});
+
+tags.value;          // string[]
+tags.add(['css']);
+tags.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkTagInput',
+  textNamespace: 'taginput',
+  validateable: true,
+  kind: 'Component',
+  signature: 'const tags = Look.lkTagInput(inputElement, options);',
+  description: [
+    'Turns a text input into a tag field: the typed text becomes a removable [chip](chip.html) inside a textbox-looking control. The original input stays the typing field (same id, label and focus), its own text is never posted; one **hidden input per tag** carries the form value (like [lkDropdown](dropdown.html) in `multiple` mode). An initial `value="a, b, c"` on the input becomes the first tags.',
+    '**Adding:** Enter and comma add the typed text (`separators`; `Tab`, space or any character also work). Pasting text with separators or new lines adds every piece. **Removing:** the chip button, or Backspace in the empty input: the first press arms (highlights) the last tag, the second removes it; any other key disarms.',
+    'A tag that is rejected (duplicate, `minLength` / `maxLength`, `validateTag`, `maxTags`) is not added: the text stays in the input, a transient message shows under the field and `onReject` fires. With a `source`, an [lkAutocomplete](autocomplete.html) runs on the typing input and a picked suggestion is added as a tag.',
+  ],
+  params: [
+    { name: 'inputElement', type: 'HTMLInputElement | string', description: 'The text input (or selector).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The tag input instance.' },
+  options: [
+    { name: 'value', type: 'string[]', default: "the input's value", description: 'Initial tags (alias `tags`). They go through the same checks as typed ones, silently.' },
+    { name: 'separators', type: 'string[]', default: "['Enter', ',']", description: 'Keys that add the typed text: `\'Enter\'`, `\'Tab\'` or a single character (`\' \'`, `\';\'`). A lone separator on an empty field is ignored (Enter / Tab keep their normal behavior).' },
+    { name: 'addOnBlur', type: 'boolean', default: 'false', description: 'Add the pending text when the input loses focus.' },
+    { name: 'maxTags', type: 'number', default: 'Infinity', description: 'Most tags.' },
+    { name: 'allowDuplicates / caseSensitive', type: 'boolean', default: 'false', description: 'Duplicates are rejected, compared case-insensitively unless `caseSensitive`.' },
+    { name: 'minLength / maxLength', type: 'number', default: '—', description: 'Characters per tag.' },
+    { name: 'validateTag', type: 'Function', default: '—', description: '`(tag) => true | false | \'message\'` (synchronous). `false` rejects with the default message, a string rejects with that message.' },
+    { name: 'transform', type: 'Function', default: '—', description: '`(tag) => string` applied before the checks (lower-case, strip `#`). An empty result drops the tag.' },
+    { name: 'name', type: 'string', default: "the input's name", description: 'Name of the hidden inputs.' },
+    { name: 'placeholder', type: 'string', default: "the input's placeholder", description: 'Shown while there are no tags (falls back to the `placeholder` text).' },
+    { name: 'chipColor', type: 'string', default: '—', description: 'Chip color: primary, secondary, accent, positive, warning, negative, info.' },
+    { name: 'messageDuration', type: 'number', default: '3000', description: 'How long the inline rejection message stays (ms).' },
+    { name: 'source / autocomplete', type: 'Array | lkDataSource | Function / Object', default: '—', description: 'Suggestions (same shapes as [lkAutocomplete](autocomplete.html)); `autocomplete` passes extra options to it (`delay`, `minChars`, `limit`, `template`, `textField`, …).' },
+    { name: 'label / required / readonly / disabled / dense', type: '—', default: 'false', description: 'Standard field options. `required` means at least one tag.' },
+    { name: 'text', type: 'Object', default: '—', description: 'Per-instance text overrides.' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(value, { source, component, added, removed })` — `source` is `\'add\'` (typed), `\'paste\'`, `\'remove\'` (chip / Backspace), `\'clear\'` or `\'api\'` (`add` / `remove`). Assigning `value` is silent.' },
+    { name: 'onReject', type: 'Function', default: '—', description: '`(rejected, { component })` — `rejected` is `[{ tag, reason: "duplicate" | "max" | "minLength" | "maxLength" | "invalid", message }]`. Return `false` to skip the inline message.' },
+  ],
+  guards: [
+    { name: 'beforeAdd', signature: 'beforeAdd(tags, { source, component })', description: 'Runs when tags arrive from typing / paste / `add()`, **before** the checks. Return `false` to ignore them (the typed text stays), a Promise to wait, or a `string[]` to replace the incoming tags. The DOM event `lk:before-add` bubbles from the root.' },
+    { name: 'beforeRemove', signature: 'beforeRemove(tags, { source, component })', description: 'Runs before tags are removed by the chip button / Backspace (`"remove"`), `clear()` (`"clear"`) or `remove()` (`"api"`). Return `false` to keep them or an array to narrow the removal. The DOM event `lk:before-remove` also bubbles from the chips\' own removal guard.' },
+  ],
+  texts: [
+    { name: 'label', default: 'Tags', description: 'Accessible name of the control when there is no label.' },
+    { name: 'placeholder', default: 'Add a tag…', description: 'Placeholder while empty (unless one is set on the input / option).' },
+    { name: 'maxReached', default: { one: 'Maximum of {count} tag', other: 'Maximum of {count} tags' }, description: 'Rejected by `maxTags`.' },
+    { name: 'duplicate', default: '“{tag}” is already added', description: 'Rejected as a duplicate.' },
+    { name: 'invalid', default: '“{tag}” is not a valid tag', description: '`validateTag` returned `false`.' },
+    { name: 'minLength / maxLength', default: 'A tag needs at least {count} characters / A tag can have at most {count} characters', description: 'Per-tag length (plural on `count`).' },
+    { name: 'added / removed', default: 'Added {tag} / Removed {tag}', description: 'Live-region announcements.' },
+    { name: 'required', default: 'Add at least one tag', description: 'Message of the `required` rule. The chip remove button label comes from `common.remove`.' },
+  ],
+  properties: [
+    { name: 'value / tags', type: 'string[]', description: 'Copy of the current tags. Setting it (an array or a comma separated string) is silent.' },
+    { name: 'count', type: 'number', readonly: true, description: 'Number of tags.' },
+    { name: 'inputValue', type: 'string', description: 'The pending (not yet added) text.' },
+    { name: 'autocomplete', type: 'Object | null', readonly: true, description: 'The inner lkAutocomplete when `source` is set.' },
+    { name: 'rootEl / controlEl', type: 'Element', readonly: true, description: 'The `.lk-taginput` root and the textbox-looking control.' },
+    { name: 'label / name / required / readonly / disabled / enabled / hidden', type: '—', description: 'Standard field properties. `el` is the typing input.' },
+  ],
+  methods: [
+    { name: 'add', signature: 'add(tags)', description: 'Adds a tag or an array through the same guard and checks as typing; `onChange` source `\'api\'`.' },
+    { name: 'remove', signature: 'remove(tagOrIndex)', description: 'Removes a tag by text or index.' },
+    { name: 'clear', signature: 'clear()', description: 'Removes every tag.' },
+    { name: 'setError / clearError', signature: 'setError(message) / clearError()', description: 'Field error (see validation).' },
+    { name: 'focus', signature: 'focus()', description: 'Focuses the typing input.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes the chips, hidden inputs, message timer and suggestions and puts the original input back with its attributes and value.' },
+  ],
+  classes: [
+    { name: '.lk-taginput', description: 'Root (`--dense`, `--filled`, `--full`, `--error`, `--readonly`, `--disabled`, `--message`).' },
+    { name: '.lk-taginput__control', description: 'The textbox-looking box (also `.lk-input`).' },
+    { name: '.lk-taginput__chip', description: 'A tag chip; `--pending` is the Backspace-armed one.' },
+    { name: '.lk-taginput__input', description: 'The borderless typing input.' },
+    { name: '.lk-taginput__message', description: 'Transient rejection message.' },
+  ],
+  tokens: [
+    { name: '--lk-primary', default: '#5c6bc0', description: 'Focus ring.' },
+    { name: '--lk-negative', default: '#e53935', description: 'Error border, rejection message and the armed chip.' },
+    { name: '--lk-border / --lk-surface', default: '#d0d0d8 / #f5f5f8', description: 'Control border and the readonly / disabled fill.' },
+  ],
+});
+</script>
+<script>
+  const out = document.getElementById('tg-basic-out');
+  const log = (v, c) => { out.textContent = `${c.source}: ${JSON.stringify(v)}`; };
+  Look.lkTagInput('#tg-basic', { label: 'Tags', value: ['design', 'ui'], name: 'tags', onChange: log });
+  Look.lkTagInput('#tg-sep', { label: 'Separated by space, semicolon or Tab', separators: ['Enter', ' ', ';', 'Tab'], addOnBlur: true, placeholder: 'word word; word…', onChange: log });
+
+  const limOut = document.getElementById('tg-limits-out');
+  Look.lkTagInput('#tg-limits', {
+    label: 'Up to 3 tags, 2–8 characters, lower-cased', maxTags: 3, minLength: 2, maxLength: 8,
+    transform: (t) => t.toLowerCase(),
+    onReject: (r) => { limOut.textContent = 'rejected: ' + r.map((x) => `${x.tag} (${x.reason})`).join(', '); },
+  });
+  Look.lkTagInput('#tg-email', {
+    label: 'E-mails (validated)', separators: ['Enter', ',', ' ', ';'], placeholder: 'name@example.com',
+    validateTag: (t) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(t) || `“${t}” is not an e-mail address`,
+  });
+
+  Look.lkTagInput('#tg-source', {
+    label: 'Languages', placeholder: 'Type to search…',
+    source: ['JavaScript', 'TypeScript', 'Java', 'Kotlin', 'Rust', 'Go', 'Python', 'Ruby', 'Swift', 'C#', 'C++'],
+    autocomplete: { delay: 0 },
+  });
+
+  Look.lkTagInput('#tg-dis', { label: 'Disabled', value: ['one', 'two'], disabled: true });
+  Look.lkTagInput('#tg-ro', { label: 'Read only', value: ['one', 'two'], readonly: true });
+  Look.lkTagInput('#tg-dense', { label: 'Dense', value: ['one', 'two'], dense: true });
+
+  const skills = Look.lkTagInput('#tg-form-tags', { label: 'Skills (at least 2)', required: true, rules: [{ minLength: 2, message: 'Add at least 2 skills' }], validate: true });
+  const formOut = document.getElementById('tg-form-out');
+  document.getElementById('tg-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const r = Look.lkValidation(skills);
+    formOut.textContent = r.hasError ? 'Invalid: ' + JSON.stringify(r.errors) : JSON.stringify(new FormData(e.target).getAll('skills'));
+  });
+  document.getElementById('tg-form').addEventListener('reset', () => { formOut.textContent = ''; });
+</script>
+</body>
+</html>

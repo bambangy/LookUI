@@ -72,3 +72,4 @@ export function lkFocusTrap(containerEl) {
     },
   };
 }
+export { lkSortable } from './sortable.js';

@@ -5,6 +5,12 @@
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { qsa, createElement } from '../core/index.js';
 import { lkIcon } from './icon.js';
+import { guard } from '../helpers/guard.js';
+import { lkI18n, bindText } from '../helpers/i18n.js';
+
+lkI18n.define('rating', {
+  star: { one: '{count} star', other: '{count} stars' },
+});
 
 /**
  * Enhance a rating container with click-to-rate behavior.
@@ -14,6 +20,8 @@ import { lkIcon } from './icon.js';
  * @param {number}  [opts.value]    — initial value (default 0)
  * @param {boolean} [opts.readonly] — disable interaction
  * @param {string}  [opts.symbol]   — star character (default '★')
+ * @param {Object}  [opts.text]    — text overrides (rating.star)
+ * @param {Function} [opts.beforeChange] — (value, { source, component, prev }) => false | value | Promise; veto or replace a user rating (DOM event 'lk:before-change')
  * @param {Function} [opts.onChange] — (value, { source, component, prev }) after a user click
  * @returns {Object}
  */
@@ -28,6 +36,7 @@ export function lkRating(el, opts = {}) {
   let isReadonly = opts.readonly ?? false;
   let items      = qsa('.lk-rating__item', node);
   const created  = items.length === 0;
+  const tx = bindText('rating', opts.text, () => applyLabels());
 
   // Auto-create star items if empty
   if (items.length === 0) {
@@ -36,12 +45,18 @@ export function lkRating(el, opts = {}) {
         class: 'lk-rating__item',
         type: 'button',
         'data-value': String(i),
-        'aria-label': `${i} of ${maxVal}`,
+        'aria-label': tx.t('star', { count: i }),
       }, useIcon ? '' : symbol);
       if (useIcon) btn.appendChild(lkIcon('star-fill'));
       node.appendChild(btn);
     }
     items = qsa('.lk-rating__item', node);
+  }
+
+  // Created star buttons carry a localized label; markup the page supplied is left alone
+  function applyLabels() {
+    if (!created) return;
+    items.forEach((item, i) => item.setAttribute('aria-label', tx.t('star', { count: i + 1 })));
   }
 
   function updateView() {
@@ -63,9 +78,11 @@ export function lkRating(el, opts = {}) {
     const idx = items.indexOf(item);
     if (idx >= 0) {
       const prev = value;
-      value = idx + 1;
-      updateView();
-      if (opts.onChange) opts.onChange(value, { source: 'click', component: comp, prev });
+      guard(node, opts, 'change', idx + 1, { source: 'click', component: comp, prev }, (next) => {
+        value = Math.max(0, Math.min(maxVal, Number(next) || 0));
+        updateView();
+        if (opts.onChange) opts.onChange(value, { source: 'click', component: comp, prev });
+      });
     }
   }
 
@@ -76,6 +93,7 @@ export function lkRating(el, opts = {}) {
   applyBase(comp, node);
 
   Object.defineProperties(comp, {
+    text: { get() { return tx.get(); }, set(v) { tx.set(v); }, enumerable: true },
     value: {
       get() { return value; },
       set(v) { value = Math.max(0, Math.min(maxVal, Number(v) || 0)); updateView(); },
@@ -94,6 +112,7 @@ export function lkRating(el, opts = {}) {
 
   comp.destroy = function () {
     node.removeEventListener('click', onClick);
+    tx.destroy();
     node.classList.remove('lk-rating', 'lk-rating--readonly');
     node.removeAttribute('aria-valuenow');
     node.removeAttribute('aria-valuemax');

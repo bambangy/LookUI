@@ -2,9 +2,18 @@
 // Copyright (c) 2026 Bambang Yudhotomo — LookUI
 // Pagination component factory
 
-import { resolveEl, applyBase, renamedOption } from '../helpers/base.js';
+import { resolveEl, applyBase } from '../helpers/base.js';
 import { createElement } from '../core/index.js';
 import { lkIcon } from './icon.js';
+import { guard } from '../helpers/guard.js';
+import { lkI18n, bindText } from '../helpers/i18n.js';
+
+lkI18n.define('pagination', {
+  previous: 'Previous page',
+  next: 'Next page',
+  page: 'Page {page}',
+  current: 'Page {page} of {total}',
+});
 
 const CHANGE_ANIM_MS = 280;
 const POP_ANIM_MS = 220;
@@ -16,8 +25,9 @@ const POP_ANIM_MS = 220;
  * @param {number} [opts.totalPages] - total number of pages
  * @param {number} [opts.page] - current page (1-based, default 1)
  * @param {number} [opts.maxVisible] - max page buttons visible (default 7)
+ * @param {Object} [opts.text] - text overrides (pagination.previous|next|page|current)
+ * @param {Function} [opts.beforeChange] - (page, { source, component, prev }) => false | page | Promise; veto or replace a user page change (DOM event 'lk:before-change')
  * @param {Function} [opts.onChange] - (page, { source, component, prev }); source 'click' or 'api' (page setter)
- * @param {Function} [opts.onPageChange] - deprecated alias of onChange
  * @returns {Object}
  */
 export function lkPagination(el, opts = {}) {
@@ -27,10 +37,11 @@ export function lkPagination(el, opts = {}) {
   let totalPages = Math.max(1, Math.floor(opts.totalPages ?? 1));
   let page = Math.max(1, Math.min(totalPages, Math.floor(opts.page ?? 1)));
   const maxVis = Math.max(1, Math.floor(opts.maxVisible ?? 7));
-  const onChange = renamedOption(opts, 'onChange', 'onPageChange', 'lkPagination');
+  const onChange = opts.onChange;
 
   let changeTimer = null;
   let popTimer = null;
+  const tx = bindText('pagination', opts.text, () => buildPages());
 
   function clearAnimTimers() {
     if (changeTimer) {
@@ -58,7 +69,8 @@ export function lkPagination(el, opts = {}) {
     const prevBtn = createElement('button', {
       class: 'lk-pagination__link' + (page <= 1 ? ' lk-pagination__link--disabled' : ''),
       type: 'button',
-      'aria-label': 'Previous page',
+      'aria-label': tx.t('previous'),
+      'data-nav': 'prev',
     });
     if (page <= 1) prevBtn.disabled = true;
     prevBtn.appendChild(lkIcon('chevron-left', { size: 'sm' }));
@@ -77,7 +89,8 @@ export function lkPagination(el, opts = {}) {
     const nextBtn = createElement('button', {
       class: 'lk-pagination__link' + (page >= totalPages ? ' lk-pagination__link--disabled' : ''),
       type: 'button',
-      'aria-label': 'Next page',
+      'aria-label': tx.t('next'),
+      'data-nav': 'next',
     });
     if (page >= totalPages) nextBtn.disabled = true;
     nextBtn.appendChild(lkIcon('chevron-right', { size: 'sm' }));
@@ -115,7 +128,7 @@ export function lkPagination(el, opts = {}) {
       class: 'lk-pagination__link' + (p === page ? ' lk-pagination__link--active' : ''),
       type: 'button',
       'data-page': String(p),
-      'aria-label': `Page ${p}`,
+      'aria-label': p === page ? tx.t('current', { page: p, total: totalPages }) : tx.t('page', { page: p }),
       'aria-current': p === page ? 'page' : undefined,
     }, String(p));
     li.appendChild(btn);
@@ -164,6 +177,15 @@ export function lkPagination(el, opts = {}) {
   function goTo(p, source = 'api') {
     const next = Math.max(1, Math.min(totalPages, Math.floor(Number(p) || 1)));
     if (next === page) return;
+    // Only user clicks are guarded; the page setter stays unguarded
+    if (source === 'click') {
+      guard(node, opts, 'change', next, { source, component: comp, prev: page }, (v) => apply(v, source));
+    } else apply(next, source);
+  }
+
+  function apply(p, source) {
+    const next = Math.max(1, Math.min(totalPages, Math.floor(Number(p) || 1)));
+    if (next === page) return;
 
     const direction = next > page ? 'next' : 'prev';
     const prev = page;
@@ -180,9 +202,9 @@ export function lkPagination(el, opts = {}) {
     const btn = e.target.closest('.lk-pagination__link');
     if (!btn || btn.classList.contains('lk-pagination__link--disabled')) return;
 
-    const label = btn.getAttribute('aria-label');
-    if (label === 'Previous page') { goTo(page - 1, 'click'); return; }
-    if (label === 'Next page') { goTo(page + 1, 'click'); return; }
+    const nav = btn.getAttribute('data-nav');
+    if (nav === 'prev') { goTo(page - 1, 'click'); return; }
+    if (nav === 'next') { goTo(page + 1, 'click'); return; }
 
     const p = parseInt(btn.dataset.page, 10);
     if (!Number.isNaN(p)) goTo(p, 'click');
@@ -195,6 +217,7 @@ export function lkPagination(el, opts = {}) {
   applyBase(comp, node);
 
   Object.defineProperties(comp, {
+    text: { get() { return tx.get(); }, set(v) { tx.set(v); }, enumerable: true },
     page: {
       get() { return page; },
       set(v) { goTo(v); },
@@ -214,6 +237,7 @@ export function lkPagination(el, opts = {}) {
 
   comp.destroy = function () {
     clearAnimTimers();
+    tx.destroy();
     node.removeEventListener('click', onClick);
     node.classList.remove('lk-pagination', 'lk-pagination--changing', 'lk-pagination--next', 'lk-pagination--prev');
     // Remove the auto-generated items

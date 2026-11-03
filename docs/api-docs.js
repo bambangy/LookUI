@@ -11,6 +11,8 @@
  *     properties: [{ name, type, readonly, description, examples }],
  *     methods:    [{ name, signature, description, params: [...], returns: { type, description }, examples }],
  *     events:     [{ name, signature, description, args: [...], examples }],
+ *     guards:     [{ name: 'beforeChange', signature, description, payload }],   // overridable before<Action> events (+ DOM event lk:before-<action>)
+ *     texts:      [{ name: 'placeholder.single', default: 'Choose a file…', description }],   // localizable strings (key relative to the component)
  *     classes:    [{ name, description, examples }],      // CSS classes / modifiers
  *     tokens:     [{ name, default, description }],       // CSS custom properties
  *     notes:      ['extra paragraphs'],
@@ -27,6 +29,8 @@
     ['properties', 'Properties'],
     ['methods', 'Methods'],
     ['events', 'Events'],
+    ['guards', 'Overridable events'],
+    ['texts', 'Text keys'],
     ['classes', 'CSS classes'],
     ['tokens', 'CSS variables'],
   ];
@@ -127,7 +131,7 @@
     var head = '';
     var meta = '';
     if (kind === 'methods') head = esc(item.signature || item.name + '()');
-    else if (kind === 'events') head = esc(item.signature || item.name);
+    else if (kind === 'events' || kind === 'guards') head = esc(item.signature || item.name);
     else head = esc(item.name);
 
     if (item.type) meta += '<span class="api-type">' + esc(item.type) + '</span>';
@@ -135,6 +139,7 @@
     if (item.required) meta += '<span class="api-badge api-badge--req">required</span>';
     if (item.readonly) meta += '<span class="api-badge">read-only</span>';
     if (item.since) meta += '<span class="api-badge">since ' + esc(item.since) + '</span>';
+    if (kind === 'guards') meta += '<span class="api-default">DOM event: <code>lk:before-' + esc(String(item.name).replace(/^before/, '').replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()) + '</code></span>';
 
     return '<article class="api-entry" id="' + id + '" data-name="' + esc(item.name).toLowerCase() + '">'
       + '<h4 class="api-entry__name"><a href="#' + id + '" class="api-anchor" aria-label="Link to ' + esc(item.name) + '">#</a><code>' + head + '</code></h4>'
@@ -152,6 +157,13 @@
     return '<table class="api-params"><thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead><tbody>'
       + tokens.map(function (t) {
         return '<tr id="' + slug('tokens', t.name) + '" data-name="' + esc(t.name).toLowerCase() + '" class="api-entry api-entry--row"><td><code>' + esc(t.name) + '</code></td><td><code>' + esc(t.default || '') + '</code></td><td>' + md(t.description || '') + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+
+  function textsTable(spec) {
+    return '<table class="api-params"><thead><tr><th>Key</th><th>Default text</th><th>Description</th></tr></thead><tbody>'
+      + spec.texts.map(function (t) {
+        return '<tr id="' + slug('texts', t.name) + '" data-name="' + esc(t.name).toLowerCase() + '" class="api-entry api-entry--row"><td><code>' + esc(spec.textNamespace ? spec.textNamespace + '.' + t.name : t.name) + '</code></td><td><code>' + esc(typeof t.default === 'object' ? JSON.stringify(t.default) : t.default) + '</code></td><td>' + md(t.description || '') + '</td></tr>';
       }).join('') + '</tbody></table>';
   }
 
@@ -209,6 +221,22 @@
     ],
   };
 
+  // Specs with `texts` get the shared `text` option; specs with `guards` document the DOM events
+  function withCustomization(spec) {
+    if (spec.noTextOption || (!(spec.texts && spec.texts.length) && !spec.textNamespace)) return spec;
+    var out = {};
+    Object.keys(spec).forEach(function (k) { out[k] = spec[k]; });
+    var own = (spec.options || []).slice();
+    if (!own.some(function (o) { return o.name === 'text'; })) {
+      own.push({
+        name: 'text', type: 'Object', default: '{}',
+        description: 'Overrides this component\'s texts for one instance: `{ "key": "text" }` with keys from [Text keys](#api-section-texts) (relative to `' + (spec.textNamespace || 'the component') + '.`, or absolute for shared keys such as `common.remove`). A value is a string with `{name}` placeholders, a plural object `{ one, other }` or a function `(params) => string`. Assignable at runtime (`component.text = {...}`). Language-wide changes belong in `Look.i18n` — see the [localization guide](localization.html).',
+      });
+    }
+    out.options = own;
+    return out;
+  }
+
   function withValidation(spec) {
     if (!spec.validateable) return spec;
     var out = {};
@@ -224,7 +252,7 @@
   function render(target, spec) {
     var root = typeof target === 'string' ? document.querySelector(target) : target;
     if (!root) return;
-    spec = withValidation(spec);
+    spec = withCustomization(withValidation(spec));
     root.classList.add('api-docs');
 
     var present = SECTIONS.filter(function (s) { return spec[s[0]] && spec[s[0]].length; });
@@ -249,7 +277,7 @@
 
     var body = present.map(function (s) {
       var key = s[0];
-      var inner = key === 'tokens' ? tokensTable(spec.tokens) : spec[key].map(function (it) { return entry(key, it); }).join('');
+      var inner = key === 'tokens' ? tokensTable(spec.tokens) : key === 'texts' ? textsTable(spec) : spec[key].map(function (it) { return entry(key, it); }).join('');
       return '<section class="api-section" id="api-section-' + key + '" data-group="' + key + '"><h3 class="api-section__title">' + s[1] + '</h3>' + inner + '</section>';
     }).join('');
 

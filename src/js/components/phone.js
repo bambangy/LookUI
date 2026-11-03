@@ -30,6 +30,9 @@
  * @param {boolean} [opts.validate]        — validate when focus leaves the field
  * @param {string}  [opts.invalidMessage='Enter a valid phone number']
  * @param {Function} [opts.onChange]       — (value, { source, component, country, dial, number, valid }) => void
+ * @param {Function} [opts.beforeChange]   — (value, { source: 'input'|'country', component, country, dial, number, valid }) guard; false reverts the digits / the previous country
+ * @param {Object}  [opts.text]            — text overrides (Look.i18n keys 'phone.*'); explicit searchPlaceholder / invalidMessage win
+ *   Country names follow Look.i18n.locale (Intl.DisplayNames) unless you pass your own `countries`; add 'phone.country.<CODE>' texts to override one.
  * @returns {Object}
  */
 
@@ -37,6 +40,15 @@ import { resolveEl, applyBase } from '../helpers/base.js';
 import { wrapField } from '../helpers/field.js';
 import { lkDropdown } from './dropdown.js';
 import { attachValidation } from '../helpers/validation.js';
+import { lkI18n, bindText } from '../helpers/i18n.js';
+import { guardSync } from '../helpers/guard.js';
+
+lkI18n.define('phone', {
+  countryLabel: 'Country code',
+  countryPlaceholder: '+',
+  searchPlaceholder: 'Search country or code…',
+  invalid: 'Enter a valid phone number',
+});
 
 const COUNTRIES = [
   ['ID', 'Indonesia', '62'], ['MY', 'Malaysia', '60'], ['SG', 'Singapore', '65'], ['TH', 'Thailand', '66'],
@@ -90,10 +102,29 @@ export function lkPhone(el, opts = {}) {
     readonly: false,
     disabled: false,
     dense: false,
-    searchPlaceholder: 'Search country or code…',
     onChange: null,
     ...opts,
   };
+
+  let built = false;
+  const tx = bindText('phone', opts.text, () => refreshTexts());
+  const customCountries = Array.isArray(opts.countries);
+  const searchText = () => (opts.searchPlaceholder != null ? opts.searchPlaceholder : tx.t('searchPlaceholder'));
+  const invalidText = () => (opts.invalidMessage != null ? opts.invalidMessage : tx.t('invalid'));
+
+  // Display name of a country in the active locale (own `countries` keep their names)
+  function localName(c) {
+    if (lkI18n.has(`phone.country.${c.code}`)) return tx.t(`country.${c.code}`);
+    if (customCountries && c.name) return c.name;
+    const base = String(lkI18n.locale).split('-')[0];
+    if (base !== 'en') {
+      try {
+        const n = new Intl.DisplayNames([lkI18n.locale], { type: 'region' }).of(c.code);
+        if (n && n !== c.code) return n;
+      } catch { /* unsupported locale / code: keep the English name */ }
+    }
+    return c.name || c.code;
+  }
 
   // --- Countries ------------------------------------------------------------
 
@@ -198,7 +229,7 @@ export function lkPhone(el, opts = {}) {
     if (f) frag.appendChild(f);
     const name = document.createElement('span');
     name.className = 'lk-phone__option-name';
-    name.textContent = item.country.name;
+    name.textContent = item.label;
     const dial = document.createElement('span');
     dial.className = 'lk-phone__option-dial';
     dial.textContent = `+${item.country.dial}`;
@@ -218,7 +249,7 @@ export function lkPhone(el, opts = {}) {
   }
 
   function toItems() {
-    return countries.map((c) => ({ value: c.code, label: c.name, dial: c.dial, dialText: `+${c.dial}`, country: c }));
+    return countries.map((c) => ({ value: c.code, label: localName(c), dial: c.dial, dialText: `+${c.dial}`, country: c }));
   }
 
   const dropdown = lkDropdown(select, {
@@ -226,24 +257,25 @@ export function lkPhone(el, opts = {}) {
     value: country?.code ?? null,
     name: options.countryName || null,
     useInput: true,
-    searchPlaceholder: options.searchPlaceholder,
+    text: {
+      searchPlaceholder: () => searchText(),
+      placeholder: () => tx.t('countryPlaceholder'),
+    },
     searchFields: ['label', 'value', 'dial', 'dialText'],
     template: optionTemplate,
     selectedTemplate,
     panelWidth: 280,
     panelClass: 'lk-phone__panel',
-    placeholder: '+',
     onChange(code) {
       const next = findCountry(code);
       if (!next || next === country) return;
       country = next;
       applyLimits();
-      sync(true, 'country');
-      input.focus();
+      if (sync(true, 'country')) input.focus();
     },
   });
   dropdown.el.classList.add('lk-phone__country');
-  dropdown.el.setAttribute('aria-label', 'Country code');
+  dropdown.el.setAttribute('aria-label', tx.t('countryLabel'));
 
   // --- Value ----------------------------------------------------------------
 
@@ -276,13 +308,34 @@ export function lkPhone(el, opts = {}) {
   let lastValue = null;
   let validation = null; // set once the component object exists
   // source: 'input' (typing / paste) | 'country' (picked in the dropdown)
+  let lastText = input.value;   // last committed digits text / country (restored when beforeChange vetoes)
+  let lastCountry = country;
   function sync(emit, source = 'input') {
-    const v = e164();
+    let v = e164();
+    if (emit && v !== lastValue) {
+      const res = guardSync(input, options, 'change', v, { source, component: comp, ...info() });
+      if (!res.allowed) {
+        country = lastCountry;
+        if (country) dropdown.value = country.code;
+        input.value = lastText;
+        applyLimits();
+        hidden.value = lastValue ?? '';
+        group.dataset.country = country?.code ?? '';
+        return false;
+      }
+      if (typeof res.payload === 'string' && res.payload !== v) { setValue(res.payload, false); v = e164(); }
+    }
     hidden.value = v;
     group.dataset.country = country?.code ?? '';
+    lastText = input.value;
+    lastCountry = country;
     if (emit) validation?.changed();
-    if (emit && v !== lastValue && typeof options.onChange === 'function') options.onChange(v, { source, component: comp, ...info() });
+    if (emit && v !== lastValue && typeof options.onChange === 'function') {
+      lastValue = v;
+      options.onChange(v, { source, component: comp, ...info() });
+    }
     lastValue = v;
+    return true;
   }
 
   function applyLimits() {
@@ -448,21 +501,39 @@ export function lkPhone(el, opts = {}) {
   };
   comp.refreshLabels = field.refreshLabels;
   comp.focus = (o) => input.focus(o);
+  Object.defineProperty(comp, 'text', {
+    get() { return tx.get(); },
+    set(v) { tx.set(v); },
+    enumerable: true,
+    configurable: true,
+  });
+
+  // Locale switch / comp.text = …: country names, labels and the inner dropdown's texts re-render, state is kept
+  function refreshTexts() {
+    if (!built) return;
+    dropdown.el.setAttribute('aria-label', tx.t('countryLabel'));
+    dropdown.text = dropdown.text;
+    dropdown.items = toItems();
+    dropdown.value = country?.code ?? null;
+  }
+  built = true;
 
   validation = attachValidation(comp, {
     opts,
+    t: tx.tf,
     getValue: () => e164(),
     label: field.getLabel,
     labels: () => field.labels,
     required: () => input.required,
     roots: () => [group, dropdown.panelEl],
     isOpen: () => dropdown.isOpen,
-    builtinRules: [() => (!nationalDigits() || isValid() || options.invalidMessage || 'Enter a valid phone number')],
+    builtinRules: [() => (!nationalDigits() || isValid() || invalidText())],
     setError: comp.setError,
     clearError: comp.clearError,
   });
 
   comp.destroy = function () {
+    tx.destroy();
     validation.destroy();
     input.removeEventListener('input', onInput);
     input.removeEventListener('paste', onPaste);

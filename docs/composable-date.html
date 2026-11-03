@@ -109,6 +109,7 @@ Look.lkDate('#meeting', { time: true, timeFormat: 24, minuteStep: 15, displayFor
 <script>
 LookDocs.render('#api', {
   name: 'lkDate',
+  textNamespace: 'date',
   kind: 'Composable',
   signature: [
     'const picker = Look.lkDate(target, options);',
@@ -320,7 +321,7 @@ LookDocs.render('#api', {
     },
     { name: 'seconds', type: 'boolean', default: 'false', description: 'Time mode: show a seconds select (otherwise seconds keep their value from `value`, or 0).' },
     { name: 'minuteStep', type: 'number', default: '1', description: 'Time mode: minute list step (1–30), e.g. `15` → 00, 15, 30, 45. A value between steps is kept and listed.' },
-    { name: 'nowText', type: 'string', default: "'Now'", description: 'Label of the time-mode button that picks the current day and time.' },
+    { name: 'nowText', type: 'string', default: "'Now'", description: 'Label of the time-mode button that picks the current day and time. Wins over the `date.now` text.' },
     {
       name: 'okText', type: 'string', default: "'OK'",
       description: 'Label of the time-mode commit button (disabled until a day is picked).',
@@ -338,7 +339,7 @@ LookDocs.render('#api', {
       ],
     },
     {
-      name: 'locale', type: 'string', default: "'en-US'",
+      name: 'locale', type: 'string', default: "Look.i18n.locale",
       description: 'BCP 47 locale passed to `Intl.DateTimeFormat` for weekday names, month names, the default `display()` text and the MMMM / MMM / dddd / ddd format tokens.',
       examples: [
         { title: 'Different locales', run: true, code: `
@@ -390,6 +391,27 @@ LookDocs.render('#api', {
     { name: 'target', type: 'Element | string', description: 'Trigger, when the options object is the only argument: `Look.lkDate({ target: \'#due\', range: true })`.' },
   ],
 
+  guards: [
+    { name: 'beforeOpen', signature: 'beforeOpen({ source, component })', description: 'Runs before the panel opens (trigger click, `open()`, `toggle()`). Return `false` or a Promise resolving `false` to keep it closed.' },
+    { name: 'beforeClose', signature: 'beforeClose(reason, { source, component })', description: 'Runs before the panel closes (`reason`: `select`, `cancel`, `outside`, `escape`, `toggle`, or what you pass to `close()`). Return `false` to keep it open.' },
+    { name: 'beforeChange', signature: 'beforeChange(value, { source, component })', description: 'Runs when the user picks a day (`source: "pick"`), starts / ends a range (`"range-start"` / `"range-end"`) or `setValue()` is called (`"api"`). `value` is the new Date (or `[start, end]`). Return `false` to leave the picker unchanged, or another Date / array to replace it. Not used for time mode, where picking a day only edits the draft, nor for the silent `value =` setter.' },
+    { name: 'beforeConfirm', signature: 'beforeConfirm(value, { source, component })', description: 'Time mode: runs when OK / Enter commits the draft (`source: "confirm"`). Return `false` to keep the panel open with the draft, or a Date to commit that instead.' },
+  ],
+  texts: [
+    { name: 'prevMonth', default: 'Previous month', description: 'Aria label of the previous-month arrow.' },
+    { name: 'nextMonth', default: 'Next month', description: 'Aria label of the next-month arrow.' },
+    { name: 'month', default: 'Month', description: 'Aria label of the month select.' },
+    { name: 'year', default: 'Year', description: 'Aria label of the year select.' },
+    { name: 'hour', default: 'Hour', description: 'Aria label of the hour select (time mode).' },
+    { name: 'minute', default: 'Minute', description: 'Aria label of the minute select.' },
+    { name: 'second', default: 'Second', description: 'Aria label of the second select.' },
+    { name: 'meridiem', default: 'AM or PM', description: 'Aria label of the AM / PM toggle group.' },
+    { name: 'am', default: 'AM', description: 'Caption of the AM button.' },
+    { name: 'pm', default: 'PM', description: 'Caption of the PM button.' },
+    { name: 'now', default: 'Now', description: 'Caption of the Now button (the `nowText` option wins).' },
+    { name: 'pickDay', default: 'Pick a day', description: 'Footer summary while no day is chosen (time mode).' },
+    { name: 'common.ok / common.cancel', default: 'OK / Cancel', description: 'Captions of the OK and Cancel buttons (the `okText` / `cancelText` options win). Month and weekday names, the default display text and day labels come from `Intl` for the active locale and re-render live.' },
+  ],
   properties: [
     {
       name: 'value', type: 'Date | null | [Date|null, Date|null]',

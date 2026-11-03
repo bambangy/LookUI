@@ -136,6 +136,13 @@ LookDocs.render('#api', {
     { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
   ],
   returns: { type: 'Object', description: 'The splitter instance with the properties and methods below.' },
+  textNamespace: 'splitter',
+  texts: [
+    { name: 'resize', default: 'Resize', description: 'aria-label of each handle that has none.' },
+  ],
+  guards: [
+    { name: 'beforeResize', signature: 'beforeResize({ source, component, handle, index })', description: 'Evaluated synchronously when a drag starts on a handle. Return `false` to prevent that drag. The `sizes` setter is not guarded.' },
+  ],
 
   options: [
     {
@@ -219,6 +226,7 @@ LookDocs.render('#api', {
   ],
 
   notes: [
+    'The splitter has no collapse / expand interaction, so there is no `beforeToggle`.',
     '**No events:** there is no change callback. Read `splitter.sizes` after a `pointerup` on the container if you need to persist the layout (e.g. with [lkStorage](composable-storage.html)).',
     '**No keyboard support:** handles are not focusable and arrow keys do nothing; dragging requires a pointer (mouse, pen or touch).',
     '**Nesting:** a pane may itself be a `.lk-splitter` (see the IDE demo above). Create one lkSplitter per container.',

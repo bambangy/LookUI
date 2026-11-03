@@ -2,6 +2,10 @@
 // Copyright (c) 2026 Bambang Yudhotomo — LookUI
 import { lkIcon } from '../components/icon.js';
 import { createPresenceController, readDurationMs } from '../helpers/motion.js';
+import { lkI18n, bindText } from '../helpers/i18n.js';
+import { guard } from '../helpers/guard.js';
+
+lkI18n.define('toast', { dismiss: 'Dismiss' });
 
 const CONTAINER_PREFIX = 'lk-toast-container';
 const EXIT_MS = 320;
@@ -64,6 +68,9 @@ function getContainer(position, zIndex) {
  * @param {string} [opts.actionText] - text for optional action link
  * @param {Function} [opts.onAction] - (toast) when the action button is clicked
  * @param {Function} [opts.onClose] - (reason, toast) on close
+ * @param {Function} [opts.beforeClose] - guard (reason, { source, component }); false keeps the toast (also vetoes the auto-close timeout)
+ * @param {Function} [opts.beforeAction] - guard ({ source, component }); false ignores the action click
+ * @param {Object} [opts.text] - per-instance text overrides ('dismiss' = close button aria-label)
  * @returns {{ el: Element, close: Function, update: Function, isOpen: boolean }}
  */
 export function lkToast(opts = {}) {
@@ -79,10 +86,14 @@ export function lkToast(opts = {}) {
     actionText: '',
     onAction: null,
     onClose: null,
+    beforeClose: null,
+    beforeAction: null,
+    text: null,
     ...opts,
   };
 
   const container = getContainer(options.position, options.zIndex);
+  const tx = bindText('toast', options.text, () => refresh());
 
   // --- Root element ---
   const toast = document.createElement('div');
@@ -141,7 +152,7 @@ export function lkToast(opts = {}) {
     closeBtn = document.createElement('button');
     closeBtn.type = 'button';
     closeBtn.className = 'lk-toast__close';
-    closeBtn.setAttribute('aria-label', 'Dismiss');
+    closeBtn.setAttribute('aria-label', tx.t('dismiss'));
     closeBtn.appendChild(lkIcon('close', { size: 'sm' }));
     toast.appendChild(closeBtn);
   }
@@ -189,12 +200,22 @@ export function lkToast(opts = {}) {
     }
   }
 
-  function close(reason = 'close') {
+  function refresh() {
+    if (closeBtn) closeBtn.setAttribute('aria-label', tx.t('dismiss'));
+  }
+
+  function close(reason = 'close', source = 'api') {
+    if (!open) return;
+    guard(toast, options, 'close', reason, { source, component: instance }, (next) => doClose(typeof next === 'string' ? next : reason));
+  }
+
+  function doClose(reason) {
     if (!open) return;
     open = false;
     closeReason = reason;
 
     clearAutoTimer();
+    tx.destroy();
 
     if (actionBtn) actionBtn.removeEventListener('click', onActionClick);
     if (closeBtn) closeBtn.removeEventListener('click', onCloseClick);
@@ -202,11 +223,13 @@ export function lkToast(opts = {}) {
     presence.hide();
   }
 
-  function onCloseClick() { close('dismiss'); }
+  function onCloseClick() { close('dismiss', 'user'); }
 
   function onActionClick() {
-    if (typeof options.onAction === 'function') options.onAction(instance);
-    close('action');
+    guard(toast, options, 'action', undefined, { source: 'user', component: instance }, () => {
+      if (typeof options.onAction === 'function') options.onAction(instance);
+      close('action', 'user');
+    });
   }
 
   function update(next = {}) {
@@ -228,7 +251,7 @@ export function lkToast(opts = {}) {
   presence.show();
 
   if (options.duration > 0) {
-    timer = setTimeout(() => close('timeout'), options.duration);
+    timer = setTimeout(() => close('timeout', 'timeout'), options.duration);
   }
 
   const instance = {
@@ -236,6 +259,8 @@ export function lkToast(opts = {}) {
     close,
     update,
     get isOpen() { return open; },
+    get text() { return tx.get(); },
+    set text(v) { tx.set(v); },
   };
 
   return instance;

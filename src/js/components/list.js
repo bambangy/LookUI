@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Bambang Yudhotomo — LookUI
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { setCollapsibleState } from '../helpers/motion.js';
+import { guard } from '../helpers/guard.js';
 
 function resolveBranchTarget(root, target) {
   if (target == null) return null;
@@ -42,7 +43,9 @@ function createBranch(item, submenu, trigger, depth) {
  * @param {Object} [opts]
  * @param {boolean} [opts.accordion=true] - only one submenu open per nesting level
  * @param {boolean} [opts.collapseSiblings=true] - alias for accordion behavior
+ * @param {Function} [opts.beforeToggle] - (open, { item, depth, source, component }) => false | Promise; veto expanding / collapsing a branch (source 'click' | 'keyboard' | 'api'; DOM event 'lk:before-toggle'). Siblings closed by the accordion and the initial state are not guarded.
  * @param {Function} [opts.onToggle] - callback({ item, open, depth, origin, component })
+ * (this component has no user-facing text of its own, so it has no i18n keys)
  * @returns {Object}
  */
 export function lkList(el, opts = {}) {
@@ -145,6 +148,13 @@ export function lkList(el, opts = {}) {
     }
   }
 
+  // User-driven / API toggles ask beforeToggle first
+  function requestBranchOpen(branch, isOpen, origin = 'api') {
+    guard(node, opts, 'toggle', isOpen, { source: origin, item: branch.item, depth: branch.depth, component: comp }, (next) => {
+      setBranchOpen(branch, !!next, origin);
+    });
+  }
+
   function toggleBranch(target, origin = 'api') {
     const branchItem = resolveBranchTarget(node, target);
     if (!branchItem) return false;
@@ -152,7 +162,7 @@ export function lkList(el, opts = {}) {
     const branch = branchByItem.get(branchItem);
     if (!branch) return false;
 
-    setBranchOpen(branch, !branch.open, origin);
+    requestBranchOpen(branch, !branch.open, origin);
     return true;
   }
 
@@ -163,7 +173,7 @@ export function lkList(el, opts = {}) {
     const branch = branchByItem.get(branchItem);
     if (!branch) return false;
 
-    setBranchOpen(branch, true, 'api');
+    requestBranchOpen(branch, true, 'api');
     return true;
   }
 
@@ -174,12 +184,12 @@ export function lkList(el, opts = {}) {
     const branch = branchByItem.get(branchItem);
     if (!branch) return false;
 
-    setBranchOpen(branch, false, 'api');
+    requestBranchOpen(branch, false, 'api');
     return true;
   }
 
   function closeAll() {
-    branches.forEach((branch) => setBranchOpen(branch, false, 'api'));
+    branches.forEach((branch) => requestBranchOpen(branch, false, 'api'));
   }
 
   node.querySelectorAll('.lk-list-submenu').forEach((submenu) => {

@@ -205,18 +205,23 @@
  * .lk-modal    { --lk-modal-enter-duration: 320ms; --lk-modal-exit-duration: 200ms; }
  */
 
-/* ===== Dark theme (optional) ===========================================
- * LookUI has no built-in dark mode: a dark theme is a set of overrides.
+/* ===== Dark theme ======================================================
+ * LookUI ships a dark palette: it activates under [data-theme="dark"] (on <html> or on any
+ * container). Use Look.lkTheme() to switch light / dark / system and remember the choice, or set
+ * the attribute yourself. <html data-theme="system"> follows the OS without any JavaScript.
  *
- * [data-theme="dark"] {
- *   --lk-bg:            #121218;
- *   --lk-bg-subtle:     #1b1b24;
+ * To adjust the dark palette, override the same keys under the dark selector:
+ *
+ * :root[data-theme="dark"] {
+ *   --lk-primary:       #4db6ac;
+ *   --lk-bg:            #0d0d12;
+ *   --lk-bg-subtle:     #16161d;
  *   --lk-surface:       #22222d;
  *   --lk-text:          #ececf1;
- *   --lk-text-muted:    #a0a0ad;
+ *   --lk-text-muted:    #a3a3b2;
  *   --lk-border:        #34343f;
- *   --lk-border-strong: #4a4a57;
- *   --lk-secondary-dark: #cfd8dc;
- *   --lk-shadow-color:  0 0 0;
+ *   --lk-border-strong: #5a5a6c;
  * }
+ *
+ * Guide: https://bambangy.github.io/LookUI/docs/composable-theme.html
  */

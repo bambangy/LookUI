@@ -34,6 +34,9 @@
  * @param {boolean} [opts.hidden]
  * @param {boolean} [opts.disabled]
  * @param {Function} [opts.onAction]   — (item, { type, value, event, detail, component }) for button/menu clicks and field changes
+ * @param {Function} [opts.beforeAction] — (item, { type, value, event, detail, source, component }) => false | Promise — veto a click / change / search
+ *                     before anything happens (also the DOM event 'lk:before-action'); item.beforeClick / beforeChange / beforeSearch run first
+ * @param {Object}  [opts.text]        — text overrides (see Look.i18n, namespace 'toolbar'); explicit item placeholders win
  *
  * Item callbacks (ctx.component = the toolbar, ctx.control = the embedded LookUI component, if any):
  *   onClick(event, { item, component })                         — button, menu item
@@ -44,13 +47,20 @@
  * search, switch, checkbox, chip, date, custom (and plain Nodes).
  */
 
-import { applyBase, deprecate } from '../helpers/base.js';
+import { applyBase } from '../helpers/base.js';
 import { lkIcon } from '../components/icon.js';
 import { lkDropdown } from '../components/dropdown.js';
 import { lkTextbox, lkCheckbox, lkSwitch } from '../components/form.js';
 import { lkChip } from '../components/chip.js';
 import { lkPopupProxy } from './popupProxy.js';
 import { lkDate } from './date.js';
+import { lkI18n, bindText } from '../helpers/i18n.js';
+import { guard } from '../helpers/guard.js';
+
+lkI18n.define('toolbar', {
+  'search.placeholder': 'Search…',
+  'date.placeholder': 'Pick a date',
+});
 
 const BTN_COLORS = ['primary', 'secondary', 'positive', 'negative', 'warning', 'info'];
 const VARIANTS = ['primary', 'dark', 'flat'];
@@ -115,6 +125,20 @@ export function lkToolbar(targetOrOpts, maybeOpts) {
     onAction: null,
     ...opts,
   };
+
+  const retexts = [];   // fns that re-apply localized default texts
+  const tx = bindText('toolbar', opts.text, () => refreshTexts());
+  function refreshTexts() {
+    if (destroyed) return;
+    retexts.slice().forEach((fn) => fn());
+  }
+  function addRetext(rec, fn) {
+    retexts.push(fn);
+    rec.cleanup.push(() => {
+      const i = retexts.indexOf(fn);
+      if (i > -1) retexts.splice(i, 1);
+    });
+  }
 
   // ---------------------------------------------------------------------------
   // Root
@@ -191,6 +215,20 @@ export function lkToolbar(targetOrOpts, maybeOpts) {
 
   function itemCtx(rec, source, event = null, extra) {
     return { source, item: rec.item, component: api, control: rec.comp ?? null, event, ...extra };
+  }
+
+  // Two-stage veto for a user action: the item's own before<Name> (beforeClick / beforeChange /
+  // beforeSearch), then the toolbar-level beforeAction. `proceed(payload)` runs when both allow it;
+  // `revert()` restores the control's UI when either vetoes (immediately or after a Promise).
+  function gate(el, item, name, payload, itemContext, action, proceed, revert) {
+    const watch = (r) => {
+      if (r === false) { if (revert) revert(); } else if (r && typeof r.then === 'function') {
+        r.then((ok) => { if (ok === false && revert) revert(); });
+      }
+    };
+    watch(guard(el, item, name, payload, itemContext, (p1) => {
+      watch(guard(root, options, 'action', item, { ...action, component: api }, () => proceed(p1)));
+    }));
   }
 
   // ---------------------------------------------------------------------------
@@ -297,13 +335,18 @@ export function lkToolbar(targetOrOpts, maybeOpts) {
     rec.setDisabled = (off) => { btn.disabled = off; };
 
     function onClick(e) {
-      if (item.group) {
-        if (!item.active) rec.setActive(true);
-      } else if (item.toggle) {
-        rec.setActive(!item.active);
-      }
-      if (typeof item.onClick === 'function') item.onClick(e, { item, component: api });
-      fireAction(item, 'click', { event: e, value: item.toggle || item.group ? !!item.active : undefined });
+      const next = item.group ? true : (item.toggle ? !item.active : undefined);
+      gate(btn, item, 'click', e, { item, component: api, source: 'click' },
+        { type: 'click', value: next, event: e, source: 'click' },
+        () => {
+          if (item.group) {
+            if (!item.active) rec.setActive(true);
+          } else if (item.toggle) {
+            rec.setActive(!item.active);
+          }
+          if (typeof item.onClick === 'function') item.onClick(e, { item, component: api });
+          fireAction(item, 'click', { event: e, value: item.toggle || item.group ? !!item.active : undefined });
+        });
     }
     btn.addEventListener('click', onClick);
     rec.cleanup.push(() => btn.removeEventListener('click', onClick));
@@ -393,8 +436,12 @@ export function lkToolbar(targetOrOpts, maybeOpts) {
       addClasses(b, mi.className);
       b.addEventListener('click', (e) => {
         proxy?.hide('select');
-        if (typeof mi.onClick === 'function') mi.onClick(e, { item: mi, component: api });
-        fireAction(mi, 'click', { event: e });
+        gate(b, mi, 'click', e, { item: mi, component: api, source: 'click' },
+          { type: 'click', event: e, source: 'click' },
+          () => {
+            if (typeof mi.onClick === 'function') mi.onClick(e, { item: mi, component: api });
+            fireAction(mi, 'click', { event: e });
+          });
       });
       entries.push(b);
       menu.appendChild(b);
@@ -489,12 +536,20 @@ export function lkToolbar(targetOrOpts, maybeOpts) {
     const o = { ...(item.options || {}) };
     if (o.label == null && item.text) o.ariaLabel = item.text;
     const userChange = o.onChange;
+    let lastValue;
     o.onChange = (value, ctx) => {
-      if (typeof userChange === 'function') userChange(value, ctx);
-      if (typeof item.onChange === 'function') item.onChange(value, itemCtx(rec, ctx.source, null, { detail: ctx }));
-      fireAction(item, 'change', { value, detail: ctx });
+      gate(wrap, item, 'change', value, itemCtx(rec, ctx.source, null, { detail: ctx }),
+        { type: 'change', value, detail: ctx, source: ctx.source },
+        (v) => {
+          lastValue = rec.comp.value;
+          if (typeof userChange === 'function') userChange(v, ctx);
+          if (typeof item.onChange === 'function') item.onChange(v, itemCtx(rec, ctx.source, null, { detail: ctx }));
+          fireAction(item, 'change', { value: v, detail: ctx });
+        },
+        () => { rec.comp.value = lastValue; }); // vetoed: put the previous selection back
     };
     rec.comp = lkDropdown(anchor, o);
+    lastValue = rec.comp.value;
     const trig = wrap.querySelector('.lk-dropdown__trigger');
     if (trig && !trig.hasAttribute('aria-label') && (item.ariaLabel || item.text || item.title)) {
       trig.setAttribute('aria-label', item.ariaLabel || item.text || item.title);
@@ -508,11 +563,18 @@ export function lkToolbar(targetOrOpts, maybeOpts) {
     const wrap = fieldContainer(rec, search ? 'search' : 'textbox');
     const input = document.createElement('input');
     input.type = search ? 'search' : (item.options?.type || 'text');
-    const ph = item.placeholder ?? item.options?.placeholder;
-    if (ph) input.placeholder = ph;
+    const explicitPh = item.placeholder ?? item.options?.placeholder;
+    const phText = () => explicitPh || (search ? tx.t('search.placeholder') : '');
+    const ariaText = () => item.ariaLabel || item.text || phText() || item.title;
+    const paintTexts = () => {
+      const ph = phText();
+      if (ph) input.placeholder = ph;
+      const aria = ariaText();
+      if (aria && !item.options?.label) input.setAttribute('aria-label', aria);
+    };
+    paintTexts();
+    if (!explicitPh && search) addRetext(rec, paintTexts);
     if (item.value != null) input.value = item.value;
-    const aria = item.ariaLabel || item.text || ph || item.title;
-    if (aria && !item.options?.label) input.setAttribute('aria-label', aria);
     wrap.appendChild(input);
     const o = { ...(item.options || {}) };
     delete o.placeholder;
@@ -522,12 +584,18 @@ export function lkToolbar(targetOrOpts, maybeOpts) {
     rec.inputEl = input;
 
     let timer = null;
+    let lastValue = input.value;
     function emitSearch(e) {
       clearTimeout(timer);
       timer = null;
       const source = e ? 'enter' : 'debounce';
-      if (typeof item.onSearch === 'function') item.onSearch(input.value, itemCtx(rec, source, e));
-      fireAction(item, 'search', { value: input.value, event: e });
+      const value = input.value;
+      gate(input, item, 'search', value, itemCtx(rec, source, e),
+        { type: 'search', value, event: e, source },
+        (v) => {
+          if (typeof item.onSearch === 'function') item.onSearch(v, itemCtx(rec, source, e));
+          fireAction(item, 'search', { value: v, event: e });
+        });
     }
     function onInput(e) {
       if (typeof item.onInput === 'function') item.onInput(input.value, itemCtx(rec, 'input', e));
@@ -541,8 +609,15 @@ export function lkToolbar(targetOrOpts, maybeOpts) {
     }
     function onChange(e) {
       if (search) return;
-      if (typeof item.onChange === 'function') item.onChange(input.value, itemCtx(rec, 'change', e));
-      fireAction(item, 'change', { value: input.value, event: e });
+      const value = input.value;
+      gate(input, item, 'change', value, itemCtx(rec, 'change', e),
+        { type: 'change', value, event: e, source: 'change' },
+        (v) => {
+          lastValue = value;
+          if (typeof item.onChange === 'function') item.onChange(v, itemCtx(rec, 'change', e));
+          fireAction(item, 'change', { value: v, event: e });
+        },
+        () => { input.value = lastValue; }); // vetoed: restore the previous text
     }
     input.addEventListener('input', onInput);
     input.addEventListener('keydown', onKeydown);
@@ -578,9 +653,19 @@ export function lkToolbar(targetOrOpts, maybeOpts) {
     rec.comp = kind === 'switch' ? lkSwitch(input, o) : lkCheckbox(input, o);
     rec.inputEl = input;
     function onChange(e) {
-      item.checked = input.checked;
-      if (typeof item.onChange === 'function') item.onChange(input.checked, itemCtx(rec, 'change', e));
-      fireAction(item, 'change', { value: input.checked, event: e });
+      const value = input.checked;
+      gate(label, item, 'change', value, itemCtx(rec, 'change', e),
+        { type: 'change', value, event: e, source: 'change' },
+        (v) => {
+          item.checked = value;
+          if (typeof item.onChange === 'function') item.onChange(v, itemCtx(rec, 'change', e));
+          fireAction(item, 'change', { value: v, event: e });
+        },
+        () => { // vetoed: flip the control back
+          input.checked = !value;
+          if (rec.comp && 'checked' in rec.comp) rec.comp.checked = !value;
+          item.checked = !value;
+        });
     }
     input.addEventListener('change', onChange);
     rec.setDisabled = (off) => {
@@ -600,22 +685,29 @@ export function lkToolbar(targetOrOpts, maybeOpts) {
     const o = { ...(item.options || {}) };
     if (o.label == null && item.text != null) o.label = item.text;
     if (o.dense == null && root.classList.contains('lk-toolbar--dense')) o.dense = true;
-    if (o.onSelect != null && o.onChange == null) deprecate('lkToolbar.chip.onSelect', 'lkToolbar chip: options.onSelect is now options.onChange');
-    const userChange = o.onChange ?? o.onSelect;
-    delete o.onSelect;
+    const userChange = o.onChange;
     if (typeof userChange === 'function' || item.toggle || typeof item.onChange === 'function') {
       o.onChange = (sel, ctx) => {
-        item.active = sel;
-        if (typeof userChange === 'function') userChange(sel, ctx);
-        if (typeof item.onChange === 'function') item.onChange(sel, itemCtx(rec, ctx.source, null, { detail: ctx }));
-        fireAction(item, 'select', { value: sel, detail: ctx });
+        gate(span, item, 'change', sel, itemCtx(rec, ctx.source, null, { detail: ctx }),
+          { type: 'select', value: sel, detail: ctx, source: ctx.source },
+          (v) => {
+            item.active = sel;
+            if (typeof userChange === 'function') userChange(v, ctx);
+            if (typeof item.onChange === 'function') item.onChange(v, itemCtx(rec, ctx.source, null, { detail: ctx }));
+            fireAction(item, 'select', { value: v, detail: ctx });
+          },
+          () => { if (rec.comp && 'selected' in rec.comp) rec.comp.selected = !sel; }); // vetoed: undo the toggle
       };
     }
     const userClick = o.onClick;
     if (typeof userClick === 'function') {
       o.onClick = (e, ctx) => {
-        userClick(e, ctx);
-        fireAction(item, 'click', { event: e, detail: ctx });
+        gate(span, item, 'click', e, { item, component: api, source: 'click', detail: ctx },
+          { type: 'click', event: e, detail: ctx, source: 'click' },
+          () => {
+            userClick(e, ctx);
+            fireAction(item, 'click', { event: e, detail: ctx });
+          });
       };
     }
     rec.el = span;
@@ -628,18 +720,21 @@ export function lkToolbar(targetOrOpts, maybeOpts) {
   function renderDate(rec) {
     const { item } = rec;
     const icon = item.icon === undefined ? 'calendar' : item.icon;
-    const { btn, label } = buildButtonEl({ ...item, icon, iconOnly: false, text: item.placeholder || item.text || 'Pick a date' });
+    const { btn, label } = buildButtonEl({ ...item, icon, iconOnly: false, text: item.placeholder || item.text || tx.t('date.placeholder') });
     btn.classList.add('lk-toolbar__btn--date');
     btn.classList.remove('lk-toolbar__btn--icon');
     rec.el = btn;
     const o = { ...(item.options || {}) };
-    const locale = o.locale || 'en-US';
-    const placeholder = item.placeholder || item.text || 'Pick a date';
+    const placeholder = () => item.placeholder || item.text || tx.t('date.placeholder');
 
     function fmt(d) {
       if (!d) return '';
       const style = o.time ? { dateStyle: 'medium', timeStyle: 'short' } : { dateStyle: 'medium' };
-      return new Intl.DateTimeFormat(locale, style).format(d);
+      try {
+        return new Intl.DateTimeFormat(o.locale || lkI18n.locale, style).format(d);
+      } catch (err) {
+        return new Intl.DateTimeFormat('en-US', style).format(d);
+      }
     }
     function paint() {
       const v = rec.comp?.value;
@@ -647,27 +742,41 @@ export function lkToolbar(targetOrOpts, maybeOpts) {
       if (typeof item.format === 'function') txt = item.format(v);
       else if (Array.isArray(v)) txt = v[0] ? `${fmt(v[0])} – ${v[1] ? fmt(v[1]) : '…'}` : '';
       else txt = fmt(v);
-      if (label) label.textContent = txt || placeholder;
+      if (label) label.textContent = txt || placeholder();
       btn.classList.toggle('lk-toolbar__btn--placeholder', !txt);
     }
+    addRetext(rec, paint); // placeholder + dates re-format with the active locale
+    let lastValue = null;
+    const commit = (value, ctx, source, userHook) => {
+      gate(btn, item, 'change', value, itemCtx(rec, source, null, { detail: ctx }),
+        { type: 'change', value, detail: ctx, source },
+        (v) => {
+          lastValue = rec.comp.value;
+          if (typeof userHook === 'function') userHook(v, ctx);
+          queueMicrotask(paint);
+          if (typeof item.onChange === 'function') item.onChange(v, itemCtx(rec, source, null, { detail: ctx }));
+          fireAction(item, 'change', { value: v, detail: ctx });
+        },
+        () => { // vetoed: put the previous date back (silent)
+          rec.comp.value = lastValue;
+          queueMicrotask(paint);
+        });
+    };
     const userChange = o.onChange;
     const userConfirm = o.onConfirm;
     o.onChange = (value, ctx) => {
-      if (typeof userChange === 'function') userChange(value, ctx);
-      if (o.time) return; // time mode commits on OK (onConfirm)
-      queueMicrotask(paint);
-      if (typeof item.onChange === 'function') item.onChange(value, itemCtx(rec, ctx.source, null, { detail: ctx }));
-      fireAction(item, 'change', { value, detail: ctx });
+      if (o.time) { if (typeof userChange === 'function') userChange(value, ctx); return; } // time mode commits on OK (onConfirm)
+      commit(value, ctx, ctx.source, userChange);
     };
     o.onConfirm = (value, ctx) => {
-      if (typeof userConfirm === 'function') userConfirm(value, ctx);
-      queueMicrotask(paint);
-      if (o.time) {
-        if (typeof item.onChange === 'function') item.onChange(value, itemCtx(rec, 'confirm', null, { detail: ctx }));
-        fireAction(item, 'change', { value, detail: ctx });
+      if (o.time) commit(value, ctx, 'confirm', userConfirm);
+      else {
+        if (typeof userConfirm === 'function') userConfirm(value, ctx);
+        queueMicrotask(paint);
       }
     };
     rec.comp = lkDate(btn, o);
+    lastValue = rec.comp.value;
     paint();
     rec.setDisabled = (off) => {
       btn.disabled = off;
@@ -938,6 +1047,11 @@ export function lkToolbar(targetOrOpts, maybeOpts) {
       get() { return topRecs.map((r) => (r.type === 'node' ? r.raw : r.item)); },
       enumerable: true,
     },
+    text: {
+      get() { return tx.get(); },
+      set(v) { tx.set(v); },
+      enumerable: true,
+    },
   });
 
   api.add = function add(item, index) {
@@ -1019,6 +1133,7 @@ export function lkToolbar(targetOrOpts, maybeOpts) {
 
   api.destroy = function destroy() {
     if (destroyed) return;
+    tx.destroy();
     topRecs.splice(0).forEach(disposeRecord);
     destroyed = true;
     listeners.splice(0).forEach(([n, type, fn, cap]) => n.removeEventListener(type, fn, cap));

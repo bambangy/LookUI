@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LookUI — Upgrading to 0.3</title>
+  <title>LookUI — Upgrading to 1.0</title>
   <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
   <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
@@ -26,12 +26,36 @@
 <header class="demo-header">
   <div class="demo-container">
     <a href="index.html" class="demo-back">&larr; All Components</a>
-    <h1 style="font-size: var(--lk-text-2xl);">Upgrading to 0.3</h1>
-    <p style="opacity: 0.85;">One callback convention for every component — what changed and how to update your code</p>
+    <h1 style="font-size: var(--lk-text-2xl);">Upgrading to 1.0 / 0.3 / 0.4</h1>
+    <p style="opacity: 0.85;">The API freeze, plus the 0.3/0.4 callback convention — what changed and how to update your code</p>
   </div>
 </header>
 
 <main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">1.0 — the API freeze (breaking)</p>
+    <p style="margin-top: 0;">1.0 ships every component/composable listed in the <a href="index.html">catalog</a> on the one callback convention below, plus localization and overridable events, and removes the three 0.3 compatibility shims that warned-but-worked until now:</p>
+    <table class="mg-table">
+      <thead><tr><th>Removed</th><th>Use instead</th></tr></thead>
+      <tbody>
+        <tr><td><code>lkModal(triggerElement, modalElement)</code></td><td><code>lkModal(modalElement, { trigger: triggerElement })</code></td></tr>
+        <tr><td><code>lkChip</code> option <code>onSelect</code> (also inside lkToolbar chip items)</td><td><code>onChange</code></td></tr>
+        <tr><td><code>lkPagination</code> option <code>onPageChange</code></td><td><code>onChange</code></td></tr>
+      </tbody>
+    </table>
+    <p>Calling the library with any of these now does nothing (no warning, no shim) — search your codebase for the old names before upgrading. Everything else in 0.3/0.4 below is unchanged at 1.0.</p>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">0.4 — localization and overridable events (additive)</p>
+    <p style="margin-top: 0;">0.4 breaks no 0.3 code. Two conventions were added to <em>every</em> component and composable:</p>
+    <ul>
+      <li><strong>Text:</strong> all built-in English now lives in <code>Look.i18n</code>. Translate a page with <code>Look.i18n.set('id', {…}); Look.i18n.use('id')</code> or one component with <code>{ text: {…} }</code>. Existing text options (<code>placeholder</code>, <code>loadingText</code>, <code>noRecords</code>, …) still win. See <a href="localization.html">Localization</a>.</li>
+      <li><strong>Events:</strong> <code>before&lt;Action&gt;</code> options and <code>lk:before-&lt;action&gt;</code> DOM events can cancel, delay or replace an action. Legacy veto callbacks (<code>onSave</code>, <code>onConfirm</code>, chip <code>onRemove</code>, <code>beforeChange</code> of lkTabs) work as before. See <a href="events.html">Overridable events</a>.</li>
+    </ul>
+    <p>Things to check when you upgrade: <code>lkDate</code> / lkTable / lkToolbar now format with <code>Look.i18n.locale</code> (default <code>'en'</code>) instead of <code>en-US</code> / the browser locale — call <code>Look.i18n.use(navigator.language)</code> to keep browser-locale formatting; <code>lkValidation.submit()</code> reports <code>'Something went wrong'</code> instead of <code>null</code> for message-less errors; code that located lkPagination buttons by aria-label should use <code>[data-nav]</code>.</p>
+  </section>
 
   <section class="demo-section">
     <p class="demo-section__title">The convention</p>
@@ -58,16 +82,10 @@
   </section>
 
   <section class="demo-section">
-    <p class="demo-section__title">What still works for now</p>
+    <p class="demo-section__title">What still works</p>
     <p style="margin-top: 0;">
-      These renamed APIs keep working in 0.3 and log one console warning each. They will be removed in 1.0:
+      Everything below whose <em>arguments</em> changed in 0.3 cannot be detected automatically — update those callbacks when you upgrade. The three renamed-option shims that used to keep old names working are gone as of 1.0 (see above).
     </p>
-    <ul>
-      <li><code>lkPagination</code> option <code>onPageChange</code> → <code>onChange</code></li>
-      <li><code>lkChip</code> option <code>onSelect</code> → <code>onChange</code> (also inside lkToolbar chip items)</li>
-      <li><code>lkModal(trigger, modal)</code> → <code>lkModal(modal, { trigger })</code></li>
-    </ul>
-    <p>Everything below whose <em>arguments</em> changed cannot be detected automatically — update those callbacks when you upgrade.</p>
   </section>
 
   <section class="demo-section">

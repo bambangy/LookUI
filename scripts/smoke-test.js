@@ -10,13 +10,20 @@ import assert from 'node:assert/strict';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
-const API = ['lkButton', 'lkDialog', 'lkTable', 'lkToolbar', 'lkDataSource', 'lkIcon', 'lkPhone', 'lkTextPop', 'lkValidation', 'lkTabs', 'lkCarousel'];
+const API = [
+  'lkButton', 'lkDialog', 'lkTable', 'lkToolbar', 'lkDataSource', 'lkIcon', 'lkPhone', 'lkTextPop', 'lkValidation', 'lkTabs', 'lkCarousel', 'lkUpload', 'lkCard',
+  'lkNumber', 'lkTime', 'lkColor', 'lkSegmented', 'lkAutocomplete', 'lkTagInput', 'lkAccordion',
+  'lkTree', 'lkMenu', 'lkForm', 'lkStepper', 'lkDrawer', 'lkClipboard', 'lkHotkeys', 'lkTheme',
+  'lkSortable', 'lkOrg', 'lkFloating', 'lkEditor',
+];
 
 function checkApi(label, L) {
   assert.equal(L.version, pkg.version, `${label}: version should match package.json`);
   assert.equal(L.author, pkg.author.name, `${label}: author`);
   assert.equal(L.license, pkg.license, `${label}: license`);
   for (const name of API) assert.equal(typeof L[name], 'function', `${label}: ${name} missing`);
+  assert.equal(typeof L.i18n?.t, 'function', `${label}: i18n missing`);
+  assert.equal(L.i18n.t('common.cancel'), 'Cancel', `${label}: i18n default text`);
   console.log(`ok  ${label}`);
 }
 

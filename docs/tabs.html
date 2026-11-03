@@ -300,6 +300,11 @@ LookDocs.render('#api', {
     { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
   ],
   returns: { type: 'Object', description: 'The tabs instance.' },
+  textNamespace: 'tabs',
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange(tab, { prev, source, component })', description: 'Runs before the active tab changes (click, keys, `select()`, `active =`). Return `false` to stay, or another tab (name / index / tab object) to go there. Also dispatched as the cancelable `lk:before-change` DOM event. Async guards are supported. `onChange` fires only when allowed.' },
+    { name: 'beforeRemove', signature: 'beforeRemove(tab, { source, component })', description: 'Runs before `remove(tab)` removes a tab and its panel. Return `false` to keep it.' },
+  ],
   options: [
     {
       name: 'tabs', type: 'Array', default: '[]',
@@ -399,6 +404,7 @@ LookDocs.render('#api', {
     { name: '--lk-tabs-duration / --lk-tabs-easing', default: 'duration-base / easing-out', description: 'Indicator slide motion.' },
   ],
   notes: [
+    'lkTabs has no text of its own: the loading and Retry captions of URL tabs use `common.loading` / `common.retry` (or `loadingText` / `retryText` / `errorText`).',
     '**Tab options.** `name` (key for `select()` etc.), `title` (text or Node), `icon` (Look icon name), `badge`, `disabled`, `active`, `render` (overrides the global mode), and one content source: `content` — text, Node, or `(panel, { name, tab, tabs }) => Node | text | { html } | cleanup function | Promise of those`; `html`; `url` with `select` (CSS selector picked from the response), `fetchOptions` (passed to `fetch`), `transform(text, response)` (return HTML text or a Node) and `scripts` (run `<script>` tags of the response — off by default); `template`; or `panel` (existing element). Per-tab `onLoad(panel, { name, tab, component })` is also called.',
     '**Markup attributes.** On `<li>`: `data-name`, `data-url`, `data-select`, `data-template`, `data-render`, `data-panel`, `data-disabled` (or `aria-disabled="true"`); an `<a href="#id">` inside the item names an existing panel.',
     '**Security.** `html` and `url` content are inserted as markup. Use them only with content you trust; scripts in fetched pages do not run unless `scripts: true`. Links in fetched HTML resolve against the current page, not the fetched file.',

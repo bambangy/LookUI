@@ -1,0 +1,144 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Menu (lkMenu) — dropdown / context menu rendered inside an lkPopupProxy panel.
+//   .lk-popup-proxy__panel.lk-menu__panel > .lk-menu[role=menu] > .lk-menu__item | __separator | __header
+// Open / close motion comes from lkPopupProxy (shared motion tokens).
+
+.lk-popup-proxy__panel.lk-menu__panel {
+  min-width: 11rem;
+  padding: var(--lk-space-1);
+  background: var(--lk-bg);
+
+  &--dense {
+    min-width: 9rem;
+  }
+}
+
+// Closing panels must not catch the pointer or hold focus on stale items
+.lk-popup-proxy--closing .lk-menu__panel {
+  pointer-events: none;
+}
+
+.lk-menu {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--lk-text-base);
+  color: var(--lk-text);
+  outline: none;
+
+  &--dense {
+    font-size: var(--lk-text-sm);
+  }
+}
+
+.lk-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  padding: var(--lk-space-2) var(--lk-space-3);
+  border-radius: var(--lk-radius);
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  transition: background-color var(--lk-duration-fast) var(--lk-easing-default);
+
+  &:hover,
+  &:focus,
+  &--open {
+    background: color-mix(in srgb, var(--lk-text) 8%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--lk-primary);
+    outline-offset: -2px;
+  }
+
+  &--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+
+    &:hover,
+    &:focus {
+      background: transparent;
+    }
+  }
+}
+
+.lk-menu--dense .lk-menu__item {
+  padding: var(--lk-space-1) var(--lk-space-2);
+}
+
+.lk-menu__lead {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.25rem;
+  color: var(--lk-text-muted);
+}
+
+.lk-menu__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lk-menu__shortcut {
+  margin-inline-start: var(--lk-space-5);
+  font-size: var(--lk-text-xs);
+  color: var(--lk-text-muted);
+  white-space: nowrap;
+}
+
+.lk-menu__caret {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-inline-start: var(--lk-space-3);
+  color: var(--lk-text-muted);
+}
+
+// --- Checkbox / radio marks ---
+
+.lk-menu__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--lk-primary);
+  visibility: hidden;
+
+  &--radio::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--lk-radius-full);
+    background: currentColor;
+  }
+}
+
+.lk-menu__item--checked .lk-menu__mark {
+  visibility: visible;
+}
+
+// --- Separator / header ---
+
+.lk-menu__separator {
+  height: var(--lk-border-width);
+  margin: var(--lk-space-1) var(--lk-space-2);
+  background: var(--lk-border);
+}
+
+.lk-menu__header {
+  padding: var(--lk-space-2) var(--lk-space-3) var(--lk-space-1);
+  font-size: var(--lk-text-xs);
+  font-weight: var(--lk-weight-semibold);
+  color: var(--lk-text-muted);
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-menu__item {
+    transition: none;
+  }
+}

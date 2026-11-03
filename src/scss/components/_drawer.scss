@@ -1,0 +1,227 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Drawer (lkDrawer)
+//
+//   .lk-drawer                  root, fixed over the viewport (--left | --right | --top | --bottom)
+//   .lk-drawer--modal           backdrop + blocking; --inline = non-modal (page stays usable)
+//   .lk-drawer--sm | --md | --lg | --full   size; a custom length goes in --lk-drawer-size
+//   .lk-drawer--calm            fade only (no slide)
+//   .lk-drawer--open / --closing   toggled by JS
+//   .lk-drawer__backdrop / __panel / __header / __title / __close / __body / __footer / __handle
+//
+// Open and close are keyframe animations (slide + fade) in both directions: browsers do not start
+// a transition from a value an animation is holding, so an animated show needs an animated hide.
+// JS exit timers wait for --lk-drawer-exit-duration.
+
+:root {
+  --lk-drawer-enter-duration: var(--lk-duration-slow);
+  --lk-drawer-exit-duration:  260ms;
+  --lk-drawer-enter-easing:   var(--lk-easing-out);
+  --lk-drawer-exit-easing:    var(--lk-easing-in);
+}
+
+.lk-drawer {
+  --lk-drawer-size: 28rem;
+  --lk-drawer-from: translate3d(100%, 0, 0);
+
+  position: fixed;
+  inset: 0;
+  z-index: var(--lk-z-modal);
+
+  &--sm   { --lk-drawer-size: 20rem; }
+  &--md   { --lk-drawer-size: 28rem; }
+  &--lg   { --lk-drawer-size: 40rem; }
+  &--full { --lk-drawer-size: 100%; }
+
+  &--right  { --lk-drawer-from: translate3d(100%, 0, 0); }
+  &--left   { --lk-drawer-from: translate3d(-100%, 0, 0); }
+  &--top    { --lk-drawer-from: translate3d(0, -100%, 0); }
+  &--bottom { --lk-drawer-from: translate3d(0, 100%, 0); }
+
+  // Non-modal: the root must not swallow clicks meant for the page
+  &--inline { pointer-events: none; }
+
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+    background: var(--lk-overlay);
+    opacity: 0;
+  }
+
+  &__panel {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    background: var(--lk-bg);
+    color: var(--lk-text);
+    box-shadow: var(--lk-shadow-lg);
+    outline: none;
+    pointer-events: auto;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  &--left &__panel,
+  &--right &__panel {
+    top: 0;
+    bottom: 0;
+    width: min(var(--lk-drawer-size), 100%);
+  }
+  &--left &__panel  { left: 0; }
+  &--right &__panel { right: 0; }
+
+  &--top &__panel,
+  &--bottom &__panel {
+    left: 0;
+    right: 0;
+    height: min(var(--lk-drawer-size), 100%);
+  }
+  &--top &__panel    { top: 0; }
+  &--bottom &__panel { bottom: 0; }
+
+  &__header {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--lk-space-3);
+    padding: var(--lk-space-4) var(--lk-space-5);
+    border-bottom: 1px solid var(--lk-border);
+  }
+
+  &__title {
+    margin: 0;
+    min-width: 0;
+    font-size: var(--lk-text-lg);
+    font-weight: var(--lk-weight-semibold);
+    line-height: var(--lk-leading-tight);
+    overflow-wrap: anywhere;
+  }
+
+  &__close {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-inline-start: auto;
+    padding: var(--lk-space-1);
+    border: 0;
+    border-radius: var(--lk-radius);
+    background: none;
+    color: var(--lk-text-muted);
+    cursor: pointer;
+    transition:
+      color var(--lk-duration-fast) var(--lk-easing-out),
+      background-color var(--lk-duration-fast) var(--lk-easing-out),
+      transform var(--lk-duration-micro) var(--lk-easing-default);
+
+    &:hover { color: var(--lk-text); background-color: var(--lk-bg-subtle); }
+    &:active { transform: scale(0.92); }
+    &:focus-visible { outline: 2px solid var(--lk-primary); outline-offset: 1px; }
+  }
+
+  &__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: var(--lk-space-5);
+    overflow: auto;
+  }
+
+  &__footer {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--lk-space-3);
+    padding: var(--lk-space-4) var(--lk-space-5);
+    border-top: 1px solid var(--lk-border);
+  }
+
+  // Resize handle on the inner edge
+  &__handle {
+    position: absolute;
+    z-index: 1;
+    background: transparent;
+    transition: background-color var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover,
+    &:focus-visible { background: var(--lk-primary); outline: none; }
+  }
+  &--left &__handle,
+  &--right &__handle { top: 0; bottom: 0; width: 0.375rem; cursor: col-resize; touch-action: none; }
+  &--left &__handle  { right: -0.1875rem; }
+  &--right &__handle { left: -0.1875rem; }
+  &--top &__handle,
+  &--bottom &__handle { left: 0; right: 0; height: 0.375rem; cursor: row-resize; touch-action: none; }
+  &--top &__handle    { bottom: -0.1875rem; }
+  &--bottom &__handle { top: -0.1875rem; }
+  &--resizing { user-select: none; }
+  &--resizing &__handle { background: var(--lk-primary); }
+
+  &--dense {
+    .lk-drawer__header { padding: var(--lk-space-3) var(--lk-space-4); }
+    .lk-drawer__title  { font-size: var(--lk-text-md); }
+    .lk-drawer__body   { padding: var(--lk-space-4); }
+    .lk-drawer__footer { padding: var(--lk-space-3) var(--lk-space-4); gap: var(--lk-space-2); }
+  }
+
+  // --- Motion: both directions are keyframe animations ---
+  &--open &__backdrop {
+    animation: lk-drawer-fade-in var(--lk-drawer-enter-duration) var(--lk-drawer-enter-easing) both;
+  }
+  &--open &__panel {
+    animation: lk-drawer-in var(--lk-drawer-enter-duration) var(--lk-drawer-enter-easing) both;
+  }
+  &--closing &__backdrop {
+    animation: lk-drawer-fade-out var(--lk-drawer-exit-duration) var(--lk-drawer-exit-easing) both;
+  }
+  &--closing &__panel {
+    animation: lk-drawer-out var(--lk-drawer-exit-duration) var(--lk-drawer-exit-easing) both;
+  }
+  &--closing { pointer-events: none; }
+
+  // Calm: fade only
+  &--calm.lk-drawer--open &__panel {
+    animation-name: lk-drawer-fade-in;
+  }
+  &--calm.lk-drawer--closing &__panel {
+    animation-name: lk-drawer-fade-out;
+  }
+}
+
+@keyframes lk-drawer-in {
+  from { opacity: 0; transform: var(--lk-drawer-from); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes lk-drawer-out {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to   { opacity: 0; transform: var(--lk-drawer-from); }
+}
+
+@keyframes lk-drawer-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes lk-drawer-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+// Phones: side panels take the full width unless a size was given explicitly
+@media (max-width: 479.98px) {
+  .lk-drawer--left:not(.lk-drawer--sized) .lk-drawer__panel,
+  .lk-drawer--right:not(.lk-drawer--sized) .lk-drawer__panel { width: 100%; }
+  .lk-drawer__header { padding-inline: var(--lk-space-4); }
+  .lk-drawer__body   { padding: var(--lk-space-4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-drawer--open .lk-drawer__panel,
+  .lk-drawer--open .lk-drawer__backdrop,
+  .lk-drawer--closing .lk-drawer__panel,
+  .lk-drawer--closing .lk-drawer__backdrop {
+    animation-duration: 1ms !important;
+  }
+}

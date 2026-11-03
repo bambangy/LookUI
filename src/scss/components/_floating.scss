@@ -1,0 +1,41 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// lkFloating — a persistent element pinned to a screen corner (FAB, floating widget, …).
+// This is a positioning utility, not a visual component: it carries no background/border of its
+// own so arbitrary content (a single lkButton, a card, a custom widget) keeps its own look.
+
+.lk-floating {
+  position: fixed;
+  z-index: var(--lk-z-sticky);
+  --lk-floating-offset-x: var(--lk-space-4);
+  --lk-floating-offset-y: var(--lk-space-4);
+
+  &--top-left {
+    top: var(--lk-floating-offset-y);
+    left: var(--lk-floating-offset-x);
+  }
+
+  &--top-right {
+    top: var(--lk-floating-offset-y);
+    right: var(--lk-floating-offset-x);
+  }
+
+  &--bottom-left {
+    bottom: var(--lk-floating-offset-y);
+    left: var(--lk-floating-offset-x);
+  }
+
+  &--bottom-right {
+    bottom: var(--lk-floating-offset-y);
+    right: var(--lk-floating-offset-x);
+  }
+
+  &--dense {
+    --lk-floating-offset-x: var(--lk-space-2);
+    --lk-floating-offset-y: var(--lk-space-2);
+  }
+
+  &[hidden] {
+    display: none;
+  }
+}

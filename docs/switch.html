@@ -231,6 +231,13 @@ function checkableDocs(FN, MK, noun) {
   LookDocs.render('#api', {
     name: 'lkSwitch',
     validateable: true,
+    textNamespace: 'switch',
+    guards: [
+      { name: 'beforeChange', signature: 'beforeChange(checked, { source, component, event })', description: 'Runs when the user flips the switch (`source: "change"`), before `onChange`. Return `false` to veto: the switch (and `aria-checked`) goes back and `onChange` / re-validation do not run. Return a boolean to force the resulting state. Synchronous only; `c.checked = …` and `toggle()` never ask.' },
+    ],
+    texts: [
+      { name: 'required', default: 'This option is required', description: 'Message of the `required` rule (when the rule has no own `message`). Other validation messages use the shared `validation.*` keys.' },
+    ],
     kind: 'Component',
     signature: 'const sw = Look.lkSwitch(element, options);',
     description: [

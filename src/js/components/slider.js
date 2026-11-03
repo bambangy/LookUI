@@ -4,6 +4,10 @@
 
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { qs } from '../core/index.js';
+import { guardSync } from '../helpers/guard.js';
+import { lkI18n, bindText } from '../helpers/i18n.js';
+
+lkI18n.define('slider', { label: 'Slider' });
 
 /**
  * Enhance a slider container with drag-to-set-value behavior.
@@ -13,6 +17,8 @@ import { qs } from '../core/index.js';
  * @param {number}  [opts.max]    — maximum value (default 100)
  * @param {number}  [opts.value]  — initial value (default min)
  * @param {number}  [opts.step]   — step increment (default 1)
+ * @param {Object}  [opts.text]  — text overrides (slider.label: aria-label when the markup has none)
+ * @param {Function} [opts.beforeChange] — (value, { source, component, prev }) => false | value; evaluated synchronously on every pointer move / key press, a veto keeps the last allowed value (DOM event 'lk:before-change')
  * @param {Function} [opts.onChange] — (value, { source, component, prev }) after a drag or key press
  * @returns {Object}
  */
@@ -31,6 +37,11 @@ export function lkSlider(el, opts = {}) {
   let value = 0;
   let dragging = false;
   const hadTabindex = node.hasAttribute('tabindex');
+  const hadLabel = node.hasAttribute('aria-label') || node.hasAttribute('aria-labelledby');
+  const tx = bindText('slider', opts.text, () => applyLabel());
+  function applyLabel() {
+    if (!hadLabel) node.setAttribute('aria-label', tx.t('label'));
+  }
 
   // Decimal places of the step, used to strip float noise (0.1 + 0.2 ...)
   function precision() {
@@ -72,7 +83,11 @@ export function lkSlider(el, opts = {}) {
     const next = clamp(v);
     if (next === value) return;
     const prev = value;
-    value = next;
+    const g = guardSync(node, opts, 'change', next, { source, component: comp, prev });
+    if (!g.allowed) return;
+    const final = clamp(g.payload);
+    if (final === value) return;
+    value = final;
     updateView();
     if (opts.onChange) opts.onChange(value, { source, component: comp, prev });
   }
@@ -135,6 +150,7 @@ export function lkSlider(el, opts = {}) {
   node.addEventListener('keydown', onKeyDown);
 
   node.setAttribute('role', 'slider');
+  applyLabel();
   if (!hadTabindex) node.setAttribute('tabindex', '0');
   updateView();
 
@@ -142,6 +158,7 @@ export function lkSlider(el, opts = {}) {
   applyBase(comp, node);
 
   Object.defineProperties(comp, {
+    text: { get() { return tx.get(); }, set(v) { tx.set(v); }, enumerable: true },
     value: {
       get() { return value; },
       set(v) { value = clamp(v); updateView(); },
@@ -166,6 +183,8 @@ export function lkSlider(el, opts = {}) {
 
   comp.destroy = function () {
     onPointerUp();
+    tx.destroy();
+    if (!hadLabel) node.removeAttribute('aria-label');
     if (track) track.removeEventListener('pointerdown', onPointerDown);
     if (thumbOutsideTrack) thumb.removeEventListener('pointerdown', onPointerDown);
     node.removeEventListener('keydown', onKeyDown);

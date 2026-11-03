@@ -10,18 +10,21 @@ const banner = `/*!
  * Released under the ${pkg.license} License. This notice must be retained in all copies.
  */`;
 
+// LOOK_DIST=<dir> builds somewhere else (parallel work / tests); default is dist/
+const DIST = process.env.LOOK_DIST || 'dist';
+
 const umd = { format: 'umd', name: 'Look', exports: 'named', sourcemap: false, banner };
 
 export default {
   input: 'src/js/index.js',
 
   output: [
-    { ...umd, file: 'dist/look.js' },
+    { ...umd, file: DIST + '/look.js' },
     // terser keeps /*! */ comments, so the banner survives minification
-    { ...umd, file: 'dist/look.min.js', plugins: [terser()] },
-    { file: 'dist/look.esm.js', format: 'es', sourcemap: false, banner },
+    { ...umd, file: DIST + '/look.min.js', plugins: [terser()] },
+    { file: DIST + '/look.esm.js', format: 'es', sourcemap: false, banner },
     // .cjs so Node's require() works despite "type": "module" in package.json
-    { file: 'dist/look.cjs', format: 'cjs', exports: 'named', sourcemap: false, banner },
+    { file: DIST + '/look.cjs', format: 'cjs', exports: 'named', sourcemap: false, banner },
   ],
 
   plugins: [

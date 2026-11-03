@@ -3,6 +3,28 @@
 import { lkPopupProxy } from './popupProxy.js';
 import { lkIcon } from '../components/icon.js';
 import { formatDate } from '../helpers/dateFormat.js';
+import { lkI18n, bindText } from '../helpers/i18n.js';
+import { guard } from '../helpers/guard.js';
+
+lkI18n.define('date', {
+  prevMonth: 'Previous month',
+  nextMonth: 'Next month',
+  month: 'Month',
+  year: 'Year',
+  hour: 'Hour',
+  minute: 'Minute',
+  second: 'Second',
+  meridiem: 'AM or PM',
+  am: 'AM',
+  pm: 'PM',
+  now: 'Now',
+  pickDay: 'Pick a day',
+});
+
+const asDate = (v, fallback) => {
+  const d = v instanceof Date ? v : (v != null ? new Date(v) : null);
+  return d && !Number.isNaN(d.getTime()) ? new Date(d) : fallback;
+};
 
 const WEEKDAY_START = 0;
 const RANGE_SCAN_DAYS = 3660; // how far a range may look for a blocking (disabled) day
@@ -270,7 +292,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
     value: null,
     min: null,
     max: null,
-    locale: 'en-US',
+    locale: null,   // default: Look.i18n locale (resolved at use time)
     placement: 'bottom-left',
     autoPlacement: true,
     closeOnOutside: true,
@@ -293,9 +315,14 @@ export function lkDate(targetOrOpts, maybeOpts) {
     disabledDays: null,
     disableHolidays: false,
     allowDisabledInRange: false,
-    cancelText: 'Cancel',
-    okText: 'OK',
-    nowText: 'Now',
+    cancelText: null,   // default: common.cancel
+    okText: null,       // default: common.ok
+    nowText: null,      // default: date.now
+    text: null,
+    beforeOpen: null,
+    beforeClose: null,
+    beforeChange: null,
+    beforeConfirm: null,
     onOpen: null,
     onClose: null,
     onChange: null,
@@ -311,6 +338,10 @@ export function lkDate(targetOrOpts, maybeOpts) {
     seconds: !!baseOptions.seconds,
     minuteStep: Math.min(30, Math.max(1, Math.trunc(Number(baseOptions.minuteStep) || 1))),
   };
+
+  const tx = bindText('date', options.text, () => onLocale());
+  const loc = () => options.locale || lkI18n.locale;
+  let gone = false;
 
   const minDate = parseDate(options.min);
   const maxDate = parseDate(options.max);
@@ -376,6 +407,14 @@ export function lkDate(targetOrOpts, maybeOpts) {
     '  </div>' +
     '</div>';
 
+  // Run a date guard on behalf of the popup proxy: undefined = go ahead, false = veto, Promise = decided later
+  function bridge(name, payload, ctx) {
+    const out = guard(trigger, options, name, payload, { source: ctx?.source || 'api', component: api }, () => {});
+    if (out === false) return false;
+    if (out && typeof out.then === 'function') return out.then((v) => (v === false ? false : undefined));
+    return undefined;
+  }
+
   const proxy = lkPopupProxy(trigger, {
     content: markup,
     placement: options.placement,
@@ -386,6 +425,9 @@ export function lkDate(targetOrOpts, maybeOpts) {
     className: 'lk-date-proxy',
     zIndex: options.zIndex,
     open: false,
+    // The proxy asks first; the date guards beforeOpen / beforeClose answer for it
+    beforeShow: (p, ctx) => bridge('open', undefined, ctx),
+    beforeHide: (reason, ctx) => bridge('close', reason, ctx),
     onShow() {
       resetTransientState();
 
@@ -427,33 +469,53 @@ export function lkDate(targetOrOpts, maybeOpts) {
   nextBtn.appendChild(lkIcon('chevron-right', { size: 'sm' }));
   root.querySelector('.lk-date__time-icon').appendChild(lkIcon('clock', { size: 'sm' }));
 
-  okBtn.textContent = options.okText;
-  cancelBtn.textContent = options.cancelText;
-  nowBtn.textContent = options.nowText;
+  // Every localized string of the static markup (also re-run on a locale / text change)
+  function applyTexts() {
+    prevBtn.setAttribute('aria-label', tx.t('prevMonth'));
+    nextBtn.setAttribute('aria-label', tx.t('nextMonth'));
+    monthSelect.setAttribute('aria-label', tx.t('month'));
+    yearSelect.setAttribute('aria-label', tx.t('year'));
+    hourSelect.setAttribute('aria-label', tx.t('hour'));
+    minuteSelect.setAttribute('aria-label', tx.t('minute'));
+    secondSelect.setAttribute('aria-label', tx.t('second'));
+    ampmRow.setAttribute('aria-label', tx.t('meridiem'));
+    ampmButtons.forEach((btn) => { btn.textContent = tx.t(btn.dataset.meridiem === 'AM' ? 'am' : 'pm'); });
+    okBtn.textContent = options.okText != null ? String(options.okText) : tx.tf('common.ok');
+    cancelBtn.textContent = options.cancelText != null ? String(options.cancelText) : tx.tf('common.cancel');
+    nowBtn.textContent = options.nowText != null ? String(options.nowText) : tx.t('now');
+  }
 
-  createWeekdayLabels(options.locale).forEach((label) => {
-    const cell = document.createElement('div');
-    cell.className = 'lk-date__weekday';
-    cell.textContent = label;
-    weekdaysRow.appendChild(cell);
-  });
+  function renderWeekdays() {
+    weekdaysRow.textContent = '';
+    createWeekdayLabels(loc()).forEach((label) => {
+      const cell = document.createElement('div');
+      cell.className = 'lk-date__weekday';
+      cell.textContent = label;
+      weekdaysRow.appendChild(cell);
+    });
+  }
+
+  applyTexts();
+  renderWeekdays();
 
   // --- Formatting ------------------------------------------------------------------------
 
-  const defaultDisplay = new Intl.DateTimeFormat(options.locale, options.time
-    ? { dateStyle: 'medium', timeStyle: options.seconds ? 'medium' : 'short', hour12: options.timeFormat === '12' }
-    : { dateStyle: 'medium' });
+  const defaultDisplay = {
+    format: (d) => new Intl.DateTimeFormat(loc(), options.time
+      ? { dateStyle: 'medium', timeStyle: options.seconds ? 'medium' : 'short', hour12: options.timeFormat === '12' }
+      : { dateStyle: 'medium' }).format(d),
+  };
   const isoPattern = options.isoFormat || (options.time ? "yyyy-MM-dd'T'HH:mm:ss.SSS" : 'yyyy-MM-dd');
 
   function displayOf(d) {
     if (!d) return '';
-    return options.displayFormat ? formatDate(d, options.displayFormat, options.locale) : defaultDisplay.format(d);
+    return options.displayFormat ? formatDate(d, options.displayFormat, loc()) : defaultDisplay.format(d);
   }
 
   function isoOf(d) {
     if (!d) return '';
     if (isoPattern === 'utc') return d.toISOString();
-    return formatDate(d, isoPattern, options.locale);
+    return formatDate(d, isoPattern, loc());
   }
 
   function formatValue(fn) {
@@ -474,7 +536,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
   }
 
   function format(pattern) {
-    return formatValue((d) => formatDate(d, pattern, options.locale));
+    return formatValue((d) => formatDate(d, pattern, loc()));
   }
 
   // --- Bound input (display text) + hidden ISO input ----------------------------------------
@@ -585,7 +647,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
   }
 
   function syncSelectors() {
-    const monthFormatter = new Intl.DateTimeFormat(options.locale, { month: 'short' });
+    const monthFormatter = new Intl.DateTimeFormat(loc(), { month: 'short' });
     const bounds = getYearBounds();
 
     monthSelect.textContent = '';
@@ -651,7 +713,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
 
     const today = toStartOfDay(new Date());
     const days = createCalendarDays(viewDate);
-    const dayLabel = new Intl.DateTimeFormat(options.locale, { dateStyle: 'full' });
+    const dayLabel = new Intl.DateTimeFormat(loc(), { dateStyle: 'full' });
     hoverLimit = options.range && rangeStart && !rangeEnd ? rangeLimit(rangeStart) : null;
 
     days.forEach((date) => {
@@ -765,7 +827,7 @@ export function lkDate(targetOrOpts, maybeOpts) {
       btn.setAttribute('aria-pressed', String(active));
     });
     const draft = draftValue();
-    summaryEl.textContent = draft ? displayOf(draft) : 'Pick a day';
+    summaryEl.textContent = draft ? displayOf(draft) : tx.t('pickDay');
     summaryEl.classList.toggle('lk-date__summary--empty', !draft);
     okBtn.disabled = !draft;
   }
@@ -812,16 +874,18 @@ export function lkDate(targetOrOpts, maybeOpts) {
   function onOk() {
     const draft = draftValue();
     if (!draft) return;
-    singleValue = clampDateTime(draft, minDate, maxDate);
-    viewDate = new Date(singleValue.getFullYear(), singleValue.getMonth(), 1);
-    refreshDateView();
-    emitChange(new Date(singleValue), 'confirm');
-    emitConfirm(new Date(singleValue));
-    proxy.hide('select');
+    guard(trigger, options, 'confirm', new Date(draft), { source: 'confirm', component: api }, (v) => {
+      singleValue = clampDateTime(asDate(v, draft), minDate, maxDate);
+      viewDate = new Date(singleValue.getFullYear(), singleValue.getMonth(), 1);
+      refreshDateView();
+      emitChange(new Date(singleValue), 'confirm');
+      emitConfirm(new Date(singleValue));
+      proxy.hide('select', 'user');
+    });
   }
 
   function onCancel() {
-    proxy.hide('cancel');
+    proxy.hide('cancel', 'user');
   }
 
   function onPanelKeydown(e) {
@@ -851,7 +915,21 @@ export function lkDate(targetOrOpts, maybeOpts) {
     refreshDateView();
   }
 
+  // Mirrors a user action when it notifies (source 'api' → beforeChange); silent calls (`value =`) are unguarded
   function setValue(input, source = 'api', notify = true) {
+    if (!notify) { applyValue(input, source, false); return; }
+    let payload;
+    if (options.range) {
+      const [a, b] = parseInitialRange(input, minDate, maxDate);
+      payload = [a ? new Date(a) : null, b ? new Date(b) : null];
+    } else {
+      const p = parseDate(input);
+      payload = p ? new Date(p) : null;
+    }
+    guard(trigger, options, 'change', payload, { source, component: api }, (v) => applyValue(v, source, true));
+  }
+
+  function applyValue(input, source, notify) {
     if (options.range) {
       const [a, b] = parseInitialRange(input, minDate, maxDate);
       rangeStart = a;
@@ -912,19 +990,23 @@ export function lkDate(targetOrOpts, maybeOpts) {
   }
 
   function commitSingleDate(day) {
-    singleValue = new Date(day);
-    refreshDateView();
-    emitChange(new Date(singleValue), 'pick');
-    emitConfirm(new Date(singleValue));
-    proxy.hide('select');
+    guard(trigger, options, 'change', new Date(day), { source: 'pick', component: api }, (v) => {
+      singleValue = asDate(v, new Date(day));
+      refreshDateView();
+      emitChange(new Date(singleValue), 'pick');
+      emitConfirm(new Date(singleValue));
+      proxy.hide('select', 'user');
+    });
   }
 
   function startRange(day) {
-    rangeStart = new Date(day);
-    rangeEnd = null;
-    hoverDate = new Date(day);
-    refreshDateView();
-    emitChange([new Date(rangeStart), null], 'range-start');
+    guard(trigger, options, 'change', [new Date(day), null], { source: 'range-start', component: api }, (v) => {
+      rangeStart = asDate(Array.isArray(v) ? v[0] : v, new Date(day));
+      rangeEnd = null;
+      hoverDate = new Date(rangeStart);
+      refreshDateView();
+      emitChange([new Date(rangeStart), null], 'range-start');
+    });
   }
 
   function commitRange(day) {
@@ -941,14 +1023,21 @@ export function lkDate(targetOrOpts, maybeOpts) {
       return;
     }
 
-    rangeEnd = picked;
-    hoverDate = null;
-    refreshDateView();
+    guard(trigger, options, 'change', [new Date(rangeStart), new Date(picked)], { source: 'range-end', component: api }, (v) => {
+      if (Array.isArray(v)) {
+        rangeStart = asDate(v[0], rangeStart);
+        rangeEnd = asDate(v[1], picked);
+      } else {
+        rangeEnd = picked;
+      }
+      hoverDate = null;
+      refreshDateView();
 
-    const result = [new Date(rangeStart), new Date(rangeEnd)];
-    emitChange(result, 'range-end');
-    emitConfirm(result);
-    proxy.hide('select');
+      const result = [new Date(rangeStart), new Date(rangeEnd)];
+      emitChange(result, 'range-end');
+      emitConfirm(result);
+      proxy.hide('select', 'user');
+    });
   }
 
   function onGridClick(e) {
@@ -1038,6 +1127,15 @@ export function lkDate(targetOrOpts, maybeOpts) {
   okBtn.addEventListener('click', onOk);
   root.addEventListener('keydown', onPanelKeydown);
 
+  // Locale / text change: re-render names + captions, keep open state, draft and focus
+  function onLocale() {
+    if (gone) return;
+    applyTexts();
+    renderWeekdays();
+    refreshDateView();
+    syncBound(false);
+  }
+
   refreshDateView();
 
   function open() {
@@ -1056,6 +1154,8 @@ export function lkDate(targetOrOpts, maybeOpts) {
   }
 
   function destroy() {
+    gone = true;
+    tx.destroy();
     prevBtn.removeEventListener('click', prevMonth);
     nextBtn.removeEventListener('click', nextMonth);
     monthSelect.removeEventListener('change', onMonthChange);
@@ -1107,6 +1207,8 @@ export function lkDate(targetOrOpts, maybeOpts) {
       return api;
     },
     destroy,
+    get text() { return tx.get(); },
+    set text(v) { tx.set(v); },
     get isOpen() {
       return proxy.isOpen;
     },

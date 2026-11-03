@@ -1,0 +1,214 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// lkEditor — WYSIWYG rich-text editor on <textarea>
+// Structure:
+//   .lk-editor > .lk-editor__toolbar (.lk-toolbar) + .lk-editor__body > .lk-editor__surface (contenteditable)
+//                                                                     + .lk-editor__source (<textarea>, source view)
+// Native <textarea> (.lk-editor__native) stays in the DOM, visually hidden, for form submission.
+
+.lk-editor {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius-md);
+  background: var(--lk-bg);
+  overflow: hidden;
+  transition: border-color var(--lk-duration-fast) var(--lk-easing-default),
+    box-shadow var(--lk-duration-fast) var(--lk-easing-default);
+
+  &:focus-within {
+    border-color: var(--lk-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-primary) 18%, transparent);
+  }
+
+  &__toolbar.lk-toolbar {
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    border-radius: 0;
+  }
+
+  &__body {
+    position: relative;
+    min-width: 0;
+  }
+
+  &__surface {
+    min-height: 12rem;
+    max-height: 32rem;
+    overflow-y: auto;
+    padding: var(--lk-space-4);
+    font-size: var(--lk-text-sm);
+    line-height: 1.6;
+    color: var(--lk-text);
+    outline: none;
+
+    &--empty::before {
+      content: attr(data-placeholder);
+      color: var(--lk-text-muted);
+      pointer-events: none;
+    }
+
+    // Reasonable rendering defaults for the small set of tags execCommand produces
+    p { margin: 0 0 var(--lk-space-3); }
+    p:last-child { margin-bottom: 0; }
+    h1, h2, h3, h4, h5, h6 { margin: var(--lk-space-4) 0 var(--lk-space-2); line-height: 1.25; }
+    ul, ol { margin: 0 0 var(--lk-space-3); padding-inline-start: var(--lk-space-6); }
+    blockquote {
+      margin: 0 0 var(--lk-space-3);
+      padding: var(--lk-space-1) var(--lk-space-4);
+      border-left: 3px solid var(--lk-border-strong);
+      color: var(--lk-text-muted);
+    }
+    pre {
+      margin: 0 0 var(--lk-space-3);
+      padding: var(--lk-space-3);
+      border-radius: var(--lk-radius);
+      background: var(--lk-bg-subtle);
+      overflow-x: auto;
+      font-family: var(--lk-font-mono);
+      font-size: var(--lk-text-xs);
+    }
+    code {
+      font-family: var(--lk-font-mono);
+      font-size: 0.9em;
+    }
+    pre code { font-size: inherit; }
+    a { color: var(--lk-primary); }
+    img { max-width: 100%; height: auto; }
+    table { border-collapse: collapse; width: 100%; margin: 0 0 var(--lk-space-3); }
+    td, th { border: var(--lk-border-width) solid var(--lk-border); padding: var(--lk-space-1) var(--lk-space-2); }
+  }
+
+  &__source {
+    display: block;
+    width: 100%;
+    min-height: 12rem;
+    max-height: 32rem;
+    margin: 0;
+    padding: var(--lk-space-4);
+    border: none;
+    outline: none;
+    resize: vertical;
+    background: var(--lk-bg-subtle);
+    color: var(--lk-text);
+    font-family: var(--lk-font-mono);
+    font-size: var(--lk-text-xs);
+    line-height: 1.6;
+  }
+
+  &--source .lk-editor__surface { display: none; }
+
+  &--readonly,
+  &--disabled {
+    .lk-editor__surface { background: var(--lk-bg-subtle); }
+  }
+
+  &--disabled {
+    opacity: 0.65;
+
+    .lk-editor__surface,
+    .lk-editor__source {
+      cursor: not-allowed;
+    }
+  }
+
+  &--error {
+    border-color: var(--lk-negative);
+
+    &:focus-within {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-negative) 18%, transparent);
+    }
+  }
+
+  // --- Toolbar formatting buttons: short text-label fallbacks (no dedicated icon) ---
+
+  &__fmt-btn { font-family: inherit; }
+
+  &__fmt-bold .lk-toolbar__btn-label { font-weight: 700; }
+  &__fmt-italic .lk-toolbar__btn-label { font-style: italic; }
+  &__fmt-underline .lk-toolbar__btn-label { text-decoration: underline; }
+  &__fmt-strike .lk-toolbar__btn-label { text-decoration: line-through; }
+  &__fmt-code .lk-toolbar__btn-label { font-family: var(--lk-font-mono); }
+
+  // --- Text / highlight color buttons ---
+
+  &__color-btn {
+    position: relative;
+    flex-direction: column;
+    gap: 0 !important;
+    padding-bottom: 2px !important;
+  }
+
+  &__color-bar {
+    display: block;
+    width: 1em;
+    height: 3px;
+    margin-top: 1px;
+    border-radius: 1px;
+    background: currentColor;
+  }
+
+  &__color-panel {
+    padding: var(--lk-space-2);
+    min-width: 14rem;
+  }
+
+  // --- Link insert popup ---
+
+  &__link-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--lk-space-3);
+    padding: var(--lk-space-3);
+    min-width: 16rem;
+  }
+
+  &__link-check {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lk-space-2);
+    font-size: var(--lk-text-sm);
+    color: var(--lk-text-muted);
+    cursor: pointer;
+  }
+
+  &__link-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--lk-space-2);
+  }
+
+  // --- Dense ---
+
+  &--dense {
+    .lk-editor__surface,
+    .lk-editor__source {
+      min-height: 8rem;
+      padding: var(--lk-space-2);
+      font-size: var(--lk-text-xs);
+    }
+  }
+}
+
+// The native textarea stays in the DOM (native form submit, native `required`) but is
+// visually hidden — same technique as .lk-upload__input.
+.lk-editor__native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.lk-editor__link-popup.lk-popup-proxy__panel,
+.lk-editor__color-popup.lk-popup-proxy__panel {
+  background: var(--lk-bg);
+  border-radius: var(--lk-radius-md);
+}

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Floating</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Floating</h1>
+    <p style="opacity: 0.85;">Look.lkFloating(opts) — a persistent element pinned to a screen corner (FAB, floating widget, chat launcher, …)</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Position &amp; visibility</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      A single floating action button. Switch its corner live (silent — <code>position =</code> is not
+      guarded) and toggle it (guarded — see the log).
+    </p>
+    <div class="demo-row">
+      <div id="fab-position"></div>
+      <button id="fab-toggle" class="lk-btn lk-btn--secondary">Toggle visibility</button>
+    </div>
+    <div id="fab-out" class="demo-output" style="margin-top: var(--lk-space-3);"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Three ways to give it content</p>
+    <div class="demo-row">
+      <button id="content-html" class="lk-btn lk-btn--secondary">Raw HTML string</button>
+      <button id="content-template" class="lk-btn lk-btn--secondary">&lt;template&gt;</button>
+      <button id="content-component" class="lk-btn lk-btn--secondary">lk component definition</button>
+    </div>
+    <p class="demo-sub" style="margin-top: var(--lk-space-3);">
+      Click a button above, then look at the bottom-left corner of the page.
+    </p>
+    <template id="fab-template">
+      <div class="lk-chip lk-chip--filled lk-chip--primary" style="height: 2.5rem; padding-inline: var(--lk-space-4); box-shadow: var(--lk-shadow-md);">
+        <span class="lk-icon lk-icon--chat" aria-hidden="true"></span><span class="lk-chip__label">Need help?</span>
+      </div>
+    </template>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Guard — veto hiding while a condition holds</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      This widget's <code>beforeHide</code> refuses to close while the checkbox below is ticked.
+    </p>
+    <label style="display:flex; align-items:center; gap: var(--lk-space-2); margin-bottom: var(--lk-space-3);">
+      <input type="checkbox" id="guard-lock" /> Lock (prevent hiding)
+    </label>
+    <button id="guard-hide" class="lk-btn lk-btn--secondary">Try to hide it</button>
+    <div id="guard-out" class="demo-output" style="margin-top: var(--lk-space-3);"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>// A FAB built from a &lt;template&gt;
+const fab = Look.lkFloating({
+  position: 'bottom-right',           // 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+  template: '#fab-template',
+  onShow(c) {}, onHide(reason, c) {},
+  beforeHide(reason, ctx) { return !isBusy; },  // false = refuse to hide
+});
+
+fab.position = 'top-right';           // silent, no guard
+fab.toggle();
+fab.setContent({ html: '&lt;button class="lk-btn lk-btn--primary"&gt;New&lt;/button&gt;' });
+fab.destroy();
+
+// Mount a real Look component as the content
+Look.lkFloating({
+  component: { component: Look.lkButton, tag: 'button', options: { onClick: () =&gt; alert('hi') } },
+});</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkFloating',
+  kind: 'Composable',
+  signature: 'const floating = Look.lkFloating(options);',
+  description: [
+    'Creates and mounts (into `document.body` by default) a single element fixed to one corner of the viewport — a floating action button, a chat launcher, a scroll-to-top control, or any small persistent widget. It carries no visual styling of its own (no background, border or shadow) so whatever content you give it — a styled button, a chip, a card — keeps its own look.',
+    'Content is given through exactly one of `html`, `content`, `template` or `component` (see Options). Changing the position (`floating.position = …`) is a silent, unguarded property assignment, like every other programmatic property in the library; showing and hiding are guarded user-style actions with `onShow` / `onHide` and `beforeShow` / `beforeHide`.',
+  ],
+  params: [
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The floating instance.' },
+  options: [
+    { name: 'position', type: "'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'", default: "'bottom-right'", description: 'Which corner.' },
+    { name: 'offset', type: 'number | string | { x, y }', default: '—', description: 'Gap from the corner (px number or CSS length); defaults to the `--lk-space-4` token on both axes.' },
+    { name: 'container', type: 'Element | string', default: 'document.body', description: 'Mount point.' },
+    { name: 'visible', type: 'boolean', default: 'true', description: 'Initial visibility.' },
+    { name: 'dense', type: 'boolean', default: 'false', description: 'Smaller corner offset (the `--lk-space-2` token).' },
+    { name: 'zIndex', type: 'number', default: '—', description: 'Overrides the default `--lk-z-sticky` stacking.' },
+    { name: 'className', type: 'string', default: '—', description: 'Extra class(es) on the root element.' },
+    { name: 'html', type: 'string', default: '—', description: 'Raw HTML string — trusted markup only, not sanitized.' },
+    { name: 'content', type: 'string | Node | Function', default: '—', description: 'Text, a Node, or `(host, ctx) => Node | text | { html } | cleanup fn | Promise` of those — same contract as `renderContent` (used by lkTabs / lkCarousel panels).' },
+    { name: 'template', type: 'string | Element', default: '—', description: 'A `<template>` selector or element; its content is cloned in.' },
+    { name: 'component', type: '{ component, options?, tag? }', default: '—', description: 'Mounts a Look component as the content: `tag` (default `\'div\'`) creates the host element, then `component(host, options)` runs on it — the same shape as lkTable\'s `editor` option. Its returned `destroy()` is called on content change / `destroy()`.' },
+    { name: 'onShow', type: 'Function', default: '—', description: '`(component)` after showing.' },
+    { name: 'onHide', type: 'Function', default: '—', description: '`(reason, component)` after hiding.' },
+  ],
+  guards: [
+    { name: 'beforeShow', signature: 'beforeShow({ source, component })', description: 'Veto, delay (Promise) showing.' },
+    { name: 'beforeHide', signature: 'beforeHide(reason, { source, component })', description: 'Veto, delay (Promise) hiding.' },
+  ],
+  properties: [
+    { name: 'el', type: 'Element', readonly: true, description: 'The floating root element.' },
+    { name: 'visible', type: 'boolean', readonly: true, description: 'Current visibility.' },
+    { name: 'position', type: 'string', description: 'Get/set the corner — assigning is silent and unguarded.' },
+  ],
+  methods: [
+    { name: 'show', signature: 'show()', description: 'Shows it (guarded, `source: \'api\'`).' },
+    { name: 'hide', signature: 'hide([reason])', description: 'Hides it (guarded).' },
+    { name: 'toggle', signature: 'toggle()', description: 'Shows or hides depending on the current state.' },
+    { name: 'setContent', signature: 'setContent({ html | content | template | component })', description: 'Replaces the content (destroys the previous one first).' },
+    { name: 'destroy', signature: 'destroy()', description: 'Destroys any embedded component / content, then removes the element.' },
+  ],
+  classes: [
+    { name: '.lk-floating', description: 'The root — `position: fixed`, no visual chrome of its own.' },
+    { name: '.lk-floating--{position}', description: 'One of the four corner modifiers.' },
+    { name: '.lk-floating--dense', description: 'Smaller corner offset.' },
+  ],
+  tokens: [
+    { name: '--lk-floating-offset-x / -y', default: '--lk-space-4', description: 'Gap from the corner; override per instance via `offset`.' },
+    { name: '--lk-z-sticky', default: '60', description: 'Default stacking order.' },
+  ],
+});
+</script>
+<script>
+  const out = document.getElementById('fab-out');
+  const log = (s) => { out.textContent = (s + '\n' + out.textContent).split('\n').slice(0, 6).join('\n'); };
+
+  const fab = Look.lkFloating({
+    position: 'bottom-right',
+    html: '<button class="lk-btn lk-btn--primary" style="border-radius: var(--lk-radius-full); width: 3rem; height: 3rem; padding: 0; box-shadow: var(--lk-shadow-md);"><span class="lk-icon lk-icon--plus" aria-hidden="true"></span></button>',
+    onShow: () => log('onShow'),
+    onHide: (reason) => log('onHide: ' + reason),
+  });
+
+  Look.lkSegmented('#fab-position', {
+    items: [
+      { value: 'top-left', label: 'Top left' },
+      { value: 'top-right', label: 'Top right' },
+      { value: 'bottom-left', label: 'Bottom left' },
+      { value: 'bottom-right', label: 'Bottom right' },
+    ],
+    value: 'bottom-right',
+    onChange(v) { fab.position = v; log('position = ' + v); },
+  });
+
+  document.getElementById('fab-toggle').addEventListener('click', () => fab.toggle());
+
+  document.getElementById('content-html').addEventListener('click', () => {
+    fab.setContent({ html: '<button class="lk-btn lk-btn--negative">Raw HTML</button>' });
+  });
+  document.getElementById('content-template').addEventListener('click', () => {
+    fab.position = 'bottom-left';
+    fab.setContent({ template: '#fab-template' });
+  });
+  document.getElementById('content-component').addEventListener('click', () => {
+    fab.position = 'bottom-left';
+    fab.setContent({ component: { component: Look.lkButton, tag: 'button', options: { onClick: () => log('component button clicked') } } });
+    fab.el.querySelector('button').textContent = 'lkButton inside';
+    fab.el.querySelector('button').className = 'lk-btn lk-btn--accent';
+  });
+
+  const lock = document.getElementById('guard-lock');
+  const guardOut = document.getElementById('guard-out');
+  const guarded = Look.lkFloating({
+    position: 'top-right',
+    html: '<div class="lk-card" style="padding: var(--lk-space-3) var(--lk-space-4);">Lockable widget</div>',
+    beforeHide(reason) {
+      if (lock.checked) { guardOut.textContent = 'beforeHide vetoed (locked)'; return false; }
+      guardOut.textContent = 'beforeHide allowed (' + reason + ')';
+      return true;
+    },
+  });
+  document.getElementById('guard-hide').addEventListener('click', () => guarded.visible ? guarded.hide('user') : guarded.show());
+</script>
+</body>
+</html>

@@ -192,6 +192,11 @@ LookDocs.render('#api', {
     { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
   ],
   returns: { type: 'Object', description: 'The list instance with the properties and methods below.' },
+  textNamespace: 'list',
+  guards: [
+    { name: 'beforeToggle', signature: 'beforeToggle(open, { item, depth, source, component })', description: 'Runs before a submenu opens or closes (`source` `"click"` | `"keyboard"` | `"api"`). Return `false` to leave it as is. Accordion sibling collapses and the initial state are not guarded; `onToggle` fires only when allowed.' },
+  ],
+  notes: ['lkList has no text of its own (labels are your markup), so it has no localizable keys.'],
 
   options: [
     {

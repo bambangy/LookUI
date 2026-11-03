@@ -111,6 +111,13 @@ LookDocs.render('#api', {
     { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
   ],
   returns: { type: 'Object', description: 'The rating instance with the properties and methods below.' },
+  textNamespace: 'rating',
+  texts: [
+    { name: 'star', default: '{count} star | {count} stars', description: 'aria-label of each star button the component creates (plural by `count`). Markup stars keep their own label.' },
+  ],
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange(value, { source, prev, component })', description: 'Runs before a click changes the rating. Return `false` to keep the old value, or a number to use instead. `onChange` fires only when allowed. Setting `value` is not guarded.' },
+  ],
 
   options: [
     {

@@ -136,6 +136,12 @@ LookDocs.render('#api', {
     { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
   ],
   returns: { type: 'Object', description: 'The chip instance with the properties and methods below.' },
+  textNamespace: 'chip',
+  guards: [
+    { name: 'beforeRemove', signature: 'beforeRemove(chip, { source, component })', description: 'Runs before the chip is removed (close button, Backspace / Delete, `remove()`). Return `false` to keep it. The legacy `onRemove` returning `false` still vetoes, after this guard.' },
+    { name: 'beforeChange', signature: 'beforeChange(selected, { source, prev, component })', description: 'Runs before a toggle chip changes its selected state (click, Enter / Space, `toggle()`). Return `false` to keep it, or a boolean to use instead. Setting `selected` is not guarded.' },
+  ],
+  notes: ['The close button label is the shared `common.remove` text followed by the chip label (override it with `removeLabel`, `text: { "common.remove": "..." }` or `Look.i18n`).'],
 
   options: [
     {
@@ -244,7 +250,7 @@ LookDocs.render('#api', {
   events: [
     {
       name: 'onChange', signature: 'onChange(selected, { source, component })',
-      description: 'Makes the chip a toggle button (`role="button"`, `aria-pressed`, focusable). Fires on click, **Enter** or **Space** (`source: \'click\'`) and on `toggle()` (`source: \'api\'`). `onSelect(selected, ctx)` is a deprecated alias (removed in 1.0).',
+      description: 'Makes the chip a toggle button (`role="button"`, `aria-pressed`, focusable). Fires on click, **Enter** or **Space** (`source: \'click\'`) and on `toggle()` (`source: \'api\'`).',
       args: [
         { name: 'selected', type: 'boolean', description: 'New state.' },
         { name: 'ctx.source', type: "'click' | 'api'", description: 'User activation or `toggle()`.' },

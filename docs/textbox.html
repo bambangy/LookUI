@@ -148,6 +148,15 @@ name.refreshLabels();    // re-scan after labels are rendered later
     <div id="aff-output" class="demo-output"></div>
   </section>
 
+  <section class="demo-section">
+    <p class="demo-section__title">Autosize textarea &amp; password reveal</p>
+    <div style="max-width: 400px; display: flex; flex-direction: column; gap: var(--lk-space-4);">
+      <textarea id="auto-notes" rows="2" placeholder="Type several lines…"></textarea>
+      <textarea id="auto-max" rows="1" placeholder="Grows up to 4 rows, then scrolls"></textarea>
+      <input id="rev-pass" type="password" value="hunter2" />
+    </div>
+  </section>
+
   <div id="api"></div>
 
 </main>
@@ -160,6 +169,10 @@ const MK = "const el = document.createElement('input'); container.appendChild(el
 LookDocs.render('#api', {
   name: 'lkTextbox',
   validateable: true,
+  textNamespace: 'textbox',
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange(value, { source, component, event })', description: 'Runs when the change is **committed** (blur / Enter, `source: "change"`), before `onChange`. Return `false` to veto: the input goes back to its last committed value and neither `onChange` nor re-validation runs. Return a string to replace the committed value. It must answer synchronously (the field already changed). For per-keystroke control use the native `beforeinput` event on `box.el` - there is no `beforeInput` option.' },
+  ],
   kind: 'Component',
   signature: 'const box = Look.lkTextbox(element, options);',
   description: [
@@ -262,6 +275,27 @@ LookDocs.render('#api', {
       ],
     },
     {
+      name: 'autosize', type: 'boolean | { maxRows?: number }', default: 'false',
+      description: '`<textarea>` only. The textarea grows with its content (re-measured on input, on `value =`, on width changes and on locale changes) and never shrinks below its CSS `min-height` / `rows`. With `maxRows` it stops growing at that many rows and scrolls; otherwise it never shows a scrollbar. The resize handle is hidden. `destroy()` restores the inline height / overflow / resize.',
+      examples: [
+        { title: 'Grow with content', run: true, code: `
+          const el = document.createElement('textarea'); el.rows = 2; container.appendChild(el);
+          Look.lkTextbox(el, { label: 'Notes', autosize: true });` },
+        { title: 'maxRows', run: true, code: `
+          const el = document.createElement('textarea'); el.rows = 1; container.appendChild(el);
+          Look.lkTextbox(el, { label: 'Comment', autosize: { maxRows: 4 } });` },
+      ],
+    },
+    {
+      name: 'reveal', type: 'boolean', default: 'false',
+      description: 'Password inputs: adds an eye button at the end of the `.lk-input-affix` box that toggles the input between `password` and `text`. The button keeps focus and the caret in the input, has `aria-pressed` and an `aria-label` from the texts `textbox.showPassword` / `textbox.hidePassword`. `box.type` keeps reporting `password`; use `box.revealed`. The button hides itself if the type is changed to something else; `destroy()` removes it and restores the type.',
+      examples: [
+        { title: 'Reveal', run: true, code: `
+          const el = document.createElement('input'); el.type = 'password'; el.value = 'hunter2'; container.appendChild(el);
+          Look.lkTextbox(el, { label: 'Password', reveal: true });` },
+      ],
+    },
+    {
       name: 'required', type: 'boolean', default: 'from attribute / label flag',
       description: 'Sets the native `required` attribute and adds a red asterisk (`.lk-label--required`) to every label of the control. When omitted, the initial state comes from an existing `required` attribute or from a label marked `data-required` / `data-mandatory`. An explicit `false` overrides both.',
       examples: [
@@ -316,6 +350,7 @@ LookDocs.render('#api', {
   ],
 
   properties: [
+    { name: 'revealed', type: 'boolean', description: 'With `reveal: true`: whether the password is currently shown. Setting it toggles silently.' },
     { name: 'value', type: 'string', description: 'Get or set the text (the native `value`). Setting it does not fire `input`/`change` (nor `onInput`/`onChange`).',
       examples: [{ run: true, code: `
         ${MK}
@@ -441,6 +476,8 @@ LookDocs.render('#api', {
     { name: '.lk-input--error', description: 'Red border + red focus ring; set by `setError()`.' },
     { name: '.lk-input-affix', description: 'The visible box drawn around the input and its adornments (border, radius, focus ring). Also gets `--has-prepend` / `--has-append` state hooks.' },
     { name: '.lk-input-affix__prepend / __append', description: 'Adornment slots, separated from the text by a border.' },
+    { name: '.lk-input__reveal', description: 'The password reveal button (`reveal: true`); the box also gets `.lk-input-affix--has-reveal`.' },
+    { name: '.lk-input--autosize', description: 'Added to an autosizing textarea (`autosize`): no resize handle, hidden overflow until `maxRows`.' },
     { name: '.lk-input--affixed', description: 'Added to the input inside the affix box; removes its own border/background.' },
     { name: '.lk-field', description: 'Vertical label / control / error stack.' },
     { name: '.lk-field--dense', description: 'Dense layout for every input inside the field.',
@@ -453,6 +490,11 @@ LookDocs.render('#api', {
     { name: '.lk-label', description: 'Label text style.' },
     { name: '.lk-label--required', description: 'Adds the red `*` after any label (not tied to `.lk-label`).' },
     { name: '.lk-field-error', description: 'Error message slot under the control.' },
+  ],
+
+  texts: [
+    { name: 'showPassword', default: 'Show password', description: 'Aria label of the reveal button while the password is hidden (`reveal: true`).' },
+    { name: 'hidePassword', default: 'Hide password', description: 'Aria label of the reveal button while the password is shown.' },
   ],
 
   tokens: [
@@ -521,6 +563,11 @@ LookDocs.render('#api', {
     price.prepend = currencies[ci];
     affOut.textContent = 'price.prepend = ' + (price.prepend ? '"' + price.prepend.textContent + '"' : 'null');
   };
+</script>
+<script>
+  Look.lkTextbox('#auto-notes', { label: 'Notes (autosize)', autosize: true });
+  Look.lkTextbox('#auto-max', { label: 'Autosize, maxRows: 4', autosize: { maxRows: 4 } });
+  Look.lkTextbox('#rev-pass', { label: 'Password (reveal)', reveal: true });
 </script>
 </body>
 </html>

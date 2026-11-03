@@ -1,0 +1,98 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// TagInput — lkTagInput on <input>: chips + typing field in one textbox-looking control
+// Structure:
+//   .lk-taginput > .lk-input.lk-taginput__control[role=group] > (.lk-taginput__chip.lk-chip)* + input.lk-taginput__input
+//                + .lk-taginput__message[role=status] + .lk-sr-only live region + input[type=hidden]*
+// The original input is the typing field (borderless); hidden inputs (one per tag) carry the form value.
+
+.lk-taginput {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+// Compound selector: .lk-input (display:block) is emitted earlier
+.lk-input.lk-taginput__control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lk-space-1);
+  box-sizing: border-box;
+  cursor: text;
+
+  &:focus-within {
+    border-color: var(--lk-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-primary) 20%, transparent);
+  }
+
+  &.lk-input--error {
+    border-color: var(--lk-negative);
+
+    &:focus-within {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-negative) 20%, transparent);
+    }
+  }
+}
+
+.lk-taginput__chip {
+  max-width: 100%;
+  min-width: 0;
+  transition:
+    box-shadow var(--lk-duration-fast) var(--lk-easing-default),
+    background-color var(--lk-duration-fast) var(--lk-easing-default);
+
+  // Backspace in the empty input arms the last tag: the next Backspace removes it
+  &--pending {
+    box-shadow: 0 0 0 2px var(--lk-negative);
+  }
+}
+
+input.lk-taginput__input {
+  flex: 1 1 6rem;
+  min-width: 6rem;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  line-height: var(--lk-line-height);
+
+  &::placeholder { color: var(--lk-text-muted); }
+
+  &:focus { outline: none; box-shadow: none; }
+
+  &:disabled { cursor: not-allowed; }
+}
+
+.lk-taginput__message {
+  margin-top: var(--lk-space-1);
+  font-size: var(--lk-text-sm);
+  color: var(--lk-negative);
+
+  &[hidden] { display: none; }
+}
+
+.lk-taginput--readonly .lk-taginput__control {
+  background: var(--lk-surface);
+  cursor: default;
+}
+
+.lk-taginput--disabled .lk-taginput__control {
+  background: var(--lk-surface);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+// Dense: the control follows .lk-input--dense; chips are already dense
+.lk-taginput--dense input.lk-taginput__input {
+  font-size: var(--lk-text-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-taginput__chip { transition: none; }
+}

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Number</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Number</h1>
+    <p style="opacity: 0.85;">lkNumber(input, opts) — numeric, currency, percent and unit input with spinners</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Basics</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="n-basic" />
+      <input id="n-spin" />
+      <input id="n-wheel" />
+    </div>
+    <div id="n-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Currency, percent &amp; unit</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="n-usd" />
+      <input id="n-idr" />
+      <input id="n-pct" />
+      <input id="n-unit" />
+      <input id="n-affix" />
+    </div>
+    <div class="demo-row" style="margin-top: var(--lk-space-4);">
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="n-loc-en">Locale: en</button>
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="n-loc-id">Locale: id</button>
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="n-loc-de">Locale: de</button>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">States</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-4" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="n-dis" />
+      <input id="n-ro" />
+      <input id="n-dense" />
+      <input id="n-err" />
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Form &amp; validation</p>
+    <form id="n-form" class="lk-card" novalidate>
+      <div class="lk-card__body" style="display: grid; gap: var(--lk-space-4); max-width: 24rem;">
+        <input id="n-f-qty" name="qty" />
+        <input id="n-f-price" name="price" />
+        <div class="demo-row" style="margin-bottom: 0;">
+          <button class="lk-btn lk-btn--primary" type="submit">Submit</button>
+        </div>
+        <div id="n-f-out" class="demo-output"></div>
+      </div>
+    </form>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const qty = Look.lkNumber('#qty', {
+  min: 0, max: 99, step: 1,
+  spinners: true,            // + / - buttons; ArrowUp/Down, PageUp/Down = 10 steps
+  wheel: true,               // mouse wheel while focused (opt-in)
+  onChange(value, ctx) { console.log(value, ctx.source, ctx.display); },
+});
+
+const price = Look.lkNumber('#price', { format: 'currency', currency: 'IDR', decimals: 0 });
+const rate  = Look.lkNumber('#rate',  { format: 'percent', value: 0.15 });   // value is a fraction
+
+qty.value;           // number | null   (setter is silent)
+qty.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkNumber',
+  textNamespace: 'number',
+  validateable: true,
+  kind: 'Component',
+  signature: 'const num = Look.lkNumber(inputElement, options);',
+  description: [
+    'Enhances an `<input>` as a number field. When not focused it shows the `Intl.NumberFormat` text (grouping, currency symbol, percent sign, unit); when focused it shows the raw editable number using the locale\'s decimal separator. Typing is filtered to digits, the decimal separator and a leading minus; pasted text is parsed leniently (it understands the locale\'s group / decimal separators).',
+    'The value is a `number | null` and commits on blur, Enter, spin (buttons, arrow keys, wheel) or `setValue()`. A hidden input carries the raw number for form posts — the `name` moves to it, like [lkPhone](phone.html). With `format: \'percent\'` the value is a fraction (`0.25` = 25%) and `min` / `max` / `step` are fractions too (default step `0.01`).',
+    'The locale defaults to `Look.i18n.locale` and the field re-formats live when it changes.',
+  ],
+  params: [
+    { name: 'inputElement', type: 'HTMLInputElement | string', description: 'The input (or selector).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The number instance.' },
+  options: [
+    { name: 'value', type: 'number | null', default: "the input's value", description: 'Initial value.' },
+    { name: 'min / max', type: 'number', default: '—', description: 'Bounds. Spinning always stays inside them; typed values are clamped on commit when `clamp` is on. They also drive the built-in `validation.min` / `validation.max` rules.' },
+    { name: 'step', type: 'number', default: '1 (percent: 0.01)', description: 'Spin step. `PageUp` / `PageDown` move 10 steps; `Home` / `End` jump to `min` / `max`.' },
+    { name: 'decimals', type: 'number | { min, max }', default: 'by format', description: 'Fixed fraction digits, or a `{ min, max }` range. Default: 3 for decimal / unit, the currency\'s own for currency, 0 for percent — at least the digits the step needs.' },
+    {
+      name: 'format', type: "'decimal' | 'currency' | 'percent' | 'unit'", default: "'decimal'",
+      description: 'Display style (Intl.NumberFormat `style`).',
+      values: [['currency', 'Needs `currency` (default `USD`); optional `currencyDisplay`'], ['unit', 'Needs `unit` (e.g. `kilometer`); optional `unitDisplay`'], ['percent', 'The value is a fraction']],
+    },
+    { name: 'currency / currencyDisplay / unit / unitDisplay', type: 'string', default: '—', description: 'Passed to Intl.NumberFormat.' },
+    { name: 'locale', type: 'string', default: 'Look.i18n.locale', description: 'Fixes the number locale for this field (otherwise it follows the global locale).' },
+    { name: 'formatOptions', type: 'Object', default: '—', description: 'Extra Intl.NumberFormat options (`notation`, `signDisplay`, …).' },
+    { name: 'prefix / suffix', type: 'string | Node', default: '—', description: 'Static adornment beside the input (`.lk-number__prefix` / `__suffix`).' },
+    { name: 'spinners', type: 'boolean', default: 'false', description: '+ / − buttons at the end (hold to repeat). Buttons are not tab stops — use the arrow keys.' },
+    { name: 'wheel', type: 'boolean', default: 'false', description: 'Mouse wheel steps the value, only while the input has focus.' },
+    { name: 'allowEmpty', type: 'boolean', default: 'true', description: '`false`: an empty commit restores the last value instead of `null`.' },
+    { name: 'clamp', type: 'boolean', default: 'true', description: 'Clamp to `min` / `max` on commit. With `false` out-of-range values stay and the min / max validation rules report them.' },
+    { name: 'round', type: 'boolean', default: 'true', description: 'Round the committed value to the fraction digits.' },
+    { name: 'label / name / placeholder', type: 'string', default: '—', description: '`label` creates the `.lk-field` wrapper; `name` is the name of the hidden raw-number input.' },
+    { name: 'required / readonly / disabled / dense', type: 'boolean', default: 'false', description: 'Initial states.' },
+    { name: 'rules / validate', type: 'Array / boolean', default: '—', description: 'Validation (see Validation). An unparsable text, `min` and `max` are checked by built-in rules.' },
+    {
+      name: 'onChange', type: 'Function', default: '—',
+      description: '`(value, { source, component, display })` — `source` is `\'input\'` (typed / blur / Enter), `\'spin\'` (buttons, arrows, PageUp/Down, Home/End), `\'wheel\'` or `\'api\'` (`setValue`, `stepUp`, `stepDown`, `clear`). Assigning `value` is silent.',
+    },
+  ],
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange(value, { source, component, display })', description: 'Runs before a commit (typing + blur / Enter, spin, wheel, `setValue()`), after clamping and rounding. Return `false` to veto — the field reverts to the previous committed value; a Promise to wait (resolve `false` to veto); a number (or `null`) to replace the new value. DOM event: `lk:before-change`.' },
+  ],
+  texts: [
+    { name: 'increment', default: 'Increase', description: 'Aria label of the + button.' },
+    { name: 'decrement', default: 'Decrease', description: 'Aria label of the − button.' },
+    { name: 'invalid', default: 'Enter a valid number', description: 'Message when the typed text is not a number.' },
+  ],
+  properties: [
+    { name: 'value', type: 'number | null', description: 'Committed value. Setting it is silent (clamp is not applied; rounding is).' },
+    { name: 'display', type: 'string', readonly: true, description: 'The formatted text of the current value.' },
+    { name: 'min / max / step / locale', type: '—', description: 'Change at runtime; the field re-renders.' },
+    { name: 'prefix / suffix', type: 'string | Node', description: 'Adornment content.' },
+    { name: 'rootEl / inputEl / hiddenEl', type: 'Element', readonly: true, description: 'The `.lk-number` box, the visible input and the hidden raw-value input.' },
+    { name: 'text', type: 'Object', description: 'Per-instance text overrides.' },
+    { name: 'label / name / required / readonly / disabled / enabled / hidden', type: '—', description: 'Standard field properties. `el` is the visible input.' },
+  ],
+  methods: [
+    { name: 'setValue', signature: 'setValue(value, source = "api")', description: 'Commits a value through clamping, the guard and `onChange`.' },
+    { name: 'stepUp / stepDown', signature: 'stepUp(n = 1)', description: 'Moves by `n` steps (through the guard, source `\'api\'`).' },
+    { name: 'clear', signature: 'clear()', description: 'Commits `null` (respects `allowEmpty`).' },
+    { name: 'validate / setValidation / clearValidation', signature: 'validate()', description: 'Validation API, see Validation.' },
+    { name: 'focus', signature: 'focus()', description: 'Focuses the input.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes the UI and restores the original input.' },
+  ],
+  classes: [
+    { name: '.lk-number', description: 'The box (also `.lk-input-affix`); `--dense`, `--spinners`, `--disabled`, `--readonly`, `--error`.' },
+    { name: '.lk-number__input / __prefix / __suffix', description: 'The input and its adornments.' },
+    { name: '.lk-number__spin / __btn', description: 'The spinner group and its buttons (`--up`, `--down`).' },
+  ],
+  tokens: [
+    { name: '--lk-primary', default: '#5c6bc0', description: 'Focus ring, spinner hover.' },
+    { name: '--lk-negative', default: '#e53935', description: 'Error border.' },
+    { name: '--lk-border / --lk-surface', default: '#d0d0d8 / #f5f5f8', description: 'Box border, spinner hover fill.' },
+  ],
+});
+</script>
+<script>
+  const out = document.getElementById('n-out');
+  const log = (label) => (v, c) => { out.textContent = label + ': ' + JSON.stringify(v) + ' (' + c.source + ', "' + c.display + '")'; };
+  Look.lkNumber('#n-basic', { label: 'Quantity', value: 1234.5, onChange: log('basic') });
+  Look.lkNumber('#n-spin', { label: 'Spinners (0–10, step 2)', min: 0, max: 10, step: 2, value: 4, spinners: true, onChange: log('spin') });
+  Look.lkNumber('#n-wheel', { label: 'Wheel (focus first)', value: 5, wheel: true, spinners: true, onChange: log('wheel') });
+
+  Look.lkNumber('#n-usd', { label: 'Price (USD)', format: 'currency', currency: 'USD', value: 1999.9, min: 0 });
+  Look.lkNumber('#n-idr', { label: 'Price (IDR, no decimals)', format: 'currency', currency: 'IDR', decimals: 0, value: 1500000, spinners: true, step: 1000 });
+  Look.lkNumber('#n-pct', { label: 'Discount', format: 'percent', value: 0.15, decimals: 1, spinners: true, min: 0, max: 1 });
+  Look.lkNumber('#n-unit', { label: 'Distance', format: 'unit', unit: 'kilometer', value: 42.5 });
+  Look.lkNumber('#n-affix', { label: 'Weight', value: 72, suffix: 'kg', prefix: '≈' });
+  ['en', 'id', 'de'].forEach((l) => { document.getElementById('n-loc-' + l).onclick = () => Look.i18n.use(l); });
+
+  Look.lkNumber('#n-dis', { label: 'Disabled', value: 3, disabled: true, spinners: true });
+  Look.lkNumber('#n-ro', { label: 'Readonly', value: 3, readonly: true, spinners: true });
+  Look.lkNumber('#n-dense', { label: 'Dense', value: 3, dense: true, spinners: true });
+  const err = Look.lkNumber('#n-err', { label: 'Age', value: 5, min: 18, clamp: false });
+  err.validate();
+
+  const qty = Look.lkNumber('#n-f-qty', { label: 'Quantity', required: true, min: 1, max: 20, clamp: false, spinners: true, validate: true });
+  const price = Look.lkNumber('#n-f-price', { label: 'Price', format: 'currency', currency: 'USD', rules: [(v) => (v != null && v > 1000 ? 'Over budget' : true)], validate: true });
+  const fout = document.getElementById('n-f-out');
+  document.getElementById('n-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const r = Look.lkValidation(qty, price);
+    fout.textContent = r.hasError ? 'Invalid: ' + JSON.stringify(r.errors) : JSON.stringify(Object.fromEntries(new FormData(e.target)));
+  });
+</script>
+</body>
+</html>

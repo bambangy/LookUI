@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Bambang Yudhotomo — LookUI
+import { lkI18n } from './i18n.js';
+import { guard } from './guard.js';
+
+lkI18n.define('datasource', { requestFailed: 'Request failed with status {status}' });
+
 function isObject(value) {
   return value != null && typeof value === 'object' && !Array.isArray(value);
 }
@@ -260,6 +265,10 @@ function createEventHub() {
 /**
  * Reactive data source helper with local transforms and optional remote sync.
  * @param {Object} [opts={}]
+ * @param {Function} [opts.beforeLoad]   — guard (params, { source, component }); false cancels, a returned object replaces the params; a Promise is awaited
+ * @param {Function} [opts.beforeAdd]    — guard (item, ctx); false cancels (add() resolves null), a returned object replaces the item
+ * @param {Function} [opts.beforeUpdate] — guard (nextItem, ctx + { target, changes, current }); false cancels (update() resolves null), a returned object replaces the item
+ * @param {Function} [opts.beforeRemove] — guard (item, ctx + { target }); false cancels (remove() resolves null)
  * @returns {Object}
  */
 export function lkDataSource(opts = {}) {
@@ -317,6 +326,16 @@ export function lkDataSource(opts = {}) {
   let dirty = false;
   let loadSeq = 0;
   let pending = 0; // in-flight transport calls; loading stays true until all settle
+
+  // Guard for the async CRUD/load methods. Resolves synchronously (no extra tick) when no hook is configured.
+  function pre(name, payload, ctx) {
+    if (typeof options[`before${name}`] !== 'function') return { ok: true, payload };
+    return new Promise((resolve) => {
+      const out = guard(null, options, name.charAt(0).toLowerCase() + name.slice(1), payload, { source: 'api', component: api, ...ctx }, (next) => resolve({ ok: true, payload: next }));
+      if (out === false) resolve({ ok: false });
+      else if (out && typeof out.then === 'function') out.then((v) => { if (v === false) resolve({ ok: false }); });
+    });
+  }
 
   function getTotal() {
     if (options.server.paging && Number.isFinite(serverTotal)) return serverTotal;
@@ -467,7 +486,7 @@ export function lkDataSource(opts = {}) {
     if (!response.ok) {
       const message = isObject(body) && body.message
         ? body.message
-        : `Request failed with status ${response.status}`;
+        : lkI18n.t('datasource.requestFailed', { status: response.status });
       // Keep the response so callers can read field errors (e.g. 422 { errors: { name: [...] } })
       const error = new Error(message);
       error.status = response.status;
@@ -527,6 +546,10 @@ export function lkDataSource(opts = {}) {
   }
 
   async function load(params = {}) {
+    let gate = pre('Load', params, {});
+    if (gate && typeof gate.then === 'function') gate = await gate;
+    if (!gate.ok) return view.slice();
+    if (isObject(gate.payload)) params = gate.payload;
     const payload = {
       ...params,
       ...(options.server.filter ? { filter } : {}),
@@ -555,7 +578,11 @@ export function lkDataSource(opts = {}) {
       ...op,
     };
 
-    const next = applyParseItem(record);
+    let gate = pre('Add', record, {});
+    if (gate && typeof gate.then === 'function') gate = await gate;
+    if (!gate.ok) return null;
+
+    const next = applyParseItem(gate.payload);
 
     if (opOptions.optimistic || !opOptions.sync || !options.transport.create) {
       items.push(next);
@@ -588,7 +615,7 @@ export function lkDataSource(opts = {}) {
   }
 
   async function update(target, patch, op = {}) {
-    const idx = findIndex(target);
+    let idx = findIndex(target);
     if (idx < 0) return null;
 
     const opOptions = {
@@ -597,12 +624,25 @@ export function lkDataSource(opts = {}) {
       ...op,
     };
 
-    const current = items[idx];
-    const currentId = current?.[options.keyField];
+    let current = items[idx];
     const patchValue = typeof patch === 'function' ? patch(cloneRecord(current), idx) : patch;
-    const next = isObject(patchValue)
+    let next = isObject(patchValue)
       ? { ...cloneRecord(current), ...patchValue }
       : cloneRecord(current);
+
+    let gate = pre('Update', next, { target, changes: patchValue, current });
+    if (gate && typeof gate.then === 'function') {
+      gate = await gate;
+      if (gate.ok) {
+        // The list may have changed while the guard was pending
+        idx = findIndex(target);
+        if (idx < 0) return null;
+        current = items[idx];
+      }
+    }
+    if (!gate.ok) return null;
+    if (isObject(gate.payload)) next = gate.payload;
+    const currentId = current?.[options.keyField];
 
     if (opOptions.optimistic || !opOptions.sync || !options.transport.update) {
       items[idx] = applyParseItem(next);
@@ -638,7 +678,7 @@ export function lkDataSource(opts = {}) {
   }
 
   async function remove(target, op = {}) {
-    const idx = findIndex(target);
+    let idx = findIndex(target);
     if (idx < 0) return null;
 
     const opOptions = {
@@ -646,6 +686,16 @@ export function lkDataSource(opts = {}) {
       optimistic: options.optimistic,
       ...op,
     };
+
+    let gate = pre('Remove', items[idx], { target });
+    if (gate && typeof gate.then === 'function') {
+      gate = await gate;
+      if (gate.ok) {
+        idx = findIndex(target);
+        if (idx < 0) return null;
+      }
+    }
+    if (!gate.ok) return null;
 
     const removed = items[idx];
 
@@ -672,6 +722,23 @@ export function lkDataSource(opts = {}) {
       }
       throw err;
     }
+  }
+
+  // Reorder the raw items: take the record at `from` and re-insert it so it ends up at index `to`
+  // (indices into `items`, not the view). Local only — no transport call. Returns the moved record or null.
+  function move(from, to) {
+    const n = items.length;
+    from = Number(from);
+    to = Number(to);
+    if (!Number.isInteger(from) || !Number.isInteger(to) || from < 0 || from >= n || to < 0 || to >= n) return null;
+    if (from === to) return items[from];
+    const next = items.slice();
+    const [record] = next.splice(from, 1);
+    next.splice(to, 0, record);
+    items = next;
+    refresh('move', { from, to, record });
+    events.emit('move', { from, to, record, state: snapshot() });
+    return record;
   }
 
   function clear(reason = 'clear') {
@@ -774,6 +841,7 @@ export function lkDataSource(opts = {}) {
     add,
     update,
     remove,
+    move,
     clear,
 
     setFilter,

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Upload</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Upload</h1>
+    <p style="opacity: 0.85;">lkUpload(el, opts) — &lt;input type="file"&gt; as a chip field or a drag-and-drop box</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Field mode (default)</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="up-field" type="file" />
+      <input id="up-field-multi" type="file" multiple />
+    </div>
+    <div id="up-field-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Box mode</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="up-box" type="file" />
+      <input id="up-box-multi" type="file" multiple />
+    </div>
+    <div id="up-box-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">States</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="up-dis" type="file" />
+      <input id="up-ro" type="file" />
+      <div class="lk-field--dense"><input id="up-dense" type="file" /></div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Form &amp; validation</p>
+    <form id="up-form" class="lk-card" novalidate>
+      <div class="lk-card__body" style="display: grid; gap: var(--lk-space-4); max-width: 32rem;">
+        <input id="up-form-cv" type="file" name="cv" />
+        <input id="up-form-photos" type="file" name="photos" multiple />
+        <div class="demo-row" style="margin-bottom: 0;">
+          <button class="lk-btn lk-btn--primary" type="submit">Submit</button>
+          <button class="lk-btn lk-btn--ghost" type="reset">Reset</button>
+        </div>
+        <div id="up-form-out" class="demo-output"></div>
+      </div>
+    </form>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const cv = Look.lkUpload('#cv', {
+  label: 'Resume',
+  mode: 'box',                 // 'field' (default) | 'box'
+  accept: '.pdf,.docx',        // same syntax as the native attribute
+  maxSize: '5MB',              // per file: bytes or '500KB' / '5MB' / '1.5GB'
+  rules: ['required'],         // validation like every form component
+  onChange(value, ctx) { console.log(value, ctx.source); },
+  onReject(rejected) { console.log(rejected.map((r) => r.message)); },
+});
+
+cv.value;        // File | null   (File[] when multiple)
+cv.clear();
+cv.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkUpload',
+  textNamespace: 'upload',
+  validateable: true,
+  kind: 'Component',
+  signature: 'const upload = Look.lkUpload(inputElement, options);',
+  description: [
+    'Enhances an `<input type="file">`. The native input stays in the DOM (so `FormData`, form posts and the native `required` still work) but is visually hidden; its `files` are kept in sync with the selection.',
+    '**`field`** looks like a textbox: selected file names are removable [chips](chip.html) (long names are truncated with an ellipsis, the full name is in the tooltip) and an upload icon sits at the end. **`box`** is a drag-and-drop / click area: a single file is shown inside the box as icon + name + size; several files are listed below the box (icon, name, size) in an accordion that slides open and closed.',
+    'In `multiple` mode, new selections are added to the current ones and duplicates (same name, size and modified date) are ignored; a single-file input replaces its file. Files can also be dropped on either mode. Files that fail `accept`, `maxSize` or `maxFiles` are not added: the message is shown as the field error and `onReject` fires.',
+  ],
+  params: [
+    { name: 'inputElement', type: 'HTMLInputElement | string', description: 'The file input (or selector).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The upload instance.' },
+  options: [
+    {
+      name: 'mode', type: "'field' | 'box'", default: "'field'",
+      description: 'Visual style.',
+      values: [['field', 'Textbox look with file chips and an upload icon'], ['box', 'Drag-and-drop / click area; file list below when `multiple`']],
+    },
+    { name: 'accept', type: 'string', default: "the input's accept", description: 'Allowed types, native syntax: `\'.pdf,.docx\'`, `\'image/*\'`, `\'application/pdf\'`. Applied to the file dialog and re-checked on every selection and drop (a dialog set to "All files" or a drop can bypass the native filter).' },
+    { name: 'maxSize', type: 'number | string', default: 'data-max-size', description: 'Largest allowed file: bytes, or a string such as `\'500KB\'`, `\'5MB\'`, `\'1.5 GB\'`.' },
+    { name: 'multiple', type: 'boolean', default: "the input's multiple", description: 'Allow several files. `multi` is accepted as an alias.' },
+    { name: 'maxFiles', type: 'number', default: 'Infinity', description: 'Most files in `multiple` mode.' },
+    { name: 'label', type: 'string', default: '—', description: 'Creates an `.lk-field` wrapper with a label (clicking the label opens the file dialog).' },
+    { name: 'name', type: 'string', default: '—', description: 'Sets the input\'s `name` attribute.' },
+    { name: 'placeholder', type: 'string', default: '—', description: 'Text shown while nothing is selected (field: "Choose a file…", box: "Drag & drop a file here or click to browse").' },
+    { name: 'hint', type: 'string | false', default: 'from accept / maxSize', description: 'Box mode helper line under the title, e.g. `.pdf, .docx · max 5 MB`. `false` hides it.' },
+    { name: 'listCollapsed', type: 'boolean', default: 'false', description: 'Box + `multiple`: start with the file list closed.' },
+    { name: 'listCollapsible', type: 'boolean', default: 'true', description: 'Box + `multiple`: `false` keeps the list always open (no accordion toggle).' },
+    { name: 'messages', type: 'Object', default: '—', description: 'Rejection messages: `{ type, size, count }`, each a string or `(file) => string`.' },
+    { name: 'required / readonly / disabled / dense', type: 'boolean', default: 'false', description: 'Initial states; `dense` uses the compact size.' },
+    {
+      name: 'onChange', type: 'Function', default: '—',
+      description: '`(value, { source, component, added, removed })` — value is a `File | null` (or `File[]` when multiple). `source` is `\'select\'` (file dialog), `\'drop\'`, `\'remove\'` (chip / row button), `\'clear\'` or `\'api\'` (`add` / `remove`). Assigning `value` is silent.',
+    },
+    { name: 'onReject', type: 'Function', default: '—', description: '`(rejected, { component })` — `rejected` is `[{ file, reason: "type" | "size" | "count", message }]`. Return `false` to keep the default error message from showing (show your own, e.g. with `setValidation`).' },
+  ],
+  guards: [
+    { name: 'beforeAdd', signature: 'beforeAdd(files, { source, component })', description: 'Runs when files arrive from the dialog (`source: "select"`), a drop (`"drop"`) or `add()` (`"api"`), **before** the type / size / count checks. Return `false` to ignore them, a Promise (e.g. an upload-quota check) to wait, or a `File[]` to replace the incoming list (rename, filter, convert). Vetoing a dialog pick also resets the native input.' },
+    { name: 'beforeRemove', signature: 'beforeRemove(files, { source, component })', description: 'Runs before files are removed by a chip / row button (`"remove"`), `clear()` (`"clear"`) or `remove()` (`"api"`). Return `false` to keep them (e.g. after an "Are you sure?" that resolves false), or an array to narrow what is removed.' },
+    { name: 'beforeBrowse', signature: 'beforeBrowse({ source, component })', description: 'Runs before the file dialog opens. Return `false` to open your own picker instead (cloud storage, camera…) and feed the result to `add()`. It must answer synchronously: browsers only open the dialog inside the click that started it.' },
+  ],
+  texts: [
+    { name: 'label', default: 'Upload', description: 'Accessible name of the control when there is no label.' },
+    { name: 'placeholder.single', default: 'Choose a file…', description: 'Field mode, nothing selected.' },
+    { name: 'placeholder.multiple', default: 'Choose files…', description: 'Field mode, multiple, nothing selected.' },
+    { name: 'box.single', default: 'Drag & drop a file here or click to browse', description: 'Box mode title.' },
+    { name: 'box.multiple', default: 'Drag & drop files here or click to browse', description: 'Box mode title, multiple.' },
+    { name: 'hint.maxSize', default: 'max {size}', description: 'Part of the box hint (`{size}` is formatted with the unit names below).' },
+    { name: 'hint.maxSizeEach', default: 'max {size} each', description: 'Same, for `multiple`.' },
+    { name: 'summary', default: { one: '{count} file · {size}', other: '{count} files · {size}' }, description: 'Summary row above the list (plural on `count`).' },
+    { name: 'remove', default: 'Remove {name}', description: 'Aria label of the row remove button.' },
+    { name: 'required.single', default: 'Select a file', description: 'Message of the `required` rule.' },
+    { name: 'required.multiple', default: 'Select at least one file', description: 'Message of the `required` rule, multiple.' },
+    { name: 'error.type', default: '{name}: this file type is not allowed', description: 'Rejected by `accept`.' },
+    { name: 'error.size', default: '{name} is larger than {max}', description: 'Rejected by `maxSize`.' },
+    { name: 'error.count.single', default: 'Only one file can be selected', description: 'Several files for a single input.' },
+    { name: 'error.count.max', default: { one: 'You can upload up to {count} file', other: 'You can upload up to {count} files' }, description: 'Rejected by `maxFiles`.' },
+    { name: 'error.more', default: '{message} (+{count} more)', description: 'Several files were rejected: first message plus the rest.' },
+    { name: 'unit.b / unit.kb / unit.mb / unit.gb', default: 'B / KB / MB / GB', description: 'Size units.' },
+  ],
+  properties: [
+    { name: 'value', type: 'File | File[] | null', description: '`File | null` for a single input, `File[]` when `multiple`. Setting it (a File, a FileList or an array) is silent.' },
+    { name: 'files', type: 'File[]', readonly: true, description: 'Always an array, copy of the current selection.' },
+    { name: 'multiple / mode', type: '—', readonly: true, description: 'Resolved at creation.' },
+    { name: 'accept / maxSize', type: '—', description: 'Change the limits at runtime (they apply to the next selection).' },
+    { name: 'rootEl / triggerEl', type: 'Element', readonly: true, description: 'The `.lk-upload` root and the clickable control (`.lk-upload__control` / `.lk-upload__drop`).' },
+    { name: 'label / name / required / readonly / disabled / enabled / hidden', type: '—', description: 'Standard field properties. `el` is the file input.' },
+  ],
+  methods: [
+    { name: 'browse', signature: 'browse()', description: 'Opens the file dialog (browsers only allow this from a user gesture).' },
+    { name: 'add', signature: 'add(files)', description: 'Adds files (File, FileList or array) through the same checks as a user selection; fires `onChange` with source `\'api\'`.' },
+    { name: 'remove', signature: 'remove(fileOrIndex)', description: 'Removes one file.' },
+    { name: 'clear', signature: 'clear()', description: 'Removes every file.' },
+    { name: 'toggleList', signature: 'toggleList([open])', description: 'Box + `multiple`: opens / closes (or toggles) the file list.' },
+    { name: 'setError', signature: 'setError(message)', description: 'Shows a field error.' },
+    { name: 'clearError', signature: 'clearError()', description: 'Removes the error.' },
+    { name: 'focus', signature: 'focus()', description: 'Focuses the control.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes the UI and wrapper and restores the original input.' },
+  ],
+  classes: [
+    { name: '.lk-upload--field / .lk-upload--box', description: 'Root, one per mode (`--dense`, `--dragover`, `--error`, `--readonly`, `--disabled`, `--filled` states).' },
+    { name: '.lk-upload__control', description: 'Field mode: the textbox-looking control (also `.lk-input`).' },
+    { name: '.lk-upload__drop', description: 'Box mode: the dashed drop area.' },
+    { name: '.lk-upload__summary / __list / __item', description: 'Box + multiple: the accordion header, the list and its rows.' },
+  ],
+  tokens: [
+    { name: '--lk-primary', default: '#5c6bc0', description: 'Focus ring, drag-over highlight, box icon.' },
+    { name: '--lk-negative', default: '#e53935', description: 'Error border and remove-button hover.' },
+    { name: '--lk-border / --lk-surface', default: '#d0d0d8 / #f5f5f8', description: 'Box border and fill.' },
+    { name: '--lk-duration-slow', default: '380ms', description: 'List accordion slide.' },
+  ],
+});
+</script>
+<script>
+  const kb = (n) => `${Math.round(n / 1024)} KB`;
+  const names = (v) => (Array.isArray(v) ? v : v ? [v] : []).map((f) => `${f.name} (${kb(f.size)})`);
+
+  const fieldOut = document.getElementById('up-field-out');
+  const fieldLog = (label) => (value, ctx) => {
+    fieldOut.textContent = `${label}: ${ctx.source} → ${JSON.stringify(names(value))}`;
+  };
+  Look.lkUpload('#up-field', { label: 'Single file', placeholder: 'Choose a file…', onChange: fieldLog('single') });
+  Look.lkUpload('#up-field-multi', { label: 'Multiple files', accept: 'image/*,.pdf', maxSize: '2MB', onChange: fieldLog('multiple'), onReject: (r) => { fieldOut.textContent = 'rejected: ' + r.map((x) => x.message).join(' | '); } });
+
+  const boxOut = document.getElementById('up-box-out');
+  const boxLog = (label) => (value, ctx) => { boxOut.textContent = `${label}: ${ctx.source} → ${JSON.stringify(names(value))}`; };
+  Look.lkUpload('#up-box', { mode: 'box', label: 'Avatar', accept: 'image/*', maxSize: '1MB', onChange: boxLog('avatar') });
+  Look.lkUpload('#up-box-multi', { mode: 'box', label: 'Attachments', maxSize: '10MB', onChange: boxLog('attachments') });
+
+  Look.lkUpload('#up-dis', { label: 'Disabled', disabled: true, mode: 'box' });
+  Look.lkUpload('#up-ro', { label: 'Readonly', readonly: true });
+  Look.lkUpload('#up-dense', { label: 'Dense', dense: true, mode: 'box' });
+
+  const cv = Look.lkUpload('#up-form-cv', { label: 'Resume (PDF, max 1 MB)', accept: '.pdf', maxSize: '1MB', rules: ['required'], validate: true });
+  const photos = Look.lkUpload('#up-form-photos', {
+    label: 'Photos (2–4 images)', mode: 'box', accept: 'image/*', maxFiles: 4,
+    rules: [{ minLength: 2, message: 'Add at least 2 photos' }],
+  });
+  const formOut = document.getElementById('up-form-out');
+  document.getElementById('up-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const r = Look.lkValidation(cv, photos);
+    formOut.textContent = r.hasError
+      ? 'Invalid: ' + JSON.stringify(r.errors)
+      : JSON.stringify({ cv: names(cv.value), photos: names(photos.value) }, null, 2);
+  });
+  document.getElementById('up-form').addEventListener('reset', () => { formOut.textContent = ''; });
+</script>
+</body>
+</html>

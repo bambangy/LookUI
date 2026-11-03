@@ -90,6 +90,17 @@ phone.destroy();</pre>
 LookDocs.render('#api', {
   name: 'lkPhone',
   validateable: true,
+  textNamespace: 'phone',
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange(value, { source, component, country, dial, number, valid })', description: 'Runs when the E.164 value is about to change: `source: "input"` (typing / paste) or `"country"` (picked in the country list). The context describes the **new** state. Return `false` to veto: the digits go back to what they were and the previous country is restored (the inner dropdown too). Return a string to replace the value (E.164 or national digits). Synchronous only. Programmatic `value` / `country` / `number` never ask. The inner country dropdown also bubbles its own `lk:before-change` event.' },
+  ],
+  texts: [
+    { name: 'countryLabel', default: 'Country code', description: 'Accessible name of the country select.' },
+    { name: 'countryPlaceholder', default: '+', description: 'Country select text when no country matches.' },
+    { name: 'searchPlaceholder', default: 'Search country or code…', description: 'Placeholder of the country search. The `searchPlaceholder` option wins.' },
+    { name: 'invalid', default: 'Enter a valid phone number', description: 'Format error for a filled but too short / long number. The `invalidMessage` option wins.' },
+    { name: 'country.<CODE>', default: '—', description: 'Optional per-country name override, e.g. `phone.country.ID`. Otherwise the name comes from `Intl.DisplayNames` for the active `Look.i18n` locale (English uses the built-in list; your own `countries` keep their names).' },
+  ],
   kind: 'Component',
   signature: 'const phone = Look.lkPhone(inputElement, options);',
   description: [

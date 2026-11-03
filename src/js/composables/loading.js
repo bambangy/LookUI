@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Bambang Yudhotomo — LookUI
 import { createPresenceController } from '../helpers/motion.js';
+import { lkI18n } from '../helpers/i18n.js';
+
+lkI18n.define('loading', { label: () => lkI18n.t('common.loading') });
+
+// text option: string | true (default 'Loading…') | () => string — re-evaluated on locale change
+const resolveText = (v) => (typeof v === 'function' ? String(v()) : v === true ? lkI18n.t('loading.label') : v ? String(v) : '');
 
 let activeCount = 0;
 
@@ -67,7 +73,14 @@ export function lkLoading(opts = {}) {
 
   const text = document.createElement('div');
   text.style.textAlign = 'center';
-  text.textContent = options.text;
+  text.textContent = resolveText(options.text);
+  root.setAttribute('role', 'status');
+  const syncLabel = () => {
+    root.setAttribute('aria-label', resolveText(options.text) || lkI18n.t('loading.label'));
+    text.textContent = resolveText(options.text);
+  };
+  syncLabel();
+  const offI18n = lkI18n.onChange(syncLabel);
 
   const contentSlot = document.createElement('div');
 
@@ -180,6 +193,7 @@ export function lkLoading(opts = {}) {
     hide('destroy');
     destroyed = true;
     presence.destroy();
+    offI18n();
     root.removeEventListener('click', onRootClick);
 
     if (root.parentNode) {

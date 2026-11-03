@@ -149,6 +149,13 @@ LookDocs.render('#api', {
     { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
   ],
   returns: { type: 'Object', description: 'The slider instance with the properties and methods below.' },
+  textNamespace: 'slider',
+  texts: [
+    { name: 'label', default: 'Slider', description: 'aria-label of the slider when the markup has no `aria-label` / `aria-labelledby`.' },
+  ],
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange(value, { source, prev, component })', description: 'Evaluated synchronously on every pointer move and key press. Return `false` to keep the last allowed value (the UI is not moved), or a number to use instead. `onChange` fires only for allowed values. Setting `value` is not guarded.' },
+  ],
 
   options: [
     {

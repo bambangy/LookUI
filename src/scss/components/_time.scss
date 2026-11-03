@@ -1,0 +1,176 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Time — lkTime on <input> (built on .lk-input-affix) + popup panel
+// Structure:
+//   .lk-time.lk-input-affix > input.lk-time__input + button.lk-time__btn
+//   popup: .lk-popup-proxy__panel.lk-time-proxy > .lk-time-panel
+//            > .lk-time-panel__row (icon, selects, __sep, __ampm > __ampm-btn)
+//            + .lk-time-panel__footer (__summary, __actions)
+
+.lk-time {
+  position: relative;
+
+  &__input {
+    min-width: 0;
+    flex: 1 1 auto;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__btn {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    padding: 0 var(--lk-space-3);
+    border: 0;
+    border-left: var(--lk-border-width) solid var(--lk-border);
+    background: transparent;
+    color: var(--lk-text-muted);
+    cursor: pointer;
+    transition:
+      background-color var(--lk-duration-fast) var(--lk-easing-default),
+      color var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover:not(:disabled) {
+      background: var(--lk-surface);
+      color: var(--lk-primary);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--lk-primary);
+      outline-offset: -2px;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  &--dense &__btn { padding: 0 var(--lk-space-2); }
+
+  &--readonly &__btn { cursor: default; }
+
+  &--error { border-color: var(--lk-negative); }
+}
+
+.lk-popup-proxy__panel.lk-time-proxy {
+  width: auto;
+  max-width: calc(100vw - var(--lk-space-4));
+  padding: var(--lk-space-3);
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius-xl);
+  background: var(--lk-bg);
+}
+
+.lk-time-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lk-space-3);
+  color: var(--lk-text);
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: var(--lk-space-1);
+  }
+
+  &__icon {
+    display: inline-flex;
+    margin-inline-end: var(--lk-space-1);
+    color: var(--lk-text-muted);
+  }
+
+  &__sep {
+    color: var(--lk-text-muted);
+    font-weight: var(--lk-weight-semibold);
+  }
+
+  &__select {
+    min-width: 3.25rem;
+    padding: var(--lk-space-1) var(--lk-space-2);
+    border: var(--lk-border-width) solid var(--lk-border);
+    border-radius: var(--lk-radius);
+    background: var(--lk-bg);
+    color: var(--lk-text);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    text-align-last: center;
+    cursor: pointer;
+    transition:
+      border-color var(--lk-duration-fast) var(--lk-easing-default),
+      box-shadow var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:focus-visible {
+      outline: none;
+      border-color: var(--lk-primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-primary) 20%, transparent);
+    }
+  }
+
+  &__ampm {
+    display: inline-flex;
+    margin-inline-start: var(--lk-space-2);
+    border: var(--lk-border-width) solid var(--lk-border);
+    border-radius: var(--lk-radius);
+    overflow: hidden;
+  }
+
+  &__ampm-btn {
+    padding: var(--lk-space-1) var(--lk-space-2);
+    border: 0;
+    background: transparent;
+    color: var(--lk-text-muted);
+    font: inherit;
+    font-size: var(--lk-text-sm);
+    cursor: pointer;
+    transition:
+      background-color var(--lk-duration-fast) var(--lk-easing-default),
+      color var(--lk-duration-fast) var(--lk-easing-default);
+
+    &:hover { background: var(--lk-surface); }
+
+    &:focus-visible {
+      outline: 2px solid var(--lk-primary);
+      outline-offset: -2px;
+    }
+
+    &--on,
+    &--on:hover {
+      background: var(--lk-primary);
+      color: var(--lk-primary-contrast);
+    }
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--lk-space-4);
+    padding-top: var(--lk-space-2);
+    border-top: var(--lk-border-width) solid var(--lk-border);
+  }
+
+  &__summary {
+    font-variant-numeric: tabular-nums;
+    font-size: var(--lk-text-sm);
+    color: var(--lk-text-muted);
+    white-space: nowrap;
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--lk-space-1);
+  }
+
+  &--dense { gap: var(--lk-space-2); }
+  &--dense &__select { padding: 2px var(--lk-space-1); font-size: var(--lk-text-sm); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-time__btn,
+  .lk-time-panel__select,
+  .lk-time-panel__ampm-btn { transition: none; }
+}

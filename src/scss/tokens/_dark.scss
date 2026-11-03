@@ -1,0 +1,134 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// =============================================================================
+// LookUI — Dark theme tokens
+// =============================================================================
+// Applied by lkTheme (sets <html data-theme="dark">), or by hand on any container:
+//
+//   <html data-theme="dark">          whole page
+//   <section data-theme="dark">       just this subtree
+//   <html data-theme="system">        no JS: follows the OS (prefers-color-scheme)
+//
+// Only colour tokens and shadows change; spacing, type, radius and motion are shared.
+// Override single values the same way as light tokens, with a higher specificity or later:
+//   :root[data-theme="dark"] { --lk-primary: #4db6ac; }
+//
+// "Inverse surface" pair: --lk-secondary-dark / --lk-text-on-dark are used together as the
+// background / text of tooltips, slider bubbles and `.lk-bar--dark`, and --lk-secondary-dark alone
+// as text in the date picker. In dark mode they swap to a light surface with dark text so both
+// uses stay readable.
+// =============================================================================
+
+@mixin lk-dark-tokens {
+  color-scheme: dark;
+
+  // --- Brand / Action colors (lighter, so they hold on dark surfaces; contrast text turns dark) ---
+  --lk-primary:          #8794e0;
+  --lk-primary-light:    #aab4f0;
+  --lk-primary-dark:     #6674c8;
+  --lk-primary-contrast: #10131f;
+
+  --lk-secondary:          #90a4ae;
+  --lk-secondary-light:    #b0bec5;
+  --lk-secondary-dark:     #cfd8dc;
+  --lk-secondary-contrast: #10151a;
+
+  --lk-accent:          #26c6da;
+  --lk-accent-light:    #4dd0e1;
+  --lk-accent-dark:     #00acc1;
+  --lk-accent-contrast: #001417;
+
+  // --- Semantic / state colors ---
+  --lk-positive:          #66bb6a;
+  --lk-positive-light:    #81c784;
+  --lk-positive-dark:     #43a047;
+  --lk-positive-contrast: #08200b;
+
+  --lk-warning:          #ffb74d;
+  --lk-warning-light:    #ffd180;
+  --lk-warning-dark:     #f9a825;
+  --lk-warning-contrast: #231600;
+
+  --lk-negative:          #f2706e;
+  --lk-negative-light:    #ff8a80;
+  --lk-negative-dark:     #e53935;
+  --lk-negative-contrast: #230707;
+
+  --lk-info:          #4fc3f7;
+  --lk-info-light:    #81d4fa;
+  --lk-info-dark:     #29b6f6;
+  --lk-info-contrast: #03202e;
+
+  // --- Surface / background ---
+  --lk-bg:        #121218;
+  --lk-bg-subtle: #1a1a22;
+  --lk-surface:   #262631;
+  --lk-overlay:   rgb(0 0 0 / 0.65);
+
+  // --- Text ---
+  --lk-text:         #ececf1;
+  --lk-text-muted:   #a3a3b2;
+  --lk-text-on-dark: #14141c;     // text on the inverse surface (--lk-secondary-dark)
+
+  // --- Border ---
+  --lk-border:        #34343f;
+  --lk-border-strong: #5a5a6c;
+
+  // --- Shadows: black on dark needs more opacity to be seen ---
+  --lk-shadow-color: 0 0 0;
+  --lk-shadow-xs: 0 1px 2px 0 rgb(var(--lk-shadow-color) / 0.3);
+  --lk-shadow-sm: 0 1px 3px 0 rgb(var(--lk-shadow-color) / 0.4),
+                    0 1px 2px -1px rgb(var(--lk-shadow-color) / 0.3);
+  --lk-shadow:    0 4px 6px -1px rgb(var(--lk-shadow-color) / 0.4),
+                    0 2px 4px -2px rgb(var(--lk-shadow-color) / 0.3);
+  --lk-shadow-md: 0 6px 12px -2px rgb(var(--lk-shadow-color) / 0.45),
+                    0 3px 6px -3px rgb(var(--lk-shadow-color) / 0.35);
+  --lk-shadow-lg: 0 10px 15px -3px rgb(var(--lk-shadow-color) / 0.5),
+                    0 4px 6px -4px rgb(var(--lk-shadow-color) / 0.4);
+  --lk-shadow-xl: 0 20px 25px -5px rgb(var(--lk-shadow-color) / 0.55),
+                    0 8px 10px -6px rgb(var(--lk-shadow-color) / 0.45);
+  --lk-shadow-inner: inset 0 2px 4px 0 rgb(var(--lk-shadow-color) / 0.35);
+}
+
+:root[data-theme="dark"],
+[data-theme="dark"] {
+  @include lk-dark-tokens;
+}
+
+// A themed container (not the root) also paints its own surface
+[data-theme="dark"]:not(:root) {
+  color: var(--lk-text);
+  background: var(--lk-bg);
+}
+
+// No-JS option: <html data-theme="system"> follows the OS
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] {
+    @include lk-dark-tokens;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Compatibility: chips derive their tonal text by mixing the colour with #000, which
+// darkens it. On a dark surface that is unreadable, so lighten instead (filled chips
+// use the colour's contrast token). Remove once _chip.scss uses a themable mix target.
+// -----------------------------------------------------------------------------
+@each $name in primary, secondary, accent, positive, warning, negative, info {
+  :root[data-theme="dark"] .lk-chip.lk-chip--#{$name},
+  [data-theme="dark"] .lk-chip.lk-chip--#{$name} {
+    --lk-chip-fg: color-mix(in srgb, var(--lk-#{$name}) 70%, #fff);
+  }
+}
+
+:root[data-theme="dark"] .lk-chip--filled,
+[data-theme="dark"] .lk-chip--filled {
+  --lk-chip-fg: var(--lk-primary-contrast);
+}
+
+@each $name in primary, secondary, accent, positive, warning, negative, info {
+  :root[data-theme="dark"] .lk-chip--filled.lk-chip--#{$name},
+  [data-theme="dark"] .lk-chip--filled.lk-chip--#{$name} {
+    --lk-chip-fg: var(--lk-#{$name}-contrast);
+  }
+}
+

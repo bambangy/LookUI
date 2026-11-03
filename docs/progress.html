@@ -133,6 +133,10 @@ LookDocs.render('#api', {
     { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
   ],
   returns: { type: 'Object', description: 'The progress instance with the properties and methods below.' },
+  textNamespace: 'progress',
+  texts: [
+    { name: 'label', default: 'Progress', description: 'aria-label of the bar when the markup has none. The percent label uses `Intl.NumberFormat` with the active locale; the indeterminate `aria-valuetext` uses `common.loading`.' },
+  ],
 
   options: [
     {
@@ -252,6 +256,7 @@ LookDocs.render('#api', {
   ],
 
   notes: [
+    'lkProgress is driven by your code, never by the user, so it has no `before<Action>` guards.',
     '**No events:** progress is display-only; it has no callbacks.',
     '**Accessibility:** add an `aria-label` (or `aria-labelledby`) on the root so screen readers announce what is progressing.',
     '**Label text** is always the rounded percentage of `value / max`, not the raw value. For custom text (e.g. "3 of 5"), leave out `.lk-progress__label` and render your own.',

@@ -1,0 +1,142 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Autocomplete — lkAutocomplete on <input>: ARIA combobox + suggestion popup
+// Structure:
+//   input.lk-input[role=combobox]  (+ .lk-sr-only live region, optional hidden input)
+//   (body) .lk-popup-proxy__panel.lk-autocomplete__panel >
+//            .lk-autocomplete__state (loading | empty | error + retry)
+//          + ul.lk-autocomplete__list[role=listbox] > li.lk-autocomplete__option[role=option] (mark.lk-autocomplete__mark)
+
+// Compound selector: the popup proxy panel styles are emitted later
+.lk-popup-proxy__panel.lk-autocomplete__panel {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: min(32rem, calc(100vw - var(--lk-space-4)));
+  padding: var(--lk-space-1) 0;
+  overflow: hidden;
+  background: var(--lk-bg);
+  border-radius: var(--lk-radius-lg);
+}
+
+.lk-autocomplete__list {
+  list-style: none;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 16rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--lk-border) transparent;
+}
+
+.lk-autocomplete__option {
+  display: flex;
+  align-items: center;
+  margin: 1px var(--lk-space-1);
+  padding: var(--lk-space-2) var(--lk-space-3);
+  border-radius: var(--lk-radius);
+  font-size: var(--lk-text-base);
+  line-height: 1.4;
+  color: var(--lk-text);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--lk-duration-fast) var(--lk-easing-default),
+    color var(--lk-duration-fast) var(--lk-easing-default);
+
+  &--active {
+    background: color-mix(in srgb, var(--lk-primary) 10%, transparent);
+    color: var(--lk-primary);
+  }
+
+  &:active {
+    background: color-mix(in srgb, var(--lk-primary) 16%, transparent);
+  }
+
+  &--disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.lk-autocomplete__mark {
+  padding: 0;
+  background: color-mix(in srgb, var(--lk-primary) 18%, transparent);
+  color: inherit;
+  font-weight: var(--lk-weight-semibold);
+  border-radius: 2px;
+}
+
+.lk-autocomplete__state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lk-space-2);
+  padding: var(--lk-space-4);
+  font-size: var(--lk-text-sm);
+  color: var(--lk-text-muted);
+  text-align: center;
+
+  &[hidden] { display: none; }
+
+  &--error {
+    flex-wrap: wrap;
+    color: var(--lk-negative);
+  }
+}
+
+.lk-autocomplete__spinner {
+  flex: none;
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid var(--lk-border);
+  border-top-color: var(--lk-primary);
+  border-radius: 50%;
+  animation: lk-autocomplete-spin 0.65s linear infinite;
+}
+
+.lk-autocomplete__retry {
+  padding: 0 var(--lk-space-2);
+  border: 0;
+  border-radius: var(--lk-radius);
+  background: transparent;
+  color: var(--lk-primary);
+  font: inherit;
+  font-weight: var(--lk-weight-medium);
+  cursor: pointer;
+
+  &:hover { background: color-mix(in srgb, var(--lk-primary) 10%, transparent); }
+
+  &:focus-visible {
+    outline: 2px solid var(--lk-primary);
+    outline-offset: 1px;
+  }
+}
+
+@keyframes lk-autocomplete-spin {
+  to { transform: rotate(360deg); }
+}
+
+// Dense
+.lk-autocomplete__panel--dense {
+  .lk-autocomplete__option {
+    padding: var(--lk-space-1) var(--lk-space-3);
+    font-size: var(--lk-text-sm);
+  }
+
+  .lk-autocomplete__state { padding: var(--lk-space-3); }
+}
+
+// The input itself: open ring follows the combobox state
+.lk-input[role='combobox'][aria-expanded='true']:not(.lk-input--error) {
+  border-color: var(--lk-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-autocomplete__option { transition: none; }
+  .lk-autocomplete__spinner { animation-duration: 2s; }
+}

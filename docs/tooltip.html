@@ -91,7 +91,11 @@ LookDocs.render('#api', {
     { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
   ],
   returns: { type: 'Object', description: 'The tooltip instance with the properties and methods below.' },
-  notes: 'The tip is positioned with CSS only (absolute, relative to the host) and does not flip or clamp to the viewport — pick a `position` that has room. Text does not wrap (`white-space: nowrap`), so keep tips short.',
+  textNamespace: 'tooltip',
+  guards: [
+    { name: 'beforeShow', signature: 'beforeShow({ source, component })', description: 'Runs when the tip is about to show: hover / focus (`source` `"hover"` | `"focus"`, evaluated synchronously, a veto keeps the tip hidden until the pointer / focus leaves) and `show()` (`"api"`). Return `false` to keep it hidden.' },
+  ],
+  notes: ['The tip text is your own content, so lkTooltip has no localizable keys.', 'The tip is positioned with CSS only (absolute, relative to the host) and does not flip or clamp to the viewport — pick a `position` that has room. Text does not wrap (`white-space: nowrap`), so keep tips short.'],
 
   options: [
     {

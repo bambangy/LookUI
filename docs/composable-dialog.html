@@ -94,6 +94,7 @@ Look.lkDialog.question('Discard draft?', 'You have unsaved changes.', { confirmT
 <script>
 LookDocs.render('#api', {
   name: 'lkDialog',
+  textNamespace: 'dialog',
   kind: 'Composable',
   signature: 'const dialog = Look.lkDialog(options);',
   description: [
@@ -291,6 +292,20 @@ LookDocs.render('#api', {
     },
   ],
 
+  guards: [
+    { name: 'beforeClose', signature: 'beforeClose(reason, { source, component })', description: 'Runs before the dialog closes, whatever the cause (`reason`: `confirm`, `cancel`, `close-button`, `overlay`, `escape`, or the argument of `close()`). `source` is `"user"` or `"api"`. Return `false` to keep it open.' },
+    { name: 'beforeConfirm', signature: 'beforeConfirm({ source, component })', description: 'Runs when the confirm button is clicked, before `onConfirm`. Return `false` to stay open. A returned Promise keeps the dialog open and the button disabled (`aria-busy`) until it settles; resolving `false` cancels. The legacy `onConfirm` returning `false` still keeps the dialog open.' },
+    { name: 'beforeCancel', signature: 'beforeCancel({ source, component })', description: 'Runs when the cancel button is clicked, before `onCancel`. Return `false` to stay open (`onCancel` returning `false` still works too).' },
+  ],
+  texts: [
+    { name: 'closeLabel', default: 'Close dialog', description: 'Aria label of the header close button.' },
+    { name: 'type.success', default: 'Success', description: 'Accessible label of the status icon.' },
+    { name: 'type.error', default: 'Error', description: 'Accessible label of the status icon.' },
+    { name: 'type.warning', default: 'Warning', description: 'Accessible label of the status icon.' },
+    { name: 'type.info', default: 'Information', description: 'Accessible label of the status icon.' },
+    { name: 'type.question', default: 'Question', description: 'Accessible label of the status icon.' },
+    { name: 'common.ok / common.cancel', default: 'OK / Cancel', description: 'Default button captions (the `confirmText` / `cancelText` options win). Use `common.yes` / `common.no` / `common.close` through those options.' },
+  ],
   properties: [
     { name: 'el', type: 'Element', readonly: true, description: 'Root `.lk-composable-dialog` wrapper (receives `hidden`, `.lk-modal--open` and `.lk-modal--closing`).' },
     { name: 'overlayEl', type: 'Element', readonly: true, description: 'The `.lk-modal-overlay` element.' },

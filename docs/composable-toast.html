@@ -75,6 +75,7 @@
 <script>
 LookDocs.render('#api', {
   name: 'lkToast',
+  textNamespace: 'toast',
   kind: 'Composable',
   signature: 'const toast = Look.lkToast(options);',
   description: [
@@ -221,6 +222,13 @@ LookDocs.render('#api', {
     },
   ],
 
+  guards: [
+    { name: 'beforeClose', signature: 'beforeClose(reason, { source, component })', description: 'Runs before the toast closes (`reason`: `dismiss`, `action`, `timeout`, or the argument of `close()`). `source` is `"user"`, `"timeout"` or `"api"`. Return `false` to keep it (a vetoed auto-close does not restart the timer).' },
+    { name: 'beforeAction', signature: 'beforeAction({ source, component })', description: 'Runs when the action button is clicked, before `onAction`. Return `false` to ignore the click (the toast stays and `onAction` is not called).' },
+  ],
+  texts: [
+    { name: 'dismiss', default: 'Dismiss', description: 'Aria label of the close button. The action caption is your `actionText`.' },
+  ],
   properties: [
     { name: 'el', type: 'Element', readonly: true, description: 'The `.lk-toast` element.' },
     { name: 'isOpen', type: 'boolean', readonly: true, description: '`false` as soon as `close()` runs (before the exit animation ends).' },

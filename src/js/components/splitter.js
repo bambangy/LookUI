@@ -4,6 +4,10 @@
 
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { qsa } from '../core/index.js';
+import { guardSync } from '../helpers/guard.js';
+import { lkI18n, bindText } from '../helpers/i18n.js';
+
+lkI18n.define('splitter', { resize: 'Resize' });
 
 /**
  * Enhance a splitter container with drag-to-resize panes.
@@ -11,6 +15,8 @@ import { qsa } from '../core/index.js';
  * @param {Object} [opts]
  * @param {number[]} [opts.sizes]  — initial sizes as percentages [50, 50]
  * @param {number}   [opts.minSize] — minimum pane size in px (default 50)
+ * @param {Object}   [opts.text]    — text overrides (splitter.resize: handle aria-label when the markup has none)
+ * @param {Function} [opts.beforeResize] — ({ source, component, handle, index }) => false; evaluated when a drag starts, a veto prevents that drag (DOM event 'lk:before-resize')
  * @returns {Object}
  */
 export function lkSplitter(el, opts = {}) {
@@ -35,10 +41,21 @@ export function lkSplitter(el, opts = {}) {
     panes.forEach((pane, i) => setBasis(pane, Number(arr[i]) || 0));
   }
 
+  const labelled = new Set();
+  function applyLabels() {
+    handles.forEach(h => {
+      if (!h.hasAttribute('aria-label') || labelled.has(h)) {
+        h.setAttribute('aria-label', tx.t('resize'));
+        labelled.add(h);
+      }
+    });
+  }
+  const tx = bindText('splitter', opts.text, applyLabels);
   handles.forEach(h => {
     h.setAttribute('role', 'separator');
     h.setAttribute('aria-orientation', isVert ? 'horizontal' : 'vertical');
   });
+  applyLabels();
 
   applySizes(opts.sizes);
 
@@ -52,6 +69,10 @@ export function lkSplitter(el, opts = {}) {
     const handleIdx = handles.indexOf(e.currentTarget);
     if (handleIdx < 0 || dragging != null) return;
     if (e.button !== undefined && e.button !== 0) return;
+    if (!guardSync(node, opts, 'resize', undefined, { source: 'pointer', component: comp, handle: e.currentTarget, index: handleIdx }).allowed) {
+      e.preventDefault();
+      return;
+    }
 
     dragging = handleIdx;
     activeHandle = e.currentTarget;
@@ -106,6 +127,8 @@ export function lkSplitter(el, opts = {}) {
   const comp = {};
   applyBase(comp, node);
 
+  Object.defineProperty(comp, 'text', { get() { return tx.get(); }, set(v) { tx.set(v); }, enumerable: true });
+
   Object.defineProperty(comp, 'sizes', {
     get() {
       const sizes = panes.map(p => (isVert ? p.offsetHeight : p.offsetWidth));
@@ -118,7 +141,9 @@ export function lkSplitter(el, opts = {}) {
 
   comp.destroy = function () {
     onPointerUp();
+    tx.destroy();
     handles.forEach(h => {
+      if (labelled.has(h)) h.removeAttribute('aria-label');
       h.removeEventListener('pointerdown', onPointerDown);
       h.removeAttribute('role');
       h.removeAttribute('aria-orientation');

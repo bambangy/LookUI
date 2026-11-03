@@ -622,6 +622,8 @@ ds.toJSON();                          // full snapshot</pre
 
       LookDocs.render('#api', {
         name: 'lkDataSource',
+        textNamespace: 'datasource',
+        noTextOption: true,
         kind: 'Helper',
         signature: 'const ds = Look.lkDataSource(options);   // alias: Look.createDataSource',
         description: [
@@ -638,6 +640,15 @@ ds.toJSON();                          // full snapshot</pre
           '**Failed requests.** A non-2xx response rejects with `Error(body.message || "Request failed with status N")` carrying `status`, the parsed `body`, and `errors` when the body has an `errors` object (e.g. a 422 `{ errors: { field: [...] } }` — lkTable and `lkValidation().submit()` show those under the matching fields); a function transport rejects by throwing (throw `{ message, errors }` for field errors). The error is stored in `error`, emitted as `error`, passed to `hooks.onError`, and the returned promise rejects.',
         ],
 
+        guards: [
+          { name: 'beforeLoad', signature: 'beforeLoad(params, { source, component })', description: 'Runs before `load()` calls the read transport. Return `false` to skip the request (`load()` resolves the current view), or an object to replace the params. A Promise is awaited.' },
+          { name: 'beforeAdd', signature: 'beforeAdd(item, { source, component })', description: 'Runs before `add()` changes anything. Return `false` to cancel (`add()` resolves `null`) or a record to add instead. A Promise is awaited.' },
+          { name: 'beforeUpdate', signature: 'beforeUpdate(nextItem, { source, component, target, changes, current })', description: 'Runs before `update()` applies the patch. Return `false` to cancel (resolves `null`) or a record to use instead.' },
+          { name: 'beforeRemove', signature: 'beforeRemove(item, { source, component, target })', description: 'Runs before `remove()`. Return `false` (or a Promise resolving `false`) to cancel (resolves `null`). With no hook configured these methods stay synchronous up to the first transport call.' },
+        ],
+        texts: [
+          { name: 'requestFailed', default: 'Request failed with status {status}', description: 'Message of the Error thrown for a non-2xx response without a body message.' },
+        ],
         options: [
           {
             name: 'keyField', type: 'string', default: "'id'",
@@ -1139,6 +1150,15 @@ ds.toJSON();                          // full snapshot</pre
               ds.remove((r) => r.color === 'green');` }],
           },
           {
+            name: 'move', signature: 'move(from, to) → Object | null',
+            description: 'Reorders the raw items: the record at index `from` is re-inserted so it ends up at index `to` (indices into `items`, not into the paged/sorted `view`). Local only (no transport call); emits `change` (reason `move`) and `move`. Returns the moved record, or `null` for out-of-range indices. Used by lkTable `rowReorder`.',
+            params: [{ name: 'from', type: 'number', description: 'Current index in `items`.' }, { name: 'to', type: 'number', description: 'Target index in `items`.' }],
+            examples: [{ run: true, code: `
+              const ds = Look.lkDataSource({ data: FRUITS });
+              showView(ds, container);
+              ds.move(0, 3);` }],
+          },
+          {
             name: 'clear', signature: "clear(reason = 'clear') → ds",
             description: 'Removes all records locally (no transport call), forgets the server total, emits `change` and `clear`.',
             examples: [{ run: true, code: `
@@ -1305,6 +1325,7 @@ ds.toJSON();                          // full snapshot</pre
           { name: 'add', signature: "on('add', ({ record, state }) => …)", description: 'A record was added to the local list.' },
           { name: 'update', signature: "on('update', ({ target, record, state }) => …)", description: 'A local record was updated (`target` as passed to `update`).' },
           { name: 'remove', signature: "on('remove', ({ target, record, state }) => …)", description: 'A record was removed from the local list.' },
+          { name: 'move', signature: "on('move', ({ from, to, record, state }) => …)", description: 'A record was moved to another position by `move(from, to)`.' },
           { name: 'clear', signature: "on('clear', ({ state }) => …)", description: '`clear()` was called.' },
           { name: 'filter', signature: "on('filter', ({ filter, state }) => …)", description: '`setFilter` / `clearFilter` / `ds.filter = …`.' },
           { name: 'sort', signature: "on('sort', ({ sort, state }) => …)", description: '`setSort` / `clearSort` / `ds.sort = …`.' },

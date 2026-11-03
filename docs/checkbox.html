@@ -240,6 +240,13 @@ function checkableDocs(FN, MK, noun) {
   LookDocs.render('#api', {
     name: 'lkCheckbox',
     validateable: true,
+    textNamespace: 'checkbox',
+    guards: [
+      { name: 'beforeChange', signature: 'beforeChange(checked, { source, component, event })', description: 'Runs when the user toggles the box (`source: "change"`), before `onChange`. Return `false` to veto: the box is put back and `onChange` / re-validation do not run. Return a boolean to force the resulting state. Synchronous only. `c.checked = …` and `toggle()` are programmatic and never ask.' },
+    ],
+    texts: [
+      { name: 'required', default: 'This option is required', description: 'Message of the `required` rule (when the rule has no own `message`). Other validation messages use the shared `validation.*` keys.' },
+    ],
     kind: 'Component',
     signature: 'const cb = Look.lkCheckbox(element, options);',
     description: [

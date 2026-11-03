@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Localization</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Localization</h1>
+    <p style="opacity: 0.85;">Look.i18n — one registry for every label, placeholder, message and aria text</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live demo</p>
+    <p class="demo-sub">Switch the language: the components below re-render their texts without being re-created. Only the keys in the small demo dictionaries are translated — everything else falls back to English.</p>
+    <div class="demo-row">
+      <label for="loc-lang" class="lk-label" style="margin: 0;">Language</label>
+      <select id="loc-lang" class="lk-select" style="width: auto;">
+        <option value="en">English</option>
+        <option value="id">Bahasa Indonesia</option>
+        <option value="es">Español</option>
+      </select>
+    </div>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-5); align-items: start;">
+      <input id="loc-file" type="file" />
+      <input id="loc-box" type="file" multiple />
+      <div>
+        <input id="loc-name" />
+        <div class="demo-row" style="margin-top: var(--lk-space-3);">
+          <button id="loc-validate" class="lk-btn lk-btn--secondary lk-btn--sm" type="button">Validate</button>
+        </div>
+      </div>
+      <div id="loc-out" class="demo-output"></div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">How it works</p>
+    <p class="demo-sub">Every user-facing string in the library is a <strong>key</strong> such as <code>upload.placeholder.single</code> or <code>common.cancel</code>. Components look a key up in this order and stop at the first hit:</p>
+    <ol class="demo-sub" style="padding-left: var(--lk-space-5);">
+      <li>an explicit text option of the component (<code>placeholder</code>, <code>loadingText</code>, <code>removeLabel</code>, <code>messages</code>, …) — still supported and always wins;</li>
+      <li>the instance <code>text</code> option / <code>component.text = {…}</code>;</li>
+      <li>the active locale (<code>id-ID</code> falls back to <code>id</code>);</li>
+      <li>the fallback locale (<code>en</code>);</li>
+      <li>the built-in English defaults — and if even that is missing, the key itself (plus one console warning).</li>
+    </ol>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">1 — Translate the whole page</p>
+    <pre>// A flat { key: message } dictionary per locale. Only add what you want to change.
+Look.i18n.set('id', {
+  'common.cancel': 'Batal',
+  'common.ok': 'OK',
+  'common.search': 'Cari',
+  'validation.required': '{label} wajib diisi',
+  'upload.placeholder.single': 'Pilih berkas…',
+  'upload.summary': { other: '{count} berkas · {size}' },     // plural forms
+});
+
+Look.i18n.use('id');        // switch — mounted components update themselves
+
+Look.i18n.locale;           // 'id'
+Look.i18n.defaults('upload');   // the English template for one component, ready to translate
+Look.i18n.keys();               // every key the loaded components define</pre>
+  </div>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">2 — Override one component</p>
+    <pre>const cv = Look.lkUpload('#cv', {
+  label: 'Resume',
+  text: {
+    'placeholder.single': 'Attach your resume',    // relative to the component (upload.placeholder.single)
+    'common.remove': 'Delete',                       // shared keys are absolute
+  },
+});
+
+cv.text = { 'placeholder.single': 'Drop it here' };   // runtime, re-renders immediately</pre>
+  </div>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">3 — Message formats</p>
+    <pre>'Hello {name}'                                   // placeholders: t('x', { name: 'Ana' })
+{ one: '{count} file', other: '{count} files' }  // plurals by Intl.PluralRules(locale), also '=0': 'No files'
+(params) =&gt; `${params.count} berkas`               // or a function</pre>
+  </div>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">4 — MVC / server-rendered pages</p>
+    <pre>&lt;!-- Razor: emit the user's dictionary once, before the components are created --&gt;
+&lt;script&gt;
+  Look.i18n.set('id', @Html.Raw(Json.Serialize(Localizer.AllFor("Look"))));
+  Look.i18n.use('@CultureInfo.CurrentUICulture.Name.ToLowerInvariant()');   // e.g. 'id' or 'id-id'
+&lt;/script&gt;
+
+// Plain JS / SPA: lazy-load a locale file
+const dict = await (await fetch('/i18n/look.id.json')).json();
+Look.i18n.set('id', dict);
+Look.i18n.use('id');</pre>
+  </div>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Dates, numbers, sizes</p>
+    <p class="demo-sub">Anything formatted by the library follows the active locale through <code>Intl</code>: <code>lkDate</code> month and weekday names (its <code>locale</code> option defaults to <code>Look.i18n.locale</code>), file sizes in <code>lkUpload</code>, country names in <code>lkPhone</code> (<code>Intl.DisplayNames</code>). Units and words that <code>Intl</code> cannot supply (<code>KB</code>, "Now", "AM") are ordinary keys.</p>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Key reference</p>
+    <p class="demo-sub">Generated from <code>Look.i18n.defaults()</code> on this page — every string of every component in this build. Copy the rows you need into a dictionary.</p>
+    <input id="loc-filter" class="lk-input lk-input--dense" placeholder="Filter keys or texts…" style="max-width: 24rem; margin-bottom: var(--lk-space-3);" />
+    <div id="loc-keys" style="max-height: 28rem; overflow: auto;"></div>
+  </section>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'Look.i18n',
+  kind: 'Helper',
+  signature: 'Look.i18n.set(locale, messages); Look.i18n.use(locale);',
+  description: [
+    'The localization registry. `Look.i18n` and `Look.lkI18n` are the same object. Keys are flat and dotted (`<component>.<key>`); the shared words live under `common.*` and the validation messages under `validation.*`.',
+  ],
+  methods: [
+    { name: 'set', signature: 'set(locale, messages)', description: 'Merges `{ key: message }` into a locale\'s dictionary. Re-renders mounted components when that locale is active.', returns: { type: 'Look.i18n' } },
+    { name: 'extend', signature: 'extend(messages)', description: 'Shorthand for `set(<active locale>, messages)`.' },
+    { name: 'use', signature: 'use(locale)', description: 'Switches the active locale (`\'id\'`, `\'id-ID\'`). Mounted components re-render their texts live.' },
+    { name: 't', signature: 't(key, params?, own?)', description: 'Translates a key. `params` fills `{placeholders}` (and `count` picks the plural form); `own` is an instance override map.', returns: { type: 'string' } },
+    { name: 'has', signature: 'has(key)', description: 'True when the key has a text in the active locale, the fallback or the defaults.' },
+    { name: 'keys', signature: 'keys(namespace?)', description: 'Every registered key (English defaults), sorted; optionally one namespace such as `\'upload\'`.' },
+    { name: 'defaults', signature: 'defaults(namespace?)', description: 'The English defaults as `{ key: message }` — a ready translation template.' },
+    { name: 'locales', signature: 'locales()', description: 'Locales that have a dictionary.' },
+    { name: 'define', signature: 'define(namespace, messages)', description: 'Registers the English source strings of a component (the library does this for its own; use it for components you build on top of Look).' },
+    { name: 'onChange', signature: 'onChange(fn)', description: 'Calls `fn(locale)` when the locale or an active dictionary changes. Returns the unsubscribe function.' },
+    { name: 'reset', signature: 'reset()', description: 'Drops every dictionary and goes back to `en`.' },
+  ],
+  properties: [
+    { name: 'locale', type: 'string', readonly: true, description: 'The active locale.' },
+    { name: 'fallback', type: 'string', description: 'Locale used when the active one lacks a key (default `\'en\'`).' },
+  ],
+  notes: [
+    'Every component exposes the same two hooks: the `text` option (and `component.text`), and a **Text keys** table on its documentation page. Components that format dates, numbers or names also follow `Look.i18n.locale`.',
+  ],
+});
+</script>
+<script>
+  const I = Look.i18n;
+  I.set('id', {
+    'common.cancel': 'Batal', 'common.remove': 'Hapus', 'common.clear': 'Bersihkan', 'common.search': 'Cari',
+    'validation.required': '{label} wajib diisi', 'validation.minLength': '{label} minimal {min} karakter',
+    'upload.placeholder.single': 'Pilih berkas…', 'upload.placeholder.multiple': 'Pilih beberapa berkas…',
+    'upload.box.single': 'Seret & lepas berkas di sini atau klik untuk memilih',
+    'upload.box.multiple': 'Seret & lepas berkas di sini atau klik untuk memilih',
+    'upload.summary': { other: '{count} berkas · {size}' },
+    'upload.remove': 'Hapus {name}',
+    'upload.error.type': '{name}: jenis berkas tidak diizinkan',
+    'upload.error.size': '{name} lebih besar dari {max}',
+    'upload.hint.maxSize': 'maks. {size}', 'upload.hint.maxSizeEach': 'maks. {size} per berkas',
+  });
+  I.set('es', {
+    'common.cancel': 'Cancelar', 'common.remove': 'Quitar', 'common.clear': 'Limpiar', 'common.search': 'Buscar',
+    'validation.required': '{label} es obligatorio', 'validation.minLength': '{label} debe tener al menos {min} caracteres',
+    'upload.placeholder.single': 'Elige un archivo…', 'upload.placeholder.multiple': 'Elige archivos…',
+    'upload.box.single': 'Arrastra y suelta un archivo aquí o haz clic para buscar',
+    'upload.box.multiple': 'Arrastra y suelta archivos aquí o haz clic para buscar',
+    'upload.summary': { one: '{count} archivo · {size}', other: '{count} archivos · {size}' },
+    'upload.remove': 'Quitar {name}',
+    'upload.error.type': '{name}: tipo de archivo no permitido',
+    'upload.error.size': '{name} supera {max}',
+    'upload.hint.maxSize': 'máx. {size}', 'upload.hint.maxSizeEach': 'máx. {size} cada uno',
+  });
+
+  const out = document.getElementById('loc-out');
+  const file = Look.lkUpload('#loc-file', { label: 'Resume', accept: '.pdf', maxSize: '1MB' });
+  const box = Look.lkUpload('#loc-box', { label: 'Attachments', mode: 'box', maxSize: '2MB' });
+  const name = Look.lkTextbox('#loc-name', { label: 'Name', rules: ['required', { minLength: 3 }] });
+  document.getElementById('loc-validate').onclick = () => { name.validate(); };
+  const show = () => { out.textContent = 'Look.i18n.locale = ' + JSON.stringify(I.locale) + '\n' + JSON.stringify({ upload: I.t('upload.placeholder.single'), required: I.t('validation.required', { label: 'Name' }), cancel: I.t('common.cancel') }, null, 2); };
+  document.getElementById('loc-lang').addEventListener('change', (e) => { I.use(e.target.value); show(); });
+  show();
+
+  // key reference, built from the registry
+  const keysBox = document.getElementById('loc-keys');
+  const rows = Object.entries(I.defaults());
+  const fmt = (v) => (typeof v === 'string' ? v : JSON.stringify(v));
+  function renderKeys(q) {
+    q = (q || '').toLowerCase();
+    const list = rows.filter(([k, v]) => !q || k.toLowerCase().includes(q) || fmt(v).toLowerCase().includes(q));
+    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    keysBox.innerHTML = '<table class="api-params"><thead><tr><th>Key</th><th>Default text</th></tr></thead><tbody>'
+      + list.map(([k, v]) => '<tr><td><code>' + esc(k) + '</code></td><td><code>' + esc(fmt(v)) + '</code></td></tr>').join('')
+      + '</tbody></table>' + '<p class="demo-sub">' + list.length + ' of ' + rows.length + ' keys</p>';
+  }
+  renderKeys('');
+  document.getElementById('loc-filter').addEventListener('input', (e) => renderKeys(e.target.value));
+</script>
+</body>
+</html>

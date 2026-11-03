@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Sortable</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+  <style>
+    .sort-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--lk-space-2); max-width: 24rem; }
+    .sort-item { display: flex; align-items: center; gap: var(--lk-space-3); padding: var(--lk-space-3) var(--lk-space-4); background: var(--lk-bg); border: var(--lk-border-width) solid var(--lk-border); border-radius: var(--lk-radius-lg); }
+    .sort-grip { color: var(--lk-text-muted); user-select: none; }
+    .sort-chips { display: flex; flex-wrap: wrap; gap: var(--lk-space-2); max-width: 26rem; }
+    .kanban { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--lk-space-4); max-width: 36rem; }
+    .kanban__col { background: var(--lk-bg-subtle); border-radius: var(--lk-radius-lg); padding: var(--lk-space-3); }
+    .kanban__col h3 { font-size: var(--lk-text-sm); margin: 0 0 var(--lk-space-2); color: var(--lk-text-muted); }
+    .kanban__list { display: grid; gap: var(--lk-space-2); min-height: 3rem; align-content: start; }
+    .kanban__card { padding: var(--lk-space-3); background: var(--lk-bg); border: var(--lk-border-width) solid var(--lk-border); border-radius: var(--lk-radius); }
+  </style>
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Sortable</h1>
+    <p style="opacity: 0.85;">lkSortable(container, opts) — drag-to-reorder lists, table rows, chips and boards (mouse, touch, keyboard)</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">List with a handle</p>
+    <p class="demo-sub">Drag by the grip, or Tab to a grip, press Space, use the arrow keys and press Space again. Escape cancels.</p>
+    <ul id="sort-list" class="sort-list">
+      <li class="sort-item" data-id="design"><span class="sort-grip" data-grip aria-hidden="true">&#x2630;</span>Design review</li>
+      <li class="sort-item" data-id="build"><span class="sort-grip" data-grip aria-hidden="true">&#x2630;</span>Build the feature</li>
+      <li class="sort-item" data-id="test"><span class="sort-grip" data-grip aria-hidden="true">&#x2630;</span>Write the tests</li>
+      <li class="sort-item" data-id="ship"><span class="sort-grip" data-grip aria-hidden="true">&#x2630;</span>Ship it</li>
+    </ul>
+    <div id="sort-list-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Chips (wrapping flex row)</p>
+    <div id="sort-chips" class="sort-chips">
+      <span class="lk-chip lk-chip--primary" data-id="js">JavaScript</span>
+      <span class="lk-chip lk-chip--positive" data-id="css">CSS</span>
+      <span class="lk-chip lk-chip--warning" data-id="html">HTML</span>
+      <span class="lk-chip lk-chip--info" data-id="ts">TypeScript</span>
+      <span class="lk-chip lk-chip--negative" data-id="rust">Rust</span>
+      <span class="lk-chip lk-chip--accent" data-id="go">Go</span>
+    </div>
+    <div id="sort-chips-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Table rows</p>
+    <table class="lk-table" id="sort-table" style="max-width: 32rem;">
+      <thead><tr><th>Name</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr data-id="ada"><td>Ada</td><td>Engineer</td></tr>
+        <tr data-id="linus"><td>Linus</td><td>Maintainer</td></tr>
+        <tr data-id="grace"><td>Grace</td><td>Admiral</td></tr>
+        <tr data-id="alan"><td>Alan</td><td>Researcher</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Board — two lists sharing a group</p>
+    <p class="demo-sub">Drag a card across, or pick one up with the keyboard and press Left / Right to hop to the other column.</p>
+    <div class="kanban">
+      <div class="kanban__col"><h3>To do</h3>
+        <div id="board-todo" class="kanban__list">
+          <div class="kanban__card" tabindex="0" data-id="t1">Write docs</div>
+          <div class="kanban__card" tabindex="0" data-id="t2">Fix bug #12</div>
+          <div class="kanban__card" tabindex="0" data-id="t3">Plan release</div>
+        </div>
+      </div>
+      <div class="kanban__col"><h3>Done <span class="lk-chip lk-chip--sm" id="done-count">0</span></h3>
+        <div id="board-done" class="kanban__list"></div>
+      </div>
+    </div>
+    <div id="board-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Guards</p>
+    <p class="demo-sub"><code>beforeChange</code> runs at drop. Here the first item is pinned: moving it, or dropping anything above it, is refused and the item animates back.</p>
+    <ul id="sort-guard" class="sort-list">
+      <li class="sort-item" data-id="pinned">Pinned (stays first)</li>
+      <li class="sort-item" data-id="a">Item A</li>
+      <li class="sort-item" data-id="b">Item B</li>
+    </ul>
+    <div id="sort-guard-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const sortable = Look.lkSortable('#tasks', {
+  handle: '.grip',              // optional: only this part starts a drag
+  animation: 180,               // FLIP animation of the displaced items (ms)
+  onChange(order, ctx) {        // order = ids ('data-id', else the index)
+    console.log(order, ctx.source, ctx.from, '-&gt;', ctx.to);
+  },
+  beforeChange({ item, from, to }) {
+    if (to === 0) return false; // veto: the item animates back
+  },
+});
+
+sortable.getOrder();            // ['design', 'build', ...]
+sortable.setOrder(['ship', 'build']);   // silent
+sortable.destroy();
+
+// Two lists that exchange items
+Look.lkSortable('#todo', { group: 'board' });
+Look.lkSortable('#done', { group: 'board' });</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkSortable',
+  textNamespace: 'sortable',
+  kind: 'Behavior',
+  signature: 'const sortable = Look.lkSortable(container, options);',
+  description: [
+    'Makes the **children of a container** reorderable by dragging. It uses Pointer Events (mouse, touch and pen) rather than HTML5 drag and drop, moves the real DOM nodes (the markup order is always the truth) and animates the displaced siblings with a FLIP transition driven by the motion tokens. While dragging, a floating **ghost** follows the pointer and the item itself stays in place as a dimmed **placeholder** slot.',
+    'Works for `<ul>` / `<li>`, **table rows** (pass the `<table>` or its `<tbody>`; the ghost is a one-row table with the same column widths, so the layout stays intact), flex-wrap **chips**, card grids and boards. Containers that share a `group` exchange items. The container (and the window) scrolls automatically when you drag near an edge.',
+    '**Keyboard**: focus an item (or its handle), press `Space` / `Enter` to pick it up, move with the arrow keys (`Home` / `End` jump; in a vertical list `Left` / `Right` hop to the neighbouring container of the group), `Space` / `Enter` to drop, `Escape` to cancel. Every step is announced in a polite live region; items get a hint (`aria-describedby`) and `aria-roledescription`.',
+    'Touch: without a `handle` a drag starts after a short press (`delay`, 200 ms) so scrolling still works; with a `handle` it starts at once. Give handles the `.lk-sortable__handle` class (added automatically to elements matching `handle`) so the browser does not scroll under your finger.',
+  ],
+  params: [
+    { name: 'container', type: 'Element | string', description: 'The list, `<tbody>`, `<table>` (its first body is used) or any element whose children are the items.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The sortable instance.' },
+  options: [
+    { name: 'items', type: 'string', default: 'all children', description: 'Selector the **direct children** must match to be sortable.' },
+    { name: 'handle', type: 'string', default: '—', description: 'Selector of the part (inside an item) that starts a drag. Without it the whole item is the handle (text inputs inside still work normally).' },
+    { name: 'filter', type: 'string', default: '—', description: 'Selector of items (or parts of them) that must NOT start a drag. They can still be displaced.' },
+    { name: 'direction', type: "'vertical' | 'horizontal' | 'grid'", default: 'auto', description: 'Layout used to decide before/after. Auto-detected from the item positions when omitted.' },
+    { name: 'group', type: 'string | { name, pull, put }', default: '—', description: 'Containers with the same group name accept each other\'s items. `pull` / `put` (boolean or `(item, component) => boolean`) control leaving and receiving; shorthand options `pull` / `put` also work.' },
+    { name: 'disabled', type: 'boolean', default: 'false', description: 'No dragging or keyboard picking.' },
+    { name: 'delay', type: 'number', default: '0 / 200 (touch, no handle)', description: 'Milliseconds the pointer must stay put before a drag starts; moving earlier cancels (a scroll).' },
+    { name: 'threshold', type: 'number', default: '4 / 8 (touch)', description: 'Pixels to move before a drag starts.' },
+    { name: 'animation', type: 'number', default: '--lk-duration-fast', description: 'Duration of the displacement and drop animations in ms; `0` turns them off. Honors `prefers-reduced-motion`.' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(order, { source, component, item, from, to, fromContainer, toContainer })` after a drop that really changed the order. `source` is `\'drag\'` or `\'key\'`; `order` is the ids (`data-id`, otherwise the index) of THIS container. Moving between containers calls it on both (the source then has `from`/`to` referring to each side). Programmatic `setOrder()` / `value =` are silent.' },
+    { name: 'onStart', type: 'Function', default: '—', description: '`({ item, source, component })` when an item is picked up.' },
+    { name: 'onEnd', type: 'Function', default: '—', description: '`({ item, cancelled, source, component })` when the interaction ends (dropped, cancelled with Escape, or vetoed).' },
+  ],
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange({ item, from, to, fromContainer, toContainer }, { source, component })', description: 'Evaluated at the drop, with the item already shown in its new place. Return `false` (or `preventDefault()` on the DOM event) to put it back with an animation, or a Promise to wait (e.g. save on the server; resolve `false` to revert). When the item moved to another container, the source container is asked first, then the target.' },
+    { name: 'beforeStart', signature: 'beforeStart({ item, source, component })', description: 'Runs when an item is about to be picked up (`source: "drag"` after the threshold, `"key"` on Space / Enter). Return `false` to refuse. Answered synchronously.' },
+  ],
+  texts: [
+    { name: 'hint', default: 'Press Space or Enter to pick up, the arrow keys to move, Space or Enter to drop, Escape to cancel.', description: 'Screen-reader hint attached to every item (`aria-describedby`).' },
+    { name: 'roleDescription', default: 'sortable item', description: '`aria-roledescription` of the items.' },
+    { name: 'pickedUp', default: 'Picked up {item}. Position {from} of {total}. Use the arrow keys to move it.', description: 'Live announcement when an item is picked up with the keyboard.' },
+    { name: 'moved', default: 'Moved to position {to} of {total}', description: 'Announced after each keyboard move.' },
+    { name: 'dropped', default: 'Dropped {item} at position {to} of {total}', description: 'Announced on drop.' },
+    { name: 'cancelled', default: 'Cancelled. {item} stays at position {from} of {total}', description: 'Announced on Escape or a vetoed drop.' },
+  ],
+  properties: [
+    { name: 'value', type: 'Array', description: 'The current order (same as `getOrder()`). Assigning an array reorders silently.' },
+    { name: 'items', type: 'Element[]', readonly: true, description: 'The current items.' },
+    { name: 'disabled', type: 'boolean', description: 'Enable / disable at runtime (a running drag is cancelled).' },
+    { name: 'text', type: 'Object', description: 'Per-instance text overrides.' },
+    { name: 'el', type: 'Element', readonly: true, description: 'The container (`<tbody>` when a table was passed).' },
+  ],
+  methods: [
+    { name: 'getOrder', signature: 'getOrder()', returns: { type: 'Array' }, description: 'Ids of the items in DOM order: `data-id`, otherwise the index.' },
+    { name: 'setOrder', signature: 'setOrder(ids)', description: 'Reorders the items to match `ids` (silent, animated). Items not listed keep their relative order after the listed ones.' },
+    { name: 'refresh', signature: 'refresh()', description: 'Re-applies the accessibility attributes (done automatically when children are added or removed).' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes listeners, ghost, live regions and restores every attribute (`tabindex`, `aria-*`, classes) it touched.' },
+  ],
+  classes: [
+    { name: '.lk-sortable', description: 'Container. Modifiers: `--dragging` (every container taking part in a drag), `--source`, `--over` (the container the item hovers), `--handle`, `--disabled`.' },
+    { name: '.lk-sortable__placeholder', description: 'The dragged item while the pointer drags (dimmed slot).' },
+    { name: '.lk-sortable__item--picked', description: 'The item picked up with the keyboard.' },
+    { name: '.lk-sortable__ghost', description: 'The floating copy under the pointer (appended to `<body>`).' },
+    { name: '.lk-sortable__handle', description: 'A handle element (`touch-action: none`, grab cursor).' },
+    { name: 'body.lk-sortable-dragging', description: 'Set while a pointer drag runs: no text selection, grabbing cursor.' },
+  ],
+  tokens: [
+    { name: '--lk-sortable-ring', default: 'var(--lk-primary)', description: 'Outline of the placeholder, the target container and the focused / picked item.' },
+    { name: '--lk-sortable-ghost-shadow', default: 'var(--lk-shadow-lg)', description: 'Shadow of the ghost.' },
+    { name: '--lk-sortable-ghost-opacity', default: '0.96', description: 'Ghost opacity.' },
+    { name: '--lk-sortable-slot-opacity', default: '0.4', description: 'Placeholder opacity.' },
+    { name: '--lk-duration-fast / --lk-easing-default', default: '180ms / ease-out', description: 'Displacement animation.' },
+  ],
+});
+</script>
+<script>
+  const log = (id, msg) => { document.getElementById(id).textContent = msg; };
+
+  Look.lkSortable('#sort-list', {
+    handle: '[data-grip]',
+    onChange: (order, ctx) => log('sort-list-out', `${ctx.source}: ${ctx.from} → ${ctx.to}  ${JSON.stringify(order)}`),
+  });
+  Look.lkSortable('#sort-chips', {
+    onChange: (order, ctx) => log('sort-chips-out', `${ctx.source}: ${JSON.stringify(order)}`),
+  });
+  Look.lkSortable('#sort-table');
+
+  const doneCount = document.getElementById('done-count');
+  const count = () => { doneCount.textContent = document.getElementById('board-done').children.length; };
+  const board = (c) => (order, ctx) => {
+    log('board-out', `${c}: ${JSON.stringify(order)}  (${ctx.source})`);
+    count();
+  };
+  Look.lkSortable('#board-todo', { group: 'board', onChange: board('todo') });
+  Look.lkSortable('#board-done', { group: 'board', onChange: board('done') });
+
+  Look.lkSortable('#sort-guard', {
+    beforeChange: ({ item, to }) => {
+      if (item.dataset.id === 'pinned' ? to !== 0 : to === 0) {
+        log('sort-guard-out', 'refused: "Pinned" has to stay first');
+        return false;
+      }
+      return undefined;
+    },
+    onChange: (order) => log('sort-guard-out', 'accepted: ' + JSON.stringify(order)),
+  });
+</script>
+</body>
+</html>

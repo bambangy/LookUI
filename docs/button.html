@@ -164,7 +164,12 @@ LookDocs.render('#api', {
     { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
   ],
   returns: { type: 'Object', description: '`{ el, id, hidden, enabled, destroy }` — see below.' },
+  textNamespace: 'button',
+  guards: [
+    { name: 'beforeClick', signature: 'beforeClick(event, { source, component })', description: 'Runs before `onClick`. Return `false` (or call `preventDefault()` on the `lk:before-click` DOM event) to skip the `onClick` callback; a Promise waits. Native listeners you added yourself still fire - the guard only controls the callback.' },
+  ],
   notes: [
+    'lkButton has no text of its own (the caption is your markup), so it has no localizable keys.',
     'Hover lifts the button by 1 px with a small shadow, press scales it to 97 %; both are skipped for `:disabled` / `[aria-disabled="true"]` buttons. With `prefers-reduced-motion: reduce` all button transitions collapse to 1 ms.',
   ],
 

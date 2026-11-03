@@ -54,6 +54,33 @@
     </div>
   </section>
 
+  <section class="demo-section">
+    <p class="demo-section__title">Collapsible (accordion header)</p>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-3" style="align-items:start;">
+      <div class="lk-card" id="cc-1">
+        <div class="lk-card__header"><div class="lk-card__title">Click the header</div></div>
+        <div class="lk-card__body">The body slides away and the chevron flips.</div>
+        <div class="lk-card__footer"><button class="lk-btn lk-btn--primary lk-btn--sm">Action</button></div>
+      </div>
+      <div class="lk-card lk-card--raised" id="cc-2">
+        <div class="lk-card__header"><div class="lk-card__title">Starts closed</div><div class="lk-card__subtitle">collapsed: true</div></div>
+        <div class="lk-card__body">Title and subtitle stay on the left, the chevron on the right.</div>
+      </div>
+      <div class="lk-card lk-card--primary" id="cc-3">
+        <div class="lk-card__header">
+          <div class="lk-card__title">Header button</div>
+          <button class="lk-btn lk-btn--ghost lk-btn--sm" style="color: inherit;" id="cc-3-btn">Ignored</button>
+        </div>
+        <div class="lk-card__body">Buttons and links in the header do not toggle the card.</div>
+      </div>
+    </div>
+    <div class="demo-row" style="margin-top: var(--lk-space-4);">
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="cc-open">Open all</button>
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="cc-close">Close all</button>
+      <span id="cc-out" class="demo-sub"></span>
+    </div>
+  </section>
+
   <div class="demo-usage">
     <p class="demo-usage__title">HTML</p>
     <pre>&lt;div class="lk-card lk-card--raised"&gt;
@@ -66,7 +93,21 @@
 &lt;/div&gt;</pre>
   </div>
 
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript — accordion header</p>
+    <pre>const card = Look.lkCard('#details', {
+  collapsed: true,
+  onOpen(c) { console.log('opened'); },
+  onClose(reason, c) { console.log('closed by', reason); },   // 'header' | 'api'
+});
+
+card.toggle();        // slide open/closed (fires callbacks with reason 'api')
+card.expanded = true; // silent
+card.destroy();       // restores the original markup</pre>
+  </div>
+
   <div id="api"></div>
+  <div id="api-js"></div>
 
 </main>
 
@@ -208,6 +249,7 @@ LookDocs.render('#api', {
 
   tokens: [
     { name: '--lk-bg / --lk-border', default: '#ffffff / #d0d0d8', description: 'Card background, border and section dividers.' },
+    { name: '--lk-duration-slow', default: '380ms', description: 'Collapsible slide and chevron rotation.' },
     { name: '--lk-radius-lg', default: '0.5rem', description: 'Corner radius.' },
     { name: '--lk-shadow', default: '0 4px 6px -1px rgb(0 0 0 / .08), …', description: '`--raised` shadow.' },
     { name: '--lk-shadow-md', default: '0 6px 12px -2px rgb(0 0 0 / .1), …', description: '`--hover` shadow.' },
@@ -216,6 +258,57 @@ LookDocs.render('#api', {
     { name: '--lk-text-muted', default: '#757575', description: 'Subtitle color.' },
   ],
 });
+
+LookDocs.render('#api-js', {
+  name: 'lkCard',
+  kind: 'Component',
+  signature: 'const card = Look.lkCard(cardElement, options);',
+  description: [
+    'Makes the card header an accordion toggle. Everything after `.lk-card__header` (body, footer, …) is moved into a `.lk-collapse` panel that slides to its real height; `.lk-card__media` placed before the header stays visible. The header gets `role="button"`, `tabindex`, `aria-expanded` / `aria-controls` and a rotating chevron, and toggles on click, Enter and Space. Clicks on links, buttons and form controls inside the header (or anything with `data-no-toggle`) are ignored.',
+    '`destroy()` puts the original markup back. Motion uses the shared `--lk-duration-slow` / `--lk-easing-in-out` tokens and respects `prefers-reduced-motion`.',
+  ],
+  params: [
+    { name: 'cardElement', type: 'HTMLElement | string', description: 'The `.lk-card` (or selector). It must contain a direct-child `.lk-card__header`.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The card instance.' },
+  options: [
+    { name: 'collapsed', type: 'boolean', default: 'false', description: 'Start closed. Also read from `data-collapsed` or an existing `.lk-card--collapsed`.' },
+    { name: 'chevron', type: 'boolean', default: 'true', description: 'Show the chevron at the end of the header.' },
+    { name: 'beforeToggle', type: 'Function', default: '—', description: '`(nextExpanded, { source, component })` — return `false` (or a Promise resolving `false`) to keep the card as it is. Also the cancelable DOM event `lk:before-toggle`. See [overridable events](events.html).' },
+    { name: 'onOpen', type: 'Function', default: '—', description: '`(component)` after the card opens.' },
+    { name: 'onClose', type: 'Function', default: '—', description: '`(reason, component)` after it closes; `reason` is `\'header\'` (user) or `\'api\'`.' },
+  ],
+  notes: 'lkCard has no text of its own (the chevron is decorative), so there is nothing to localize. Cards are only toggled by the user or the API, so `beforeToggle` is its single guard.',
+  properties: [
+    { name: 'expanded', type: 'boolean', description: 'Open state. Assigning it is silent (no callbacks).' },
+    { name: 'el / id / hidden / enabled', type: '—', description: 'Standard base properties.' },
+  ],
+  methods: [
+    { name: 'open', signature: 'open()', description: 'Slides the card open (fires `onOpen`).' },
+    { name: 'close', signature: 'close()', description: 'Slides it closed (fires `onClose` with reason `\'api\'`).' },
+    { name: 'toggle', signature: 'toggle()', description: 'Toggles the state.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes the listeners, chevron and panel wrapper and restores the header attributes.' },
+  ],
+  classes: [
+    { name: '.lk-card--collapsible', description: 'Added by `lkCard`. `.lk-card--collapsed` marks the closed state.' },
+    { name: '.lk-card__header--toggle / .lk-card__chevron', description: 'The clickable header and its chevron.' },
+    { name: '.lk-collapse / .lk-collapse__inner', description: 'Shared slide utility (also used by lkUpload): `.lk-collapse--open` animates `grid-template-rows` from `0fr` to `1fr`.' },
+  ],
+});
+
+(function () {
+  const out = document.getElementById('cc-out');
+  const log = (msg) => { out.textContent = msg; };
+  const cards = [
+    Look.lkCard('#cc-1', { onOpen: () => log('card 1 opened'), onClose: (r) => log('card 1 closed by ' + r) }),
+    Look.lkCard('#cc-2', { collapsed: true, onOpen: () => log('card 2 opened'), onClose: (r) => log('card 2 closed by ' + r) }),
+    Look.lkCard('#cc-3', { onOpen: () => log('card 3 opened'), onClose: (r) => log('card 3 closed by ' + r) }),
+  ];
+  document.getElementById('cc-3-btn').addEventListener('click', () => log('header button clicked (card unchanged)'));
+  document.getElementById('cc-open').onclick = () => cards.forEach((c) => c.open());
+  document.getElementById('cc-close').onclick = () => cards.forEach((c) => c.close());
+})();
 </script>
 </body>
 </html>

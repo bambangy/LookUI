@@ -14,7 +14,23 @@
 // Its result is cached per value, re-checks while typing are debounced, and a result
 // that arrives after a newer validation (or a value change) is dropped.
 
+import { lkI18n } from './i18n.js';
+
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+lkI18n.define('validation', {
+  field: 'This field',
+  required: '{label} is required',
+  email: 'Enter a valid email address',
+  min: '{label} must be at least {min}',
+  max: '{label} must be at most {max}',
+  minLength: '{label} must be at least {min} characters',
+  maxLength: '{label} must be at most {max} characters',
+  minItems: 'Select at least {min}',
+  maxItems: 'Select at most {max}',
+  pattern: '{label} is not valid',
+  invalid: 'Invalid value',
+});
 
 export function isEmptyValue(v) {
   return v == null || v === '' || v === false
@@ -37,26 +53,28 @@ export function compileRule(rule, ctx) {
   const spec = typeof rule === 'string' ? { [rule]: true } : rule;
   if (!spec || typeof spec !== 'object') return () => true;
 
-  const label = () => ctx.label() || 'This field';
-  const msg = (fallback) => spec.message || fallback;
+  const t = ctx.t || ((key, params) => lkI18n.t(key, params));
+  const label = () => ctx.label() || t('validation.field');
+  // A rule's own `message` wins; otherwise the (localizable) text for the key
+  const msg = (key, params) => spec.message || t(key, { label: label(), ...params });
 
   return (value) => {
     const empty = isEmptyValue(value);
-    if (spec.required && empty) return msg(ctx.requiredMessage?.() || `${label()} is required`);
+    if (spec.required && empty) return spec.message || ctx.requiredMessage?.() || msg('validation.required');
     if (empty) return true;
-    if (spec.email && !EMAIL.test(String(value))) return msg('Enter a valid email address');
-    if (spec.min != null && Number(value) < spec.min) return msg(`${label()} must be at least ${spec.min}`);
-    if (spec.max != null && Number(value) > spec.max) return msg(`${label()} must be at most ${spec.max}`);
+    if (spec.email && !EMAIL.test(String(value))) return msg('validation.email');
+    if (spec.min != null && Number(value) < spec.min) return msg('validation.min', { min: spec.min });
+    if (spec.max != null && Number(value) > spec.max) return msg('validation.max', { max: spec.max });
     if (spec.minLength != null && lengthOf(value) < spec.minLength) {
-      return msg(Array.isArray(value) ? `Select at least ${spec.minLength}` : `${label()} must be at least ${spec.minLength} characters`);
+      return msg(Array.isArray(value) ? 'validation.minItems' : 'validation.minLength', { min: spec.minLength, count: spec.minLength });
     }
     if (spec.maxLength != null && lengthOf(value) > spec.maxLength) {
-      return msg(Array.isArray(value) ? `Select at most ${spec.maxLength}` : `${label()} must be at most ${spec.maxLength} characters`);
+      return msg(Array.isArray(value) ? 'validation.maxItems' : 'validation.maxLength', { max: spec.maxLength, count: spec.maxLength });
     }
     if (spec.pattern) {
       const re = spec.pattern instanceof RegExp ? spec.pattern : new RegExp(spec.pattern);
       re.lastIndex = 0;
-      if (!re.test(String(value))) return msg(`${label()} is not valid`);
+      if (!re.test(String(value))) return msg('validation.pattern');
     }
     return true;
   };
@@ -112,6 +130,7 @@ function toList(rules) {
  * @param {Function} [cfg.requiredMessage] — default message for the required rule
  * @param {Function[]} [cfg.builtinRules] — rules the component always applies (e.g. phone format)
  * @param {Function} [cfg.labels]        — () => label Elements; a `required` rule gives them the asterisk
+ * @param {Function} [cfg.t]             — (absoluteKey, params) => string; the component's text lookup (default: Look.i18n.t)
  * @returns {{ changed: Function, destroy: Function }}
  *
  * Also reads `opts.validateDebounce` (ms, default 400): delay before async rules re-run while the user edits.
@@ -142,7 +161,9 @@ export function attachValidation(comp, cfg) {
     if (m.size > CACHE_SIZE) m.delete(m.keys().next().value);
   }
   const knownAsync = new WeakSet();
-  const ctx = { label: cfg.label, requiredMessage: cfg.requiredMessage };
+  // cfg.t lets a component route texts through its own `text` option; default is the global registry
+  const tr = (key, params) => (cfg.t ? cfg.t(key, params) : lkI18n.t(key, params));
+  const ctx = { label: cfg.label, requiredMessage: cfg.requiredMessage, t: tr };
   const requiredRule = compileRule({ required: true }, ctx);
   let compiled = rules.map((r) => compileRule(r, ctx));
 
@@ -172,14 +193,14 @@ export function attachValidation(comp, cfg) {
 
   function outcome(r) {
     if (r === true || r == null) return null;
-    return typeof r === 'string' && r ? r : 'Invalid value';
+    return typeof r === 'string' && r ? r : tr('validation.invalid');
   }
 
   function call(fn, value) {
     try {
       return fn(value, comp);
     } catch (err) {
-      return err?.message || 'Invalid value';
+      return err?.message || tr('validation.invalid');
     }
   }
 
@@ -219,7 +240,7 @@ export function attachValidation(comp, cfg) {
     for (const entry of entries) {
       let r = entry.promise ?? call(entry.fn, value);
       if (isThenable(r)) {
-        try { r = await r; } catch (err) { r = err?.message || 'Invalid value'; }
+        try { r = await r; } catch (err) { r = err?.message || tr('validation.invalid'); }
       }
       remember(entry.fn, key, r);
       if (mySeq !== seq) return STALE;
@@ -237,7 +258,9 @@ export function attachValidation(comp, cfg) {
     else comp.el?.removeAttribute?.('aria-busy');
   }
 
-  function apply(msg) {
+  let fromRules = true;
+  function apply(msg, byRules = true) {
+    fromRules = byRules;
     message = msg || null;
     if (message) cfg.setError(message);
     else cfg.clearError();
@@ -306,7 +329,7 @@ export function attachValidation(comp, cfg) {
     }
     const release = interrupt();
     touched = true;
-    apply(String(msg));
+    apply(String(msg), false);
     latest = Promise.resolve(false);
     if (release) release(latest);
     return comp;
@@ -347,6 +370,8 @@ export function attachValidation(comp, cfg) {
     t.addEventListener('change', changed);
   });
   document.addEventListener('focusout', onFocusOut, true);
+  // Switching the locale re-words a visible rule message (a server message set with setValidation() is left alone)
+  const offLocale = lkI18n.onChange(() => { if (touched && message && fromRules) evaluate(false); });
 
   Object.defineProperties(comp, {
     rules: {
@@ -388,6 +413,7 @@ export function attachValidation(comp, cfg) {
         t.removeEventListener('change', changed);
       });
       document.removeEventListener('focusout', onFocusOut, true);
+      offLocale();
     },
   };
 }

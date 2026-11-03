@@ -59,6 +59,7 @@ loading.destroy();   // when the page/controller goes away</pre>
 <script>
 LookDocs.render('#api', {
   name: 'lkLoading',
+  textNamespace: 'loading',
   kind: 'Composable',
   signature: 'const loading = Look.lkLoading(options);',
   description: [
@@ -163,6 +164,9 @@ LookDocs.render('#api', {
     },
   ],
 
+  texts: [
+    { name: 'label', default: 'Loading…', description: 'Accessible name (`aria-label`) of the overlay, and the visible text when `text: true`. Defaults to `common.loading`. The `text` option (a string, `true`, or a function re-evaluated on every locale change) wins. Loaders are not user-driven, so there are no `before…` guards.' },
+  ],
   properties: [
     { name: 'el', type: 'Element', readonly: true, description: 'The `.lk-loading-overlay` root element.' },
     { name: 'isVisible', type: 'boolean', readonly: true, description: '`true` between `show()` and `hide()`.' },

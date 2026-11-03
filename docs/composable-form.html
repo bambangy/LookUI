@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Form</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Form</h1>
+    <p style="opacity: 0.85;">lkForm(form, opts) — values, dirty tracking, reset, validation and submit for a &lt;form&gt;, without reactive state</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Live form</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">Components (textbox, dropdown) are registered; the plain checkbox, radios, textarea and number input are read by <code>name</code>. Edit something: the dirty badge and the change list update. Submitting validates, then shows the values; the e-mail <code>taken@example.com</code> simulates a server 422.</p>
+    <form id="fm" class="lk-card" novalidate>
+      <div class="lk-card__body" style="display: grid; gap: var(--lk-space-4); max-width: 34rem;">
+        <input id="fm-name" name="name" />
+        <input id="fm-email" name="email" />
+        <div id="fm-country"></div>
+        <label class="lk-field"><span>Bio</span><textarea class="lk-input" name="bio" rows="2"></textarea></label>
+        <div class="demo-row" style="margin-bottom: 0;">
+          <label><input type="radio" name="plan" value="free" checked /> Free</label>
+          <label><input type="radio" name="plan" value="pro" /> Pro</label>
+          <label><input type="checkbox" name="newsletter" /> Newsletter</label>
+          <label>Seats <input class="lk-input" type="number" name="seats" value="1" min="1" style="width: 5rem;" /></label>
+        </div>
+        <div class="demo-row" style="margin-bottom: 0; align-items: center;">
+          <button class="lk-btn lk-btn--primary" type="submit">Submit</button>
+          <button class="lk-btn lk-btn--ghost" type="reset">Reset</button>
+          <button class="lk-btn lk-btn--outline" type="button" id="fm-commit">Mark pristine</button>
+          <button class="lk-btn lk-btn--outline" type="button" id="fm-fill">setValues</button>
+          <button class="lk-btn lk-btn--outline" type="button" id="fm-lock">Disable</button>
+          <span id="fm-dirty" class="lk-badge">pristine</span>
+        </div>
+        <pre id="fm-out" class="demo-output" style="margin: 0; min-height: 4rem;"></pre>
+      </div>
+    </form>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const email = Look.lkTextbox('#email', { label: 'E-mail', rules: ['required', 'email'] });
+const country = Look.lkDropdown('#country', { items, name: 'country' });
+
+const form = Look.lkForm('#signup', {
+  fields: { email, country },          // components by name; every other named control is read natively
+  warnOnLeave: true,                   // "leave site?" prompt while dirty
+  onChange(values, { name, source }) { console.log(name, source, values[name]); },
+  async onSubmit(values) {             // runs after validation; throw a 422 body to map errors onto fields
+    await api.post('/signup', values);
+    form.commit();                     // saved: this is the new baseline
+  },
+  beforeSubmit: (values) => confirmTerms() || false,
+});
+
+form.getValues();            // { email, country, plan: 'free', newsletter: false, seats: 1, … }
+form.setValues({ email: 'a@b.co' });   // silent
+form.dirty; form.changes();  // { email: { from: '', to: 'a@b.co' } }
+form.reset();                // back to the baseline, not the markup defaults
+form.notify('country');      // for components that do not emit a native input / change event
+form.destroy();              // listeners, the novalidate attribute, the unload prompt</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkForm',
+  textNamespace: 'validation',
+  kind: 'Composable',
+  signature: 'const form = Look.lkForm(formElement, options);',
+  description: [
+    'A thin helper over a `<form>`: it keeps a registry of fields and answers "what are the values", "what changed", "put it back" and "submit it". It is **not reactive**: it holds no state of its own. Values are read from the fields on demand, `dirty` deep-compares them with the baseline taken at creation (or the last `commit()`).',
+    '**Fields.** Pass components in `fields` (or `register(name, component)`): their `value` is used, they are validated by [lkValidation](validation.html) and receive server errors. Every other named native control inside the form is handled by `name`: text-like inputs and textareas give strings, `number` gives a number (`null` when empty), a lone checkbox without a `value` gives a boolean, a checkbox group gives an array, a radio group gives the checked value or `null`, `select multiple` gives an array and `file` gives a `File` (an array when `multiple`).',
+    '**Submitting.** The native `submit` event is taken over (`native: true` keeps it): `beforeSubmit` guard, then validation, then `onSubmit(values)`. A thrown 422-style body (`{ errors }`, lkDataSource errors, axios `response.data.errors`) is mapped onto the fields by name. `submit()` never rejects: it resolves `{ ok, reason, … }`. The `reset` event restores the baseline.',
+    '**Change events.** `onChange` is driven by the bubbling native `input` / `change` events of the form (duplicates are dropped when the value did not change). Components that do not dispatch such an event call for it with `form.notify(name)`. Measured in this release: **lkTextbox, lkCheckbox, lkUpload and lkDate (with an `<input>` trigger and `displayFormat`) trigger it; lkDropdown does not** — call `notify(name)` from its `onChange`.',
+  ],
+  params: [
+    { name: 'formElement', type: 'HTMLFormElement | string', description: 'The form (or selector).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The form instance.' },
+  options: [
+    { name: 'fields', type: 'Object', default: '—', description: '`{ name: component }` registered at creation. The name is the key in `getValues()` and the key server errors are matched on.' },
+    { name: 'native', type: 'boolean', default: 'false', description: 'Do not take over submit: the browser posts the form. The form is validated (synchronously) and the post is blocked when something is invalid or `beforeSubmit` vetoes.' },
+    { name: 'novalidate', type: 'boolean', default: 'true', description: 'Adds `novalidate` so the components own the validation messages (the native bubbles would stop the submit event). Restored on `destroy()`.' },
+    { name: 'warnOnLeave', type: 'boolean', default: 'false', description: 'Ask before the page is closed or reloaded while the form is dirty (`beforeunload`). Call `commit()` after saving. Also a settable property.' },
+    { name: 'focusFirst / scroll', type: 'boolean', default: 'true', description: 'Focus / scroll to the first invalid component, like lkValidation.' },
+    { name: 'loading / loadingText', type: 'Element | string', default: '—', description: 'Element covered by an inner loader while `onSubmit` runs.' },
+    { name: 'onChange', type: 'Function', default: '—', description: '`(values, { source, name, component, form })` — `source` is `\'input\'`, `\'change\'`, `\'notify\'` or `\'api\'` (`setValues(…, { silent: false })`). Programmatic `setValues`, `reset`, `clear` are silent.' },
+    { name: 'onSubmit', type: 'Function', default: '—', description: '`(values, { source, component, event })` — runs after validation. Return a value / Promise; throw to report a server error.' },
+    { name: 'onSubmitted', type: 'Function', default: '—', description: '`(result, { values, component })` — after every submit attempt, with the `{ ok, reason, … }` result.' },
+    { name: 'onReset', type: 'Function', default: '—', description: '`({ source, component })` — after the baseline was restored.' },
+  ],
+  guards: [
+    { name: 'beforeSubmit', signature: 'beforeSubmit(values, { source, component, event })', description: 'Runs **before validation** when the user submits (`"user"`) or `submit()` is called (`"api"`). Return `false` to cancel (`submit()` resolves `{ ok: false, reason: "cancelled" }`), a Promise (a confirm dialog) to wait, or an object to replace the values passed to `onSubmit`. DOM event `lk:before-submit` on the form.' },
+    { name: 'beforeReset', signature: 'beforeReset({ source, component })', description: 'Runs before the baseline is restored (reset button, `reset` event, `reset()`). Return `false` to keep the current values. DOM event `lk:before-reset`.' },
+  ],
+  texts: [
+    { name: 'validation.submitError', default: 'Something went wrong', description: 'Message of a failed submit whose error carries none (shared with lkValidation; lkForm has no texts of its own).' },
+    { name: 'validation.saving', default: 'Saving…', description: 'Loader text while `onSubmit` runs and `loading` is set.' },
+  ],
+  properties: [
+    { name: 'el', type: 'HTMLFormElement', readonly: true, description: 'The form.' },
+    { name: 'dirty', type: 'boolean', readonly: true, description: 'True when `getValues()` differs from the baseline (deep comparison: arrays, dates, plain objects; files by identity).' },
+    { name: 'names', type: 'string[]', readonly: true, description: 'Every field name: registered and native.' },
+    { name: 'submitting', type: 'boolean', readonly: true, description: 'A submit is running (further submits resolve `{ reason: "busy" }`; the form gets `aria-busy`).' },
+    { name: 'warnOnLeave', type: 'boolean', description: 'Turn the unload prompt on / off.' },
+  ],
+  methods: [
+    { name: 'register / unregister', signature: 'register(name, component) / unregister(name)', description: 'Add or remove a component. Its current value joins the baseline.' },
+    { name: 'get', signature: 'get(name)', description: 'The registered component, the native element (an array of them for groups), or `null`.' },
+    { name: 'getValues', signature: 'getValues()', description: 'A plain object of every field.' },
+    { name: 'setValues', signature: 'setValues(values, { silent: true })', description: 'Sets fields by name (unknown names are ignored). Silent by default; `silent: false` fires `onChange` with source `\'api\'`.' },
+    { name: 'changes', signature: 'changes()', description: '`{ name: { from, to } }` against the baseline.' },
+    { name: 'commit / markPristine', signature: 'commit()', description: 'The current values become the baseline (call after a successful save).' },
+    { name: 'reset', signature: 'reset()', description: 'Restores the baseline silently and clears validation messages (`beforeReset` applies).' },
+    { name: 'clear', signature: 'clear()', description: 'Empties every field and clears validation messages (silent).' },
+    { name: 'validate', signature: 'validate({ focusFirst, scroll })', description: 'Validates the registered components (disabled / hidden ones are skipped); returns `{ hasError, valid, errors }`. `validateAsync()` awaits async rules.' },
+    { name: 'submit', signature: 'submit(handler?, { focusFirst })', description: 'Guard, validate, then `handler(values, { source, component })` (default: `onSubmit`). Resolves `{ ok, reason?: \'invalid\' | \'error\' | \'busy\' | \'cancelled\', result?, errors?, unmatched?, message? }`; never rejects.' },
+    { name: 'setErrors', signature: 'setErrors({ field: message | [messages] })', description: 'Shows server messages on the matching components; returns the entries nothing matched (native fields have no message slot).' },
+    { name: 'notify', signature: 'notify(name)', description: 'Fires `onChange` (source `\'notify\'`) for a field whose component did not emit a native event, if its value changed.' },
+    { name: 'serialize / toJSON', signature: 'serialize() / toJSON()', description: '`FormData` (disabled fields skipped like a native post; dates use the component\'s `iso()`), and `getValues()` for `JSON.stringify`.' },
+    { name: 'disable / enable / readonly', signature: 'disable() / enable() / readonly(on = true)', description: 'Applied to every field, registered or native.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes the listeners, the unload prompt, the registry and the `novalidate` it added. The components are left alone (destroy them yourself).' },
+  ],
+  notes: [
+    'Setting `name` is optional for components registered in `fields`; the registry key wins. A native control with the same name as a registered key, or inside a registered component\'s element, is not read twice.',
+  ],
+});
+</script>
+<script>
+  const nameBox = Look.lkTextbox('#fm-name', { label: 'Name', rules: ['required'] });
+  const emailBox = Look.lkTextbox('#fm-email', { label: 'E-mail', rules: ['required', 'email'], validate: true });
+  const countryDd = Look.lkDropdown('#fm-country', {
+    label: 'Country', placeholder: 'Choose…',
+    items: [{ value: 'id', text: 'Indonesia' }, { value: 'nl', text: 'Netherlands' }, { value: 'jp', text: 'Japan' }],
+    onChange: () => form.notify('country'),
+  });
+  const out = document.getElementById('fm-out');
+  const dirtyBadge = document.getElementById('fm-dirty');
+  const show = () => {
+    const d = form.dirty;
+    dirtyBadge.textContent = d ? 'dirty (' + Object.keys(form.changes()).length + ')' : 'pristine';
+    dirtyBadge.className = 'lk-badge' + (d ? ' lk-badge--warning' : '');
+  };
+  const form = Look.lkForm('#fm', {
+    fields: { name: nameBox, email: emailBox, country: countryDd },
+    loading: '#fm',
+    onChange(values, ctx) {
+      out.textContent = ctx.name + ' (' + ctx.source + ') → ' + JSON.stringify(values[ctx.name]) + '\n' + JSON.stringify(form.changes());
+      show();
+    },
+    async onSubmit(values) {
+      await new Promise((r) => setTimeout(r, 500));
+      if (values.email === 'taken@example.com') { const e = new Error('Validation failed'); e.body = { errors: { email: ['This e-mail is already registered'] } }; throw e; }
+      out.textContent = 'Saved:\n' + JSON.stringify(values, null, 2);
+      form.commit();
+      show();
+    },
+    onSubmitted(res) { if (!res.ok && res.reason === 'error') out.textContent = 'Server said: ' + res.message; },
+    onReset() { out.textContent = 'reset to the baseline'; show(); },
+  });
+  document.getElementById('fm-commit').addEventListener('click', () => { form.commit(); show(); out.textContent = 'baseline updated'; });
+  document.getElementById('fm-fill').addEventListener('click', () => { form.setValues({ name: 'Rina', email: 'rina@example.com', country: 'id', plan: 'pro', newsletter: true, seats: 5 }); show(); out.textContent = 'setValues is silent — no onChange; dirty is computed: ' + form.dirty; });
+  let locked = false;
+  document.getElementById('fm-lock').addEventListener('click', (e) => { locked = !locked; locked ? form.disable() : form.enable(); e.target.textContent = locked ? 'Enable' : 'Disable'; });
+  show();
+</script>
+</body>
+</html>

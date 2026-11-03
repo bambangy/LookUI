@@ -1,0 +1,147 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Segmented — lkSegmented button group
+// Structure:
+//   .lk-segmented[role=radiogroup|group] > .lk-segmented__item (button | label > input.lk-segmented__input)
+//                                         + .lk-segmented__indicator (single mode; slides to the selected item)
+// The indicator is placed from --lk-seg-x / -y / -w / -h set by JS.
+
+.lk-segmented {
+  --lk-seg-pad: 3px;
+  --lk-seg-item-y: var(--lk-space-2);
+  --lk-seg-item-x: var(--lk-space-4);
+  --lk-seg-font: var(--lk-text-base);
+  --lk-seg-duration: var(--lk-duration-base);
+  --lk-seg-easing: var(--lk-easing-out);
+
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  gap: 2px;
+  max-width: 100%;
+  padding: var(--lk-seg-pad);
+  border: var(--lk-border-width) solid var(--lk-border);
+  border-radius: var(--lk-radius-lg);
+  background: var(--lk-surface);
+  vertical-align: middle;
+
+  &--dense {
+    --lk-seg-item-y: var(--lk-space-1);
+    --lk-seg-item-x: var(--lk-space-3);
+    --lk-seg-font: var(--lk-text-sm);
+  }
+
+  &--sm {
+    --lk-seg-item-y: var(--lk-space-1);
+    --lk-seg-item-x: var(--lk-space-3);
+    --lk-seg-font: var(--lk-text-sm);
+  }
+
+  &--lg {
+    --lk-seg-item-y: var(--lk-space-3);
+    --lk-seg-item-x: var(--lk-space-6);
+    --lk-seg-font: var(--lk-text-md);
+  }
+
+  &--block {
+    display: flex;
+    width: 100%;
+  }
+
+  &--block &__item { flex: 1 1 0; }
+
+  &__item {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--lk-space-2);
+    margin: 0;
+    padding: var(--lk-seg-item-y) var(--lk-seg-item-x);
+    border: 0;
+    border-radius: calc(var(--lk-radius-lg) - var(--lk-seg-pad));
+    background: transparent;
+    color: var(--lk-text-muted);
+    font: inherit;
+    font-size: var(--lk-seg-font);
+    font-weight: var(--lk-weight-medium);
+    line-height: var(--lk-line-height);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      color var(--lk-seg-duration) var(--lk-seg-easing),
+      background-color var(--lk-seg-duration) var(--lk-seg-easing),
+      box-shadow var(--lk-seg-duration) var(--lk-seg-easing);
+
+    &:hover:not(.lk-segmented__item--on):not(.lk-segmented__item--disabled) {
+      color: var(--lk-text);
+      background: color-mix(in srgb, var(--lk-text) 6%, transparent);
+    }
+
+    &:focus-visible,
+    &:has(:focus-visible) {
+      outline: 2px solid var(--lk-primary);
+      outline-offset: 1px;
+    }
+
+    &--on { color: var(--lk-text); }
+
+    &--disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  }
+
+  &__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  // Sliding marker (single mode)
+  &__indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    width: var(--lk-seg-w, 0);
+    height: var(--lk-seg-h, 0);
+    border-radius: calc(var(--lk-radius-lg) - var(--lk-seg-pad));
+    background: var(--lk-bg);
+    box-shadow: var(--lk-shadow-sm);
+    transform: translate(var(--lk-seg-x, 0), var(--lk-seg-y, 0));
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  &--ready &__indicator {
+    opacity: 1;
+    transition:
+      transform var(--lk-seg-duration) var(--lk-seg-easing),
+      width var(--lk-seg-duration) var(--lk-seg-easing),
+      height var(--lk-seg-duration) var(--lk-seg-easing);
+  }
+
+  // Multiple: each selected segment carries its own fill
+  &--multiple &__item--on {
+    background: var(--lk-bg);
+    box-shadow: var(--lk-shadow-sm);
+  }
+
+  &--error { border-color: var(--lk-negative); }
+
+  &--readonly &__item { cursor: default; }
+
+  &--disabled { opacity: 0.6; }
+  &--disabled &__item { cursor: not-allowed; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-segmented__item,
+  .lk-segmented--ready .lk-segmented__indicator { transition: none; }
+}

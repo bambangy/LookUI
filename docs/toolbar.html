@@ -485,7 +485,7 @@ LookDocs.render('#api', {
     },
     {
       name: 'items[type=chip]', type: 'Object',
-      description: 'An embedded [lkChip](chip.html). Fields: `text` (label), `toggle` (make it a filter chip; `onAction` gets `{ type: "select", value: selected, detail }` and `item.active` follows), `onChange(selected, ctx)`, `options` (passed to lkChip — `color`, `outline`, `icon`, `selected`, `onChange`, `onClick`, …; `options.onSelect` still works but is deprecated). In a dense toolbar the chip is dense automatically. `get(id)` returns the lkChip instance.',
+      description: 'An embedded [lkChip](chip.html). Fields: `text` (label), `toggle` (make it a filter chip; `onAction` gets `{ type: "select", value: selected, detail }` and `item.active` follows), `onChange(selected, ctx)`, `options` (passed to lkChip — `color`, `outline`, `icon`, `selected`, `onChange`, `onClick`, …). In a dense toolbar the chip is dense automatically. `get(id)` returns the lkChip instance.',
       examples: [
         { title: 'Filter chips', run: true, code: `
           Look.lkToolbar({
@@ -864,6 +864,17 @@ LookDocs.render('#api', {
     },
   ],
 
+  guards: [
+    { name: 'beforeAction', signature: 'beforeAction(item, { type, value, event, detail, source, component })', description: 'Toolbar-level hook that runs before ANY button / menu click, field change, chip select or search takes effect (`type` is `click`, `change`, `select` or `search`; `value` is the value that WOULD apply). Return `false` to cancel, or a Promise to wait. A vetoed action fires no `onAction` / item callback, and toggle / switch / checkbox / chip / dropdown / textbox / date items revert their UI. Also dispatched as the DOM event `lk:before-action` on the toolbar element.' },
+    { name: 'item.beforeClick', signature: 'beforeClick(event, { item, component, source })', description: 'Per item (button, menu entry, chip with `onClick`), mirrors `onClick`. Runs before `beforeAction`. A toggle / group button only changes its pressed state if both allow it. DOM event `lk:before-click` on the item.' },
+    { name: 'item.beforeChange', signature: 'beforeChange(value, { source, item, component, control, event })', description: 'Per item (dropdown, textbox, switch, checkbox, chip toggle, date), mirrors `onChange`. Runs before `beforeAction`; on a veto the control returns to its previous value. DOM event `lk:before-change` on the item.' },
+    { name: 'item.beforeSearch', signature: 'beforeSearch(value, { source, item, component })', description: 'Per `search` item, mirrors `onSearch` (Enter or the debounce). A veto skips `onSearch`; the typed text stays.' },
+  ],
+  textNamespace: 'toolbar',
+  texts: [
+    { name: 'search.placeholder', default: 'Search…', description: 'Placeholder (and accessible name) of a `search` item without its own `placeholder`.' },
+    { name: 'date.placeholder', default: 'Pick a date', description: 'Caption of a `date` item with no value, when neither `placeholder` nor `text` is set. Selected dates are formatted with `Look.i18n.locale` (or the `locale` option).' },
+  ],
   classes: [
     { name: '.lk-toolbar', description: 'Flex row with a subtle background and bottom border; min height fits a 30 px button.' },
     { name: '.lk-toolbar--dense', description: 'Compact size (24 px buttons).' },

@@ -225,6 +225,47 @@ Look.lkTable('#grid', {
     </div>
   </section>
 
+  <!-- 5. Resize / reorder ----------------------------------------------------- -->
+  <section class="demo-section">
+    <p class="demo-section__title">5 — Resize, reorder columns &amp; reorder rows</p>
+    <p class="demo-sub">
+      Drag the edge of a header to resize (double-click fits to content; focus the handle and use ←/→), drag a header
+      (or press <kbd>Alt</kbd>+<kbd>←/→</kbd>) to move a column, drag the grip at the start of a row (or focus it:
+      <kbd>Space</kbd>, <kbd>↑/↓</kbd>, <kbd>Space</kbd>) to reorder rows. Widths, order and visibility are saved with
+      <code>persist</code> — reload the page to see them restored. Sorting a column turns the grips off (the visible order is no longer the data order).
+    </p>
+    <div id="grid-drag"></div>
+    <div style="margin-top: var(--lk-space-3);">
+      <button class="lk-btn lk-btn--secondary lk-btn--sm" id="grid-drag-reset" type="button">resetColumns()</button>
+    </div>
+    <div id="out-drag" class="demo-output"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>
+const grid = Look.lkTable('#grid', {
+  dataSource: { data: employees },
+  columns: [
+    { selectable: true },                         // stays first (fixed columns never move)
+    { field: 'name', minWidth: 120 },
+    { field: 'dept', reorderable: false },
+    { field: 'salary', type: 'number', maxWidth: 240 },
+    { command: ['edit'], width: 90 },             // stays last
+  ],
+  resizable: true,                                // or { minWidth, maxWidth, mode: 'fit' }
+  reorderable: true,
+  rowReorder: true,                               // or { handle: false, field: 'position' }
+  persist: 'employees-grid',                      // widths + order + visibility in localStorage
+  onColumnResize({ column, width }) {},
+  onColumnReorder({ column, from, to, columns }) {},
+  onRowReorder({ row, from, to, rows }) {},       // dataSource.move(from, to) was applied
+  beforeColumnResize({ column }) { return column.field !== 'name'; },   // veto
+});
+await grid.ready;                                 // saved state applied
+grid.getColumnState();  grid.setColumnState(state);  grid.resetColumns();</pre>
+  </div>
+
   <div id="api"></div>
 
 </main>
@@ -463,6 +504,29 @@ Look.lkTable('#grid', {
 
   // --- 4. Legacy enhance mode ------------------------------------------------------------
   Look.lkTable('#demo-table', { sortable: true });
+
+  // --- 5. Resize / reorder / persist --------------------------------------------------------
+  const outDrag = document.getElementById('out-drag');
+  const dragLog = (text) => { outDrag.textContent = text; };
+  const dragGrid = Look.lkTable('#grid-drag', {
+    dataSource: { data: employees.slice(0, 12), keyField: 'id' },
+    columns: [
+      { selectable: true },
+      { field: 'name', title: 'Name', width: 190, minWidth: 110 },
+      { field: 'dept', title: 'Department', width: 150, reorderable: false },
+      { field: 'salary', title: 'Salary', type: 'number', width: 120, maxWidth: 260, format: (v) => '$' + v.toLocaleString() },
+      { field: 'joined', title: 'Joined', type: 'date', width: 140 },
+    ],
+    selectable: 'multiple',
+    resizable: true,
+    reorderable: true,
+    rowReorder: true,
+    persist: 'docs-table-drag-demo',
+    onColumnResize: ({ column, width, source }) => dragLog(`resized ${column.field} → ${width}px (${source})`),
+    onColumnReorder: ({ column, from, to }) => dragLog(`moved column ${column.field}: ${from} → ${to}`),
+    onRowReorder: ({ row, from, to }) => dragLog(`moved ${row.name}: position ${from + 1} → ${to + 1}`),
+  });
+  document.getElementById('grid-drag-reset').addEventListener('click', () => { dragGrid.resetColumns(); dragLog('columns reset'); });
 </script>
 <script>
 // Sample records shared by the live examples below
@@ -488,7 +552,8 @@ LookDocs.render('#api', {
   ],
   returns: { type: 'Object', description: 'The grid instance with the properties and methods below (most methods return the grid, so they chain).' },
   notes: [
-    '**Keyboard.** Sortable headers are focusable — **Enter/Space** sorts. With `selectable`, rows are focusable: **↑/↓/Home/End** move, **Space/Enter** toggles selection, **Shift+click** selects a range in multiple mode. In an inline editor **Enter** saves and **Esc** cancels.',
+    '**Keyboard.** Sortable headers are focusable — **Enter/Space** sorts. With `selectable`, rows are focusable: **↑/↓/Home/End** move, **Space/Enter** toggles selection, **Shift+click** selects a range in multiple mode. In an inline editor **Enter** saves and **Esc** cancels. With `resizable` / `reorderable` / `rowReorder` see those options for the handle, **Alt+←/→** and grip keys.',
+    '**Column / row reordering.** Everything is opt-in. The drag uses pointer events (mouse, touch, pen) with a floating ghost and a drop line that never change the layout; vetoed or cancelled drags glide back (nothing animates under `prefers-reduced-motion`). Fixed columns (selection checkbox, command columns, the row grip) keep their position in column reordering. `lkDataSource.move(from, to)` is what row reordering calls.',
     '**HTML safety.** Strings returned by `template`, `headerTemplate` and a `noRecords` function are inserted as HTML. Escape user data yourself, or use `format` (always plain text) or return a DOM Node.',
   ],
 
@@ -1098,6 +1163,56 @@ LookDocs.render('#api', {
         });` }],
     },
     {
+      name: 'resizable', type: 'boolean | { minWidth, maxWidth, mode }', default: 'false',
+      description: 'Adds a drag handle to the edge of each header. **Pointer** (mouse / touch / pen): drag to resize live, **double-click** fits the column to its content. **Keyboard**: focus the handle (it is a `role="separator"` with `aria-valuenow/min/max`), **←/→** resize by 10 px (**Shift** = 100 px), **Enter** (or leaving the handle) commits, **Esc** reverts. The first resize pins every column to its pixel width and switches the table to a fixed layout (until then nothing changes). `mode: \'expand\'` (default) lets the table grow/shrink with the column (it scrolls horizontally); `mode: \'fit\'` keeps the table width and the next resizable column gives / takes the difference (the last one has no handle). `minWidth` (default 48) / `maxWidth` are pixels. Per column: `resizable: false`, `width`, `minWidth`, `maxWidth`. The selection checkbox, row-grip and the automatic edit/delete columns are not resizable. Fires `onColumnResize` on release; `beforeColumnResize` can veto it.',
+      examples: [{ title: 'Drag, double-click or use the keyboard', run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        Look.lkTable(el, {
+          dataSource: PEOPLE,
+          columns: ['id', { field: 'name', minWidth: 90 }, { field: 'dept', resizable: false }, { field: 'salary', type: 'number', maxWidth: 220 }],
+          resizable: true,
+          onColumnResize: ({ column, width, source }) => log(column.field, '→', width + 'px', '(' + source + ')'),
+        });` }],
+    },
+    {
+      name: 'reorderable', type: 'boolean', default: 'false',
+      description: 'Lets users move data columns. **Pointer**: press and drag a header (a floating ghost header and a drop line follow the pointer; the grid scrolls horizontally when you hold near an edge); a plain click still sorts. **Keyboard**: focus a header and press **Alt+←** / **Alt+→** (announced through a polite live region). The selection checkbox column, the row grip and command columns stay where they are and cannot be passed; per column `reorderable: false` pins a column too. `from` / `to` in the event are indices among the **visible** columns. Fires `onColumnReorder`; `beforeColumnReorder` can veto the drop (the ghost glides back).',
+      examples: [{ title: 'Drag a header, or Alt+← / Alt+→', run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        Look.lkTable(el, {
+          dataSource: PEOPLE,
+          columns: [{ selectable: true }, 'id', 'name', { field: 'dept', reorderable: false }, { field: 'salary', type: 'number' }],
+          reorderable: true,
+          onColumnReorder: ({ column, from, to }) => log(column.field, from, '→', to),
+        });` }],
+    },
+    {
+      name: 'rowReorder', type: 'boolean | { handle, field }', default: 'false',
+      description: 'Lets users reorder rows. By default a **grip column** is added on the left (`handle: false` makes the whole row draggable instead). **Pointer**: drag the grip — a ghost row and a drop line follow, the body scrolls near its edge. **Keyboard**: focus a grip (↑/↓ move between grips), **Space** picks the row up, **↑/↓** move it, **Space** drops, **Esc** cancels (with `handle: false`: **Alt+↑ / Alt+↓** on the focused row). A drop calls `dataSource.move(from, to)`, so the underlying order really changes; `from` / `to` are positions in `dataSource.items` (also across pages). `field` writes the new 1-based position into that field of every record after a move. **Limits:** needs a local data source — with `server.paging` it logs a console warning and disables itself; while the grid is **sorted or filtered** (or searching / editing) the visible order is not the data order, so the grips are disabled (`aria-disabled`, hint text `table.rowReorder.disabled`). Fires `onRowReorder`; `beforeRowReorder` can veto the drop.',
+      examples: [{ title: 'Grip column + keyboard', run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        Look.lkTable(el, {
+          dataSource: PEOPLE, columns: ['name', 'dept'],
+          rowReorder: true,
+          onRowReorder: ({ row, from, to, rows }) => log(row.name, from, '→', to, '|', rows.map((r) => r.id).join()),
+        });` },
+      { title: 'Whole row, write the order into a field', run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        const grid = Look.lkTable(el, {
+          dataSource: PEOPLE, columns: ['name', { field: 'pos', title: '#' }],
+          rowReorder: { handle: false, field: 'pos' },
+          onRowReorder: () => log(grid.dataSource.items.map((r) => r.name + ':' + r.pos).join('  ')),
+        });` }],
+    },
+    {
+      name: 'persist', type: 'string | { key, session }', default: '—',
+      description: 'Saves column **widths, order and visibility** (the `getColumnState()` list) whenever the user changes them, and restores them on creation — through `Look.lkStorage` (localStorage under the `look-grid:<key>` entry; `{ key, session: true }` uses sessionStorage). Storage errors are swallowed, corrupt data is ignored. Restoring is asynchronous: await `grid.ready`. `resetColumns()` clears the entry.',
+      examples: [{ run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        const grid = Look.lkTable(el, { dataSource: PEOPLE, columns: ['id', 'name', 'dept'], resizable: true, reorderable: true, persist: 'docs-people-grid' });
+        grid.ready.then(() => log('restored', JSON.stringify(grid.getColumnState().map((s) => s.field + ':' + s.width))));` }],
+    },
+    {
       name: 'striped', type: 'boolean', default: 'false', description: 'Zebra rows (`lk-table--striped`).',
       examples: [{ title: 'striped + bordered', run: true, code: `
         const el = container.appendChild(document.createElement('div'));
@@ -1137,8 +1252,8 @@ LookDocs.render('#api', {
         });` }],
     },
     {
-      name: 'noRecords', type: 'string | Function', default: "'No records found'",
-      description: 'Shown when the view is empty. A string is plain text; a function `noRecords(grid) → string(HTML) | Node`. When the data source has an `error`, its message is shown instead (styled as an error).',
+      name: 'noRecords', type: 'string | Function', default: "'No records found' (localized: `table.noRecords`)",
+      description: 'Shown when the view is empty (wins over the localized `table.noRecords`). A string is plain text; a function `noRecords(grid) → string(HTML) | Node`. When the data source has an `error`, its message is shown instead (styled as an error).',
       examples: [
         { title: 'Text', run: true, code: `
           const el = container.appendChild(document.createElement('div'));
@@ -1156,8 +1271,8 @@ LookDocs.render('#api', {
       ],
     },
     {
-      name: 'confirmDelete', type: 'string | false', default: "'Delete this record?'",
-      description: 'Text of the lkDialog shown before the `destroy` command deletes a row. `false` (or empty) deletes immediately.',
+      name: 'confirmDelete', type: 'string | false', default: "'Delete this record?' (localized: `table.confirmDelete`)",
+      description: 'Text (wins over the localized `table.confirmDelete`) of the lkDialog shown before the `destroy` command deletes a row. `false` (or empty) deletes immediately.',
       examples: [
         { title: 'Custom text', run: true, code: `
           const el = container.appendChild(document.createElement('div'));
@@ -1263,6 +1378,26 @@ LookDocs.render('#api', {
     },
     { name: 'hideColumn', signature: 'hideColumn(field) → grid', description: 'Hides a column (matched by `field`).', params: [{ name: 'field', type: 'string', description: 'Column field.' }] },
     {
+      name: 'getColumnState', signature: 'getColumnState() → Array<{ field, width, order, visible }>',
+      description: 'Snapshot of the data columns: `width` in px (`null` while it has no width), `order` = position among the data columns (fixed columns such as the checkbox / command column are not listed and keep their place), `visible`.',
+      returns: { type: 'Array<Object>', description: 'One entry per data column, in display order.' },
+      examples: [{ run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        const grid = Look.lkTable(el, { dataSource: PEOPLE, columns: ['id', 'name', 'dept'], resizable: true, reorderable: true });
+        log(JSON.stringify(grid.getColumnState()));` }],
+    },
+    {
+      name: 'setColumnState', signature: 'setColumnState(state) → grid',
+      description: 'Applies a state list (as returned by `getColumnState()`): order, widths (px) and visibility. Unknown fields are ignored, columns missing from the list keep their position and width, at least one data column stays visible. **Silent** — no `onColumnResize` / `onColumnReorder` — but it is saved when `persist` is set.',
+      params: [{ name: 'state', type: 'Array<Object>', description: '`[{ field, width?, order?, visible? }]`.' }],
+      examples: [{ run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        const grid = Look.lkTable(el, { dataSource: PEOPLE, columns: ['id', 'name', 'dept'], resizable: true, reorderable: true });
+        grid.setColumnState([{ field: 'dept', order: 0, width: 160 }, { field: 'name', order: 1 }, { field: 'id', order: 2, visible: false }]);` }],
+    },
+    { name: 'resetColumns', signature: 'resetColumns() → grid', description: 'Back to the configured column order, widths (the pixel pinning and fixed layout are dropped) and visibility, and removes the `persist` entry. Silent.' },
+    { name: 'ready', signature: 'ready: Promise', description: 'Property: resolves once saved column state (`persist`) has been applied (immediately resolved without `persist`). Never rejects.' },
+    {
       name: 'setColumns', signature: 'setColumns(columns) → grid',
       description: 'Replaces all column definitions (same format as the `columns` option) and re-renders. Cancels an edit in progress.',
       examples: [{ run: true, code: `
@@ -1340,8 +1475,13 @@ LookDocs.render('#api', {
         });` }],
     },
     {
+      name: 'removeRow', signature: 'removeRow(keyOrRow) → grid',
+      description: 'Deletes a record the same way the `destroy` command does: `beforeDelete` (source `"api"`), then the `confirmDelete` dialog.',
+      params: [{ name: 'keyOrRow', type: 'any | Object', description: 'Key value or the record.' }],
+    },
+    {
       name: 'editRow', signature: 'editRow(keyOrRow) → grid',
-      description: 'Puts a record into edit mode (inline row or popup). Any other edit is cancelled first. Requires `editable`.',
+      description: 'Puts a record into edit mode (inline row or popup). Any other edit is cancelled first. Requires `editable`. Goes through `beforeEdit` (source `"api"`).',
       params: [{ name: 'keyOrRow', type: 'any | Object', description: 'Key value or the record.' }],
     },
     {
@@ -1423,7 +1563,7 @@ LookDocs.render('#api', {
     },
     {
       name: 'onSave', signature: 'onSave({ row, values, changes, isNew, grid, component }) → false | void',
-      description: 'After validation passed, before the data source is written. **Return `false` to veto** (the editor stays open). Only changed fields are sent to `dataSource.update()`; if nothing changed, the editor just closes.',
+      description: 'After validation passed, before the data source is written. **Return `false` to veto** (the editor stays open) — kept for compatibility; `beforeSave` is the preferred, async-capable way (it runs first). Only changed fields are sent to `dataSource.update()`; if nothing changed, the editor just closes.',
       args: [
         { name: 'row', type: 'Object | null', description: 'Original record (`null` for new).' },
         { name: 'values', type: 'Object', description: 'Full draft.' },
@@ -1459,12 +1599,111 @@ LookDocs.render('#api', {
         });` }],
     },
     {
+      name: 'onColumnResize', signature: 'onColumnResize({ column, width, source, grid, component })',
+      description: 'A column was resized (once, on release / commit — not while dragging) and the width actually changed. Not fired by `setColumnState`.',
+      args: [
+        { name: 'column', type: 'Object', description: 'Copy of the column definition (its `width` is the new one).' },
+        { name: 'width', type: 'number', description: 'New width in px.' },
+        { name: 'source', type: "'pointer' | 'keyboard' | 'autofit'", description: 'How it was resized.' },
+        { name: 'grid', type: 'Object', description: 'The grid.' }, { name: 'component', type: 'Object', description: 'Same as `grid`.' },
+      ],
+    },
+    {
+      name: 'onColumnReorder', signature: 'onColumnReorder({ column, from, to, columns, source, grid, component })',
+      description: 'A column was moved (after the drop / key press went through `beforeColumnReorder`).',
+      args: [
+        { name: 'column', type: 'Object', description: 'Copy of the moved column.' },
+        { name: 'from', type: 'number', description: 'Old index among the visible columns.' },
+        { name: 'to', type: 'number', description: 'New index among the visible columns.' },
+        { name: 'columns', type: 'Array<Object>', description: 'All column definitions in the new order (same as `grid.columns`).' },
+        { name: 'source', type: "'pointer' | 'keyboard'", description: 'How it was moved.' },
+        { name: 'grid', type: 'Object', description: 'The grid.' }, { name: 'component', type: 'Object', description: 'Same as `grid`.' },
+      ],
+    },
+    {
+      name: 'onRowReorder', signature: 'onRowReorder({ row, from, to, rows, source, grid, component })',
+      description: 'A row was moved; `dataSource.move()` has already been applied.',
+      args: [
+        { name: 'row', type: 'Object', description: 'The moved record.' },
+        { name: 'from', type: 'number', description: 'Old position in `dataSource.items`.' },
+        { name: 'to', type: 'number', description: 'New position in `dataSource.items`.' },
+        { name: 'rows', type: 'Array<Object>', description: 'Copy of `dataSource.items` in the new order.' },
+        { name: 'source', type: "'pointer' | 'keyboard'", description: 'How it was moved.' },
+        { name: 'grid', type: 'Object', description: 'The grid.' }, { name: 'component', type: 'Object', description: 'Same as `grid`.' },
+      ],
+    },
+    {
       name: 'onSort (legacy)', signature: 'onSort({ column, order, component })',
       description: 'Legacy enhance mode: a header sorted the table.',
       args: [{ name: 'column', type: 'number', description: 'Column index.' }, { name: 'order', type: "'asc' | 'desc'", description: 'Direction.' }, { name: 'component', type: 'Object', description: 'The table instance.' }],
     },
   ],
 
+  guards: [
+    { name: 'beforeSort', signature: 'beforeSort({ sort, source, grid, component })', description: 'Before the sort changes (header click / Enter `"header"`, column menu `"menu"`, `grid.sort()` `"api"`). `sort` is the list that WOULD apply. Return `false` to keep the current sort, or a Promise to wait. `onSort` fires only if it went through.' },
+    { name: 'beforeFilter', signature: 'beforeFilter({ filters, search, source, grid, component })', description: 'Before column filters or the toolbar search change (`"menu"`, `"filterRow"`, `"search"`, `"api"`). `filters` / `search` are the values that WOULD apply. A veto restores the search box and filter row. `onFilter` fires only if it went through.' },
+    { name: 'beforePage', signature: 'beforePage({ page, pageSize, source, grid, component })', description: 'Before the pager moves (`source: "pager"`) or the page size changes (`"pageSize"`). A veto puts the pager / size dropdown back. `onPage` fires only if it went through.' },
+    { name: 'beforeSelect', signature: 'beforeSelect({ selectedRows, selectedKeys, row, source, grid, component })', description: 'Before the selection changes (row click, checkbox, select-all, keyboard, `select()` / `clearSelection()` with `"api"`). `selectedRows` / `selectedKeys` are what the selection WOULD be. A veto repaints the checkboxes. `onChange` fires only if it went through.' },
+    { name: 'beforeEdit', signature: 'beforeEdit({ row, values, isNew, source, grid, component })', description: 'Before a row enters edit mode or a new record is started (`"button"`, `"toolbar"`, `"api"`). `row` is `null` for a new record. `onEdit` fires only if it went through.' },
+    { name: 'beforeSave', signature: 'beforeSave({ row, values, changes, isNew, source, grid, component })', description: 'After validation passes and before the data source is written. Return `false` to stay in edit mode, or a Promise to hold the save (e.g. a confirmation). The legacy `onSave` returning `false` still vetoes (it runs after `beforeSave`).' },
+    { name: 'beforeDelete', signature: 'beforeDelete({ row, key, source, grid, component })', description: 'Before a row is deleted (delete button `"button"`, `removeRow()` `"api"`), ahead of the `confirmDelete` dialog — return `false` to cancel, or set `confirmDelete: false` and confirm yourself in the hook.' },
+    { name: 'beforeColumnResize', signature: 'beforeColumnResize({ column, width, source, grid, component })', description: 'When a resize starts: pointer down on a handle (`source: "pointer"`), the first arrow key on a focused handle (`"keyboard"`, asked once per key session), or a double-click (`"autofit"`). `width` is the current width. Return `false` to prevent the resize (the pointer drag does nothing), or a Promise — a pointer drag released before it resolves is applied when it resolves `true`. `onColumnResize` fires only if it went through.' },
+    { name: 'beforeColumnReorder', signature: 'beforeColumnReorder({ column, from, to, source, grid, component })', description: 'At the drop (`"pointer"`) or Alt+Arrow press (`"keyboard"`), with the visible-column indices the move WOULD have. A veto leaves the order unchanged and the ghost glides back to the header. `onColumnReorder` fires only if it went through.' },
+    { name: 'beforeRowReorder', signature: 'beforeRowReorder({ row, from, to, source, grid, component })', description: 'At the drop (`"pointer"`) or the keyboard drop (`"keyboard"`), with the `dataSource.items` positions the move WOULD have. A veto leaves the data untouched (a keyboard move is put back, the ghost glides back). Not asked while reordering is disabled (sorted / filtered). `onRowReorder` fires only if it went through.' },
+    { name: 'beforeCancel', signature: 'beforeCancel({ row, isNew, source, grid, component })', description: 'Before an edit is discarded (Cancel button, Esc, `cancelEdit()`, popup Cancel button). Return `false` to stay in edit mode. Closing the popup with Esc or by clicking outside cannot be vetoed. `onCancel` fires only if it went through.' },
+  ],
+  textNamespace: 'table',
+  texts: [
+    { name: 'noRecords', default: 'No records found', description: 'Empty body text (the `noRecords` option wins).' },
+    { name: 'confirmDelete', default: 'Delete this record?', description: 'Delete confirmation (the `confirmDelete` option wins).' },
+    { name: 'actions', default: 'Actions', description: 'Name of an untitled command column in the column list.' },
+    { name: 'toolbar.add', default: 'Add new', description: 'Caption of the `create` toolbar button (an item `text` wins).' },
+    { name: 'search.placeholder', default: 'Search…', description: 'Toolbar search placeholder (the accessible name uses `common.search`).' },
+    { name: 'op.contains', default: 'Contains', description: 'Text filter operator.' },
+    { name: 'op.eq', default: 'Is equal to', description: 'Text filter operator.' },
+    { name: 'op.ne', default: 'Is not equal to', description: 'Text filter operator.' },
+    { name: 'op.startsWith', default: 'Starts with', description: 'Text filter operator.' },
+    { name: 'op.endsWith', default: 'Ends with', description: 'Text filter operator.' },
+    { name: 'op.on', default: 'Is on', description: 'Date filter operator.' },
+    { name: 'op.before', default: 'Is before', description: 'Date filter operator.' },
+    { name: 'op.after', default: 'Is after', description: 'Date filter operator.' },
+    { name: 'filter.title', default: 'Filter', description: 'Heading of the filter section in the column menu.' },
+    { name: 'filter.apply', default: 'Filter', description: 'Apply button of the column-menu filter (Clear uses `common.clear`).' },
+    { name: 'filter.all', default: 'All', description: 'Boolean filter: no filter.' },
+    { name: 'filter.placeholder', default: 'Filter…', description: 'Filter-row input placeholder.' },
+    { name: 'filter.valuePlaceholder', default: 'Value…', description: 'Column-menu filter value placeholder.' },
+    { name: 'filter.operator', default: 'Operator', description: 'Accessible name of the operator select.' },
+    { name: 'filter.column', default: 'Filter {column}', description: 'Accessible name of a filter-row input.' },
+    { name: 'filter.value', default: 'Filter value for {column}', description: 'Accessible name of the menu filter input.' },
+    { name: 'menu.sortAsc', default: 'Sort ascending', description: 'Column menu item.' },
+    { name: 'menu.sortDesc', default: 'Sort descending', description: 'Column menu item.' },
+    { name: 'menu.clearSort', default: 'Clear sort', description: 'Column menu item.' },
+    { name: 'menu.columns', default: 'Columns', description: 'Heading of the column visibility list.' },
+    { name: 'menu.label', default: '{column} column options', description: 'Accessible name of the menu.' },
+    { name: 'menu.button', default: '{column} column menu', description: 'Accessible name of the ⋮ button.' },
+    { name: 'menu.buttonState', default: '{column} column menu ({state})', description: 'Same, while the column is sorted and/or filtered.' },
+    { name: 'state.sortedAsc', default: 'sorted ascending', description: '`{state}` part.' },
+    { name: 'state.sortedDesc', default: 'sorted descending', description: '`{state}` part.' },
+    { name: 'state.filtered', default: 'filtered', description: '`{state}` part.' },
+    { name: 'select.all', default: 'Select all rows on this page', description: 'Header checkbox name.' },
+    { name: 'select.row', default: 'Select row', description: 'Row checkbox name.' },
+    { name: 'edit.add', default: 'Add record', description: 'Popup editor title for a new record (`editable.title` wins).' },
+    { name: 'edit.edit', default: 'Edit record', description: 'Popup editor title for an existing record.' },
+    { name: 'pager.label', default: 'Pagination', description: 'Accessible name of the pager.' },
+    { name: 'pager.pageSize', default: 'Rows per page', description: 'Page-size label.' },
+    { name: 'pager.info', default: '{from}–{to} of {total}', description: 'Pager summary; numbers are formatted with the active locale. Also gets `{count}` (= total) for plurals.' },
+    { name: 'pager.none', default: 'No items', description: 'Pager summary when there are no records.' },
+    { name: 'resize.label', default: 'Resize {column} column', description: 'Accessible name of a column resize handle.' },
+    { name: 'reorder.hint', default: 'Press Alt+Left or Alt+Right to move this column.', description: 'Keyboard hint read with a reorderable header (`aria-describedby`).' },
+    { name: 'reorder.moved', default: 'Column {column} moved to position {to} of {total}', description: 'Live-region announcement after a keyboard column move; `{to}` / `{total}` count the movable columns.' },
+    { name: 'rowReorder.header', default: 'Reorder', description: 'Screen-reader name of the grip column header.' },
+    { name: 'rowReorder.grip', default: 'Reorder row {n}. Press Space to pick up.', description: 'Accessible name of a row grip (`{n}` = 1-based position in the data).' },
+    { name: 'rowReorder.disabled', default: 'Row reordering is unavailable while the grid is sorted or filtered', description: 'Tooltip / accessible name of a disabled grip, and the announcement when Space is pressed on it.' },
+    { name: 'rowReorder.pickedUp', default: 'Picked up row {n}. Use Up and Down to move, Space to drop, Escape to cancel.', description: 'Announcement when a row is picked up with the keyboard.' },
+    { name: 'rowReorder.position', default: 'Position {to} of {total}', description: 'Announcement while a picked-up row moves.' },
+    { name: 'rowReorder.moved', default: 'Row moved to position {to} of {total}', description: 'Announcement after a row was dropped (any input).' },
+    { name: 'rowReorder.cancelled', default: 'Move cancelled', description: 'Announcement when a keyboard row move is cancelled.' },
+  ],
   classes: [
     { name: '.lk-datagrid', description: 'Grid root (bordered, rounded). Parts: `__toolbar`, `__search`, `__content` (scroll container), `__table`, `__loading` (overlay while loading), `__pager`, `__pager-meta`, `__page-size`, `__info`.' },
     { name: '.lk-datagrid--dense / --scrollable / --loading', description: 'Compact; fixed `height` with sticky header; data source is loading (set by the grid).' },
@@ -1472,6 +1711,9 @@ LookDocs.render('#api', {
     { name: '.lk-datagrid__row / __cell / __select-cell / __command-cell / __cmd', description: 'Body parts. `__row--selected`, `__row--editing`, `__row--new`; `__cell--left|center|right`, `__cell--invalid`, `__cell-error`.' },
     { name: '.lk-datagrid__filter-row / __filter-cell / __filter-input', description: 'Filter row (`filterable: { mode: \'row\' }`).' },
     { name: '.lk-datagrid__empty (--error) / __edit-error', description: '“No records” row (error variant shows `dataSource.error`) and the save-error row under an inline editor.' },
+    { name: '.lk-datagrid__resizer / __table--fixed / --resizing', description: 'Resize handle (`role="separator"`, `--active` while dragging) inside `__th--resizable`; `__table--fixed` = pixel widths pinned (fixed layout); `--resizing` / `--measuring` on the root while dragging / auto-fitting.' },
+    { name: '.lk-datagrid__th--reorderable / __th--dragging / __drop / __ghost', description: 'Reorder parts: `__drop--col` / `__drop--row` drop line (inside the content area), `__ghost--col` / `__ghost--row` floating ghost (in `<body>`), `--dragging` on the root while a drag is active, `__live` / `__sr` screen-reader nodes.' },
+    { name: '.lk-datagrid__grip / __grip-cell / __row--dragging / --picked / --moved / --draggable', description: 'Row reorder: the grip button (`--disabled`, `aria-pressed` while picked up), the row being dragged / picked up, the just-moved highlight and (with `handle: false`) draggable rows.' },
     { name: '.lk-datagrid-menu / .lk-datagrid-menu-panel', description: 'Column menu content and its popup panel. Parts: `__section`, `__item` (`--active`), `__title`, `__filter`, `__actions`, `__columns`, `__check`.' },
     { name: '.lk-datagrid-form / .lk-datagrid-popup', description: 'Popup editor form (`__field`, `__field--check`, `__error`) and its dialog.' },
     {

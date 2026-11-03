@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Clipboard</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Clipboard</h1>
+    <p style="opacity: 0.85;">Look.lkClipboard(el, opts) — a copy button with feedback; Look.lkClipboard.copy / read for plain use</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Copy a fixed text, an input or an element</p>
+    <div class="demo-row">
+      <button id="cp-text" class="lk-btn lk-btn--primary">Copy a text</button>
+      <input id="cp-src" class="lk-input" value="npm i @lookui/core" style="max-width: 16rem;" readonly aria-label="Install command" />
+      <button id="cp-input" class="lk-btn lk-btn--secondary">Copy the input</button>
+      <button id="cp-el" class="lk-btn lk-btn--secondary">Copy the quote</button>
+    </div>
+    <blockquote id="cp-quote" style="margin: var(--lk-space-3) 0 0;">Make it work, make it right, make it fast.</blockquote>
+    <div id="cp-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Feedback styles</p>
+    <div class="demo-row">
+      <button id="cp-toast" class="lk-btn lk-btn--secondary">Toast feedback</button>
+      <button id="cp-bottom" class="lk-btn lk-btn--secondary">Label below</button>
+      <button id="cp-none" class="lk-btn lk-btn--secondary">No feedback</button>
+      <button id="cp-fail" class="lk-btn lk-btn--ghost">Source that throws</button>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Guard — mask a secret</p>
+    <div class="demo-row">
+      <button id="cp-secret" class="lk-btn lk-btn--secondary">Copy API key (masked)</button>
+      <button id="cp-secret-ok" class="lk-btn lk-btn--secondary">Copy the real key</button>
+    </div>
+    <div id="cp-secret-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Static helpers</p>
+    <div class="demo-row">
+      <button id="cp-static-copy" class="lk-btn lk-btn--secondary">Look.lkClipboard.copy('static')</button>
+      <button id="cp-static-read" class="lk-btn lk-btn--secondary">Look.lkClipboard.read()</button>
+    </div>
+    <div id="cp-static-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const copy = Look.lkClipboard('#copy-btn', {
+  target: '#token',                 // or text: 'literal' | text: () =&gt; compute()
+  onCopy(text, ctx) { console.log('copied', text, ctx.source); },
+  onError(err) { console.warn(err); },
+  beforeCopy(text) { return text.trim(); },   // false = cancel, string = replace
+});
+
+await copy.copy('something else');  // programmatic, source 'api'
+copy.destroy();
+
+await Look.lkClipboard.copy('plain text');   // no trigger needed -&gt; true / false
+const pasted = await Look.lkClipboard.read(); // string, or null when denied</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkClipboard',
+  textNamespace: 'clipboard',
+  kind: 'Composable',
+  signature: 'const clipboard = Look.lkClipboard(triggerElement, options);',
+  description: [
+    'Turns a button into a **copy button**: on click it copies a fixed text, the text / value of a target element, or whatever a function returns (it may be async), then confirms with a small "Copied" label next to the trigger (or an [lkToast](composable-toast.html)). The label fades with the motion tokens, the result is also announced in a polite live region and the trigger gets `.is-copied` for a moment.',
+    'It uses `navigator.clipboard` and falls back to a hidden textarea with `execCommand("copy")` in non-secure contexts. `lkClipboard` is also a function with static members: `Look.lkClipboard.copy(text)` and `Look.lkClipboard.read()`.',
+    'Note: an object passed as `text` is read as per-instance text overrides (see Text keys); use `labels` if you also need a function or string there.',
+  ],
+  params: [
+    { name: 'triggerElement', type: 'Element | string', description: 'The button (or any clickable element).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The clipboard instance.' },
+  options: [
+    { name: 'text', type: 'string | Function', default: '—', description: 'Text to copy, or `() => string | Promise<string>`.' },
+    { name: 'target', type: 'Element | string | component', default: '—', description: 'Element (or selector, or an lk component) whose `value` (inputs) or text content is copied; read at click time.' },
+    { name: 'feedback', type: "'tip' | 'toast' | 'none'", default: "'tip'", description: 'How success / failure is shown.' },
+    { name: 'toast', type: 'boolean | Object', default: 'false', description: 'Shorthand for `feedback: \'toast\'`; an object is merged into the lkToast options.' },
+    { name: 'feedbackDuration', type: 'number', default: '1500', description: 'Milliseconds the label and the `is-copied` class stay.' },
+    { name: 'position', type: "'top' | 'bottom'", default: "'top'", description: 'Where the label appears relative to the trigger.' },
+    { name: 'labels', type: 'Object', default: '—', description: 'Text overrides for this instance (`copied`, `failed`).' },
+    { name: 'onCopy', type: 'Function', default: '—', description: '`(text, { source, component })` after a successful copy; `source` is `\'click\'` or `\'api\'`.' },
+    { name: 'onError', type: 'Function', default: '—', description: '`(error, { source, component })` when copying failed or there was nothing to copy.' },
+  ],
+  guards: [
+    { name: 'beforeCopy', signature: 'beforeCopy(text, { source, component })', description: 'Runs with the resolved text before it is written. Return `false` to cancel (nothing is copied, no feedback), a string to copy something else (mask a secret, trim, add a prefix), or a Promise to wait.' },
+  ],
+  texts: [
+    { name: 'copied', default: 'Copied', description: 'Feedback label, toast message and live announcement on success.' },
+    { name: 'failed', default: 'Copy failed', description: 'Same, on failure.' },
+  ],
+  properties: [
+    { name: 'el', type: 'Element', readonly: true, description: 'The trigger.' },
+    { name: 'text', type: 'Object', description: 'Text overrides, assignable.' },
+  ],
+  methods: [
+    { name: 'copy', signature: 'copy([text])', returns: { type: 'Promise<boolean>', description: 'true when copied.' }, description: 'Copies now (through `beforeCopy`, feedback and `onCopy` with source `\'api\'`). Without an argument it uses `text` / `target`.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes the click listener, the label and the live region.' },
+    { name: 'Look.lkClipboard.copy', signature: 'Look.lkClipboard.copy(text)', returns: { type: 'Promise<boolean>' }, description: 'Static: copy without a trigger or feedback.' },
+    { name: 'Look.lkClipboard.read', signature: 'Look.lkClipboard.read()', returns: { type: 'Promise<string | null>' }, description: 'Static: read the clipboard text. Needs a secure context and the user\'s permission; resolves `null` when unavailable or denied.' },
+  ],
+  classes: [
+    { name: '.lk-clipboard-tip', description: 'The floating "Copied" label (`--error` modifier for failures; `.is-visible` while shown).' },
+    { name: '.is-copied', description: 'Added to the trigger for `feedbackDuration` after a successful copy — style it for a checkmark state.' },
+  ],
+  tokens: [
+    { name: '--lk-secondary-dark / --lk-text-on-dark', default: '#37474f / #f5f5f7', description: 'Label background and text.' },
+    { name: '--lk-negative', default: '#c62828', description: 'Failure label.' },
+    { name: '--lk-duration-base', default: '260ms', description: 'Fade of the label.' },
+  ],
+});
+</script>
+<script>
+  const out = document.getElementById('cp-out');
+  const report = (text, ctx) => { out.textContent = `copied (${ctx.source}): ${text}`; };
+
+  Look.lkClipboard('#cp-text', { text: 'Hello from LookUI', onCopy: report });
+  Look.lkClipboard('#cp-input', { target: '#cp-src', onCopy: report });
+  Look.lkClipboard('#cp-el', { target: '#cp-quote', onCopy: report });
+
+  Look.lkClipboard('#cp-toast', { text: 'toast copy', toast: true });
+  Look.lkClipboard('#cp-bottom', { text: 'bottom', position: 'bottom' });
+  Look.lkClipboard('#cp-none', { text: 'silent', feedback: 'none', onCopy: report });
+  Look.lkClipboard('#cp-fail', { text: () => { throw new Error('source failed'); }, onError: (e) => { out.textContent = 'error: ' + e.message; } });
+
+  const sOut = document.getElementById('cp-secret-out');
+  const KEY = 'sk_live_51H8xQ2eZvKYlo2C0';
+  Look.lkClipboard('#cp-secret', {
+    text: KEY,
+    beforeCopy: (t) => t.slice(0, 8) + '…' + '*'.repeat(8),
+    onCopy: (t) => { sOut.textContent = 'masked copy: ' + t; },
+  });
+  Look.lkClipboard('#cp-secret-ok', { text: KEY, onCopy: (t) => { sOut.textContent = 'real copy: ' + t; } });
+
+  const stOut = document.getElementById('cp-static-out');
+  document.getElementById('cp-static-copy').onclick = async () => { stOut.textContent = 'copy → ' + (await Look.lkClipboard.copy('static')); };
+  document.getElementById('cp-static-read').onclick = async () => { stOut.textContent = 'read → ' + JSON.stringify(await Look.lkClipboard.read()); };
+</script>
+</body>
+</html>

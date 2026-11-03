@@ -125,3 +125,66 @@
     font-size: var(--lk-text-xs);
   }
 }
+
+// --- Collapsible (lkCard) ---
+// Header becomes the accordion toggle; everything after it lives in a .lk-collapse panel.
+
+.lk-card--collapsible {
+  > .lk-card__header--toggle {
+    cursor: pointer;
+    user-select: none;
+    transition:
+      background-color var(--lk-duration-fast) var(--lk-easing-default),
+      border-color var(--lk-duration-slow) var(--lk-easing-in-out);
+
+    &:hover {
+      background: color-mix(in srgb, var(--lk-text) 4%, transparent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--lk-primary);
+      outline-offset: -2px;
+    }
+
+    // Title + subtitle sit in column 1, the chevron centers in column 2
+    &:has(> .lk-card__subtitle):has(> .lk-card__chevron) {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      column-gap: var(--lk-space-3);
+
+      > :not(.lk-card__chevron) { grid-column: 1; }
+      > .lk-card__chevron { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+    }
+  }
+
+  &.lk-card--collapsed > .lk-card__header--toggle {
+    border-bottom-color: transparent;
+  }
+
+  &.lk-card--primary > .lk-card__header--toggle:hover {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+  }
+}
+
+.lk-card__chevron {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  color: var(--lk-text-muted);
+  transition: transform var(--lk-duration-slow) var(--lk-easing-in-out);
+}
+
+.lk-card--primary .lk-card__chevron {
+  color: inherit;
+}
+
+.lk-card--collapsible:not(.lk-card--collapsed) > .lk-card__header .lk-card__chevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-card--collapsible > .lk-card__header--toggle,
+  .lk-card__chevron {
+    transition: none;
+  }
+}

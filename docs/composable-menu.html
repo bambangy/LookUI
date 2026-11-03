@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Composable Menu</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Composable Menu</h1>
+    <p style="opacity: 0.85;">Look.lkMenu(target, opts) — dropdown / context menu with submenus, built on lkPopupProxy</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Dropdown with icons, shortcuts and a submenu</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      Default trigger is <code>'click'</code>. "Share" opens a submenu (<code>items</code> nested one level,
+      <code>right-top</code> placement, hover-intent delay). Keyboard: Up/Down/Home/End, Right opens a submenu,
+      Left closes it, Enter/Space activate, type-ahead, Escape closes one level at a time and returns focus to the
+      trigger.
+    </p>
+    <div class="demo-row">
+      <button id="menu-trigger" class="lk-btn lk-btn--secondary">
+        More actions
+      </button>
+    </div>
+    <div id="menu-out" class="demo-output">Ready</div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Checkbox &amp; radio items</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      <code>type: 'checkbox'</code> toggles independently; <code>type: 'radio'</code> items sharing a <code>group</code>
+      uncheck each other. Activating either keeps the menu open by returning <code>keepOpen: true</code> on the item,
+      so several options can be flipped in one visit.
+    </p>
+    <div class="demo-row">
+      <button id="menu-view-trigger" class="lk-btn lk-btn--secondary">View options</button>
+    </div>
+    <div id="menu-view-out" class="demo-output">Ready</div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Context menu</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      <code>trigger: 'contextmenu'</code> opens at the pointer and suppresses the native menu. Right-click again
+      while it is open to reposition it at the new pointer location.
+    </p>
+    <div id="menu-canvas" class="lk-card lk-card--dense" style="padding: var(--lk-space-7); text-align: center; color: var(--lk-text-muted); user-select: none;">
+      Right-click anywhere in this box
+    </div>
+    <div id="menu-canvas-out" class="demo-output"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Guards — veto / delay an action</p>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-4);">
+      "Delete" is guarded by <code>beforeAction</code>: it shows a confirm dialog and only lets the action through
+      (and the menu close) if the user confirms. A plain manual menu is also opened here with
+      <code>Look.lkMenu({ items }).open(x, y)</code> — no trigger element at all.
+    </p>
+    <div class="demo-row">
+      <button id="menu-guard-trigger" class="lk-btn lk-btn--negative">Row actions</button>
+      <button id="menu-manual-btn" class="lk-btn lk-btn--secondary">Open manual menu here</button>
+    </div>
+    <div id="menu-guard-out" class="demo-output">Ready</div>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const menu = Look.lkMenu('#more', {
+  items: [
+    { id: 'rename', text: 'Rename', icon: 'edit', shortcut: 'F2' },
+    { type: 'separator' },
+    { id: 'share', text: 'Share', items: [{ id: 'link', text: 'Copy link' }] },
+    { id: 'delete', text: 'Delete', icon: 'delete' },
+  ],
+  trigger: 'click',                 // 'click' | 'contextmenu' | 'hover' | 'manual'
+  placement: 'bottom-left',
+  beforeAction(item, { event, checked }) {
+    if (item.id === 'delete') return confirm('Delete this item?');
+  },
+  onAction(item, { source, component }) { console.log(item.id, source); },
+  onOpen(component) {},
+  onClose(reason, component) {},    // 'escape' | 'outside' | 'action' | 'tab' | 'toggle' | 'hover' | 'api' | 'destroy'
+});
+
+Look.lkMenu('#canvas', { trigger: 'contextmenu', items });   // opens at the pointer
+Look.lkMenu({ items }).open(120, 80);                         // manual, no trigger element
+
+menu.setChecked('wrap', true);
+menu.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkMenu',
+  textNamespace: 'menu',
+  kind: 'Composable',
+  signature: 'const menu = Look.lkMenu(target, options);  // or Look.lkMenu(options) for a manual menu',
+  description: [
+    'A dropdown or context menu, with any number of nested submenus. The menu itself is not positioned directly — each nesting depth gets its own [lkPopupProxy](composable-popup-proxy.html) (root at the trigger/point, submenus `right-top` of their parent item), so it flips near viewport edges and stacks above dialogs like any other popup. The menu DOM is built live inside `panelEl`, never through `setContent`.',
+    '**Trigger modes.** `\'click\'` (default when a target is given) toggles on click and opens on ArrowDown/ArrowUp from the trigger. `\'hover\'` opens after `hoverOpenDelay` and closes after `closeDelay` once the pointer leaves both the trigger and the panel. `\'contextmenu\'` opens at the pointer and prevents the native menu; right-clicking again while open repositions it. `\'manual\'` (the default with no target) has no built-in trigger — call `open(x, y)` or `open(element)` yourself.',
+    '**Item types**: `\'item\'` (default), `\'separator\'` (also `\'-\'`), `\'header\'` (non-interactive label), `\'checkbox\'` and `\'radio\'` (grouped by `group`, mutually exclusive). An item with nested `items` becomes a submenu trigger instead of activating directly.',
+  ],
+  params: [
+    { name: 'target', type: 'Element | string | Object', optional: true, description: 'Trigger element or selector. Omit it (pass only `options`) for a manual menu with no trigger.' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The menu instance.' },
+  options: [
+    { name: 'items', type: 'Array', default: '—', description: '`{ id?, text, icon?, shortcut?, type?, checked?, group?, disabled?, hidden?, items? (submenu), keepOpen?, onClick? }`; `\'-\'` or `{ type: \'separator\' }` is a separator.' },
+    {
+      name: 'trigger', type: "'click' | 'contextmenu' | 'hover' | 'manual'", default: "'click' with a target, else 'manual'",
+      description: 'How the menu opens relative to its trigger element.',
+    },
+    { name: 'placement', type: 'string', default: "'bottom-left'", description: 'lkPopupProxy placement of the root menu (`\'bottom-right\'`, `\'top-left\'`, …); submenus are always `right-top` of their owning item.' },
+    { name: 'closeOnAction', type: 'boolean', default: 'true', description: 'Close the whole menu after an item is activated. An item can opt out with its own `keepOpen: true` (handy for checkboxes/radios).' },
+    { name: 'hoverDelay', type: 'number', default: '120', description: 'Milliseconds of hover intent before a hovered item with a submenu opens it (or a sibling submenu closes).' },
+    { name: 'hoverOpenDelay', type: 'number', default: '100', description: "Trigger `'hover'`: milliseconds after the pointer enters the trigger before the root menu opens." },
+    { name: 'closeDelay', type: 'number', default: '250', description: "Trigger `'hover'`: milliseconds after the pointer leaves before the menu closes." },
+    { name: 'ariaLabel', type: 'string', default: "the 'label' text", description: 'Accessible name of the root menu (`role=\"menu\"`).' },
+    { name: 'className', type: 'string', default: '—', description: 'Extra class on every level\'s panel.' },
+    { name: 'dense', type: 'boolean', default: 'false', description: 'Compact row height.' },
+    { name: 'text', type: 'Object', default: '—', description: 'Per-instance text overrides (`label`).' },
+    { name: 'onAction', type: 'Function', default: '—', description: "`(item, { source, component, event, checked })` when a selectable item (`item`/`checkbox`/`radio`) is activated; `source` is `'click'`, `'key'` or `'api'`. `checked` is the item's new checked state for `checkbox`/`radio`." },
+    { name: 'onOpen', type: 'Function', default: '—', description: '`(component)` after the root menu opens.' },
+    { name: 'onClose', type: 'Function', default: '—', description: "`(reason, component)` after it fully closes. `reason`: `'escape'`, `'outside'`, `'action'`, `'tab'`, `'toggle'`, `'hover'`, `'api'`, `'destroy'`." },
+  ],
+  guards: [
+    { name: 'beforeOpen', signature: 'beforeOpen({ source, component, anchor, x, y })', description: 'Runs before the root menu opens. Return `false` to keep it closed, or a Promise to wait. DOM event `lk:before-open`.' },
+    { name: 'beforeClose', signature: 'beforeClose(reason, { source, component })', description: 'Runs before it closes (same `reason` values as `onClose`). Return `false` to keep it open. DOM event `lk:before-close`.' },
+    { name: 'beforeAction', signature: 'beforeAction(item, { source, component, event, checked })', description: 'Runs before a selectable item\'s effect (check/radio toggle, `item.onClick`, `onAction`, and the `closeOnAction` close) is applied. Return `false` (or a Promise resolving `false`) to cancel all of it — e.g. show a confirm dialog and only let destructive actions through when it resolves. DOM event `lk:before-action`.' },
+  ],
+  texts: [
+    { name: 'label', default: 'Menu', description: 'Accessible name of the root menu when `ariaLabel` is not set.' },
+  ],
+  properties: [
+    { name: 'el', type: 'Element', readonly: true, description: "The root level's `.lk-menu` element (`null` before the first render)." },
+    { name: 'triggerEl', type: 'Element', readonly: true, description: 'The trigger element, or `null` for a manual menu.' },
+    { name: 'isOpen', type: 'boolean', readonly: true, description: 'Whether the menu (any level) is open.' },
+    { name: 'items', type: 'Array', readonly: true, description: 'The root-level item records.' },
+    { name: 'text', type: 'Object', description: 'Get/set the active text overrides.' },
+  ],
+  methods: [
+    { name: 'open', signature: 'open(x, y) | open(element) | open()', description: 'Opens the menu: at viewport coordinates, anchored to an element (or selector), or anchored to the trigger with no arguments. Goes through `beforeOpen` with `source: \'api\'`.' },
+    { name: 'close', signature: 'close()', description: 'Closes every open level (`source: \'api\'`).' },
+    { name: 'toggle', signature: 'toggle(a, b)', description: 'Closes if open, otherwise `open(a, b)`.' },
+    { name: 'setItems', signature: 'setItems(items)', description: 'Replaces the items; an open menu re-renders its root level in place (open submenus close).' },
+    { name: 'get', signature: 'get(id)', description: 'Returns the item record for an id, or `null`.' },
+    { name: 'setChecked', signature: 'setChecked(id, checked = true)', description: 'Sets a checkbox/radio item (silent, no `onAction`); checking a radio unchecks the others in its `group`.' },
+    { name: 'enable', signature: 'enable(id)', description: 'Re-enables an item.' },
+    { name: 'disable', signature: 'disable(id)', description: 'Disables an item (skipped by the keyboard, ignores clicks).' },
+    { name: 'show', signature: 'show(id)', description: 'Unhides an item.' },
+    { name: 'hide', signature: 'hide(id)', description: 'Hides an item (still present, just not rendered).' },
+    { name: 'activate', signature: 'activate(id)', description: 'Activates an item as if it were clicked (`source: \'api\'`) — guards and `onAction` run normally.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Closes the menu, removes every level\'s popup and listeners, and restores the trigger\'s original `aria-*` attributes.' },
+  ],
+  classes: [
+    { name: '.lk-menu[--dense]', description: 'One per nesting level, built inside its lkPopupProxy panel (`.lk-menu__panel`).' },
+    { name: '.lk-menu__item', description: 'A row (`role="menuitem" | "menuitemcheckbox" | "menuitemradio"`); modifiers `--disabled`, `--checked`, `--open` (submenu open).' },
+    { name: '.lk-menu__lead / __label / __shortcut / __caret', description: 'Leading icon/mark slot, label text, shortcut hint, and the submenu caret.' },
+    { name: '.lk-menu__mark[--checkbox|--radio]', description: 'The checkbox/radio indicator inside `__lead`.' },
+    { name: '.lk-menu__separator / __header', description: 'A divider row and a non-interactive section label.' },
+  ],
+  tokens: [
+    { name: '--lk-bg / --lk-border', default: '#ffffff / #d0d0d8', description: 'Panel background and border (inherited from `.lk-popup-proxy__panel`).' },
+    { name: '--lk-primary', default: '#5c6bc0', description: 'Focused/hovered row highlight and checked marks.' },
+    { name: '--lk-radius / --lk-radius-full', default: '0.375rem / 9999px', description: 'Item corners / checkbox-radio mark shape.' },
+    { name: '--lk-duration-fast', default: '180ms', description: 'Hover/focus row transition.' },
+  ],
+});
+</script>
+<script>
+(function () {
+  // --- Dropdown with icons, shortcuts, submenu ---
+  const out = document.getElementById('menu-out');
+  Look.lkMenu('#menu-trigger', {
+    items: [
+      { id: 'rename', text: 'Rename', icon: 'edit', shortcut: 'F2' },
+      { id: 'duplicate', text: 'Duplicate', icon: 'copy' },
+      { type: 'separator' },
+      { id: 'share', text: 'Share', icon: 'share', items: [
+        { id: 'link', text: 'Copy link', icon: 'link' },
+        { id: 'email', text: 'Email', icon: 'mail' },
+      ] },
+      { type: 'separator' },
+      { id: 'delete', text: 'Delete', icon: 'delete' },
+    ],
+    onAction(item, ctx) { out.textContent = `action: ${item.id} (source ${ctx.source})`; },
+    onOpen() { out.textContent = 'opened'; },
+    onClose(reason) { out.textContent = `closed: ${reason}`; },
+  });
+
+  // --- Checkbox & radio items ---
+  const viewOut = document.getElementById('menu-view-out');
+  Look.lkMenu('#menu-view-trigger', {
+    items: [
+      { type: 'header', text: 'Show' },
+      { id: 'wrap', text: 'Word wrap', type: 'checkbox', checked: true, keepOpen: true },
+      { id: 'minimap', text: 'Minimap', type: 'checkbox', keepOpen: true },
+      { type: 'separator' },
+      { type: 'header', text: 'Theme' },
+      { id: 'light', text: 'Light', type: 'radio', group: 'theme', checked: true, keepOpen: true },
+      { id: 'dark', text: 'Dark', type: 'radio', group: 'theme', keepOpen: true },
+    ],
+    onAction(item, ctx) { viewOut.textContent = `${item.id}: ${ctx.checked}`; },
+  });
+
+  // --- Context menu ---
+  const canvasOut = document.getElementById('menu-canvas-out');
+  Look.lkMenu('#menu-canvas', {
+    trigger: 'contextmenu',
+    items: [
+      { id: 'add', text: 'Add node', icon: 'plus' },
+      { id: 'paste', text: 'Paste', icon: 'copy' },
+      { type: 'separator' },
+      { id: 'reset', text: 'Reset view', icon: 'refresh' },
+    ],
+    onAction(item) { canvasOut.textContent = `context action: ${item.id}`; },
+  });
+
+  // --- Guards ---
+  const guardOut = document.getElementById('menu-guard-out');
+  Look.lkMenu('#menu-guard-trigger', {
+    items: [
+      { id: 'archive', text: 'Archive', icon: 'folder' },
+      { id: 'delete', text: 'Delete', icon: 'delete' },
+    ],
+    beforeAction(item) {
+      if (item.id === 'delete') {
+        const ok = window.confirm('Delete this row?');
+        guardOut.textContent = ok ? 'delete confirmed' : 'delete cancelled';
+        return ok;
+      }
+    },
+    onAction(item) { if (item.id !== 'delete') guardOut.textContent = `action: ${item.id}`; },
+  });
+
+  // --- Manual menu (no trigger element) ---
+  const manualMenu = Look.lkMenu({
+    items: [
+      { id: 'here1', text: 'Action at point A' },
+      { id: 'here2', text: 'Action at point B' },
+    ],
+    onAction(item) { guardOut.textContent = `manual action: ${item.id}`; },
+  });
+  document.getElementById('menu-manual-btn').addEventListener('click', (e) => {
+    const r = e.target.getBoundingClientRect();
+    manualMenu.open(r.left, r.bottom + 4);
+  });
+})();
+</script>
+</body>
+</html>

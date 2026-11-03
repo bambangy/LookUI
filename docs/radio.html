@@ -241,6 +241,13 @@ function checkableDocs(FN, MK, noun) {
   LookDocs.render('#api', {
     name: 'lkRadio',
     validateable: true,
+    textNamespace: 'radio',
+    guards: [
+      { name: 'beforeChange', signature: 'beforeChange(checked, { source, component, event })', description: 'Runs when the user selects this radio (`source: "change"`), before `onChange`. Return `false` to veto: the radio that was selected before in the group is restored. Synchronous only. Programmatic `c.checked = true` never asks.' },
+    ],
+    texts: [
+      { name: 'required', default: 'Please choose an option', description: 'Message of the `required` rule for the group (when the rule has no own `message`). Other validation messages use the shared `validation.*` keys.' },
+    ],
     kind: 'Component',
     signature: 'const radio = Look.lkRadio(element, options);',
     description: [

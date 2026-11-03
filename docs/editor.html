@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Editor</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="api-docs.css" />
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Editor</h1>
+    <p style="opacity: 0.85;">lkEditor(textarea, opts) — WYSIWYG rich-text HTML editor with a raw-source view and a built-in sanitizer</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">Full toolbar</p>
+    <p style="font-size: var(--lk-text-sm); color: var(--lk-text-muted); max-width: 48rem;">
+      Every control, left to right: <strong>Undo / Redo</strong>; a <strong>paragraph style</strong> dropdown
+      (Paragraph, Heading 1–6, Blockquote, Preformatted — <code>formatBlock</code>); a <strong>font size</strong>
+      dropdown (Small / Normal / Large / Huge); <strong>Bold / Italic / Underline / Strikethrough</strong> toggles;
+      <strong>text color</strong> and <strong>highlight color</strong> (each opens a popup with an
+      <a href="color.html">lkColor</a> picker and runs <code>foreColor</code> / <code>hiliteColor</code>);
+      <strong>align left / center / right / justify</strong>; <strong>numbered</strong> and <strong>bullet</strong> lists;
+      <strong>Link</strong> (opens a mini-form popup — URL + "open in new tab" — Apply wraps the selection in
+      <code>&lt;a href&gt;</code>, Remove runs <code>unlink</code>); <strong>Code block</strong>
+      (wraps the selection, or the current block, in <code>&lt;pre&gt;&lt;code&gt;</code>);
+      <strong>Clear formatting</strong>; and, right-aligned, <strong>View source</strong>, which swaps the
+      WYSIWYG surface for a raw-HTML textarea.
+    </p>
+    <textarea id="ed-full" style="display:none;">&lt;h2&gt;Welcome to lkEditor&lt;/h2&gt;&lt;p&gt;Type here, or try every toolbar button above. &lt;b&gt;Bold&lt;/b&gt;, &lt;i&gt;italic&lt;/i&gt;, &lt;a href="https://example.com"&gt;links&lt;/a&gt; and &lt;code&gt;code&lt;/code&gt; all round-trip through the sanitizer.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Bullet one&lt;/li&gt;&lt;li&gt;Bullet two&lt;/li&gt;&lt;/ul&gt;</textarea>
+    <div id="ed-full-out" class="demo-output" style="margin-top: var(--lk-space-4);"></div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Source view round trip</p>
+    <p style="font-size: var(--lk-text-sm); color: var(--lk-text-muted); max-width: 48rem;">
+      Click <strong>View source</strong> to see the raw HTML, edit it directly, then click it again to parse the
+      edit back into the WYSIWYG surface (through the sanitizer, since <code>sanitize</code> is on by default).
+    </p>
+    <textarea id="ed-source" style="display:none;">&lt;p&gt;Edit me as raw HTML via the &lt;b&gt;View source&lt;/b&gt; toggle.&lt;/p&gt;</textarea>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Insert a link</p>
+    <p style="font-size: var(--lk-text-sm); color: var(--lk-text-muted); max-width: 48rem;">
+      Select some text, click the link icon, type a URL (and optionally check "Open in new tab"), then Apply.
+      Click the link icon again with the caret inside an existing link to edit or Remove it.
+    </p>
+    <textarea id="ed-link" style="display:none;">&lt;p&gt;Select this sentence and click the link button.&lt;/p&gt;</textarea>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Sanitization — before / after</p>
+    <p style="font-size: var(--lk-text-sm); color: var(--lk-text-muted); max-width: 48rem;">
+      This is a best-effort, allowlist-based client-side sanitizer for display/editing safety — not a substitute
+      for server-side sanitization of anything later rendered to other users. Click the button to load a known-bad
+      payload through <code>setValue()</code> with <code>sanitize</code> left on; the editor only ever receives the
+      cleaned result.
+    </p>
+    <div class="demo-row">
+      <button id="san-run" class="lk-btn lk-btn--primary" type="button">Inject bad payload</button>
+    </div>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-4); margin-top: var(--lk-space-4);">
+      <div>
+        <p style="font-size: var(--lk-text-sm); font-weight: 600;">Before (raw payload passed to setValue)</p>
+        <pre id="san-before" class="demo-output"></pre>
+      </div>
+      <div>
+        <p style="font-size: var(--lk-text-sm); font-weight: 600;">After (editor.value — sanitized)</p>
+        <pre id="san-after" class="demo-output"></pre>
+      </div>
+    </div>
+    <textarea id="ed-sanitize" style="display:none;"></textarea>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">getValue(): raw vs. encoded</p>
+    <p style="font-size: var(--lk-text-sm); color: var(--lk-text-muted); max-width: 48rem;">
+      <code>getValue()</code> (default) returns the raw HTML string; <code>getValue({ encode: true })</code> returns
+      an HTML-entity-encoded string — safe to embed where literal angle brackets would be a problem (an attribute,
+      a JSON field read by a legacy system, ...). This is a plain entity-encode, not a security boundary by itself.
+    </p>
+    <textarea id="ed-encode" style="display:none;">&lt;p&gt;Quotes "like this" &amp; ampersands too.&lt;/p&gt;</textarea>
+    <div class="lk-grid lk-grid--cols-1 lk-grid--cols-md-2" style="gap: var(--lk-space-4); margin-top: var(--lk-space-4);">
+      <div>
+        <p style="font-size: var(--lk-text-sm); font-weight: 600;">getValue({ encode: false })</p>
+        <pre id="enc-raw" class="demo-output"></pre>
+      </div>
+      <div>
+        <p style="font-size: var(--lk-text-sm); font-weight: 600;">getValue({ encode: true })</p>
+        <pre id="enc-encoded" class="demo-output"></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Form &amp; validation</p>
+    <form id="ed-form" class="lk-card" novalidate>
+      <div class="lk-card__body" style="display: grid; gap: var(--lk-space-4);">
+        <textarea id="ed-form-body" name="body" style="display:none;"></textarea>
+        <div class="demo-row" style="margin-bottom: 0;">
+          <button class="lk-btn lk-btn--primary" type="submit">Submit</button>
+          <button class="lk-btn lk-btn--ghost" type="reset">Reset</button>
+        </div>
+        <div id="ed-form-out" class="demo-output"></div>
+      </div>
+    </form>
+  </section>
+
+  <div class="demo-usage">
+    <p class="demo-usage__title">JavaScript</p>
+    <pre>const ed = Look.lkEditor('#body', {
+  label: 'Description',
+  sanitize: true,                 // default; false disables it, or pass a fn(html) => safeHtml
+  encodeForSubmit: false,          // the hidden &lt;textarea&gt; posts raw HTML by default
+  rules: ['required'],             // checks the TEXT content, stripped of tags
+  onChange(value, ctx) { console.log(ctx.source, value); },
+});
+
+ed.value;                         // get: live HTML  |  set: silent
+ed.getValue({ encode: true });    // HTML-entity-encoded string
+ed.setValue(encoded, { encoded: true });
+ed.toggleSource();                // flip WYSIWYG &lt;-&gt; raw-HTML view
+ed.destroy();</pre>
+  </div>
+
+  <div id="api"></div>
+
+</main>
+
+<script src="../dist/look.js"></script>
+<script src="api-docs.js"></script>
+<script>
+LookDocs.render('#api', {
+  name: 'lkEditor',
+  textNamespace: 'editor',
+  validateable: true,
+  kind: 'Component',
+  signature: 'const editor = Look.lkEditor(textareaElement, options);',
+  description: [
+    'Enhances a `<textarea>` with a toolbar (built from [lkToolbar](toolbar.html)) and a `contenteditable` WYSIWYG surface, with a raw-HTML source-view toggle. The native textarea stays in the DOM — visually hidden — kept in sync with the current HTML, so it still participates in native `<form>` submission (`FormData`, `name`, native `required`).',
+    'Editing commands use `document.execCommand` / `document.queryCommandState` — deprecated but still implemented and functional in every current evergreen browser for exactly this feature set.',
+    'Every value entering the editor (initial textarea value, `setValue()`, pasted content, content returning from the source view) is run through a built-in allowlist-based HTML sanitizer unless `sanitize: false` or a custom `sanitize` function is given. This is a best-effort client-side sanitizer for display/editing safety, **not** a substitute for server-side sanitization of anything later rendered to other users.',
+  ],
+  params: [
+    { name: 'textareaElement', type: 'HTMLTextAreaElement | string', description: 'The textarea (or selector).' },
+    { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
+  ],
+  returns: { type: 'Object', description: 'The editor instance.' },
+  options: [
+    { name: 'value', type: 'string', default: "the textarea's value", description: 'Initial HTML content.' },
+    { name: 'label / name / required / readonly / disabled / dense', type: '—', default: '—', description: 'Standard field options.' },
+    { name: 'placeholder', type: 'string', default: '"Write something…"', description: 'Shown in the empty surface.' },
+    { name: 'sanitize', type: 'boolean | Function', default: 'true', description: '`true`: built-in allowlist sanitizer. `false`: disabled — the caller is responsible for the HTML that enters the editor. `fn(html) => safeHtml`: a custom or wrapping sanitizer.' },
+    { name: 'allowedTags', type: 'string[] | Function', default: '—', description: 'An array **extends** the default tag allowlist (`p, br, strong, b, em, i, u, s, strike, span, div, a, img, h1–h6, ul, ol, li, blockquote, pre, code, hr, table, thead, tbody, tr, td, th`); a function `(tag) => boolean` **replaces** the check entirely.' },
+    { name: 'allowedAttributes', type: 'string[] | Object | Function', default: '—', description: 'An array **extends** the attributes allowed on every kept tag; an object `{ tag: [attrs] }` **extends** per tag (defaults: `a: [href, title, target, rel]`, `img: [src, alt, width, height]`; `style` is always allowed, with `expression(...)` / `url(javascript:...)` stripped from its value); a function `(tag, attr) => boolean` **replaces** the check entirely.' },
+    { name: 'encodeForSubmit', type: 'boolean', default: 'false', description: 'When `true`, the hidden native `<textarea>` posts the HTML-entity-encoded form instead of raw HTML.' },
+    { name: 'rules / validate / validateDebounce', type: '—', default: '—', description: 'Validation like every form component. The `required` rule (and any rule) checks the **text content**, stripped of tags — an empty `<p><br></p>` counts as empty.' },
+    {
+      name: 'onChange', type: 'Function', default: '—',
+      description: '`(value, { source, component })` — `source` is `\'input\'` (debounced ~300ms while typing or after a toolbar command), `\'source\'` (the raw-HTML view was applied back) or `\'api\'`. Assigning `value` is silent.',
+    },
+    { name: 'text', type: 'Object', default: '{}', description: "Overrides this component's texts — see Text keys below." },
+  ],
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange(value, { source, component })', description: 'Runs before every content commit (debounced typing, a toolbar command, or the source view being applied back). Return `false` to veto the commit (the hidden textarea is not synced and `onChange` does not fire) — note the visible keystroke itself is not reverted, since undoing live `contenteditable` typing would be disruptive; the veto withholds the commit, not the pixel.' },
+    { name: 'beforeCommand', signature: 'beforeCommand(name, value, { source, component })', description: 'Wraps every toolbar formatting command before it runs (`name` is the `execCommand` name, e.g. `\'bold\'`, `\'formatBlock\'`, `\'foreColor\'`, `\'createLink\'`, `\'unlink\'`, `\'insertCodeBlock\'`). Return `false` to veto a specific command app-wide (e.g. block `foreColor`), a Promise to wait, or another value to replace the command\'s value.' },
+    { name: 'beforeSourceToggle', signature: 'beforeSourceToggle(toSource, { source, component })', description: 'Wraps the WYSIWYG ⇄ source-view switch, in both directions. Return `false` to keep the current view.' },
+  ],
+  texts: [
+    { name: 'ariaLabel', default: 'Rich text editor', description: "The toolbar's aria-label." },
+    { name: 'placeholder', default: 'Write something…', description: 'Empty-surface placeholder.' },
+    { name: 'required', default: 'This field is required', description: 'Message of the `required` rule.' },
+    { name: 'toolbar.undo / toolbar.redo', default: 'Undo / Redo', description: 'Tooltips.' },
+    { name: 'toolbar.bold / italic / underline / strike', default: 'Bold / Italic / Underline / Strikethrough', description: 'Tooltips for the text-decoration toggles (shown as B / I / U / S labels — no dedicated icon).' },
+    { name: 'toolbar.textColor / toolbar.highlightColor', default: 'Text color / Highlight color', description: 'Tooltips for the color popup buttons.' },
+    { name: 'toolbar.alignLeft / alignCenter / alignRight / alignJustify', default: 'Align left / center / right / Justify', description: 'Tooltips (shown as L / C / R / J labels).' },
+    { name: 'toolbar.orderedList / toolbar.unorderedList', default: 'Numbered list / Bullet list', description: 'Tooltips.' },
+    { name: 'toolbar.link', default: 'Insert link', description: 'Tooltip of the link button.' },
+    { name: 'toolbar.codeBlock', default: 'Code block', description: 'Tooltip (shown as a `</>` label).' },
+    { name: 'toolbar.clearFormat', default: 'Clear formatting', description: 'Tooltip / label.' },
+    { name: 'toolbar.source', default: 'View source', description: 'Tooltip / label of the source-view toggle.' },
+    { name: 'formatBlock.paragraph / h1…h6 / blockquote / pre', default: 'Paragraph / Heading 1…6 / Blockquote / Preformatted', description: 'Paragraph-style dropdown options.' },
+    { name: 'fontSize.small / normal / large / huge', default: 'Small / Normal / Large / Huge', description: 'Font-size dropdown options.' },
+    { name: 'link.url / link.urlPlaceholder / link.newTab / link.remove', default: 'URL / https://example.com / Open in new tab / Remove link', description: 'Link popup labels.' },
+  ],
+  properties: [
+    { name: 'value', type: 'string', description: 'Current HTML. Get reads live from whichever view is active (surface or source textarea); set is silent and updates both views plus the hidden native textarea.' },
+    { name: 'isSource', type: 'boolean', readonly: true, description: 'Whether the raw-HTML source view is currently shown.' },
+    { name: 'rootEl / surfaceEl / sourceEl', type: 'Element', readonly: true, description: 'The `.lk-editor` root, the contenteditable surface, and the source `<textarea>`.' },
+    { name: 'toolbar', type: 'Object', readonly: true, description: 'The underlying [lkToolbar](toolbar.html) instance — `toolbar.get(id)` reaches any button/dropdown by id (`undo`, `redo`, `formatBlock`, `fontSize`, `bold`, `italic`, `underline`, `strike`, `textColor`, `highlightColor`, `alignLeft`, `alignCenter`, `alignRight`, `alignJustify`, `orderedList`, `unorderedList`, `link`, `codeBlock`, `clearFormat`, `source`).' },
+    { name: 'label / name / required / readonly / disabled / enabled / hidden', type: '—', description: 'Standard field properties. `el` is the original `<textarea>`.' },
+  ],
+  methods: [
+    { name: 'getValue', signature: 'getValue({ encode = false } = {}) → string', description: 'Raw HTML, or an HTML-entity-encoded string with `encode: true`.' },
+    { name: 'setValue', signature: 'setValue(value, { encoded = false } = {}) → void', description: 'Silent. `encoded: true` decodes entities first.' },
+    { name: 'toggleSource', signature: 'toggleSource([force]) → component', description: 'Switches between the WYSIWYG surface and the raw-HTML view (through the same `beforeSourceToggle` guard as the toolbar button).' },
+    { name: 'focus', signature: 'focus()', description: 'Focuses whichever view is active.' },
+    { name: 'setError', signature: 'setError(message)', description: 'Shows a field error.' },
+    { name: 'clearError', signature: 'clearError()', description: 'Removes the error.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Removes the toolbar/surface and restores the original textarea exactly.' },
+  ],
+  classes: [
+    { name: '.lk-editor', description: 'Root (`--dense`, `--readonly`, `--disabled`, `--error`, `--source` states).' },
+    { name: '.lk-editor__toolbar', description: 'The `lkToolbar` mount.' },
+    { name: '.lk-editor__surface', description: 'The contenteditable WYSIWYG surface (`--empty` shows the placeholder).' },
+    { name: '.lk-editor__source', description: 'The raw-HTML `<textarea>` (shown only in source view).' },
+  ],
+  tokens: [
+    { name: '--lk-primary', default: '#5c6bc0', description: 'Focus ring, link color inside the surface.' },
+    { name: '--lk-negative', default: '#e53935', description: 'Error border.' },
+    { name: '--lk-border / --lk-bg-subtle', default: '#d0d0d8 / #f5f5f8', description: 'Root border and code-block / source-view background.' },
+    { name: '--lk-font-mono', default: 'ui-monospace, …', description: 'Code blocks and the source textarea.' },
+  ],
+});
+</script>
+<script>
+  const full = Look.lkEditor('#ed-full', {
+    onChange(value, ctx) {
+      document.getElementById('ed-full-out').textContent = `onChange (${ctx.source}): ${value.length} chars`;
+    },
+  });
+  Look.lkEditor('#ed-source');
+  Look.lkEditor('#ed-link');
+
+  const sanitizeEditor = Look.lkEditor('#ed-sanitize');
+  document.getElementById('san-run').addEventListener('click', () => {
+    const payload = '<p>Hello</p><script>alert(1)<\/script><img src=x onerror="alert(1)"><a href="javascript:alert(1)">bad link</a><div style="background:url(javascript:alert(1))">styled</div>';
+    document.getElementById('san-before').textContent = payload;
+    sanitizeEditor.setValue(payload); // sanitize stays on (default)
+    document.getElementById('san-after').textContent = sanitizeEditor.value;
+  });
+
+  const encodeEditor = Look.lkEditor('#ed-encode');
+  function paintEncode() {
+    document.getElementById('enc-raw').textContent = encodeEditor.getValue();
+    document.getElementById('enc-encoded').textContent = encodeEditor.getValue({ encode: true });
+  }
+  paintEncode();
+  encodeEditor.el.addEventListener('lk:before-change', () => setTimeout(paintEncode, 0));
+  // Also refresh shortly after load / toolbar interaction
+  setInterval(paintEncode, 1500);
+
+  const body = Look.lkEditor('#ed-form-body', { label: 'Body', rules: ['required'] });
+  const formOut = document.getElementById('ed-form-out');
+  document.getElementById('ed-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const r = Look.lkValidation(body);
+    formOut.textContent = r.hasError ? 'Invalid: ' + JSON.stringify(r.errors) : JSON.stringify({ body: body.value });
+  });
+  document.getElementById('ed-form').addEventListener('reset', () => { formOut.textContent = ''; });
+</script>
+</body>
+</html>

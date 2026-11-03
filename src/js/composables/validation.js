@@ -16,13 +16,18 @@
  * @param {boolean} [options.focusFirst=true] — focus the first invalid component after validating / setErrors
  * @param {boolean} [options.scroll=true]     — scroll it into view
  * @param {Element|string} [options.loading]  — element covered by lkInnerLoading while submit() runs
- * @param {string}  [options.loadingText='Saving…']
+ * @param {string}  [options.loadingText]     — default: validation.saving ('Saving…')
+ * @param {Function} [options.beforeSubmit]   — guard (ctx) => false | Promise; vetoed submit() resolves { ok:false, reason:'cancelled' }
  * @param {Object}  [options.fields]          — server key → component, for keys that differ from `component.name`
  * @returns {Object}
  */
 
 import { lkInnerLoading } from './innerLoading.js';
 import { extractFieldErrors, firstMessage } from '../helpers/validation.js';
+import { lkI18n } from '../helpers/i18n.js';
+import { guard } from '../helpers/guard.js';
+
+lkI18n.define('validation', { 'saving': 'Saving…', 'submitError': 'Something went wrong' });
 
 function isValidateable(v) {
   return v != null && typeof v === 'object' && typeof v.validate === 'function';
@@ -40,7 +45,7 @@ export function lkValidation(...args) {
     focusFirst: true,
     scroll: true,
     loading: null,
-    loadingText: 'Saving…',
+    loadingText: null,   // default: validation.saving
     fields: null,
     ...(hasOptions ? last : {}),
   };
@@ -138,7 +143,7 @@ export function lkValidation(...args) {
 
   function setLoading(on) {
     if (!options.loading) return;
-    if (!loader) loader = lkInnerLoading(options.loading, { open: false, text: options.loadingText });
+    if (!loader) loader = lkInnerLoading(options.loading, { open: false, text: options.loadingText != null ? options.loadingText : lkI18n.t('validation.saving') });
     if (on) loader.show();
     else loader.hide();
   }
@@ -153,6 +158,11 @@ export function lkValidation(...args) {
   async function submit(handler) {
     if (destroyed) return { ok: false, reason: 'destroyed' };
     if (submitting) return { ok: false, reason: 'busy' };
+    const first = Array.from(members)[0];
+    const allowed = await guard(first?.el instanceof Element ? first.el : null, options, 'submit', undefined, { source: 'api', component: api }, () => {});
+    if (allowed === false) return { ok: false, reason: 'cancelled' };
+    if (destroyed) return { ok: false, reason: 'destroyed' };
+    if (submitting) return { ok: false, reason: 'busy' };
     submitting = true;
     try {
       const v = await validateAsync();
@@ -165,7 +175,7 @@ export function lkValidation(...args) {
         const fieldErrors = extractFieldErrors(error);
         const unmatched = fieldErrors ? setErrors(fieldErrors) : [];
         const message = error?.message || error?.body?.message || error?.response?.data?.message
-          || (unmatched.length ? unmatched.map((u) => u.message).join(' ') : null);
+          || (unmatched.length ? unmatched.map((u) => u.message).join(' ') : lkI18n.t('validation.submitError'));
         return { ok: false, reason: 'error', error, errors: collectErrors(), unmatched, message };
       } finally {
         setLoading(false);

@@ -1,0 +1,84 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// Number — lkNumber on <input> (built on .lk-input-affix)
+// Structure:
+//   .lk-number.lk-input-affix > .lk-number__prefix? + input.lk-number__input + .lk-number__suffix?
+//                             + .lk-number__spin > button.lk-number__btn--up + button.lk-number__btn--down
+//   input[type=hidden]  — raw number for form posts
+
+.lk-number {
+  position: relative;
+
+  &__input {
+    min-width: 0;
+    flex: 1 1 auto;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__prefix,
+  &__suffix {
+    user-select: none;
+  }
+
+  &__spin {
+    display: inline-flex;
+    flex: none;
+    align-self: stretch;
+    border-left: var(--lk-border-width) solid var(--lk-border);
+  }
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--lk-text-muted);
+    cursor: pointer;
+    transition:
+      background-color var(--lk-duration-fast) var(--lk-easing-default),
+      color var(--lk-duration-fast) var(--lk-easing-default);
+
+    & + & {
+      border-left: var(--lk-border-width) solid var(--lk-border);
+    }
+
+    &:hover:not(:disabled) {
+      background: var(--lk-surface);
+      color: var(--lk-primary);
+    }
+
+    &:active:not(:disabled) {
+      background: color-mix(in srgb, var(--lk-primary) 12%, var(--lk-surface));
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--lk-primary);
+      outline-offset: -2px;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  &--dense &__btn { width: 1.625rem; }
+
+  &--readonly &__spin,
+  &--disabled &__spin {
+    pointer-events: none;
+  }
+
+  &--readonly &__btn { opacity: 0.5; }
+
+  &--error {
+    border-color: var(--lk-negative);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-number__btn { transition: none; }
+}

@@ -80,6 +80,16 @@ LookDocs.render('#api', {
     { name: 'options', type: 'Object', optional: true, description: 'Configuration, see below.' },
   ],
   returns: { type: 'Object', description: 'The pager instance with the properties and methods below.' },
+  textNamespace: 'pagination',
+  texts: [
+    { name: 'previous', default: 'Previous page', description: 'aria-label of the previous button.' },
+    { name: 'next', default: 'Next page', description: 'aria-label of the next button.' },
+    { name: 'page', default: 'Page {page}', description: 'aria-label of a page button.' },
+    { name: 'current', default: 'Page {page} of {total}', description: 'aria-label of the current page button.' },
+  ],
+  guards: [
+    { name: 'beforeChange', signature: 'beforeChange(page, { source, prev, component })', description: 'Runs before a click changes the page. Return `false` to stay, or a page number to go there instead. `onChange` fires only when allowed. The `page` setter is not guarded.' },
+  ],
   notes: 'Pages are **1-based**. Out-of-range or non-numeric values are clamped (`page` to `1…totalPages`, `totalPages` to at least `1`) and fractional values are floored.',
 
   options: [
@@ -212,7 +222,7 @@ LookDocs.render('#api', {
   events: [
     {
       name: 'onChange', signature: 'onChange(page, { source, component, prev })',
-      description: 'Called after the page changes — from a click on a number or arrow, or from setting `pager.page`. Not called for the initial `page` option, for clicking the already-active page, or when shrinking `totalPages` clamps the page. `onPageChange(page, ctx)` is a deprecated alias (logs a console warning, removed in 1.0).',
+      description: 'Called after the page changes — from a click on a number or arrow, or from setting `pager.page`. Not called for the initial `page` option, for clicking the already-active page, or when shrinking `totalPages` clamps the page.',
       args: [
         { name: 'page', type: 'number', description: 'The new 1-based page.' },
         { name: 'ctx.source', type: "'click' | 'api'", description: '`click` for a number/arrow click, `api` for the `page` setter.' },

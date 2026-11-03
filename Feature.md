@@ -4,24 +4,47 @@
 
 ---
 
+## 0. Definisi `v1.0.0`
+
+**`v1.0.0` adalah rilis stabil pertama yang production-ready — terstandardisasi di setiap aspek, bukan cuma bentuk API-nya.** Definisi ini sama persis maksudnya dengan bagian **"Release milestones"** di `CLAUDE.md` — kalau salah satu diubah, update juga yang lain. Selama belum rilis 1.0, minor release `0.x` masih boleh mengandung breaking change (lihat `CHANGELOG.md`).
+
+Checklist lengkap (detail per item ada di §3 — Area Perbaikan):
+
+- **Konvensi API dibekukan** — callback convention dan i18n/guard convention (lihat `CLAUDE.md` §0/§0b); semua komponen lolos audit konsistensi API (`el`/`id`/`hidden`/`enabled`/`destroy` via `applyBase`, penamaan `onX`/`beforeX` konsisten).
+- **Testing** — Vitest mencakup setiap helper, component, dan composable (saat ini baru helper fondasi + registry + `lkDialog`/`Look.state` yang punya test; ~49 file di `src/js/components` + `src/js/composables` belum).
+- **Code quality tooling** — ESLint + Stylelint terpasang dan lolos di seluruh repo.
+- **Type definitions** — `.d.ts` mencakup seluruh public API.
+- **Bundle size budget** — target gzip yang jelas dan tercapai, plus export yang benar-benar tree-shakeable (tanpa side effect lintas-komponen seperti `lkI18n.define()` di top-level modul yang memaksa seluruh bundle ikut ter-bundle).
+- **Audit aksesibilitas** — selesai untuk dialog, popup, dan semua komponen interaktif.
+- **Dokumentasi rapi** — satu halaman docs per component/composable (sudah terpenuhi), migration guide, dan `CONTRIBUTING.md`.
+- **Tidak ada drift antara "published" dan "current"** — versi di `package.json`, rilis npm terbaru, dan `main` selaras (tidak ada batch besar yang belum di-commit/rilis menumpuk di atas tag terakhir).
+
+Fase 2/3/4 di bawah (contoh integrasi MVC, Pro tier, monetisasi) adalah **post-1.0** — bernilai, tapi bukan bagian dari janji stabilitas yang dibawa 1.0.
+
+---
+
 ## 1. Ringkasan Eksekutif
 
 **LookUI** adalah library JavaScript & CSS untuk komponen UI dengan pendekatan *imperative, predictable, dan MVC-friendly*. Saat ini sudah memiliki fondasi kuat:
-- Core utilities (`qs`, `qsa`, `createElement`, event bus)
-- Behaviors (`lkToggleable`, `lkFocusTrap`)
-- Element-bound components (button, modal, textbox, dropdown, checkbox, radio, switch, carousel, slider, tooltip, rating, chip, list, pagination, progress, splitter, table)
-- Composables (date, dialog, alert, toast, loading, inner loading, ping badge, popup proxy, shimmer, storage)
+- Core utilities (`qs`, `qsa`, `createElement`, event bus, `autoDispose`/`disposeAll`/`disposeWithin`, `Look.state`)
+- Behaviors (`lkToggleable`, `lkFocusTrap`, `lkSortable`)
+- ~26 element-bound components (lihat `CLAUDE.md` § Current status untuk daftar lengkap)
+- ~23 composables, termasuk `lkDialog` (sekarang dengan `open()` berbasis Promise + `channel`), `lkTable`, `lkForm`, `lkTree`, `lkMenu`, `lkOrg`, dll.
 - Data helper (`lkDataSource`)
 
-**Yang belum ada:** state layer, bridge opener↔popup, auto-dispose, contoh integrasi MVC nyata, dan strategi lisensi untuk monetisasi.
+**Yang sudah selesai sejak draft pertama dokumen ini:** state layer (F-01), bridge opener↔popup (F-02), auto-dispose (F-03), dan setup testing (Vitest) — lihat §5 Fase 1.
+**Yang masih belum ada:** contoh integrasi MVC nyata (F-04), ESLint/Stylelint, `.d.ts`, CI yang menjalankan test suite, bundle size yang sesuai budget, dan strategi lisensi untuk monetisasi (lihat §0 checklist 1.0 dan §4).
 
 ---
 
 ## 2. Feature Plan
 
-### 2.1 Fondasi (P0 — Wajib Sebelum v1.0)
+### 2.1 Fondasi (P0 — syarat perlu, bukan syarat cukup, untuk v1.0)
 
-#### F-01: State Layer (`Look.state`)
+> F-01/F-02/F-03 sudah **selesai** (lihat §5 Fase 1), tapi "fondasi selesai" ≠ "siap 1.0" — checklist lengkap
+> ada di §0 di atas, status per-item teknis ada di §3.
+
+#### F-01: State Layer (`Look.state`) — ✅ Selesai
 **Masalah:** Event bus saat ini hanya untuk notifikasi, bukan state. Tidak ada cara berbagi data antar komponen.
 
 **Solusi:**
@@ -43,7 +66,7 @@ Look.state.reset();
 
 ---
 
-#### F-02: Bridge Opener ↔ Popup
+#### F-02: Bridge Opener ↔ Popup — ✅ Selesai
 **Masalah:** `lkDialog`/`lkModal` saat ini hanya callback-based. Sulit untuk komposisi (nested popup, return value).
 
 **Solusi:**
@@ -67,10 +90,11 @@ dialog.channel.on('select', (user) => { ... });
 - Auto-cleanup channel saat popup close
 
 **Estimasi:** 2 minggu
+**Implementasi:** `composables/dialog.js` — `api` sekarang thenable (`await Look.lkDialog({...}).open()` resolve `{ reason, confirmed, cancelled, value }`), `api.channel` (`send`/`on`/`off`). `destroy()` saat promise masih pending resolve dengan `reason: 'destroy'` (tidak hang). `lkModal` sengaja tetap sync-only — dia markup-bound toggle, bukan pola "buka lalu tunggu hasil".
 
 ---
 
-#### F-03: Auto-Dispose
+#### F-03: Auto-Dispose — ✅ Selesai
 **Masalah:** Semua komponen butuh `destroy()` manual. Di MVC, halaman reload terus — lupa destroy = memory leak.
 
 **Solusi:**
@@ -90,10 +114,11 @@ Look.disposeWithin('#container');
 - Warning di console kalau ada instance tidak ter-dispose saat page unload
 
 **Estimasi:** 1-2 minggu
+**Implementasi:** `helpers/registry.js` + `applyBase` (`helpers/base.js`). Catatan: dipakai `Map` biasa, bukan `WeakMap` — `disposeAll()`/`disposeWithin()`/peringatan saat `beforeunload` butuh bisa di-iterate, dan entry hanya hidup selama instance belum `destroy()`, jadi tetap tidak bocor. `destroy()` kini idempoten di semua komponen `applyBase`-based (dipanggil dua kali = no-op).
 
 ---
 
-#### F-04: Dokumentasi Integrasi Server-Side
+#### F-04: Dokumentasi Integrasi Server-Side — ⬜ Belum (satu-satunya item Fase 1 yang belum selesai)
 **Masalah:** Positioning "MVC-friendly" belum dibuktikan dengan contoh nyata.
 
 **Solusi:**
@@ -117,7 +142,11 @@ Ubah attribute → komponen auto-update. Berguna untuk integrasi dengan server-r
 
 ---
 
-#### F-06: Form Integration Helper
+#### F-06: Form Integration Helper — 🟡 Sudah ada, bentuk beda
+**Catatan:** `lkForm` (`composables/form.js`) sudah ada dan menutupi use case ini — tapi bentuknya beda dari draft di
+bawah: field registry + auto-discovery native control (bukan `schema`), `submit(handler)` (bukan option `onSubmit`),
+error server lewat `lkValidation().setErrors()` / `extractFieldErrors()`. Perlakukan contoh di bawah sebagai arsip,
+bukan API target.
 ```js
 const form = Look.lkForm('#my-form', {
   schema: { email: { required: true, type: 'email' } },
@@ -139,7 +168,10 @@ form.reset();
 
 ---
 
-#### F-08: Theme System
+#### F-08: Theme System — 🟡 Sudah ada, bentuk beda
+**Catatan:** `lkTheme` (`composables/theme.js`) sudah ada — light/dark/system, persist ke `localStorage`, sync antar
+tab — tapi sebagai composable per-instance (`const theme = lkTheme(opts)`), bukan global singleton `Look.theme`, dan
+belum ada API `register('brand', tokens)` untuk custom brand token di bawah ini.
 ```js
 Look.theme.set('dark');
 Look.theme.register('brand', { primary: '#ff6600' });
@@ -182,32 +214,40 @@ Dukungan untuk render di server (Node.js) tanpa error.
 
 ## 3. Area Perbaikan (Technical Debt)
 
+**Ini checklist teknis di balik §0 (Definisi `v1.0.0`) — status per item di-track di sini, bukan di §0.**
+
 ### 3.1 Struktur Repo
-| Isu | Rekomendasi |
-|---|---|
-| Folder `compossables` (typo) | Rename ke `composables` |
-| Tidak ada `tests/` | Tambah Vitest + Playwright |
-| Tidak ada `docs/` | Pisah dari README, pakai VitePress |
-| Tidak ada `CHANGELOG.md` | Pakai Conventional Commits + auto-generate |
-| Tidak ada `CONTRIBUTING.md` | Wajib kalau mau open contribution |
+| Isu | Rekomendasi | Status |
+|---|---|---|
+| Folder `compossables` (typo) | Rename ke `composables` | ✅ Selesai |
+| Tidak ada `tests/` | Tambah Vitest (+ Playwright) | 🟡 Vitest jalan (`npm test`, 97 test), tapi baru helper fondasi (`core`, `helpers/base`, `helpers/guard`, `helpers/dataSource`, registry, `lkDialog`, `Look.state`) — ~49 file component/composable belum ada test sama sekali. Playwright belum disentuh |
+| Tidak ada `docs/` | Pisah dari README, pakai VitePress | 🟡 `docs/` sudah ada (70 halaman HTML tangan, termasuk `interactive-cookbook.html` sebagai playground), README cuma pointer — tapi tetap statis, bukan VitePress |
+| Tidak ada `CHANGELOG.md` | Pakai Conventional Commits + auto-generate | ✅ `CHANGELOG.md` ada & terawat (manual, bukan auto-generate dari commit) |
+| Tidak ada `CONTRIBUTING.md` | Wajib kalau mau open contribution | ❌ Belum ada |
 
 ### 3.2 Code Quality
-- **ESLint + Prettier** konsisten
-- **Type checking** via JSDoc + `tsc --checkJs`
-- **Bundle size budget** (mis. max 30KB gzipped untuk core)
-- **Tree-shakeable** — pastikan export modular
-- **Zero dependencies** — jaga ini sebagai selling point
+| Item | Status |
+|---|---|
+| ESLint + Prettier konsisten | ❌ Belum ada config sama sekali |
+| Type checking via JSDoc + `tsc --checkJs` | 🟡 JSDoc sudah rapat di hampir semua factory, tapi `tsc --checkJs` tidak pernah dijalankan/di-enforce |
+| Bundle size budget (mis. max 30KB gzip untuk core) | ❌ Jauh meleset — `dist/look.min.js` gzip ≈ 155KB, `look.min.css` gzip ≈ 39KB. Bukan cuma soal angka: tiap file component punya side effect top-level (`lkI18n.define(...)`), jadi satu bundle `src/js/index.js` → satu `dist/look.js`, tidak ada entry point per-komponen |
+| Tree-shakeable — pastikan export modular | ❌ Terhambat oleh isu di atas (side effects + single entry point) |
+| Zero dependencies | ✅ Masih terjaga — `package.json` tidak punya runtime dependency |
 
 ### 3.3 Developer Experience
-- **CDN build** di unpkg/jsdelivr
-- **Playground interaktif** (bisa pakai LookUI sendiri — dogfooding)
-- **CodeSandbox templates** untuk quick start
-- **Migration guide** antar versi
+| Item | Status |
+|---|---|
+| CDN build di unpkg/jsdelivr | ✅ Field `unpkg`/`jsdelivr` sudah di `package.json`; otomatis aktif sejak `0.3.0` live di npm |
+| Playground interaktif (dogfooding) | 🟡 `docs/interactive-cookbook.html` sudah mengarah ke sini, belum didedikasikan sepenuhnya sebagai "playground" terpisah |
+| CodeSandbox templates untuk quick start | ❌ Belum ada |
+| Migration guide antar versi | ✅ `docs/migration.html` ada dan dirawat (shim 0.3 yang dihapus, dsb) |
 
 ### 3.4 API Consistency
-- Audit semua komponen: pastikan `el`, `id`, `hidden`, `enabled`, `destroy()` ada di semua
-- Standarkan naming option (`onX` vs `onXxx`)
-- Dokumentasikan lifecycle komponen (init → ready → destroy)
+| Item | Status |
+|---|---|
+| Audit semua komponen: `el`/`id`/`hidden`/`enabled`/`destroy()` ada di semua | ✅ Seragam lewat `applyBase` (`helpers/base.js`); `destroy()` sekarang juga idempoten di semua komponen `applyBase`-based |
+| Standarkan naming option (`onX` vs `onXxx`) | ✅ Dibekukan sejak `0.3.0` — lihat `CLAUDE.md` §0 (callback convention) |
+| Dokumentasikan lifecycle komponen (init → ready → destroy) | 🟡 Konvensinya terdokumentasi tersebar di `CLAUDE.md` §0/§0b/§1-3, tapi belum ada satu halaman "lifecycle" yang eksplisit untuk konsumen library |
 
 ---
 
@@ -345,20 +385,44 @@ Kalau Anda ingin **semua kode tetap bisa dilihat publik** tapi tetap monetisasi:
 
 ## 5. Roadmap Eksekusi
 
-### Fase 1: Fondasi (Bulan 1-3)
-- [ ] Rename `compossables` → `composables`
-- [ ] Setup testing (Vitest + Playwright)
-- [ ] Implementasi `Look.state` (F-01)
-- [ ] Upgrade popup ke Promise-based (F-02)
-- [ ] Implementasi auto-dispose (F-03)
-- [ ] Audit API consistency
+> Fase 1 di bawah ini = fondasi fitur (F-01..F-04) + sebagian §3. **Gate aktual untuk `v1.0.0` adalah checklist
+> §0**, bukan Fase 1 saja — lihat tabel **"Milestone versi menuju `v1.0.0`"** tepat di bawah Fase 1 untuk urutan
+> rilis `0.5.0` → `1.0.0` per-tema, dan §3 untuk status detail tiap item teknis. Semua yang di luar tabel itu
+> (Fase 3/4, sisa Fase 2 lama) resmi **post-1.0**.
 
-### Fase 2: Proof (Bulan 4-6)
-- [ ] Contoh app .NET MVC lengkap (F-04)
+### Fase 1: Fondasi (Bulan 1-3)
+- [x] Rename `compossables` → `composables`
+- [x] Setup testing (Vitest) — `test/` covers core, base, guard, dataSource, auto-dispose registry; Playwright and component/composable coverage still pending
+- [x] Implementasi `Look.state` (F-01) — `helpers/state.js`: `set/get/patch/subscribe/reset/snapshot+restore/namespace/bindDataSource`, Proxy-backed `state.data`. (Dependency-tracking seperti Vue/MobX sengaja tidak dibuat — key-based pub/sub sudah cukup untuk use case yang disebut di dokumen ini; auto-tracking adalah scope terpisah kalau benar-benar dibutuhkan nanti.)
+- [x] Upgrade popup ke Promise-based (F-02) — `lkDialog`'s `api` is now thenable (`await Look.lkDialog({...}).open()`) plus `api.channel` for two-way comms; `lkModal` stays sync-only (markup-bound toggle, doesn't fit the "open and await a result" shape)
+- [x] Implementasi auto-dispose (F-03) — `Look.autoDispose(true)` / `disposeAll()` / `disposeWithin()`, `helpers/registry.js`
+- [x] Audit API consistency — superseded/covered by the 0.3.0 callback convention + `helpers/guard.js` + `helpers/i18n.js` (see CLAUDE.md §0/§0b)
+
+### Milestone versi menuju `v1.0.0`
+
+Sejak batch fitur 0.4 ini sudah lengkap dan lolos `npm test` + `npm run build` + `npm run test:smoke`, sisa jalan ke
+1.0 bukan lagi soal fitur — murni soal menutup checklist §0/§3 satu per satu. Tiap versi di bawah = satu tema, supaya
+tiap rilis tetap bisa dipakai (dogfooding) sambil checklist jalan, bukan menunggu semuanya kelar sekaligus.
+
+| Versi | Tema | Scope keluar dari §3 | "Selesai" kalau |
+|---|---|---|---|
+| **`v0.4.0`** (sekarang) | Rilis fitur | Commit batch 148 file, bump versi, tanggal-kan `CHANGELOG.md`, publish | `npm test`/`build`/`test:smoke` hijau (✅ sudah), rilis live di npm |
+| **`v0.5.0`** | Test coverage | 3.1 (`tests/` penuh) | Setiap komponen (26) & composable (23) punya minimal 1 test: construct → interaksi dasar → `destroy()` tanpa error. `ci.yml` jalankan `npm test` sebagai gate (bukan cuma `build`+`test:smoke`) |
+| **`v0.6.0`** | Tooling & types | 3.2 (ESLint/Prettier/Stylelint, type checking), 3.1 (`CONTRIBUTING.md`) | ESLint + Stylelint terpasang & lolos di seluruh repo; `.d.ts` untuk public API; `CONTRIBUTING.md` ada |
+| **`v0.7.0`** | Bundle architecture | 3.2 (bundle size budget, tree-shakeable) | Side effect top-level (`lkI18n.define()` dkk) tidak lagi memaksa seluruh bundle ikut; budget gzip baru ditentukan berdasarkan ukuran nyata lalu di-enforce di CI (bukan asumsi lama 30KB yang sudah jauh meleset) |
+| **`v0.8.0`** | Aksesibilitas & docs hygiene | §0 (audit aksesibilitas), 3.3 (playground, migration guide — sudah ada, dirapikan) | Audit a11y selesai untuk dialog/popup/semua komponen interaktif, temuan diperbaiki; `docs/interactive-cookbook.html` eksplisit jadi playground |
+| **`v0.9.0` (release candidate)** | Proof + stabilisasi | Fase 2 lama: F-04 (contoh integrasi MVC nyata) | Minimal satu contoh app .NET MVC (atau PHP) nyata terbukti bekerja; re-audit konsistensi API (3.4) setelah semua perubahan 0.5–0.8; tag `v1.0.0-rc.1` kalau tidak ada regresi |
+| **`v1.0.0`** | Stable | — | Semua item §0 tercentang; tidak ada drift published vs current |
+
+Fase 2 lama (contoh app PHP tambahan, VitePress docs, landing page formal) yang tidak masuk tabel di atas tetap
+berlaku sebagai **post-1.0**, sama seperti Fase 3/4 (Pro tier, monetisasi) — lihat bagian itu di bawah.
+
+### Fase 2 (lama, untuk referensi — sebagian sudah dipecah ke tabel milestone di atas)
+- [ ] Contoh app .NET MVC lengkap (F-04) — lihat `v0.9.0` di tabel milestone
 - [ ] Contoh app PHP
-- [ ] Publish ke npm + CDN
+- [x] Publish ke npm + CDN — `@lookui/core@0.3.0` live di npm (`unpkg`/`jsdelivr` di `package.json` otomatis ikut aktif); `0.4.0` masih menyusul
 - [ ] Setup VitePress docs
-- [ ] Landing page (dogfooding)
+- [ ] Landing page (dogfooding) — `docs/index.html` + `docs/interactive-cookbook.html` sudah jadi versi informalnya
 
 ### Fase 3: Pro Foundation (Bulan 7-9)
 - [ ] Pisahkan core vs pro di struktur repo

@@ -5,6 +5,16 @@
 import { resolveEl, applyBase } from '../helpers/base.js';
 import { qs, qsa } from '../core/index.js';
 import { renderContent } from '../helpers/content.js';
+import { guard } from '../helpers/guard.js';
+import { lkI18n, bindText } from '../helpers/i18n.js';
+
+lkI18n.define('carousel', {
+  previous: 'Previous slide',
+  next: 'Next slide',
+  dot: 'Go to slide {index}',
+  slide: 'Slide {index} of {total}',
+  loadError: 'Could not load the slides.',
+});
 
 const SWIPE_RATIO    = 0.18; // fraction of width that commits a swipe
 const SWIPE_VELOCITY = 0.4;  // px/ms flick that commits a swipe regardless of distance
@@ -62,7 +72,11 @@ function specFromSlide(slide) {
  * @param {number}  [opts.preload]           — neighbours loaded on each side when lazy (default 1)
  * @param {boolean} [opts.arrows]            — build prev/next buttons when missing (default true with `slides`)
  * @param {boolean} [opts.indicators]        — build dots when missing (default true with `slides`)
- * @param {string}  [opts.loadingText]       — text beside the spinner while content loads
+ * @param {string}  [opts.loadingText]       — text beside the spinner while content loads (default common.loading)
+ * @param {string}  [opts.retryText]         — Retry caption (default common.retry)
+ * @param {string}  [opts.errorText]         — error message when the failure has none
+ * @param {Object}  [opts.text]              — text overrides (carousel.previous|next|dot|slide|loadError, common.loading|retry)
+ * @param {Function} [opts.beforeChange]     — (index, { source, prev, slide, component }) => false | index | Promise; veto or redirect a slide change from arrows, dots, keys, swipe, autoplay (a vetoed autoplay tick is skipped) and API calls (DOM event 'lk:before-change')
  * @param {Function} [opts.onChange]         — (index, { source, component, prev, slide }) after the active slide changes
  * @param {Function} [opts.onLoad]           — (slideEl, { index, component }) after a slide's content is in place
  * @param {Function} [opts.onError]          — (error, { slide, index, component }) when a slide (or the slide list: slide null, index -1) fails to load
@@ -84,6 +98,10 @@ export function lkCarousel(el, opts = {}) {
 
   // Nodes this instance created (removed again on destroy)
   const built = [];
+  const tx = bindText('carousel', opts.text, () => applyLabels());
+  let builtPrev = false;
+  let builtNext = false;
+  let dotsOwned = false;
 
   let track = qs('.lk-carousel__track', node);
   if (!track) {
@@ -101,8 +119,8 @@ export function lkCarousel(el, opts = {}) {
       built.push(b);
       return b;
     };
-    if (!prevBtn) prevBtn = arrow('lk-carousel__prev', 'Previous slide', 'chevron-left');
-    if (!nextBtn) nextBtn = arrow('lk-carousel__next', 'Next slide', 'chevron-right');
+    if (!prevBtn) { prevBtn = arrow('lk-carousel__prev', tx.t('previous'), 'chevron-left'); builtPrev = true; }
+    if (!nextBtn) { nextBtn = arrow('lk-carousel__next', tx.t('next'), 'chevron-right'); builtNext = true; }
   }
   let indicators = qs('.lk-carousel__indicators', node);
   if (!indicators && fromOptions && opts.indicators !== false) {
@@ -166,11 +184,12 @@ export function lkCarousel(el, opts = {}) {
   function buildDots() {
     // Markup dots are kept as long as they match the markup slides
     const existing = qsa('.lk-carousel__dot', node);
-    if (!ownSlides && existing.length === count) { dots = existing; return; }
+    if (!ownSlides && existing.length === count) { dots = existing; dotsOwned = false; return; }
     if (!indicators) { dots = []; return; }
     indicators.replaceChildren();
+    dotsOwned = true;
     dots = slides.map((_, i) => {
-      const d = make('button', 'lk-carousel__dot', { type: 'button', 'aria-label': specs[i]?.label || `Slide ${i + 1}` });
+      const d = make('button', 'lk-carousel__dot', { type: 'button', 'aria-label': specs[i]?.label || tx.t('dot', { index: i + 1 }) });
       indicators.appendChild(d);
       return d;
     });
@@ -182,7 +201,9 @@ export function lkCarousel(el, opts = {}) {
     if (!slide || !spec || loaded.has(slide)) return;
     const handle = renderContent(slide, spec, {
       ctx: { index: i, carousel: comp },
-      loadingText: opts.loadingText,
+      loadingText: opts.loadingText ?? (() => tx.tf('common.loading')),
+      retryText: opts.retryText ?? (() => tx.tf('common.retry')),
+      errorText: opts.errorText,
       onLoad: () => { refreshClone(slides.indexOf(slide)); opts.onLoad?.(slide, { index: slides.indexOf(slide), component: comp }); },
       onError: (err) => { refreshClone(slides.indexOf(slide)); opts.onError?.(err, { slide, index: slides.indexOf(slide), component: comp }); },
     });
@@ -215,7 +236,7 @@ export function lkCarousel(el, opts = {}) {
       if (!ownSlides) return;
       s.setAttribute('role', 'group');
       s.setAttribute('aria-roledescription', 'slide');
-      s.setAttribute('aria-label', specs[i]?.label || `${i + 1} of ${count}`);
+      s.setAttribute('aria-label', specs[i]?.label || tx.t('slide', { index: i + 1, total: count }));
     });
     addClones();
     buildDots();
@@ -248,10 +269,10 @@ export function lkCarousel(el, opts = {}) {
     if (error) {
       status.setAttribute('role', 'alert');
       status.innerHTML = '<span class="lk-icon lk-icon--alert-triangle" aria-hidden="true"></span><span></span>';
-      status.lastChild.textContent = error.message || 'Could not load the slides.';
+      status.lastChild.textContent = error.message || tx.t('loadError');
     } else {
       status.innerHTML = '<span class="lk-spinner lk-spinner--sm" aria-hidden="true"></span><span></span>';
-      status.lastChild.textContent = opts.loadingText ?? 'Loading…';
+      status.lastChild.textContent = opts.loadingText ?? tx.tf('common.loading');
     }
     s.appendChild(status);
     track.appendChild(s);
@@ -291,6 +312,14 @@ export function lkCarousel(el, opts = {}) {
       void track.offsetWidth; // commit the jump before transitions come back
       track.classList.remove('lk-carousel__track--instant');
     }
+  }
+
+  // Re-apply texts to the parts this instance built (markup supplied by the page is left alone)
+  function applyLabels() {
+    if (builtPrev && prevBtn) prevBtn.setAttribute('aria-label', tx.t('previous'));
+    if (builtNext && nextBtn) nextBtn.setAttribute('aria-label', tx.t('next'));
+    if (dotsOwned) dots.forEach((d, i) => d.setAttribute('aria-label', specs[i]?.label || tx.t('dot', { index: i + 1 })));
+    if (ownSlides) slides.forEach((s, i) => s.setAttribute('aria-label', specs[i]?.label || tx.t('slide', { index: i + 1, total: count })));
   }
 
   function updateIndicators() {
@@ -342,6 +371,23 @@ export function lkCarousel(el, opts = {}) {
     // Finish any pending clone jump first so rapid clicks never drift.
     if (settleTimer) settle();
 
+    const source = changeSource;
+    if (logical === current) { doMove(pos, logical, source); return; }
+    const r = guard(node, opts, 'change', logical, { source, prev: current, slide: slides[logical], component: comp }, (idx) => {
+      let i = Math.trunc(Number(idx));
+      let p = pos;
+      if (!Number.isFinite(i)) i = logical;
+      if (i !== logical) {
+        i = loop ? ((i % count) + count) % count : Math.min(Math.max(i, 0), count - 1);
+        p = i + offset;
+      }
+      doMove(p, i, source);
+    });
+    // Vetoed (or still pending): put the track back where it was, e.g. after a swipe
+    if (r !== true) setTrack(position, false);
+  }
+
+  function doMove(pos, logical, source) {
     const prevIndex = current;
     current  = logical;
     position = pos;
@@ -355,7 +401,7 @@ export function lkCarousel(el, opts = {}) {
     }
 
     if (prevIndex !== current && typeof opts.onChange === 'function') {
-      opts.onChange(current, { source: changeSource, component: comp, prev: prevIndex, slide: slides[current] });
+      opts.onChange(current, { source, component: comp, prev: prevIndex, slide: slides[current] });
     }
   }
 
@@ -535,6 +581,8 @@ export function lkCarousel(el, opts = {}) {
   const comp = {};
   applyBase(comp, node);
 
+  Object.defineProperty(comp, 'text', { get() { return tx.get(); }, set(v) { tx.set(v); }, enumerable: true });
+
   Object.defineProperty(comp, 'activeIndex', {
     get() { return current; },
     set(v) { goTo(v); },
@@ -571,6 +619,7 @@ export function lkCarousel(el, opts = {}) {
   comp.destroy = function () {
     destroyed = true;
     listToken += 1;
+    tx.destroy();
     stopAutoplay();
     clearTimeout(settleTimer);
     if (prevBtn) {
