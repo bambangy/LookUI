@@ -129,6 +129,12 @@
   /* --lk-space-12: 6rem; */                          /* 96px */
   /* --lk-space-16: 8rem; */                          /* 128px */
 
+  /* --- Control sizing (buttons, and anything else with a fixed interactive height) --- */
+  /* --lk-control-height-xs: 1.5rem; */               /* 24px — dense + sm */
+  /* --lk-control-height-sm: 2rem; */                 /* 32px */
+  /* --lk-control-height-base: 2.5rem; */             /* 40px */
+  /* --lk-control-height-lg: 3rem; */                 /* 48px */
+
   /* --- Border radius --- */
   /* --lk-radius-none: 0; */
   /* --lk-radius-sm: 0.125rem; */                     /* 2px */
