@@ -24,7 +24,9 @@
   box-sizing: border-box;
 
   // Inherit all .lk-input visual tokens explicitly so a <button> renders
-  // identically to an <input>.
+  // identically to an <input> — including the shared min-height floor (see _input.scss),
+  // so a dropdown trigger is never a different height than a plain textbox next to it.
+  min-height: var(--lk-control-height-base);
   padding: var(--lk-space-2) var(--lk-space-3);
   font-size: var(--lk-text-base);
   font-family: inherit;
@@ -538,6 +540,7 @@
 
 .lk-dropdown__trigger.lk-input--dense,
 .lk-field--dense .lk-dropdown__trigger {
+  min-height: var(--lk-control-height-sm);
   padding: var(--lk-space-1) var(--lk-space-2);
   font-size: var(--lk-text-sm);
 

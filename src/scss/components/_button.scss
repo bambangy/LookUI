@@ -10,7 +10,10 @@
   cursor: pointer;
   text-align: center;
 
-  padding: var(--lk-space-2) var(--lk-space-5);
+  // Height is the token, not padding + line-height + content (see --lk-control-height-* in
+  // tokens/_layout.scss): vertical centering is flex's job, padding is horizontal comfort only.
+  min-height: var(--lk-control-height-base);
+  padding: 0 var(--lk-space-5);
   font-size: var(--lk-text-base);
   font-weight: 500;
   line-height: var(--lk-line-height);
@@ -127,34 +130,54 @@
     }
   }
 
-  // --- Size variants (proportional padding maintained) ---
+  // --- Size variants (each step is one notch on the --lk-control-height-* scale) ---
 
   &--sm {
-    padding: var(--lk-space-2) var(--lk-space-3);
+    min-height: var(--lk-control-height-sm);
+    padding: 0 var(--lk-space-3);
     font-size: var(--lk-text-sm);
   }
 
   &--lg {
-    padding: var(--lk-space-4) var(--lk-space-7);
+    min-height: var(--lk-control-height-lg);
+    padding: 0 var(--lk-space-7);
     font-size: var(--lk-text-md);
   }
 
-  // --- Dense: tighter spacing + smaller text, proportional ---
+  // --- Dense: tighter spacing + smaller text — one control-height notch down from its
+  // non-dense counterpart (base -> sm, sm -> xs, lg -> base) ---
   &--dense {
-    padding: var(--lk-space-1) var(--lk-space-3);
+    min-height: var(--lk-control-height-sm);
+    padding: 0 var(--lk-space-3);
     font-size: var(--lk-text-sm);
     gap: var(--lk-space-1);
   }
 
   &--dense#{&}--sm {
-    padding: calc(var(--lk-space-1) * 0.5) var(--lk-space-2);
+    min-height: var(--lk-control-height-xs);
+    padding: 0 var(--lk-space-2);
     font-size: var(--lk-text-xs);
   }
 
   &--dense#{&}--lg {
-    padding: var(--lk-space-2) var(--lk-space-4);
+    min-height: var(--lk-control-height-base);
+    padding: 0 var(--lk-space-4);
     font-size: var(--lk-text-base);
   }
+
+  // --- Icon-only: a perfect square at the active size's control height, no text padding.
+  // Use whenever a button holds only an icon (no visible text) so it never needs the
+  // ad-hoc `padding: 0; width: ...` every icon-only button used to hand-roll. ---
+  &--icon {
+    padding: 0;
+    width: var(--lk-control-height-base);
+  }
+
+  &--icon#{&}--sm { width: var(--lk-control-height-sm); }
+  &--icon#{&}--lg { width: var(--lk-control-height-lg); }
+  &--icon#{&}--dense { width: var(--lk-control-height-sm); }
+  &--icon#{&}--dense#{&}--sm { width: var(--lk-control-height-xs); }
+  &--icon#{&}--dense#{&}--lg { width: var(--lk-control-height-base); }
 
   // --- States ---
 

@@ -7,7 +7,44 @@ Documentation: https://bambangy.github.io/LookUI/docs/
 
 ## [Unreleased]
 
-Nothing yet.
+## [0.4.1] — 2026-11-20
+
+### Added
+
+- `--lk-control-height-{xs,sm,base,lg}` tokens (`tokens/_layout.scss`): a control's height is now
+  a token, not a byproduct of its padding + font-size + line-height. `.lk-btn` and its `--sm`/`--lg`/
+  `--dense` variants set `min-height` from these instead, so a button stays the same height
+  regardless of whether it holds text, an icon, icon+text, or nothing.
+- `.lk-btn--icon` — a perfect square at the active size's control height (combine with `--sm`/`--lg`/
+  `--dense`), for icon-only buttons. Replaces the ad-hoc `padding: 0; width: 2rem` every icon-only
+  button previously had to hand-roll, which could silently drop the vertical padding that made the
+  button the right height in the first place.
+
+- `.lk-input` (and therefore `.lk-select`, and anything else built on `.lk-input` — number, phone,
+  tag input, autocomplete, textpop, upload, datagrid cell editors/filters) now also sets
+  `min-height` from the same `--lk-control-height-*` scale, as a floor alongside its existing
+  padding. The custom `lkDropdown` trigger (which duplicates `.lk-input`'s box model rather than
+  inheriting it, for specificity reasons — see its own comment) gets the same `min-height`
+  explicitly, so a dropdown, a plain textbox, and a button of the same size never drift apart in
+  height due to each element's own padding/line-height/UA quirks.
+
+### Changed
+
+- `.lk-btn`'s vertical padding is removed in favor of `min-height` (see above). Buttons at the same
+  size now render at an identical height across every content type; horizontal padding is unchanged.
+
+### Security
+
+- `lkEditor`'s sanitizer (`isSafeUrl()` / `sanitizeStyleValue()`) only blocked the `data:text/html`
+  scheme, leaving other dangerous `data:` variants (e.g. `data:image/svg+xml`, which can embed
+  `<script>`) and a bare `data:` unchecked (CodeQL `js/incomplete-url-scheme-check`). The `data:`
+  scheme is now denied by default everywhere, allowed back in only for `<img src>` against a safe
+  raster-image allowlist (png/jpeg/gif/webp/bmp/x-icon); `href` and CSS `url()` stay fully blocked
+  for `data:`.
+- `lkEditor`'s `commitValue()` sanitized incoming HTML before passing it to `guard()`, but a
+  `beforeChange` option / `lk:before-change` DOM event listener can replace that payload with any
+  value, which was then written to `surface.innerHTML` unsanitized. The post-guard value is now
+  re-sanitized so a replacement payload can't bypass the allowlist sanitizer.
 
 ## [0.4.0] — 2026-11-03
 
@@ -132,6 +169,8 @@ One callback convention across the library before the 1.0 API freeze. Upgrade gu
 
 - First public release.
 
+[0.4.1]: https://github.com/bambangy/LookUI/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/bambangy/LookUI/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/bambangy/LookUI/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bambangy/LookUI/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bambangy/LookUI/releases/tag/v0.1.0

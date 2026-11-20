@@ -5,6 +5,12 @@
 .lk-input {
   display: block;
   width: 100%;
+  // A floor, not the size: padding + line-height already land here on a single-line value, but
+  // min-height keeps every text-entry control (input, select, the lkDropdown trigger, and
+  // anything else built on .lk-input — number, phone, autocomplete, tag input, …) from drifting
+  // below the shared --lk-control-height-* scale .lk-btn also uses, whatever its UA box-model
+  // quirks or content (a <select>'s native metrics, an affix, a chip) happen to do.
+  min-height: var(--lk-control-height-base);
   padding: var(--lk-space-2) var(--lk-space-3);
   font-size: var(--lk-text-base);
   color: var(--lk-text);
@@ -48,6 +54,7 @@
   }
 
   &--dense {
+    min-height: var(--lk-control-height-sm);
     padding: var(--lk-space-1) var(--lk-space-2);
     font-size: var(--lk-text-sm);
   }
@@ -181,6 +188,7 @@
 // Dense
 .lk-field--dense .lk-input,
 .lk-input-affix:has(> .lk-input--dense) .lk-input--affixed {
+  min-height: var(--lk-control-height-sm);
   padding: var(--lk-space-1) var(--lk-space-2);
   font-size: var(--lk-text-sm);
 }
