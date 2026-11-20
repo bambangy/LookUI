@@ -142,6 +142,25 @@ LookDocs.render('#api', {
     { name: 'filterFn', type: 'Function', default: '—', description: '`(node, text) => boolean` replaces the default case-insensitive "text contains" match used by `filter()`.' },
     { name: 'icons', type: '{ branch?, leaf? }', default: '—', description: 'Default icon name per node kind; a node\'s own `icon` field wins.' },
     { name: 'dense', type: 'boolean', default: 'false', description: 'Compact row height.' },
+    {
+      name: 'height', type: "string | number | 'fill'", default: '— (grows with content)',
+      description: "Fixed height, scrolling internally. `'fill'` stretches the tree to 100% of its parent's height instead (the parent must actually constrain that height).",
+      examples: [{ title: "height: 'fill'", run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        el.style.height = '200px';
+        Look.lkTree(el, { items: Array.from({ length: 20 }, (_, i) => ({ text: 'Item ' + (i + 1) })), height: 'fill' });` }],
+    },
+    {
+      name: 'loading', type: 'boolean | Function', default: 'true',
+      description: 'The root loading indicator (shown while the `dataSource` loads, or a root `loadChildren(null)` resolves): `false` hides it, a function `(tree) => string(HTML) | Node` supplies custom content.',
+    },
+    {
+      name: 'empty', type: 'string | Function | { icon, title, description, action }', default: "localized 'tree.empty'",
+      description: 'Empty-state content: text, a function `(tree) => string(HTML) | Node`, or a template object `{ icon, title, description, action }` rendered as a centered placeholder.',
+      examples: [{ title: 'Template object', run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        Look.lkTree(el, { items: [], empty: { icon: 'folder', title: 'No files', description: 'Add one to get started.' } });` }],
+    },
     { name: 'ariaLabel', type: 'string', default: "the 'label' text", description: 'Accessible name of the tree (`role="tree"`).' },
     { name: 'text', type: 'Object', default: '—', description: 'Per-instance text overrides — see **Text keys** below.' },
     { name: 'autoLoad', type: 'boolean', default: 'true', description: 'With a `dataSource` and no rows yet, call `ds.load()` right away.' },
@@ -208,7 +227,8 @@ LookDocs.render('#api', {
     { name: '.lk-tree__check', description: 'The checkbox mark (`data-state="checked" | "mixed" | "unchecked"`).' },
     { name: '.lk-tree__icon / __label / __mark', description: 'Row icon, label, and the `<mark>` wrapped around a filter match.' },
     { name: '.lk-tree__error', description: 'Inline per-node error message + retry button.' },
-    { name: '.lk-tree__status[--loading|--error|--empty]', description: 'Root-level status row (loading spinner, error + retry, or the empty/no-results message).' },
+    { name: '.lk-tree__status[--loading|--error|--empty|--template]', description: 'Root-level status row (loading spinner, error + retry, or the empty/no-results message); `--template` when `empty` is a template object.' },
+    { name: '.lk-tree--scrollable / --fill', description: "Set by the `height` option: a fixed height with internal scroll, or `height: 'fill'`." },
   ],
   tokens: [
     { name: '--lk-tree-row-h', default: '2rem', description: 'Row height.' },

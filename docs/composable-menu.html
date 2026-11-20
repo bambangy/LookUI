@@ -140,6 +140,18 @@ LookDocs.render('#api', {
     { name: 'ariaLabel', type: 'string', default: "the 'label' text", description: 'Accessible name of the root menu (`role=\"menu\"`).' },
     { name: 'className', type: 'string', default: '—', description: 'Extra class on every level\'s panel.' },
     { name: 'dense', type: 'boolean', default: 'false', description: 'Compact row height.' },
+    {
+      name: 'maxHeight', type: 'number | string', default: 'min(24rem, 80vh) (CSS)',
+      description: 'Max height of each menu level (px or CSS length) before it scrolls internally — applied to every nesting depth.',
+      examples: [{ run: true, code: `
+        const btn = container.appendChild(document.createElement('button'));
+        btn.className = 'lk-btn lk-btn--sm lk-btn--secondary';
+        btn.textContent = 'Open';
+        Look.lkMenu(btn, {
+          items: Array.from({ length: 30 }, (_, i) => ({ text: 'Item ' + (i + 1) })),
+          maxHeight: 200,
+        });` }],
+    },
     { name: 'text', type: 'Object', default: '—', description: 'Per-instance text overrides (`label`).' },
     { name: 'onAction', type: 'Function', default: '—', description: "`(item, { source, component, event, checked })` when a selectable item (`item`/`checkbox`/`radio`) is activated; `source` is `'click'`, `'key'` or `'api'`. `checked` is the item's new checked state for `checkbox`/`radio`." },
     { name: 'onOpen', type: 'Function', default: '—', description: '`(component)` after the root menu opens.' },
@@ -175,7 +187,7 @@ LookDocs.render('#api', {
     { name: 'destroy', signature: 'destroy()', description: 'Closes the menu, removes every level\'s popup and listeners, and restores the trigger\'s original `aria-*` attributes.' },
   ],
   classes: [
-    { name: '.lk-menu[--dense]', description: 'One per nesting level, built inside its lkPopupProxy panel (`.lk-menu__panel`).' },
+    { name: '.lk-menu[--dense]', description: "One per nesting level, built inside its lkPopupProxy panel (`.lk-menu__panel`). Scrolls internally past `min(24rem, 80vh)` (or the `maxHeight` option)." },
     { name: '.lk-menu__item', description: 'A row (`role="menuitem" | "menuitemcheckbox" | "menuitemradio"`); modifiers `--disabled`, `--checked`, `--open` (submenu open).' },
     { name: '.lk-menu__lead / __label / __shortcut / __caret', description: 'Leading icon/mark slot, label text, shortcut hint, and the submenu caret.' },
     { name: '.lk-menu__mark[--checkbox|--radio]', description: 'The checkbox/radio indicator inside `__lead`.' },

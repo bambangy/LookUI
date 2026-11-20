@@ -870,17 +870,37 @@ skills.selectedItems;       // [{ value, label }, …]</pre>
           Look.lkDropdown(el, { label: 'Interval', items: [5, 10, 15, 30], value: 15, append: 'min' });` }],
       },
       {
-        name: 'noResultsText', type: 'string', default: "'No results'",
-        description: 'Shown when the (filtered) list is empty. A failed remote request shows the error message instead.',
+        name: 'noResultsText', type: 'string | Function | { icon, title, description, action }', default: "'No results'",
+        description: 'Shown when the (filtered) list is empty: text (default), a function `(dropdown) => string(HTML) | Node`, or a template object `{ icon, title, description, action }` rendered as a centered placeholder. `false` hides the row. A failed remote request shows the error message instead.',
         examples: [{ run: true, code: `
           ${MK}
           const dd = Look.lkDropdown(el, { label: 'Empty list', items: [], noResultsText: 'Nothing here yet' });
           const btn = document.createElement('button');
           btn.className = 'lk-btn lk-btn--sm lk-btn--secondary'; btn.style.marginTop = '6px';
           btn.textContent = 'dd.open()'; btn.onclick = (e) => { e.stopPropagation(); dd.open(); };
+          container.appendChild(btn);` }, { title: 'Template object', run: true, code: `
+          ${MK}
+          const dd = Look.lkDropdown(el, {
+            label: 'Empty list', items: [],
+            noResultsText: { icon: 'search', title: 'No matches', description: 'Try a different search.' },
+          });
+          const btn = document.createElement('button');
+          btn.className = 'lk-btn lk-btn--sm lk-btn--secondary'; btn.style.marginTop = '6px';
+          btn.textContent = 'dd.open()'; btn.onclick = (e) => { e.stopPropagation(); dd.open(); };
           container.appendChild(btn);` }],
       },
       { name: 'loadingText', type: 'string', default: "'Loading…'", description: 'Text of the loading row shown while a remote page is in flight (and as the infinite-scroll sentinel).' },
+      {
+        name: 'panelHeight', type: 'number | string', default: '280 (px, capped to half the viewport)',
+        description: "Max-height of the options list (px or CSS length) before it scrolls internally.",
+        examples: [{ run: true, code: `
+          ${MK}
+          Look.lkDropdown(el, {
+            label: 'Tall panel',
+            items: Array.from({ length: 30 }, (_, i) => ({ value: i, label: 'Option ' + (i + 1) })),
+            panelHeight: 400,
+          });` }],
+      },
 
       // ---- search ---------------------------------------------------------
       {
@@ -1229,6 +1249,7 @@ skills.selectedItems;       // [{ value, label }, …]</pre>
       { name: '.lk-dropdown__panel', description: 'Floating card (`role="listbox"`); `--multiple` shows option checkboxes, `--dense` mirrors a dense trigger. `data-side="top|bottom"` tells where it opened.' },
       { name: '.lk-dropdown__search / __search-input', description: 'Search row (`useInput`).' },
       { name: '.lk-dropdown__list / __option', description: 'Option list; options get `--selected` (check mark / ticked box) and `--disabled`. Multiple mode adds `__option-check` and `__option-label` inside.' },
+      { name: '.lk-dropdown__empty[--template] / __empty-title / __empty-description', description: 'The "no results" row; `--template` + the title/description parts when `noResultsText` is a template object.' },
       { name: '.lk-dropdown__loading / __empty', description: 'Loading row and no-results / error row.' },
       {
         name: '.lk-input--dense (host) / .lk-field--dense (ancestor)', description: 'Compact trigger, options and chips. Put `lk-input--dense` on the host element (copied to the trigger) or wrap the dropdown in `.lk-field--dense`.',

@@ -12,7 +12,7 @@ export { lkI18n, lkI18n as i18n } from './helpers/i18n.js';
 export { autoDispose, disposeAll, disposeWithin } from './helpers/registry.js';
 export { state, createState } from './helpers/state.js';
 
-export const version = '0.4.1';
+export const version = '0.4.2';
 export const author  = 'Bambang Yudhotomo';
 export const license = 'MIT';
 export const homepage = 'https://github.com/bambangy/LookUI';

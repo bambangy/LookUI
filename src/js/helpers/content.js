@@ -19,9 +19,12 @@ import { lkI18n } from './i18n.js';
 
 lkI18n.define('content', { error: 'Failed to load content' });
 
-// Text option: string or () => string, evaluated every time it renders; wins over the registry
+// Text/Node option: string, Node, or a function returning either — evaluated every time it
+// renders; wins over the registry. A Node replaces the whole default status row (spinner/icon
+// and all), not just its text, so the caller owns the full presentation.
 function pick(v, key) {
   const own = typeof v === 'function' ? v() : v;
+  if (own instanceof Node) return own;
   return own != null ? String(own) : lkI18n.t(key);
 }
 
@@ -75,9 +78,12 @@ function statusEl(cls, html) {
  * @param {Object} spec
  * @param {Object} [o]
  * @param {Object}   [o.ctx]          — passed to function content / transform / hooks
- * @param {string|Function} [o.loadingText] — text beside the spinner while a URL loads (default: common.loading)
+ * @param {string|Node|Function} [o.loadingText] — text beside the default spinner while a URL loads
+ *   (default: common.loading); a Node (or a function returning one) replaces the whole status row.
  * @param {string|Function} [o.retryText]   — Retry button caption (default: common.retry)
- * @param {string|Function} [o.errorText]   — message when the error has none (default: content.error)
+ * @param {string|Node|Function} [o.errorText] — message when the error has none (default: content.error);
+ *   a Node (or a function returning one) replaces the whole status row, including the Retry button —
+ *   call the returned `handle.retry()` yourself if you still want one.
  * @param {Function} [o.onLoad]       — (host) after content is in place
  * @param {Function} [o.onError]      — (error, host) when loading fails
  * @returns {{ promise: Promise<boolean>, destroy: Function, retry: Function }}
@@ -102,12 +108,18 @@ export function renderContent(host, spec, o = {}) {
     if (err?.name === 'AbortError') return false;
     clear();
     host.classList.add('lk-async--error');
-    const box = statusEl('lk-async__status--error', '<span class="lk-icon lk-icon--alert-triangle" aria-hidden="true"></span><span class="lk-async__message"></span><button type="button" class="lk-btn lk-btn--sm lk-btn--outline lk-async__retry"></button>');
-    box.setAttribute('role', 'alert');
-    box.querySelector('.lk-async__message').textContent = err?.message || pick(o.errorText, 'content.error');
-    box.querySelector('.lk-async__retry').textContent = pick(o.retryText, 'common.retry');
-    box.querySelector('.lk-async__retry').addEventListener('click', run);
-    host.appendChild(box);
+    const message = err?.message || null;
+    const content = message || pick(o.errorText, 'content.error');
+    if (!message && content instanceof Node) {
+      host.appendChild(content);
+    } else {
+      const box = statusEl('lk-async__status--error', '<span class="lk-icon lk-icon--alert-triangle" aria-hidden="true"></span><span class="lk-async__message"></span><button type="button" class="lk-btn lk-btn--sm lk-btn--outline lk-async__retry"></button>');
+      box.setAttribute('role', 'alert');
+      box.querySelector('.lk-async__message').textContent = String(content);
+      box.querySelector('.lk-async__retry').textContent = String(pick(o.retryText, 'common.retry'));
+      box.querySelector('.lk-async__retry').addEventListener('click', run);
+      host.appendChild(box);
+    }
     o.onError?.(err, host);
     return false;
   }
@@ -122,9 +134,14 @@ export function renderContent(host, spec, o = {}) {
     clear();
     host.classList.add('lk-async--loading');
     host.setAttribute('aria-busy', 'true');
-    const status = statusEl('lk-async__status--loading', '<span class="lk-spinner lk-spinner--sm" aria-hidden="true"></span><span></span>');
-    status.lastChild.textContent = pick(o.loadingText, 'common.loading');
-    host.appendChild(status);
+    const loadingContent = pick(o.loadingText, 'common.loading');
+    if (loadingContent instanceof Node) {
+      host.appendChild(loadingContent);
+    } else {
+      const status = statusEl('lk-async__status--loading', '<span class="lk-spinner lk-spinner--sm" aria-hidden="true"></span><span></span>');
+      status.lastChild.textContent = loadingContent;
+      host.appendChild(status);
+    }
     controller = new AbortController();
     const res = await fetch(spec.url, { ...(spec.fetchOptions || {}), signal: controller.signal });
     if (!res.ok) {

@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Bambang Yudhotomo — LookUI
 /**
- * lkTextPop — lookup field: clicking it opens a popup with a search box and a
+ * lkTextPop — lookup field: clicking it opens an overlay with a search box and a
  * read-only lkTable to pick one record (single) or many (multiple, shown as chips).
+ *
+ * The overlay is either a centered modal (`mode: 'modal'`, the default — an `lkDialog`) or an
+ * anchored popup (`mode: 'proxy'` — an `lkPopupProxy`, positioned against the field).
  *
  * Structure:
  *   .lk-field > .lk-label
@@ -10,7 +13,10 @@
  *                                                     + .lk-textpop__clear + .lk-textpop__icon
  *             + .lk-field-error
  *   input[type=hidden][name] (one per value)
- *   (body) .lk-popup-proxy > .lk-popup-proxy__panel.lk-textpop__panel >
+ *   mode: 'modal' (default) — (body) .lk-composable-dialog > .lk-modal.lk-textpop-modal >
+ *            .lk-modal__header (title) + .lk-modal__body > .lk-textpop__body >
+ *            .lk-textpop__search + .lk-textpop__grid (.lk-datagrid) + .lk-textpop__foot
+ *   mode: 'proxy' — (body) .lk-popup-proxy > .lk-popup-proxy__panel.lk-textpop__panel >
  *            .lk-textpop__head + .lk-textpop__search + .lk-textpop__grid (.lk-datagrid) + .lk-textpop__foot
  *
  * @param {Element|string} el — an <input> (becomes the hidden value input)
@@ -25,13 +31,14 @@
  * @param {string}  [opts.chipColor='primary']
  * @param {any}     [opts.value]          — key, row object, or (multiple) an array of either
  * @param {string}  [opts.label] [opts.name] [opts.placeholder='Select…']
- * @param {string}  [opts.title]          — popup heading
+ * @param {string}  [opts.mode='modal']   — `'modal'` (centered `lkDialog`, the default) or `'proxy'` (anchored `lkPopupProxy`)
+ * @param {string}  [opts.title]          — overlay heading
  * @param {string}  [opts.searchPlaceholder='Search…']
  * @param {boolean} [opts.clearable=true]
  * @param {boolean|Object} [opts.pageable=true] — passed to lkTable
  * @param {number}  [opts.pageSize=8]     — page size when the popup owns the data source
  * @param {string|number} [opts.height]   — grid body height
- * @param {number}  [opts.popupWidth=560] — px (capped to the viewport)
+ * @param {number}  [opts.popupWidth=560] — px (capped to the viewport); the modal's max-width or the proxy panel's width
  * @param {Object}  [opts.table]          — extra lkTable options
  * @param {boolean} [opts.required] [opts.readonly] [opts.disabled] [opts.dense]
  * @param {Function} [opts.onChange]      — single: (value, { source, component, item }); multiple: (values[], { source, component, items })
@@ -51,6 +58,7 @@ import { wrapField } from '../helpers/field.js';
 import { lkDataSource } from '../helpers/dataSource.js';
 import { lkTable } from '../composables/table.js';
 import { lkPopupProxy } from '../composables/popupProxy.js';
+import { lkDialog } from '../composables/dialog.js';
 import { lkTextbox } from './form.js';
 import { lkChip } from './chip.js';
 import { lkIcon } from './icon.js';
@@ -99,6 +107,7 @@ export function lkTextPop(el, opts = {}) {
     value: undefined,
     label: null,
     name: null,
+    mode: 'modal',
     title: null,
     clearable: true,
     pageable: true,
@@ -116,6 +125,7 @@ export function lkTextPop(el, opts = {}) {
     ...opts,
   };
   const multiple = !!options.multiple;
+  const mode = options.mode === 'proxy' ? 'proxy' : 'modal';
 
   // Texts: explicit options win, then `text` / Look.i18n
   let built = false;
@@ -437,7 +447,8 @@ export function lkTextPop(el, opts = {}) {
     const panel = document.createElement('div');
     panel.className = 'lk-textpop__body';
 
-    if (options.title) {
+    // mode: 'modal' shows the title through the dialog's own header instead
+    if (options.title && mode === 'proxy') {
       const head = document.createElement('div');
       head.className = 'lk-textpop__head';
       head.textContent = options.title;
@@ -517,34 +528,64 @@ export function lkTextPop(el, opts = {}) {
       updateFoot();
     }
 
-    proxy = lkPopupProxy(trigger, {
-      className: 'lk-textpop__panel' + (options.dense ? ' lk-textpop__panel--dense' : ''),
-      placement: 'bottom-left',
-      toggleOnTrigger: false,
-      closeOnOutside: false, // handled below: nested layers (pager, menus) count as inside
-      // One guard point for every user dismissal (escape, outside, toggle, comp.close()); consequences
-      // like picking a row ('close') or readonly / disabled / destroy are not asked.
-      beforeHide(reason) {
-        if (!GUARDED_CLOSE.has(reason)) return undefined;
-        const res = guardSync(trigger, options, 'close', reason, { source: reason === 'manual' ? 'api' : reason, reason, component: comp });
-        return res.allowed ? undefined : false;
-      },
-      onHide(reason) {
-        document.removeEventListener('pointerdown', onOutside, true);
-        trigger.setAttribute('aria-expanded', 'false');
-        trigger.classList.remove('lk-textpop--open');
-        if (reason !== 'destroy' && reason !== 'outside') trigger.focus({ preventScroll: true });
-        if (typeof options.onClose === 'function') options.onClose(reason, comp);
-      },
-    });
-    // Build live DOM straight into the panel (setContent would clone and drop listeners)
-    proxy.panelEl.textContent = '';
-    proxy.panelEl.appendChild(panel);
+    // One guard point for every user dismissal (escape, outside/overlay, close-button, toggle,
+    // comp.close()); consequences like picking a row ('close') or readonly / disabled / destroy
+    // are not asked. Shared between both overlay modes — only the reason vocabulary differs.
+    function beforeOverlayClose(reason) {
+      if (!GUARDED_CLOSE.has(reason)) return undefined;
+      const res = guardSync(trigger, options, 'close', reason, { source: reason === 'manual' ? 'api' : reason, reason, component: comp });
+      return res.allowed ? undefined : false;
+    }
+    function onOverlayClosed(reason) {
+      document.removeEventListener('pointerdown', onOutside, true);
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.classList.remove('lk-textpop--open');
+      if (reason !== 'destroy' && reason !== 'outside') trigger.focus({ preventScroll: true });
+      if (typeof options.onClose === 'function') options.onClose(reason, comp);
+    }
+
+    if (mode === 'proxy') {
+      proxy = lkPopupProxy(trigger, {
+        className: 'lk-textpop__panel' + (options.dense ? ' lk-textpop__panel--dense' : ''),
+        placement: 'bottom-left',
+        toggleOnTrigger: false,
+        closeOnOutside: false, // handled below: nested layers (pager, menus) count as inside
+        beforeHide: beforeOverlayClose,
+        onHide: onOverlayClosed,
+      });
+      // Build live DOM straight into the panel (setContent would clone and drop listeners)
+      proxy.panelEl.textContent = '';
+      proxy.panelEl.appendChild(panel);
+    } else {
+      const dlg = lkDialog({
+        title: options.title || '',
+        content: panel,
+        showCancel: false,
+        closeOnEscape: true,
+        closeOnOverlay: true,
+        destroyOnClose: false,
+        open: false,
+        className: 'lk-textpop-modal' + (options.dense ? ' lk-textpop-modal--dense' : ''),
+        beforeClose: (reason) => beforeOverlayClose(reason),
+        onClose: (reason) => onOverlayClosed(reason),
+      });
+      // Abstracted to the same shape lkPopupProxy exposes, so the rest of this file (open/close/
+      // renderTrigger/destroy) doesn't need to branch on `mode` again.
+      proxy = {
+        get isOpen() { return dlg.isOpen; },
+        panelEl: dlg.dialogEl,
+        show() { dlg.open(); },
+        hide(reason) { dlg.close(reason, 'api'); },
+        updatePosition() {}, // the modal is centered; nothing to reposition
+        setWidth(px) { dlg.dialogEl.style.maxWidth = `${px}px`; },
+        destroy() { dlg.destroy(); },
+      };
+    }
 
     stopResolve = ds.subscribe(() => resolveRows());
   }
 
-  const GUARDED_CLOSE = new Set(['escape', 'outside', 'toggle', 'manual']);
+  const GUARDED_CLOSE = new Set(['escape', 'outside', 'overlay', 'close-button', 'toggle', 'manual']);
 
   function onOutside(e) {
     const t = e.target;
@@ -564,7 +605,8 @@ export function lkTextPop(el, opts = {}) {
     if (locked() || (proxy && proxy.isOpen)) return;
     if (!grid) build();
     const width = Math.min(Number(options.popupWidth) || 560, window.innerWidth - 16);
-    proxy.panelEl.style.width = `${width}px`;
+    if (mode === 'proxy') proxy.panelEl.style.width = `${width}px`;
+    else proxy.setWidth(width);
     syncGridSelection();
     if (searchBox && searchBox.value) {
       searchBox.value = '';
@@ -574,7 +616,8 @@ export function lkTextPop(el, opts = {}) {
     proxy.show(trigger);
     trigger.setAttribute('aria-expanded', 'true');
     trigger.classList.add('lk-textpop--open');
-    document.addEventListener('pointerdown', onOutside, true);
+    // The dialog's own overlay click / Escape handling covers 'outside' dismissal in modal mode
+    if (mode === 'proxy') document.addEventListener('pointerdown', onOutside, true);
     setTimeout(() => searchBox?.el.focus({ preventScroll: true }), 30);
     if (typeof options.onOpen === 'function') options.onOpen(comp);
   }
@@ -660,6 +703,7 @@ export function lkTextPop(el, opts = {}) {
     },
     texts: { get() { return tx.get(); }, enumerable: true },
     multiple: { get() { return multiple; }, enumerable: true },
+    mode: { get() { return mode; }, enumerable: true },
     isOpen: { get() { return !!proxy?.isOpen; }, enumerable: true },
     dataSource: { get() { return ds; }, enumerable: true },
     grid: { get() { return grid; }, enumerable: true },

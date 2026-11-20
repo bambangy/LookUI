@@ -24,6 +24,12 @@
  * @param {boolean} [opts.closable=true]  — header close button
  * @param {string}  [opts.title]
  * @param {string|Node|Function|Object} [opts.content] — text | Node | (body, ctx) => … | { url, select, … } | { html } | { template }
+ * @param {string|Node|Function} [opts.loadingText] — content shown beside the default spinner while
+ *   a `url` content loads (default: common.loading); a Node (or function returning one) replaces
+ *   the whole status row.
+ * @param {string|Function} [opts.retryText] — Retry button caption on a failed load (default: common.retry)
+ * @param {string|Node|Function} [opts.errorText] — message shown when a failed load's error has none
+ *   (default: content.error); a Node (or function returning one) replaces the whole status row.
  * @param {Node|Function} [opts.footer]   — Node, or (footerEl) => Node | text
  * @param {Array}   [opts.buttons]        — [{ text, type: 'primary'|'secondary'|'outline'|'ghost'|'negative', onClick(event, { component, button }), closes, disabled }]; onClick returning false keeps the drawer open
  * @param {boolean|Object} [opts.resizable=false] — drag handle on the inner edge; `{ min, max }` (px number or CSS length); keyboard: arrows (Shift = bigger steps), Home / End
@@ -124,7 +130,9 @@ export function lkDrawer(opts = {}) {
     side: 'right', size: 'md', modal: true, closeOnEscape: true, closeOnBackdrop: true, closable: true,
     title: '', content: null, footer: null, buttons: null, resizable: false, animation: undefined,
     dense: false, open: true, destroyOnClose: false, autoFocus: true, opener: null,
-    mount: document.body, className: '', text: null, ...opts,
+    mount: document.body, className: '', text: null,
+    loadingText: undefined, retryText: undefined, errorText: undefined,
+    ...opts,
   };
 
   const dir = getComputedStyle(document.documentElement).direction === 'rtl' || document.dir === 'rtl' ? 'rtl' : 'ltr';
@@ -242,6 +250,9 @@ export function lkDrawer(opts = {}) {
     if (!spec) return;
     contentHandle = renderContent(body, spec, {
       ctx: { component: comp },
+      loadingText: options.loadingText ?? (() => tx.tf('common.loading')),
+      retryText: options.retryText ?? (() => tx.tf('common.retry')),
+      errorText: options.errorText,
       onLoad: (el) => options.onLoad?.(el, { component: comp }),
       onError: (error) => options.onError?.(error, { component: comp }),
     });

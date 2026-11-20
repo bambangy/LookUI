@@ -22,6 +22,23 @@
     opacity: 0.55;
     pointer-events: none;
   }
+
+  // height: a fixed value or 'fill' (100% of the parent — the parent must constrain it)
+  &--scrollable {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+
+    .lk-tree__list {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+    }
+  }
+
+  &--fill {
+    height: 100%;
+  }
 }
 
 .lk-tree__list,
@@ -216,6 +233,23 @@
   &--error {
     color: var(--lk-negative);
   }
+
+  // A structured `empty` template object ({ icon, title, description, action })
+  &--template {
+    flex-direction: column;
+    padding: var(--lk-space-8) var(--lk-space-4);
+  }
+}
+
+.lk-tree__status-title {
+  font-size: var(--lk-text-base);
+  font-weight: 500;
+  color: var(--lk-text);
+}
+
+.lk-tree__status-description {
+  font-size: var(--lk-text-sm);
+  color: var(--lk-text-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {

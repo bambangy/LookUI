@@ -19,6 +19,39 @@ lkI18n.define('tree', {
 let uid = 0;
 const TYPEAHEAD_MS = 700;
 
+function isObject(v) {
+  return v != null && typeof v === 'object' && !Array.isArray(v);
+}
+
+// Put a template/function result into a container: Nodes are appended, function results are HTML
+// (like a column `template`), everything else is plain text.
+function fill(target, content, asHtml) {
+  target.textContent = '';
+  if (content == null || content === false) return;
+  if (content instanceof Node) target.appendChild(content);
+  else if (asHtml) target.innerHTML = String(content);
+  else target.textContent = String(content);
+}
+
+// A structured `{ icon, title, description, action }` template for the root empty state.
+function renderStatusTemplate(target, spec) {
+  target.classList.add('lk-tree__status--template');
+  if (spec.icon) target.appendChild(lkIcon(spec.icon, { size: 'xl', color: 'muted' }));
+  if (spec.title != null) {
+    const title = document.createElement('div');
+    title.className = 'lk-tree__status-title';
+    fill(title, spec.title, false);
+    target.appendChild(title);
+  }
+  if (spec.description != null) {
+    const desc = document.createElement('div');
+    desc.className = 'lk-tree__status-description';
+    fill(desc, spec.description, false);
+    target.appendChild(desc);
+  }
+  if (spec.action instanceof Node) target.appendChild(spec.action);
+}
+
 /**
  * Build a tree view inside `target` (all markup is created for you).
  *
@@ -55,6 +88,14 @@ const TYPEAHEAD_MS = 700;
  * @param {Function} [opts.filterFn]       — (node, text) => boolean replacing the default "text contains" match
  * @param {{branch?: string, leaf?: string}} [opts.icons] — default icon names
  * @param {boolean}  [opts.dense]
+ * @param {string|number} [opts.height]    — fixed height (scrolls internally); `'fill'` stretches to
+ *   100% of the parent's height instead (the parent must actually constrain that height).
+ * @param {boolean|Function} [opts.loading=true] — the root loading indicator: `false` hides it,
+ *   a function `(tree) => Node|string` supplies custom content (rendered as HTML, like `template`).
+ * @param {string|Function|{icon,title,description,action}} [opts.empty] — empty-state content
+ *   (wins over the localized 'tree.empty' / shared 'common.noResults'): text, a function
+ *   `(tree) => string|Node` (a returned string is rendered as HTML), or a template object
+ *   `{ icon, title, description, action }` rendered as a centered placeholder.
  * @param {string}   [opts.ariaLabel]      — accessible name (default: the `label` text)
  * @param {Object}   [opts.text]           — text overrides (see the `tree` namespace)
  * @param {Function} [opts.beforeChange]   — (nextNodes, { kind: 'select' | 'check', source, node, checked, component }); false cancels, an array of nodes / values replaces the result
@@ -102,6 +143,12 @@ export function lkTree(target, opts = {}) {
   statusEl.hidden = true;
   rootEl.append(listEl, statusEl);
   host.appendChild(rootEl);
+
+  if (o.height != null) {
+    if (o.height === 'fill') rootEl.classList.add('lk-tree--fill');
+    else listEl.style.height = typeof o.height === 'number' ? `${o.height}px` : String(o.height);
+    rootEl.classList.add('lk-tree--scrollable');
+  }
 
   const comp = {};
   applyBase(comp, rootEl);
@@ -484,6 +531,11 @@ export function lkTree(target, opts = {}) {
     statusEl.setAttribute('role', kind === 'error' ? 'alert' : 'status');
     if (kind === 'loading') {
       listEl.setAttribute('aria-busy', 'true');
+      if (o.loading === false) { statusEl.hidden = true; return; }
+      if (typeof o.loading === 'function') {
+        fill(statusEl, o.loading(comp), true);
+        return;
+      }
       const sp = document.createElement('span');
       sp.className = 'lk-spinner lk-spinner--sm';
       sp.setAttribute('aria-hidden', 'true');
@@ -503,7 +555,12 @@ export function lkTree(target, opts = {}) {
       statusEl.append(t, btn);
       return;
     }
-    statusEl.textContent = filterText ? tx.tf('common.noResults') : tx.t('empty');
+    // kind === 'empty'
+    const spec = o.empty;
+    if (isObject(spec) && !(spec instanceof Node)) renderStatusTemplate(statusEl, spec);
+    else if (typeof spec === 'function') fill(statusEl, spec(comp), true);
+    else if (spec != null) fill(statusEl, spec, false);
+    else statusEl.textContent = filterText ? tx.tf('common.noResults') : tx.t('empty');
   }
 
   function refresh() {

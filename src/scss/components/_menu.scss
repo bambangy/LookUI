@@ -25,6 +25,10 @@
   font-size: var(--lk-text-base);
   color: var(--lk-text);
   outline: none;
+  // A long menu scrolls internally instead of overflowing the viewport; `opts.maxHeight` overrides
+  // this via an inline style (higher specificity than this class rule).
+  max-height: min(24rem, 80vh);
+  overflow-y: auto;
 
   &--dense {
     font-size: var(--lk-text-sm);

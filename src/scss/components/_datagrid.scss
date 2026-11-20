@@ -6,7 +6,7 @@
 //     .lk-datagrid__toolbar
 //     .lk-datagrid__content            scroll container (sticky header when --scrollable)
 //       table.lk-table.lk-datagrid__table
-//     .lk-datagrid__loading            overlay while the data source loads
+//     .lk-inner-loading                overlay while the data source loads (or grid.loading(true))
 //     .lk-datagrid__pager              pagination + page size + info
 
 .lk-datagrid {
@@ -85,6 +85,13 @@
   // Fixed height: header stays put while rows scroll
   &--scrollable &__content {
     flex: 1 1 auto;
+  }
+
+  // height: 'fill' — stretch to the parent's height instead of a fixed px value (the parent
+  // must actually constrain it: a flex/grid item, or an element with an explicit height).
+  &--fill {
+    height: 100%;
+    min-height: 0;
   }
 
   &--scrollable thead {
@@ -339,20 +346,33 @@
     &--error {
       color: var(--lk-negative);
     }
+
+    &--template {
+      padding: var(--lk-space-10) var(--lk-space-4) !important;
+    }
+  }
+
+  &__empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--lk-space-2);
+  }
+
+  &__empty-title {
+    font-size: var(--lk-text-base);
+    font-weight: 500;
+    color: var(--lk-text);
+  }
+
+  &__empty-description {
+    font-size: var(--lk-text-sm);
+    color: var(--lk-text-muted);
   }
 
   // --- Loading overlay ---
-
-  &__loading {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: color-mix(in srgb, var(--lk-bg) 55%, transparent);
-    animation: lk-datagrid-fade var(--lk-duration-base) var(--lk-easing-out);
-  }
+  // The overlay itself is an lkInnerLoading instance (.lk-inner-loading, _composable.scss)
+  // mounted over the whole grid; this only blocks interaction with the content underneath.
 
   &--loading &__content {
     pointer-events: none;
@@ -405,17 +425,6 @@
   &--dense &__toolbar,
   &--dense &__pager {
     padding: var(--lk-space-1) var(--lk-space-2);
-  }
-}
-
-@keyframes lk-datagrid-fade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lk-datagrid__loading {
-    animation-duration: 1ms !important;
   }
 }
 

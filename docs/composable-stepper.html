@@ -110,6 +110,7 @@ LookDocs.render('#api', {
     { name: 'variant', type: "'default' | 'compact' | 'bar'", default: "'default'", description: 'Numbered circles / small markers without descriptions / segmented progress bars.' },
     { name: 'buttons', type: 'boolean', default: 'true', description: 'Render the Back / Next / Finish footer (`false`: drive it with the API).' },
     { name: 'render', type: "'lazy' | 'eager'", default: "'lazy'", description: 'Render panel content on first visit or all at once; a step can override with its own `render`.' },
+    { name: 'loadingText / retryText / errorText', type: 'string | Node | Function', default: 'common.loading / common.retry / content.error', description: 'Shown while a step\'s `content: { url }` loads and if it fails. `loadingText` / `errorText` can be a Node (or a function returning one), replacing the whole default status row — including the Retry button for `errorText`.' },
     { name: 'animation', type: "'slide' | 'none'", default: "'slide'", description: 'Panel transition.' },
     { name: 'dense', type: 'boolean', default: 'false', description: 'Compact markers and buttons.' },
     { name: 'text', type: 'Object', default: '—', description: 'Per-instance text overrides.' },

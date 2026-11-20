@@ -33,6 +33,12 @@
  * @param {string}  [opts.variant='default'] — 'default' | 'compact' | 'bar'
  * @param {boolean} [opts.buttons=true]    — render Back / Next / Finish
  * @param {string}  [opts.render='lazy']   — 'lazy' (first visit) | 'eager' (all at once); per step `render`
+ * @param {string|Node|Function} [opts.loadingText] — content shown beside the default spinner while
+ *   a step's `url` content loads (default: common.loading); a Node (or function returning one)
+ *   replaces the whole status row.
+ * @param {string|Function} [opts.retryText] — Retry button caption on a failed step load (default: common.retry)
+ * @param {string|Node|Function} [opts.errorText] — message shown when a failed load's error has none
+ *   (default: content.error); a Node (or function returning one) replaces the whole status row.
  * @param {string}  [opts.animation='slide'] — 'slide' | 'none'
  * @param {boolean} [opts.dense=false]
  * @param {Object}  [opts.text]            — per-instance text overrides (keys relative to 'stepper.' or absolute)
@@ -84,7 +90,9 @@ export function lkStepper(target, opts = {}) {
   const root = resolveEl(target, 'lkStepper');
   const options = {
     linear: true, orientation: 'horizontal', variant: 'default', buttons: true,
-    render: 'lazy', animation: 'slide', dense: false, current: 0, ...opts,
+    render: 'lazy', animation: 'slide', dense: false, current: 0,
+    loadingText: undefined, retryText: undefined, errorText: undefined,
+    ...opts,
   };
   const vertical = options.orientation === 'vertical';
   const variant = VARIANTS.includes(options.variant) ? options.variant : 'default';
@@ -335,6 +343,9 @@ export function lkStepper(target, opts = {}) {
     s.rendered = true;
     s.handle = renderContent(s.panel, s.spec, {
       ctx: { step: publicStep(s), component: comp },
+      loadingText: options.loadingText ?? (() => tx.tf('common.loading')),
+      retryText: options.retryText ?? (() => tx.tf('common.retry')),
+      errorText: options.errorText,
       onLoad: (panel) => options.onLoad?.(panel, { step: publicStep(s), component: comp }),
       onError: (err) => options.onError?.(err, { step: publicStep(s), source: 'load', component: comp }),
     });

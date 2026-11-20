@@ -121,7 +121,21 @@ LookDocs.render('#api', {
     { name: 'forceSelection', type: 'boolean', default: 'false', description: 'Only picked suggestions count. On blur the text either matches a suggestion exactly (it is picked) or reverts to the last pick / empty (`onChange` source `\'revert\'`).' },
     { name: 'openOnFocus', type: 'boolean', default: 'false', description: 'Search with the current (also empty) text when the input gets focus.' },
     { name: 'autoSelectFirst', type: 'boolean', default: 'false', description: 'Highlight the first suggestion so Enter picks it.' },
-    { name: 'noResults', type: 'boolean', default: 'true', description: 'Show the "No results" row (`false` closes the popup instead).' },
+    {
+      name: 'noResults', type: 'boolean | string | Function | { icon, title, description, action }', default: 'true',
+      description: 'The "no results" row: `false` hides it (closes the popup instead), `true`/omitted is the default text, or text / a function `(autocomplete) => string(HTML) | Node` / a template object `{ icon, title, description, action }` customizes it.',
+      examples: [{ run: true, code: `
+        const el = document.createElement('input');
+        container.appendChild(el);
+        Look.lkAutocomplete(el, {
+          source: ['Amsterdam', 'Berlin'],
+          noResults: { icon: 'search', title: 'No matches', description: 'Try a different search.' },
+        });` }],
+    },
+    {
+      name: 'loading', type: 'boolean | Function | { icon, title, description, action }', default: 'true',
+      description: 'The loading row shown while an async `source` resolves: `false` hides it, `true`/omitted is the default spinner, or a function `(autocomplete) => string(HTML) | Node` / a template object customizes it.',
+    },
     { name: 'valueName', type: 'string', default: '—', description: 'Creates a hidden input with this name posting the picked item\'s `valueField` (free text: the text).' },
     { name: 'panelWidth / panelClass', type: 'number | string | string', default: "input width", description: 'Popup width (px number, CSS length or `\'auto\'`) and an extra class.' },
     { name: 'label / name / placeholder / required / readonly / disabled / dense', type: '—', default: 'false', description: 'Standard field options.' },
@@ -163,7 +177,7 @@ LookDocs.render('#api', {
     { name: '.lk-autocomplete__panel', description: 'The popup (a `.lk-popup-proxy__panel`); `--dense` variant.' },
     { name: '.lk-autocomplete__list / __option', description: 'The listbox and its options (`--active`, `--disabled`).' },
     { name: '.lk-autocomplete__mark', description: 'The highlighted match.' },
-    { name: '.lk-autocomplete__state', description: 'Loading / no-results / error row (`--loading`, `--empty`, `--error`).' },
+    { name: '.lk-autocomplete__state[--loading|--empty|--error|--template]', description: 'Loading / no-results / error row; `--template` + `__state-title` / `__state-description` when `loading` or `noResults` is a template object.' },
   ],
   tokens: [
     { name: '--lk-primary', default: '#5c6bc0', description: 'Active option, match highlight, focus ring.' },
