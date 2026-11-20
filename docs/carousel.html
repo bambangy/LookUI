@@ -361,7 +361,7 @@ LookDocs.render('#api', {
     { name: 'lazy', type: 'boolean', default: 'true', description: 'Load content slides only around the active slide (see `preload`). `false` loads every slide at once.' },
     { name: 'preload', type: 'number', default: '1', description: 'With `lazy`, how many neighbours on each side of the active slide are loaded ahead.' },
     { name: 'arrows / indicators', type: 'boolean', default: 'true', description: 'With `slides`, create prev/next buttons and dots when the markup has none.' },
-    { name: 'loadingText', type: 'string', default: "'Loading…'", description: 'Text beside the spinner while a slide (or the slide list) loads.' },
+    { name: 'loadingText', type: 'string | Node | Function', default: "'Loading…'", description: 'Content beside the default spinner while a slide (or the slide list) loads; a Node (or function returning one) replaces the whole status row.' },
   ],
 
   properties: [

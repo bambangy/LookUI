@@ -44,12 +44,15 @@
  * @param {number}  [opts.maxChips]            - show at most N chips, then a "+N" chip
  * @param {boolean} [opts.closeOnSelect]       - close after picking (default: true single, false multiple)
  * @param {Function} [opts.onChange]           - (value, { source, component, item }) => void; multiple: (values[], { source, component, items })
- * @param {string}  [opts.noResultsText]
+ * @param {string|Function|{icon,title,description,action}} [opts.noResultsText] - empty-state
+ *   content: text (default), a function `(dropdown) => string(HTML) | Node`, or a template object
+ *   `{ icon, title, description, action }` rendered as a centered placeholder.
  * @param {string}  [opts.loadingText]
  * @param {Function} [opts.template]          - (item) => Node|string — option content (string = text, never HTML)
  * @param {Function} [opts.selectedTemplate]  - (item) => Node|string — trigger content for the single selection
  * @param {string[]} [opts.searchFields]      - item fields the local search matches (default: [labelField])
  * @param {number|string} [opts.panelWidth]   - panel width (px or CSS length); default = trigger width
+ * @param {number|string} [opts.panelHeight]  - options list max-height (px or CSS length); default = 280px, capped to the viewport
  * @param {string}  [opts.panelClass]         - extra class on the floating panel
  * @param {Array}   [opts.rules]              - validation rules (see helpers/validation.js)
  * @param {boolean} [opts.validate]           - validate when focus leaves the dropdown (panel closed)
@@ -65,6 +68,7 @@ import { resolveEl, applyBase } from '../helpers/base.js';
 import { wrapField, applyFieldProps } from '../helpers/field.js';
 import { createPresenceController, floatingZIndex } from '../helpers/motion.js';
 import { lkChip } from './chip.js';
+import { lkIcon } from './icon.js';
 import { attachValidation } from '../helpers/validation.js';
 import { lkI18n, bindText } from '../helpers/i18n.js';
 import { guard } from '../helpers/guard.js';
@@ -168,6 +172,7 @@ export function lkDropdown(el, opts = {}) {
     selectedTemplate: null,
     searchFields: null,
     panelWidth: null,
+    panelHeight: null,
     panelClass: '',
     ...opts,
   };
@@ -178,6 +183,9 @@ export function lkDropdown(el, opts = {}) {
   if (anchor.tagName === 'SELECT' && anchor.multiple && opts.multiple == null && opts.multiselect == null) {
     options.multiple = true;
   }
+  // Declared up front (object identity only) because a `noResultsText` content function can run
+  // before the factory returns; it should read `comp` off the same object populated further down.
+  const comp = {};
   const multiple = !!options.multiple;
   const closeOnSelect = options.closeOnSelect ?? !multiple;
 
@@ -186,8 +194,44 @@ export function lkDropdown(el, opts = {}) {
   let emptyIsError = false;
   const tx = bindText('dropdown', opts.text, () => refreshTexts());
   const txt = (key) => (opts[key] != null ? opts[key] : tx.t(key));
-  const txtEmpty = () => (opts.noResultsText != null ? opts.noResultsText : tx.tf('common.noResults'));
   const txtLoading = () => (opts.loadingText != null ? opts.loadingText : tx.tf('common.loading'));
+
+  // `noResultsText`: plain text (default), a function `(dropdown) => string(HTML) | Node`, or a
+  // template object `{ icon, title, description, action }` rendered as a centered placeholder.
+  function fillText(target, content) {
+    if (content instanceof Node) target.appendChild(content);
+    else target.textContent = String(content);
+  }
+  function renderEmptyContent() {
+    emptyEl.textContent = '';
+    emptyEl.classList.remove('lk-dropdown__empty--template');
+    const spec = opts.noResultsText;
+    if (isObject(spec) && !(spec instanceof Node)) {
+      emptyEl.classList.add('lk-dropdown__empty--template');
+      if (spec.icon) emptyEl.appendChild(lkIcon(spec.icon, { size: 'lg', color: 'muted' }));
+      if (spec.title != null) {
+        const title = document.createElement('div');
+        title.className = 'lk-dropdown__empty-title';
+        fillText(title, spec.title);
+        emptyEl.appendChild(title);
+      }
+      if (spec.description != null) {
+        const desc = document.createElement('div');
+        desc.className = 'lk-dropdown__empty-description';
+        fillText(desc, spec.description);
+        emptyEl.appendChild(desc);
+      }
+      if (spec.action instanceof Node) emptyEl.appendChild(spec.action);
+    } else if (typeof spec === 'function') {
+      const result = spec(comp);
+      if (result instanceof Node) emptyEl.appendChild(result);
+      else emptyEl.innerHTML = String(result ?? '');
+    } else if (spec instanceof Node) {
+      emptyEl.appendChild(spec);
+    } else {
+      emptyEl.textContent = spec != null ? String(spec) : tx.tf('common.noResults');
+    }
+  }
 
   // Enhancing a native <select> without explicit items: adopt its <option>s.
   if (anchor.tagName === 'SELECT' && !opts.items && !opts.transport) {
@@ -374,6 +418,9 @@ export function lkDropdown(el, opts = {}) {
   const listEl = document.createElement('ul');
   listEl.className = 'lk-dropdown__list';
   listEl.setAttribute('role', 'presentation');
+  if (options.panelHeight != null) {
+    listEl.style.maxHeight = typeof options.panelHeight === 'number' ? `${options.panelHeight}px` : String(options.panelHeight);
+  }
   panel.appendChild(listEl);
 
   // Loading sentinel / spinner row
@@ -386,9 +433,9 @@ export function lkDropdown(el, opts = {}) {
   // Empty state
   const emptyEl = document.createElement('div');
   emptyEl.className = 'lk-dropdown__empty';
-  emptyEl.textContent = txtEmpty();
   emptyEl.hidden = true;
   panel.appendChild(emptyEl);
+  renderEmptyContent();
 
   // Carry the dense modifier from the host element onto the trigger
   if (anchor.classList?.contains('lk-input--dense')) trigger.classList.add('lk-input--dense');
@@ -452,7 +499,7 @@ export function lkDropdown(el, opts = {}) {
       searchInput.setAttribute('aria-label', txt('searchLabel'));
     }
     loadingEl.textContent = txtLoading();
-    if (!emptyIsError) emptyEl.textContent = txtEmpty();
+    if (!emptyIsError) renderEmptyContent();
     updateTriggerLabel(); // placeholder + chip remove labels
   }
 
@@ -533,13 +580,15 @@ export function lkDropdown(el, opts = {}) {
           if (found) currentItem = found;
           updateTriggerLabel();
         }
-        emptyIsError = false; emptyEl.textContent = txtEmpty();
+        emptyIsError = false; renderEmptyContent();
         hasMore = localItems.length < totalRemote;
         applyFilter(searchQuery);
         renderList(append);
       } catch (err) {
         if (err?.name !== 'AbortError' && seq === requestSeq && !destroyed) {
-          emptyIsError = !!err.message; emptyEl.textContent = err.message || txtEmpty();
+          emptyIsError = !!err.message;
+          emptyEl.classList.remove('lk-dropdown__empty--template');
+          emptyEl.textContent = err.message || tx.tf('common.noResults');
           emptyEl.hidden = false;
           listEl.hidden = true;
         }
@@ -914,12 +963,15 @@ export function lkDropdown(el, opts = {}) {
 
     const fixedWidth = options.panelWidth == null ? null
       : (typeof options.panelWidth === 'number' ? `${options.panelWidth}px` : String(options.panelWidth));
+    // A numeric panelHeight raises the overall cap too, so a taller custom list isn't clipped
+    // by the panel wrapper itself (search box / padding sit outside the list's own max-height).
+    const panelCap = typeof options.panelHeight === 'number' ? Math.max(320, options.panelHeight) : 320;
     panel.style.minWidth  = fixedWidth ? '' : `${rect.width}px`;
-    panel.style.maxHeight = `${Math.min(320, vh * 0.5)}px`;
+    panel.style.maxHeight = `${Math.min(panelCap, vh * 0.5)}px`;
 
     const spaceBelow = vh - rect.bottom - gap - margin;
     const spaceAbove = rect.top - gap - margin;
-    const panelH     = Math.min(panel.scrollHeight || 300, 320);
+    const panelH     = Math.min(panel.scrollHeight || 300, panelCap);
 
     let top, openAbove;
     if (spaceBelow >= panelH || spaceBelow >= spaceAbove) {
@@ -1174,7 +1226,6 @@ export function lkDropdown(el, opts = {}) {
 
   // --- Component object -----------------------------------------------------
 
-  const comp = {};
   applyBase(comp, trigger, { hiddenTarget: field.wrapper || trigger });
 
 

@@ -6,7 +6,9 @@
 //             + .lk-input.lk-textpop[role=combobox] > .lk-textpop__chips | .lk-textpop__label
 //                                                  + .lk-textpop__clear + .lk-textpop__icon
 //             + .lk-field-error
-//   (body) .lk-popup-proxy__panel.lk-textpop__panel > .lk-textpop__body >
+//   mode: 'modal' (default) — .lk-modal.lk-textpop-modal > .lk-modal__header (title) +
+//            .lk-modal__body > .lk-textpop__body > .lk-textpop__search + __grid + __foot
+//   mode: 'proxy' — .lk-popup-proxy__panel.lk-textpop__panel > .lk-textpop__body >
 //            .lk-textpop__head + .lk-textpop__search + .lk-textpop__grid + .lk-textpop__foot
 
 // Compound selector: .lk-input is emitted earlier and would set display:block
@@ -186,6 +188,37 @@
 }
 
 .lk-textpop__panel--dense {
+  .lk-textpop__search { padding: var(--lk-space-2) var(--lk-space-3); }
+  .lk-textpop__foot { padding: var(--lk-space-1) var(--lk-space-3); }
+}
+
+// --- Modal mode (mode: 'modal', the default) ---------------------------------------
+// The overlay is an lkDialog; its header shows `title` and its footer (confirm/cancel,
+// unused here — picking a row or Done/Clear in the panel's own foot closes it) is hidden.
+
+.lk-textpop-modal.lk-modal {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+
+  .lk-modal__header {
+    padding: var(--lk-space-4) var(--lk-space-4) 0;
+    margin-bottom: 0;
+  }
+
+  .lk-modal__body {
+    margin-bottom: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .lk-modal__footer {
+    display: none;
+  }
+}
+
+.lk-textpop-modal--dense {
   .lk-textpop__search { padding: var(--lk-space-2) var(--lk-space-3); }
   .lk-textpop__foot { padding: var(--lk-space-1) var(--lk-space-3); }
 }

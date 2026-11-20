@@ -7,6 +7,67 @@ Documentation: https://bambangy.github.io/LookUI/docs/
 
 ## [Unreleased]
 
+## [0.4.2] — 2026-11-21
+
+### Added
+
+- `lkTable`: `height: 'fill'` stretches the grid to 100% of its parent's height instead of a fixed
+  value (the parent must actually constrain that height — a flex/grid item, or an element with an
+  explicit height).
+- `lkTable`: `noRecords` now also accepts a template object `{ icon, title, description, action }`
+  (icon name, text/Node title+description, a Node `action`), rendered as a centered empty-state
+  placeholder (`.lk-datagrid__empty-state`), alongside the existing plain text / function forms.
+- `lkTable`: the loading overlay is now a `Look.lkInnerLoading` instance, customizable via the new
+  `loading` option (`false` disables it, `true` is a plain spinner, a function or an options object
+  forwarded to `lkInnerLoading` supplies custom content). `grid.loading()` reads the current
+  effective loading state; `grid.loading(true | false)` forces it on/off, overriding the automatic
+  `dataSource`-driven overlay until called again.
+- `lkTextPop`: a new `mode` option picks the lookup overlay — `'modal'` (a centered `lkDialog`) or
+  `'proxy'` (the previous anchored `lkPopupProxy`). Both are normalized behind the same internal
+  shape, so `beforeClose`/`onClose`/`beforeOpen`/`onOpen` and every other option behave the same
+  either way.
+- `lkTree`: `height` (fixed, scrolls internally) or `'fill'` (100% of the parent's height); a
+  customizable root `loading` indicator (`false` hides it, a function supplies custom content);
+  `empty` now also accepts a template object `{ icon, title, description, action }`
+  (`.lk-tree__status--template`) alongside the existing plain text / function forms.
+- `lkDropdown`: `panelHeight` caps the options list before it scrolls internally (default 280px,
+  capped to half the viewport, same as before); `noResultsText` now also accepts a function
+  `(dropdown) => string(HTML) | Node` or a template object `{ icon, title, description, action }`
+  (`.lk-dropdown__empty--template`), alongside the existing plain text.
+- `lkAutocomplete`: `loading` and `noResults` now accept a function `(autocomplete) => string(HTML) |
+  Node` or a template object `{ icon, title, description, action }` (`.lk-autocomplete__state--template`),
+  alongside their existing boolean / default-text behavior.
+- `lkMenu`: `maxHeight` caps and scrolls every nesting depth (default `min(24rem, 80vh)` via CSS,
+  so a long menu no longer overflows the viewport even without the option).
+- `helpers/content.js`'s shared `renderContent()` (`lkTabs`, `lkCarousel`, `lkDrawer`, `lkStepper`):
+  `loadingText` and `errorText` now also accept a Node, or a function returning one, which replaces
+  the whole default status row (spinner/icon and all) instead of just its text. `lkDrawer` and
+  `lkStepper` now forward `loadingText`/`retryText`/`errorText` to their content, matching `lkTabs`/
+  `lkCarousel` (previously unconfigurable on those two).
+
+### Changed
+
+- `lkTextPop`'s default `mode` is now `'modal'` (previously always an anchored popup, now `mode: 'proxy'`
+  to keep the old behavior). The popup used to run flush against the field; a centered modal reads
+  better for a lookup grid with several columns, especially on narrow screens.
+
+### Fixed
+
+- `lkDropdown`: the per-option hover/active/selected highlight no longer sits inset from the
+  panel's edges (a leftover `margin` made the pill noticeably narrower than the trigger, even
+  once fully open — only unhighlighted rows hid it). Options now flush full-width against the
+  panel, matching the trigger's width exactly.
+- `lkDropdown`: with that margin gone, the options list's own scrollbar was overlapping the last
+  few pixels of an option's right padding, making it look like only the left side had any padding.
+  `.lk-dropdown__list` now reserves the scrollbar's track outside the content box
+  (`scrollbar-gutter: stable`), keeping left/right padding visually even whether or not the list
+  actually scrolls (falls back to the old overlap in browsers without `scrollbar-gutter` support).
+- `lkDropdown`: removed the `translateX(2px)` / `translateX(1px) scale(0.99)` nudge on a hovered /
+  focused / active option. With the row now flush against the panel on both sides (see above),
+  that nudge shifted the whole highlighted bar sideways, opening a gap on one edge and clipping
+  the other against the panel's border — i.e. reintroducing the exact asymmetric padding this fix
+  removes for every other state.
+
 ## [0.4.1] — 2026-11-20
 
 ### Added
@@ -169,6 +230,7 @@ One callback convention across the library before the 1.0 API freeze. Upgrade gu
 
 - First public release.
 
+[0.4.2]: https://github.com/bambangy/LookUI/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/bambangy/LookUI/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/bambangy/LookUI/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/bambangy/LookUI/compare/v0.2.0...v0.3.0

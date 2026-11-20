@@ -357,7 +357,7 @@ LookDocs.render('#api', {
     },
     { name: 'fill', type: 'boolean', default: 'false', description: 'Horizontal tabs share the full width equally.' },
     { name: 'dense', type: 'boolean', default: 'false', description: 'Compact tabs and panel padding.' },
-    { name: 'loadingText', type: 'string', default: "'Loading…'", description: 'Text beside the spinner while a panel loads.' },
+    { name: 'loadingText', type: 'string | Node | Function', default: "'Loading…'", description: 'Content beside the default spinner while a panel loads; a Node (or function returning one) replaces the whole status row.' },
     { name: 'beforeChange', type: 'Function', default: '—', description: '`(next, { prev, source, component }) => boolean` — return `false` to stay on the current tab. `next` / `ctx.prev` are tab descriptors (`{ name, index, title, el, panel, disabled }`).' },
     { name: 'onChange', type: 'Function', default: '—', description: '`(name, { source, component, prev, tab })` after the user or `select()` changed the tab. `prev` is the previous tab name; `source` is `\'click\' | \'key\' | \'api\' | \'disable\'`. Changed in 0.3.0 (was `(name, prevName, tab)`).' },
     { name: 'onLoad', type: 'Function', default: '—', description: '`(panel, { name, tab, component })` after a panel\'s content is in place — the place to enhance loaded HTML with LookUI components.' },

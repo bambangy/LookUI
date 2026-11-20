@@ -9,6 +9,7 @@ import { createElement } from '../core/index.js';
 import { lkI18n, bindText } from '../helpers/i18n.js';
 import { guard } from '../helpers/guard.js';
 import { lkPopupProxy } from '../composables/popupProxy.js';
+import { lkIcon } from './icon.js';
 
 lkI18n.define('autocomplete', {
   label: 'Suggestions',
@@ -23,6 +24,42 @@ const fold = (s) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-
 const isThenable = (r) => r != null && typeof r.then === 'function';
 
 const ATTRS = ['placeholder', 'role', 'aria-autocomplete', 'aria-expanded', 'aria-controls', 'aria-haspopup', 'aria-activedescendant', 'autocomplete', 'spellcheck'];
+
+function isObject(v) {
+  return v != null && typeof v === 'object' && !Array.isArray(v);
+}
+
+function isTemplateSpec(v) {
+  return isObject(v) && !(v instanceof Node);
+}
+
+// Nodes are appended, strings from a function are HTML (like `template`), everything else is text.
+function fillState(target, content, asHtml) {
+  target.replaceChildren();
+  if (content == null || content === false) return;
+  if (content instanceof Node) target.appendChild(content);
+  else if (asHtml) target.innerHTML = String(content);
+  else target.textContent = String(content);
+}
+
+// A structured `{ icon, title, description, action }` template for the loading / empty state row.
+function renderStateTemplate(target, spec) {
+  target.classList.add('lk-autocomplete__state--template');
+  if (spec.icon) target.appendChild(lkIcon(spec.icon, { size: 'lg', color: 'muted' }));
+  if (spec.title != null) {
+    const title = document.createElement('div');
+    title.className = 'lk-autocomplete__state-title';
+    fillState(title, spec.title, false);
+    target.appendChild(title);
+  }
+  if (spec.description != null) {
+    const desc = document.createElement('div');
+    desc.className = 'lk-autocomplete__state-description';
+    fillState(desc, spec.description, false);
+    target.appendChild(desc);
+  }
+  if (spec.action instanceof Node) target.appendChild(spec.action);
+}
 
 function isDataSource(src) {
   return !!src && typeof src === 'object' && !Array.isArray(src)
@@ -80,7 +117,13 @@ function highlight(text, query) {
  * @param {boolean} [opts.forceSelection=false] — only picked suggestions count: on blur free text reverts (to the last pick or empty)
  * @param {boolean} [opts.openOnFocus=false] — search with the current text (also empty) when the input gets focus
  * @param {boolean} [opts.autoSelectFirst=false] — highlight the first suggestion so Enter picks it
- * @param {boolean} [opts.noResults=true]    — show the "No results" row
+ * @param {boolean|string|Function|{icon,title,description,action}} [opts.noResults=true] — the
+ *   "no results" row: `false` hides it (closes the popup instead), `true`/omitted is the default
+ *   text, or text / a function `(autocomplete) => string(HTML) | Node` / a template object
+ *   `{ icon, title, description, action }` customizes it.
+ * @param {boolean|Function|{icon,title,description,action}} [opts.loading=true] — the loading
+ *   row shown while an async `source` resolves: `false` hides it, `true`/omitted is the default
+ *   spinner, or a function `(autocomplete) => string(HTML) | Node` / a template object customizes it.
  * @param {string}  [opts.valueName]         — creates a hidden input with this name posting the picked item's `valueField` (free text: the text)
  * @param {string|number} [opts.panelWidth]  — popup width: number (px) | CSS length | 'auto' (default: the input's width)
  * @param {string}  [opts.panelClass]        — extra class for the popup
@@ -220,8 +263,17 @@ export function lkAutocomplete(el, opts = {}) {
     stateEl.hidden = !showRow;
     listEl.hidden = state !== 'results';
     if (state === 'loading') {
+      const spec = opts.loading;
+      if (spec === false) { stateEl.hidden = true; return; }
+      if (isTemplateSpec(spec)) { renderStateTemplate(stateEl, spec); return; }
+      if (typeof spec === 'function') { fillState(stateEl, spec(comp), true); return; }
       stateEl.append(createElement('span', { class: 'lk-autocomplete__spinner', 'aria-hidden': 'true' }), createElement('span', {}, tx.tf('common.loading')));
     } else if (state === 'empty') {
+      if (opts.noResults === false) { stateEl.hidden = true; return; }
+      const spec = opts.noResults;
+      if (isTemplateSpec(spec)) { renderStateTemplate(stateEl, spec); return; }
+      if (typeof spec === 'function') { fillState(stateEl, spec(comp), true); return; }
+      if (spec != null && spec !== true) { fillState(stateEl, spec, false); return; }
       stateEl.textContent = tx.tf('common.noResults');
     } else if (state === 'error') {
       const msg = createElement('span', { class: 'lk-autocomplete__error' }, lastError?.message || tx.t('error'));

@@ -410,6 +410,10 @@
   flex: 1 1 auto;
   min-height: 0;
   max-height: 280px;
+  // Reserve the scrollbar's own track outside the content box (support varies; falls back to the
+  // scrollbar overlapping the option's padding like before) so options stay flush and symmetric
+  // whether or not the list actually scrolls.
+  scrollbar-gutter: stable;
 
   // Thin custom scrollbar
   scrollbar-width: thin;
@@ -431,29 +435,26 @@
   display: flex;
   align-items: center;
   padding: var(--lk-space-2) var(--lk-space-3);
-  margin: 1px var(--lk-space-1);
   font-size: var(--lk-text-base);
   line-height: 1.4;
   color: var(--lk-text);
   cursor: pointer;
   user-select: none;
-  border-radius: var(--lk-radius);
   outline: none;
+  // No translateX nudge here: the row is flush against the panel on both sides, so shifting it
+  // sideways on hover/focus/active just reopens the asymmetric gap this file already fixes once.
   transition:
     background-color var(--lk-duration-fast) var(--lk-easing-default),
-    color            var(--lk-duration-fast) var(--lk-easing-default),
-    transform        var(--lk-duration-fast) var(--lk-easing-spring);
+    color            var(--lk-duration-fast) var(--lk-easing-default);
 
   &:hover,
   &:focus {
     background: color-mix(in srgb, var(--lk-primary) 8%, transparent);
     color: var(--lk-primary);
-    transform: translateX(2px);
   }
 
   &:active {
     background: color-mix(in srgb, var(--lk-primary) 15%, transparent);
-    transform: translateX(1px) scale(0.99);
   }
 
   // Selected — tinted background + checkmark
@@ -481,7 +482,6 @@
     opacity: 0.4;
     pointer-events: none;
     cursor: not-allowed;
-    transform: none !important;
   }
 }
 
@@ -532,6 +532,26 @@
   font-size: var(--lk-text-sm);
   color: var(--lk-text-muted);
   text-align: center;
+
+  // A structured `noResultsText` template object ({ icon, title, description, action })
+  &--template {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--lk-space-2);
+    padding: var(--lk-space-6) var(--lk-space-4);
+  }
+}
+
+.lk-dropdown__empty-title {
+  font-size: var(--lk-text-base);
+  font-weight: 500;
+  color: var(--lk-text);
+}
+
+.lk-dropdown__empty-description {
+  font-size: var(--lk-text-sm);
+  color: var(--lk-text-muted);
 }
 
 // =============================================================================

@@ -24,6 +24,7 @@ import { lkIcon } from '../components/icon.js';
 import { lkDialog } from './dialog.js';
 import { lkDate } from './date.js';
 import { lkPopupProxy } from './popupProxy.js';
+import { lkInnerLoading } from './innerLoading.js';
 import { extractFieldErrors, firstMessage } from '../helpers/validation.js';
 import { lkI18n, bindText } from '../helpers/i18n.js';
 import { guard, guardSync } from '../helpers/guard.js';
@@ -279,11 +280,21 @@ function normalizeValues(values) {
  * @param {boolean|Object} [opts.rowReorder=false] — drag rows (grip column, or the whole row with handle: false): true | { handle, field }.
  *   Local data only; disabled while sorted/filtered. Events: onRowReorder; guard: beforeRowReorder.
  * @param {string|Object} [opts.persist] — storage key (or { key, session }) saving column widths, order and visibility
- * @param {string|number} [opts.height] — fixed body height (scrolls with a sticky header)
+ * @param {string|number} [opts.height] — fixed body height (scrolls with a sticky header);
+ *   `'fill'` stretches the grid to 100% of its parent's height instead (the parent must actually
+ *   constrain that height — a flex/grid item or an element with an explicit height).
  * @param {boolean} [opts.striped] [opts.hover=true] [opts.bordered] [opts.dense]
  * @param {boolean} [opts.autoBind=true] — load remote data on creation
  * @param {string}  [opts.keyField] — record key (default: the data source's keyField)
- * @param {string|Function} [opts.noRecords] — empty text (wins over the localized 'table.noRecords')
+ * @param {string|Function|{icon,title,description,action}} [opts.noRecords] — empty-state content
+ *   (wins over the localized 'table.noRecords'): plain text, a function `(grid) => string|Node`
+ *   (a returned string is rendered as HTML, like a column `template`), or a template object
+ *   `{ icon, title, description, action }` (`icon` = icon name, `title`/`description` = text or
+ *   Node, `action` = a Node such as a button) rendered as a centered placeholder.
+ * @param {boolean|Object|Function} [opts.loading=true] — the overlay shown while `dataSource` is
+ *   loading (and whenever `grid.loading(true)` forces it on): `false` disables it, `true` is a
+ *   plain spinner, a function `(grid) => Node|string` supplies custom content, or an options object
+ *   forwarded to `Look.lkInnerLoading` (`text`, `content`, `spinner`, `spinnerSize`, `backdrop`).
  * @param {string}  [opts.confirmDelete] — confirmation text (wins over 'table.confirmDelete'); false to delete without asking
  * @param {Object}  [opts.text] — text overrides, see Look.i18n (namespace 'table'); explicit options above win
  * @param {Function} [opts.rowClass] — (row) => className
@@ -319,6 +330,7 @@ function createGrid(root, opts) {
     selectable: false,
     toolbar: null,
     height: null,
+    loading: true,
     striped: false,
     hover: true,
     bordered: false,
@@ -334,6 +346,10 @@ function createGrid(root, opts) {
     rowClass: null,
     ...opts,
   };
+
+  // Declared up front (object identity only) because options like `loading`'s content function
+  // can run before the factory returns; callbacks that need it should read it off `api`.
+  const api = {};
 
   // Texts: explicit options (noRecords, confirmDelete, editable.title, column titles…) win,
   // then opts.text, then the Look.i18n locale.
@@ -482,7 +498,6 @@ function createGrid(root, opts) {
   const headRow = el('tr', 'lk-datagrid__head-row');
   const filterRow = el('tr', 'lk-datagrid__filter-row');
   const tbody = el('tbody');
-  const loadingEl = el('div', 'lk-datagrid__loading');
   const pagerEl = el('div', 'lk-datagrid__pager');
   const liveEl = el('div', 'lk-datagrid__live');   // polite announcements (reorder)
   liveEl.setAttribute('aria-live', 'polite');
@@ -508,20 +523,42 @@ function createGrid(root, opts) {
   tableEl.append(colgroup, thead, tbody);
   contentEl.appendChild(tableEl);
 
-  loadingEl.hidden = true;
-  loadingEl.setAttribute('aria-hidden', 'true');
-  loadingEl.title = tx.tf('common.loading');
-  loadingEl.appendChild(el('span', 'lk-spinner lk-datagrid__spinner'));
-
   if (options.height != null) {
-    contentEl.style.height = typeof options.height === 'number' ? `${options.height}px` : String(options.height);
+    if (options.height === 'fill') {
+      root.classList.add('lk-datagrid--fill');
+    } else {
+      contentEl.style.height = typeof options.height === 'number' ? `${options.height}px` : String(options.height);
+    }
     root.classList.add('lk-datagrid--scrollable');
   }
 
   if (options.toolbar) root.appendChild(toolbarEl);
-  root.append(contentEl, loadingEl);
+  root.appendChild(contentEl);
   if (pageCfg) root.appendChild(pagerEl);
   if (reorderCfg || rowCfg) root.append(liveEl, hintEl);
+
+  // Loading overlay — lkInnerLoading mounted over the whole grid (toolbar + content + pager),
+  // driven automatically by ds.loading and/or forced manually via grid.loading(true|false).
+  function loadingOptsOf(cfg) {
+    if (cfg === false) return null;
+    if (cfg == null || cfg === true) return {};
+    if (typeof cfg === 'function') return { content: () => cfg(api) };
+    return isObject(cfg) ? { ...cfg } : {};
+  }
+  const loadingOpts = loadingOptsOf(options.loading);
+  const innerLoading = loadingOpts && lkInnerLoading(root, {
+    spinnerSize: 'sm',
+    backdrop: true,
+    open: false,
+    ...loadingOpts,
+  });
+  let manualLoading = null; // null = follow ds.loading; true/false = forced via grid.loading()
+  const effectiveLoading = () => (manualLoading != null ? manualLoading : ds.loading);
+  function syncLoading() {
+    const show = effectiveLoading();
+    root.classList.toggle('lk-datagrid--loading', show);
+    if (innerLoading) { if (show) innerLoading.show(); else innerLoading.hide(); }
+  }
 
   // --- State ---------------------------------------------------------------------------
 
@@ -1590,6 +1627,26 @@ function createGrid(root, opts) {
 
   // --- Body ------------------------------------------------------------------------------------
 
+  // A `noRecords` template object `{ icon, title, description, action }` renders a centered
+  // placeholder instead of raw text/HTML; `title`/`description` may be text or a Node.
+  function renderEmptyTemplate(td, spec) {
+    td.classList.add('lk-datagrid__empty--template');
+    const wrap = el('div', 'lk-datagrid__empty-state');
+    if (spec.icon) wrap.appendChild(lkIcon(spec.icon, { size: 'xl', color: 'muted' }));
+    if (spec.title != null) {
+      const title = el('div', 'lk-datagrid__empty-title');
+      fill(title, spec.title, false);
+      wrap.appendChild(title);
+    }
+    if (spec.description != null) {
+      const desc = el('div', 'lk-datagrid__empty-description');
+      fill(desc, spec.description, false);
+      wrap.appendChild(desc);
+    }
+    if (spec.action instanceof Node) wrap.appendChild(spec.action);
+    td.appendChild(wrap);
+  }
+
   function renderEmpty(cols) {
     const tr = el('tr', 'lk-datagrid__empty-row');
     const td = el('td', 'lk-datagrid__empty');
@@ -1601,7 +1658,11 @@ function createGrid(root, opts) {
       td.textContent = ' ';
     } else {
       const noRecords = noRecordsOf();
-      fill(td, typeof noRecords === 'function' ? noRecords(api) : noRecords, typeof noRecords === 'function');
+      if (isObject(noRecords) && !(noRecords instanceof Node)) {
+        renderEmptyTemplate(td, noRecords);
+      } else {
+        fill(td, typeof noRecords === 'function' ? noRecords(api) : noRecords, typeof noRecords === 'function');
+      }
     }
     tr.appendChild(td);
     tbody.appendChild(tr);
@@ -2917,8 +2978,7 @@ function createGrid(root, opts) {
       renderFilterRow();
     }
 
-    root.classList.toggle('lk-datagrid--loading', ds.loading);
-    loadingEl.hidden = !ds.loading;
+    syncLoading();
     if (reason === 'sort' || reason === 'filter') updateHeaderState();
 
     // A "loading" refresh carries the same rows — keep them (and any animation) on screen
@@ -2934,7 +2994,6 @@ function createGrid(root, opts) {
 
   // --- Public API ------------------------------------------------------------------------------------------------
 
-  const api = {};
   applyBase(api, root);
 
   Object.defineProperties(api, {
@@ -2961,7 +3020,6 @@ function createGrid(root, opts) {
       const last = btn.lastChild;
       if (last && last.nodeType === Node.TEXT_NODE) last.textContent = tx.t(btn.dataset.i18n);
     });
-    loadingEl.title = tx.tf('common.loading');
     hintEl.textContent = tx.t('reorder.hint');
     if (pagerNav) pagerNav.setAttribute('aria-label', tx.t('pager.label'));
     if (pageSizeLabel) pageSizeLabel.textContent = tx.t('pager.pageSize');
@@ -2974,6 +3032,15 @@ function createGrid(root, opts) {
 
   api.refresh = () => { renderBody(false); renderPager(); return api; };
   api.reload = () => (ds.canRead ? ds.load() : Promise.resolve(ds.view.slice()));
+
+  // grid.loading() reads the current (effective) state; grid.loading(true|false) forces it,
+  // overriding the automatic ds.loading-driven overlay until called again.
+  api.loading = function loading(value) {
+    if (value === undefined) return effectiveLoading();
+    manualLoading = !!value;
+    syncLoading();
+    return api;
+  };
 
   api.select = (keysOrRows) => {
     const list = Array.isArray(keysOrRows) ? keysOrRows : [keysOrRows];
@@ -3087,9 +3154,10 @@ function createGrid(root, opts) {
     destroyHeaderCache();
     pager?.destroy();
     pageSizeDd?.destroy();
+    innerLoading?.destroy();
     root.textContent = '';
     originalChildren.forEach((n) => root.appendChild(n));
-    root.classList.remove('lk-datagrid--dense', 'lk-datagrid--scrollable', 'lk-datagrid--loading',
+    root.classList.remove('lk-datagrid--dense', 'lk-datagrid--scrollable', 'lk-datagrid--fill', 'lk-datagrid--loading',
       'lk-datagrid--resizing', 'lk-datagrid--dragging', 'lk-datagrid--measuring', ...featureClasses);
     if (addedRootClass) root.classList.remove('lk-datagrid');
   };

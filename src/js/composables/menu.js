@@ -48,6 +48,8 @@ const SELECTABLE = new Set(['item', 'checkbox', 'radio']);
  * @param {number}   [opts.closeDelay=250]  — trigger 'hover': ms before leaving closes the menu
  * @param {string}   [opts.ariaLabel]       — accessible name (default: the `label` text)
  * @param {string}   [opts.className]       — extra class on the panel
+ * @param {string|number} [opts.maxHeight]  — max height of each menu level (px or CSS length) before
+ *   it scrolls internally; default `min(24rem, 80vh)` (CSS), applied to every nesting depth
  * @param {boolean}  [opts.dense]
  * @param {Object}   [opts.text]            — text overrides ('label')
  * @param {Function} [opts.beforeOpen]      — ({ source, component, anchor, x, y }) false cancels
@@ -147,6 +149,9 @@ export function lkMenu(targetOrOpts, maybeOpts) {
     menuEl.setAttribute('role', 'menu');
     menuEl.tabIndex = -1;
     menuEl.id = `${baseId}-l${depth}`;
+    if (o.maxHeight != null) {
+      menuEl.style.maxHeight = typeof o.maxHeight === 'number' ? `${o.maxHeight}px` : String(o.maxHeight);
+    }
     proxy.panelEl.replaceChildren(menuEl);   // live DOM — never setContent (it would clone and drop listeners)
     const lv = { depth, proxy, menuEl, items: [], owner: null, open: false, gapMode, handlers: null };
     lv.handlers = {

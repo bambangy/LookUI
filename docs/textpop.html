@@ -168,11 +168,22 @@ LookDocs.render('#api', {
     { name: 'chipColor', type: 'string', default: "'primary'", description: 'Chip color.' },
     { name: 'value', type: 'any', default: '—', description: 'Key or row object; an array of either when `multiple`.' },
     { name: 'label / name / placeholder', type: 'string', default: "— / input name / 'Select…'", description: 'Field label, posted name, empty text.' },
-    { name: 'title', type: 'string', default: '—', description: 'Heading inside the popup.' },
+    {
+      name: 'mode', type: "'modal' | 'proxy'", default: "'modal'",
+      description: "The lookup overlay: `'modal'` (the default) is a centered `lkDialog` — `title` shows in the dialog's own header. `'proxy'` is the previous anchored `lkPopupProxy`, positioned against the field. `beforeClose` / `onClose` share the same reason vocabulary either way: `'escape'`, `'outside'` (proxy) / `'overlay'` (modal), `'close-button'` (modal's ×), `'toggle'`, `'manual'` (`comp.close()`).",
+      examples: [{ title: "mode: 'proxy'", run: true, code: `
+        const el = document.createElement('input');
+        container.appendChild(el);
+        Look.lkTextPop(el, {
+          mode: 'proxy',
+          dataSource: EMPLOYEES, columns: [{ field: 'name' }, { field: 'dept' }],
+        });` }],
+    },
+    { name: 'title', type: 'string', default: '—', description: "Heading. Shown in the dialog's header (`mode: 'modal'`) or the popup's own `__head` (`mode: 'proxy'`)." },
     { name: 'searchPlaceholder', type: 'string', default: "'Search…'", description: 'Placeholder of the search box.' },
     { name: 'clearable', type: 'boolean', default: 'true', description: 'Show the × button when there is a value.' },
     { name: 'pageable / pageSize / height', type: 'boolean|Object / number / string', default: 'true / 8 / —', description: 'Grid paging and body height.' },
-    { name: 'popupWidth', type: 'number', default: '560', description: 'Popup width in px (capped to the viewport).' },
+    { name: 'popupWidth', type: 'number', default: '560', description: "Overlay width in px (capped to the viewport) — the modal's max-width or the proxy panel's width." },
     { name: 'table', type: 'Object', default: '—', description: 'Extra lkTable options (e.g. `{ striped: true, sortable: false }`).' },
     { name: 'required / readonly / disabled / dense', type: 'boolean', default: 'false', description: 'Initial states.' },
     { name: 'onChange', type: 'Function', default: '—', description: 'Single: `(value, { source, component, item })`; multiple: `(values[], { source, component, items })`. `source` is `\'select\' | \'remove\' | \'clear\'`; `item(s)` are the picked row records. Changed in 0.3.0 (the second argument was the row).' },
@@ -184,17 +195,19 @@ LookDocs.render('#api', {
     { name: 'text', type: 'string', readonly: true, description: 'Display text, comma separated.' },
     { name: 'grid / dataSource', type: 'Object', readonly: true, description: 'The inner lkTable (created on first open) and its data source.' },
     { name: 'isOpen / multiple', type: 'boolean', readonly: true, description: 'State flags.' },
+    { name: 'mode', type: "'modal' | 'proxy'", readonly: true, description: 'The overlay kind in use.' },
     { name: 'label / name / required / readonly / disabled / enabled / hidden', type: '—', description: 'Standard field properties.' },
   ],
   methods: [
-    { name: 'open / close', signature: 'open() / close()', description: 'Show or hide the popup.' },
+    { name: 'open / close', signature: 'open() / close()', description: 'Show or hide the overlay.' },
     { name: 'clear', signature: 'clear()', description: 'Remove every value (fires `onChange`).' },
     { name: 'setError / clearError', signature: 'setError(message) / clearError()', description: 'Field validation message.' },
-    { name: 'destroy', signature: 'destroy()', description: 'Destroys the popup, grid and chips and restores the input.' },
+    { name: 'destroy', signature: 'destroy()', description: 'Destroys the overlay, grid and chips and restores the input.' },
   ],
   classes: [
     { name: '.lk-textpop', description: 'The field (`--multiple`, `--open`, `--readonly`, `--dense`).' },
-    { name: '.lk-textpop__panel', description: 'Popup panel: `__head`, `__search`, `__grid`, `__foot`.' },
+    { name: '.lk-textpop-modal.lk-modal', description: "`mode: 'modal'` overlay — a `lkDialog` with its footer hidden." },
+    { name: '.lk-textpop__panel', description: "`mode: 'proxy'` overlay panel: `__head`, `__search`, `__grid`, `__foot` (shared with the modal's body, minus `__head`)." },
   ],
 });
 </script>

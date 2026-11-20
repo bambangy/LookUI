@@ -1153,13 +1153,19 @@ LookDocs.render('#api', {
       ],
     },
     {
-      name: 'height', type: 'number | string', default: '— (grows with content)',
-      description: 'Fixed height of the scrolling body; the header stays sticky. Numbers are pixels, strings any CSS length.',
+      name: 'height', type: "number | string | 'fill'", default: '— (grows with content)',
+      description: "Fixed height of the scrolling body; the header stays sticky. Numbers are pixels, strings any CSS length. `'fill'` stretches the grid to 100% of its parent's height instead of a fixed value — the parent must actually constrain that height (a flex/grid item, or an element with an explicit height).",
       examples: [{ title: 'height: 160', run: true, code: `
         const el = container.appendChild(document.createElement('div'));
         Look.lkTable(el, {
           dataSource: Array.from({ length: 20 }, (_, i) => ({ id: i + 1, label: 'Item ' + (i + 1) })),
           height: 160,
+        });` }, { title: "height: 'fill'", run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        el.style.height = '220px';
+        Look.lkTable(el, {
+          dataSource: Array.from({ length: 20 }, (_, i) => ({ id: i + 1, label: 'Item ' + (i + 1) })),
+          height: 'fill',
         });` }],
     },
     {
@@ -1252,8 +1258,8 @@ LookDocs.render('#api', {
         });` }],
     },
     {
-      name: 'noRecords', type: 'string | Function', default: "'No records found' (localized: `table.noRecords`)",
-      description: 'Shown when the view is empty (wins over the localized `table.noRecords`). A string is plain text; a function `noRecords(grid) → string(HTML) | Node`. When the data source has an `error`, its message is shown instead (styled as an error).',
+      name: 'noRecords', type: 'string | Function | { icon, title, description, action }', default: "'No records found' (localized: `table.noRecords`)",
+      description: 'Shown when the view is empty (wins over the localized `table.noRecords`). A string is plain text; a function `noRecords(grid) → string(HTML) | Node`, same as a column `template`; or a template object `{ icon, title, description, action }` (icon name, `title`/`description` text or a Node, `action` a Node such as a button) rendered as a centered placeholder. When the data source has an `error`, its message is shown instead (styled as an error).',
       examples: [
         { title: 'Text', run: true, code: `
           const el = container.appendChild(document.createElement('div'));
@@ -1268,6 +1274,28 @@ LookDocs.render('#api', {
           });
           el.querySelector('input[type=search]').value = 'zzz';
           el.querySelector('input[type=search]').dispatchEvent(new Event('input'));` },
+        { title: 'Template object', run: true, code: `
+          const el = container.appendChild(document.createElement('div'));
+          Look.lkTable(el, {
+            dataSource: [],
+            columns: ['name'],
+            noRecords: { icon: 'folder', title: 'No records yet', description: 'Add one to get started.' },
+          });` },
+      ],
+    },
+    {
+      name: 'loading', type: 'boolean | Function | Object', default: 'true',
+      description: 'The overlay shown while `dataSource` is loading (and whenever `grid.loading(true)` forces it on). `false` disables it; `true` is a plain spinner; a function `loading(grid) → Node | string` supplies custom content; an object is forwarded to `Look.lkInnerLoading` (`text`, `content`, `spinner`, `spinnerSize`, `backdrop`). `grid.loading()` reads the current effective state (boolean); `grid.loading(true | false)` forces it, overriding the automatic `dataSource`-driven overlay until called again.',
+      examples: [
+        { title: 'Custom text', run: true, code: `
+          const el = container.appendChild(document.createElement('div'));
+          const grid = Look.lkTable(el, {
+            dataSource: PEOPLE,
+            columns: ['name', 'dept'],
+            loading: { text: 'Fetching…' },
+          });
+          grid.loading(true);
+          setTimeout(() => grid.loading(false), 1500);` },
       ],
     },
     {
@@ -1343,6 +1371,22 @@ LookDocs.render('#api', {
       name: 'reload', signature: 'reload() → Promise<Array>',
       description: 'For a remote source, calls `dataSource.load()` (with the current server query). For local data, resolves with the current view without doing anything.',
       returns: { type: 'Promise<Array>', description: 'The rows of the current view.' },
+    },
+    {
+      name: 'loading', signature: 'loading() → boolean | loading(show) → grid',
+      description: "Called with no arguments, reads the current *effective* loading state (the `loading` option's overlay is open). Called with a boolean, forces the overlay on or off, overriding the automatic `dataSource.loading`-driven behavior until `loading()` is called again. Silent — does not fire an event.",
+      params: [{ name: 'show', type: 'boolean', description: 'Omit to read the current state. Pass to force the overlay on (`true`) or off (`false`).' }],
+      returns: { type: 'boolean | grid', description: 'The current state when called with no arguments; `grid` (chainable) when called with one.' },
+      examples: [{ title: 'Manual control', run: true, code: `
+        const el = container.appendChild(document.createElement('div'));
+        const grid = Look.lkTable(el, {
+          dataSource: PEOPLE, columns: ['name', 'dept'],
+          toolbar: [
+            { text: 'loading(true)', click: (g) => g.loading(true) },
+            { text: 'loading(false)', click: (g) => g.loading(false) },
+            { text: 'log state', click: (g) => log(g.loading()) },
+          ],
+        });` }],
     },
     {
       name: 'select', signature: 'select(keysOrRows) → grid',
@@ -1705,8 +1749,9 @@ LookDocs.render('#api', {
     { name: 'rowReorder.cancelled', default: 'Move cancelled', description: 'Announcement when a keyboard row move is cancelled.' },
   ],
   classes: [
-    { name: '.lk-datagrid', description: 'Grid root (bordered, rounded). Parts: `__toolbar`, `__search`, `__content` (scroll container), `__table`, `__loading` (overlay while loading), `__pager`, `__pager-meta`, `__page-size`, `__info`.' },
-    { name: '.lk-datagrid--dense / --scrollable / --loading', description: 'Compact; fixed `height` with sticky header; data source is loading (set by the grid).' },
+    { name: '.lk-datagrid', description: 'Grid root (bordered, rounded). Parts: `__toolbar`, `__search`, `__content` (scroll container), `__table`, `__pager`, `__pager-meta`, `__page-size`, `__info`. The loading overlay is a `Look.lkInnerLoading` instance (`.lk-inner-loading`) mounted on the root, not a `__loading` part.' },
+    { name: '.lk-datagrid--dense / --scrollable / --fill / --loading', description: "Compact; fixed `height` with sticky header; `height: 'fill'`; the effective loading state (ds.loading or grid.loading()) is on." },
+    { name: '.lk-datagrid__empty / __empty--error / __empty--template, __empty-state / __empty-title / __empty-description', description: 'Empty body cell; the data source errored; a `noRecords` template object — its icon/title/description wrapper and parts.' },
     { name: '.lk-datagrid__th / __th-inner / __th-label / __sort-ind / __sort-index / __menu-btn', description: 'Header parts. `__menu-btn--active` (sorted or filtered), `--filtered`, `--open`; `__th--filtered`.' },
     { name: '.lk-datagrid__row / __cell / __select-cell / __command-cell / __cmd', description: 'Body parts. `__row--selected`, `__row--editing`, `__row--new`; `__cell--left|center|right`, `__cell--invalid`, `__cell-error`.' },
     { name: '.lk-datagrid__filter-row / __filter-cell / __filter-input', description: 'Filter row (`filterable: { mode: \'row\' }`).' },
