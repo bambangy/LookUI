@@ -7,6 +7,32 @@ Documentation: https://bambangy.github.io/LookUI/docs/
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-11-28
+
+### Added
+
+- Ready-made themes: free, drop-in alternate looks shipped with the package, distinct from a
+  user's own `lookui-theme.css` override file. Load one extra `<link>` right after `look.css` —
+  no class, attribute or JS switch required. Five themes ship initially, each inspired by a
+  current web design trend: **Candy** (pastel colors, pill buttons, a thick offset "sticker"
+  border), **Frosted** (glassmorphism — translucent blurred buttons/cards), **Stark** (ultra-thin
+  global type weights, tight radius, calm no-lift hover), **Skeuo** (soft-UI/neumorphism-lite —
+  paired light/dark shadows, borderless, a real pressed `:active` state), and **Snug** (muted warm
+  palette, chunky rounding, plain shadow elevation).
+- New source location `src/scss/themes/_<name>.scss` — plain `:root` token overrides + unscoped
+  component overrides, compiled by the new `scripts/build-themes.js` (wired into `npm run
+  build:css`) into `dist/lookui-theme-<name>.css` + `.min.css`. Adding a future theme needs only a
+  new file dropped into `src/scss/themes/` — no other build wiring.
+- `package.json` `exports`: `./theme/*` resolves to `./dist/lookui-theme-*`, so a theme is also
+  reachable as `@lookui/core/theme/candy.css` from a bundler, alongside
+  `@lookui/core/dist/lookui-theme-candy.css`.
+- `docs/themes.html`: a gallery of all ready-made themes (live iframe preview, full-page demo link,
+  CSS download link per theme) plus the "how to include" guide. `docs/themes/<name>.html`: a
+  standalone live demo per theme (buttons, badges/chips, icons, a media card, a sign-up form with
+  `lkTextbox`/`lkDropdown`/`lkValidation`, an `lkCarousel`, and an `lkTable` team roster) so each
+  theme's look can be seen across real components, not just swatches. `docs/index.html` now has a
+  direct "Ready-made themes" picker section linking straight to each theme's demo and CSS download.
+
 ## [0.4.2] — 2026-11-21
 
 ### Added
