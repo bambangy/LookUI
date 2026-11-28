@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Stark theme demo</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <link rel="stylesheet" href="../../dist/lookui-theme-stark.css" />
+  <style>
+    body { margin: 0; padding: var(--lk-space-7) var(--lk-space-6); background: var(--lk-bg); font-family: var(--lk-font-family); }
+    .demo-stack { display: grid; gap: var(--lk-space-6); max-width: 50rem; margin: 0 auto; }
+    .demo-row { display: flex; flex-wrap: wrap; gap: var(--lk-space-3); align-items: center; }
+    .demo-grid-2 { display: grid; gap: var(--lk-space-5); grid-template-columns: 1fr 1fr; }
+    @media (max-width: 760px) { .demo-grid-2 { grid-template-columns: 1fr; } }
+    .section-title { margin: 0 0 var(--lk-space-3); font-size: var(--lk-text-sm); color: var(--lk-text-muted); text-transform: uppercase; letter-spacing: var(--lk-tracking-wide); }
+    .lk-carousel__caption { margin: var(--lk-space-2) var(--lk-space-3); font-weight: var(--lk-weight-semibold); }
+    h2 { font-weight: var(--lk-weight-light); color: var(--lk-text); margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="demo-stack">
+    <h2>Resonant Stark</h2>
+    <div class="demo-row">
+      <button class="lk-btn lk-btn--primary">Continue</button>
+      <button class="lk-btn lk-btn--secondary">Secondary</button>
+      <button class="lk-btn lk-btn--ghost">Ghost</button>
+    </div>
+    <div class="demo-row">
+      <span class="lk-badge lk-badge--positive">New</span>
+      <span class="lk-chip lk-chip--primary">Chip</span>
+    </div>
+
+    <div class="lk-card">
+      <p class="section-title" style="margin: var(--lk-space-4) var(--lk-space-5) 0;">Icons</p>
+      <div class="lk-card__body demo-row">
+        <span class="lk-icon lk-icon--user lk-icon--xl lk-icon--primary"></span>
+        <span class="lk-icon lk-icon--mail lk-icon--xl lk-icon--accent"></span>
+        <span class="lk-icon lk-icon--bell lk-icon--xl lk-icon--warning"></span>
+        <span class="lk-icon lk-icon--heart-fill lk-icon--xl lk-icon--negative"></span>
+        <span class="lk-icon lk-icon--star-fill lk-icon--xl lk-icon--primary"></span>
+        <span class="lk-icon lk-icon--shopping-cart lk-icon--xl lk-icon--positive"></span>
+        <span class="lk-icon lk-icon--calendar lk-icon--xl lk-icon--info"></span>
+        <span class="lk-icon lk-icon--settings lk-icon--xl lk-icon--muted"></span>
+      </div>
+    </div>
+
+    <div class="lk-card">
+      <div class="lk-card__media">
+        <img src="https://images.pexels.com/photos/2156881/pexels-photo-2156881.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="" style="height: 14rem; object-fit: cover;" />
+      </div>
+      <div class="lk-card__body">
+        Ultra-thin type, neutral fades and generous negative space — hover the buttons
+        above for the quieter micro-interaction. Just <code>look.css</code> +
+        <code>lookui-theme-stark.css</code>, nothing else.
+      </div>
+    </div>
+
+    <div class="demo-grid-2">
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <strong>Quiet surface</strong>
+          <p style="margin: var(--lk-space-2) 0 0;">Flat, borderless-on-hover, calm transitions.</p>
+        </div>
+      </div>
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <strong>Team online</strong>
+          <div class="lk-avatar-group" style="margin-top: var(--lk-space-3);">
+            <div class="lk-avatar"><img src="https://i.pravatar.cc/64?img=8" alt="" /></div>
+            <div class="lk-avatar"><img src="https://i.pravatar.cc/64?img=19" alt="" /></div>
+            <div class="lk-avatar"><img src="https://i.pravatar.cc/64?img=41" alt="" /></div>
+            <div class="lk-avatar">+2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lk-card">
+      <div class="lk-card__header"><strong class="lk-card__title">Sign up</strong></div>
+      <div class="lk-card__body">
+        <form id="stark-signup" novalidate style="display: grid; gap: var(--lk-space-4);">
+          <input id="stark-name" placeholder="Jane Doe" />
+          <input id="stark-email" placeholder="jane@example.com" />
+          <select id="stark-role"></select>
+          <div><button class="lk-btn lk-btn--primary" type="submit">Continue</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="lk-card">
+      <div class="lk-card__header"><strong class="lk-card__title">Featured</strong></div>
+      <div class="lk-card__body" style="padding: 0;">
+        <div id="stark-carousel"></div>
+      </div>
+    </div>
+
+    <div class="lk-card">
+      <div class="lk-card__header"><strong class="lk-card__title">Team</strong></div>
+      <div class="lk-card__body" style="padding: 0;">
+        <div id="stark-table"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../dist/look.js"></script>
+  <script>
+    Look.lkCarousel('#stark-carousel', {
+      slides: [
+        { html: '<img src="https://images.pexels.com/photos/1587927/pexels-photo-1587927.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="" style="width:100%;height:16rem;object-fit:cover;display:block;"><p class="lk-carousel__caption">Explore</p>' },
+        { html: '<img src="https://images.pexels.com/photos/3756523/pexels-photo-3756523.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="" style="width:100%;height:16rem;object-fit:cover;display:block;"><p class="lk-carousel__caption">Create</p>' },
+        { html: '<img src="https://images.pexels.com/photos/1181271/pexels-photo-1181271.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="" style="width:100%;height:16rem;object-fit:cover;display:block;"><p class="lk-carousel__caption">Ship</p>' },
+      ],
+      loop: true,
+      autoplay: true,
+      interval: 3500,
+    });
+
+    const starkName = Look.lkTextbox('#stark-name', { label: 'Name', rules: ['required'], validate: true });
+    const starkEmail = Look.lkTextbox('#stark-email', { label: 'Email', rules: ['required', 'email'], validate: true });
+    const starkRole = Look.lkDropdown('#stark-role', {
+      label: 'Role', required: true,
+      items: [
+        { value: 'designer', label: 'Designer' },
+        { value: 'engineer', label: 'Engineer' },
+        { value: 'marketing', label: 'Marketing' },
+      ],
+    });
+    const starkForm = Look.lkValidation(starkName, starkEmail, starkRole);
+    document.getElementById('stark-signup').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (starkForm.validate().hasError) return;
+      Look.lkToast({ type: 'positive', title: 'Welcome!', message: starkName.value + ' signed up.' });
+    });
+
+    const starkTeam = [
+      { avatar: 8, name: 'Hannah Weiss', role: 'Product Designer', status: 'Active', joined: '2024-02-10' },
+      { avatar: 19, name: 'Felix Brandt', role: 'Frontend Engineer', status: 'Active', joined: '2023-11-02' },
+      { avatar: 41, name: 'Ingrid Solberg', role: 'Support Lead', status: 'Away', joined: '2022-06-21' },
+      { avatar: 56, name: 'Marcus Lund', role: 'Marketing', status: 'Active', joined: '2024-05-14' },
+      { avatar: 64, name: 'Clara Voss', role: 'Customer Success', status: 'Offline', joined: '2023-01-30' },
+    ];
+    Look.lkTable('#stark-table', {
+      dataSource: { data: starkTeam },
+      columns: [
+        { field: 'name', title: 'Name', template: (row) => '<div style="display:flex;align-items:center;gap:8px"><div class="lk-avatar lk-avatar--sm"><img src="https://i.pravatar.cc/64?img=' + row.avatar + '" alt=""></div><span>' + row.name + '</span></div>' },
+        { field: 'role', title: 'Role' },
+        { field: 'status', title: 'Status', template: (row) => '<span class="lk-badge' + (row.status === 'Active' ? ' lk-badge--positive' : row.status === 'Away' ? ' lk-badge--warning' : '') + '">' + row.status + '</span>' },
+        { field: 'joined', title: 'Joined' },
+      ],
+      sortable: true,
+      toolbar: ['search'],
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// =============================================================================
+// LookUI — "Skeuo" ready-made theme
+// =============================================================================
+// Inspired by the "Light Skeuomorphism" trend (soft raised surfaces, subtle dual
+// shadows, light embossing, gently pressed button states — soft-UI/neumorphism-lite).
+// Usage — one extra <link>, right after look.css:
+//
+//   <link rel="stylesheet" href="look.css">
+//   <link rel="stylesheet" href="lookui-theme-skeuo.css">
+//
+// The illusion depends on surfaces being close in value to the page background, so
+// --lk-bg/--lk-bg-subtle/--lk-surface share one pale neutral family; elevation comes
+// entirely from the paired light/dark shadow on .lk-btn/.lk-card, not from borders.
+// =============================================================================
+
+:root {
+  // --- Brand / state colors (soft, muted — kept solid outside .lk-btn/.lk-card) ---
+  --lk-primary:          #5b8def;
+  --lk-primary-light:    #86abf2;
+  --lk-primary-dark:     #3a66c2;
+  --lk-primary-contrast: #ffffff;
+
+  --lk-secondary:          #96a0ad;
+  --lk-accent:          #f2a65a;
+  --lk-positive:        #5fb88a;
+  --lk-warning:         #f0b34d;
+  --lk-negative:        #e2706b;
+  --lk-info:            #62a9e0;
+
+  // --- Surfaces & text (all one pale neutral family — see note above) ---
+  --lk-bg:        #eef1f5;
+  --lk-bg-subtle: #e9ecf1;
+  --lk-surface:   #eef1f5;
+
+  --lk-text:       #3a4150;
+  --lk-text-muted: #7c8494;
+
+  --lk-border:        #dde1e8;
+  --lk-border-strong: #c3c9d4;
+
+  // --- Soft, moderate rounding (not pill) ---
+  --lk-radius:    0.875rem;
+  --lk-radius-lg: 1.25rem;
+
+  // Local-only tokens: the paired light/dark shadow every "raised" surface uses
+  --lk-theme-skeuo-light: rgb(255 255 255 / 0.85);
+  --lk-theme-skeuo-dark:  rgb(58 65 80 / 0.16);
+}
+
+.lk-btn {
+  border: none;
+  border-radius: var(--lk-radius);
+  background: var(--lk-bg-subtle);
+  box-shadow:
+    4px 4px 8px var(--lk-theme-skeuo-dark),
+    -4px -4px 8px var(--lk-theme-skeuo-light);
+}
+
+.lk-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+  transform: none;
+  box-shadow:
+    2px 2px 5px var(--lk-theme-skeuo-dark),
+    -2px -2px 5px var(--lk-theme-skeuo-light);
+}
+
+.lk-btn:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: none;
+  box-shadow:
+    inset 3px 3px 6px var(--lk-theme-skeuo-dark),
+    inset -3px -3px 6px var(--lk-theme-skeuo-light);
+}
+
+.lk-btn--primary {
+  background: linear-gradient(145deg, var(--lk-primary-light), var(--lk-primary));
+  color: var(--lk-primary-contrast);
+  box-shadow:
+    4px 4px 10px var(--lk-theme-skeuo-dark),
+    -2px -2px 6px var(--lk-theme-skeuo-light);
+}
+
+.lk-card {
+  border: none;
+  border-radius: var(--lk-radius-lg);
+  background: var(--lk-bg-subtle);
+  box-shadow:
+    8px 8px 18px var(--lk-theme-skeuo-dark),
+    -8px -8px 18px var(--lk-theme-skeuo-light);
+}
+
+.lk-card--primary {
+  background: linear-gradient(145deg, var(--lk-primary-light), var(--lk-primary));
+  color: var(--lk-primary-contrast);
+}

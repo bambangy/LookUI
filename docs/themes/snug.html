@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Snug theme demo</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <link rel="stylesheet" href="../../dist/lookui-theme-snug.css" />
+  <style>
+    body { margin: 0; padding: var(--lk-space-6); background: var(--lk-bg); font-family: var(--lk-font-family); }
+    .demo-stack { display: grid; gap: var(--lk-space-5); max-width: 52rem; margin: 0 auto; }
+    .demo-row { display: flex; flex-wrap: wrap; gap: var(--lk-space-3); align-items: center; }
+    .demo-grid-2 { display: grid; gap: var(--lk-space-5); grid-template-columns: 1fr 1fr; }
+    @media (max-width: 760px) { .demo-grid-2 { grid-template-columns: 1fr; } }
+    .section-title { margin: 0 0 var(--lk-space-3); font-size: var(--lk-text-sm); color: var(--lk-text-muted); text-transform: uppercase; letter-spacing: var(--lk-tracking-wide); }
+    .lk-carousel__caption { margin: var(--lk-space-2) var(--lk-space-3); font-weight: var(--lk-weight-semibold); }
+  </style>
+</head>
+<body>
+  <div class="demo-stack">
+    <div class="demo-row">
+      <button class="lk-btn lk-btn--primary">Shop Now</button>
+      <button class="lk-btn lk-btn--secondary">Browse</button>
+      <button class="lk-btn lk-btn--outline">Outline</button>
+    </div>
+    <div class="demo-row">
+      <span class="lk-badge lk-badge--positive">Cozy</span>
+      <span class="lk-chip lk-chip--primary">Chip</span>
+    </div>
+
+    <div class="lk-card">
+      <p class="section-title" style="margin: var(--lk-space-4) var(--lk-space-5) 0;">Icons</p>
+      <div class="lk-card__body demo-row">
+        <span class="lk-icon lk-icon--user lk-icon--xl lk-icon--primary"></span>
+        <span class="lk-icon lk-icon--mail lk-icon--xl lk-icon--accent"></span>
+        <span class="lk-icon lk-icon--bell lk-icon--xl lk-icon--warning"></span>
+        <span class="lk-icon lk-icon--heart-fill lk-icon--xl lk-icon--negative"></span>
+        <span class="lk-icon lk-icon--star-fill lk-icon--xl lk-icon--primary"></span>
+        <span class="lk-icon lk-icon--shopping-cart lk-icon--xl lk-icon--positive"></span>
+        <span class="lk-icon lk-icon--calendar lk-icon--xl lk-icon--info"></span>
+        <span class="lk-icon lk-icon--settings lk-icon--xl lk-icon--muted"></span>
+      </div>
+    </div>
+
+    <div class="lk-card">
+      <div class="lk-card__media">
+        <img src="https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="" style="height: 14rem; object-fit: cover;" />
+      </div>
+      <div class="lk-card__header">
+        <strong class="lk-card__title">Snug Simple</strong>
+      </div>
+      <div class="lk-card__body">
+        Warm neutral backgrounds, muted pastel color blocks, chunky rounded shapes —
+        the quiet counterpart to Candy. Just <code>look.css</code> +
+        <code>lookui-theme-snug.css</code>, nothing else.
+      </div>
+    </div>
+
+    <div class="demo-grid-2">
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <strong>Cozy corner</strong>
+          <p style="margin: var(--lk-space-2) 0 0;">Warm tones, soft shadow instead of a sticker border.</p>
+        </div>
+      </div>
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <strong>Team online</strong>
+          <div class="lk-avatar-group" style="margin-top: var(--lk-space-3);">
+            <div class="lk-avatar"><img src="https://i.pravatar.cc/64?img=6" alt="" /></div>
+            <div class="lk-avatar"><img src="https://i.pravatar.cc/64?img=21" alt="" /></div>
+            <div class="lk-avatar"><img src="https://i.pravatar.cc/64?img=34" alt="" /></div>
+            <div class="lk-avatar">+2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lk-card">
+      <div class="lk-card__header"><strong class="lk-card__title">Sign up</strong></div>
+      <div class="lk-card__body">
+        <form id="snug-signup" novalidate style="display: grid; gap: var(--lk-space-4);">
+          <input id="snug-name" placeholder="Jane Doe" />
+          <input id="snug-email" placeholder="jane@example.com" />
+          <select id="snug-role"></select>
+          <div><button class="lk-btn lk-btn--primary" type="submit">Shop Now</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="lk-card">
+      <div class="lk-card__header"><strong class="lk-card__title">Featured</strong></div>
+      <div class="lk-card__body" style="padding: 0;">
+        <div id="snug-carousel"></div>
+      </div>
+    </div>
+
+    <div class="lk-card">
+      <div class="lk-card__header"><strong class="lk-card__title">Team</strong></div>
+      <div class="lk-card__body" style="padding: 0;">
+        <div id="snug-table"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../dist/look.js"></script>
+  <script>
+    Look.lkCarousel('#snug-carousel', {
+      slides: [
+        { html: '<img src="https://images.pexels.com/photos/1181605/pexels-photo-1181605.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="" style="width:100%;height:16rem;object-fit:cover;display:block;"><p class="lk-carousel__caption">Explore</p>' },
+        { html: '<img src="https://images.pexels.com/photos/1181675/pexels-photo-1181675.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="" style="width:100%;height:16rem;object-fit:cover;display:block;"><p class="lk-carousel__caption">Create</p>' },
+        { html: '<img src="https://images.pexels.com/photos/1181730/pexels-photo-1181730.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="" style="width:100%;height:16rem;object-fit:cover;display:block;"><p class="lk-carousel__caption">Ship</p>' },
+      ],
+      loop: true,
+      autoplay: true,
+      interval: 3500,
+    });
+
+    const snugName = Look.lkTextbox('#snug-name', { label: 'Name', rules: ['required'], validate: true });
+    const snugEmail = Look.lkTextbox('#snug-email', { label: 'Email', rules: ['required', 'email'], validate: true });
+    const snugRole = Look.lkDropdown('#snug-role', {
+      label: 'Role', required: true,
+      items: [
+        { value: 'designer', label: 'Designer' },
+        { value: 'engineer', label: 'Engineer' },
+        { value: 'marketing', label: 'Marketing' },
+      ],
+    });
+    const snugForm = Look.lkValidation(snugName, snugEmail, snugRole);
+    document.getElementById('snug-signup').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (snugForm.validate().hasError) return;
+      Look.lkToast({ type: 'positive', title: 'Welcome!', message: snugName.value + ' signed up.' });
+    });
+
+    const snugTeam = [
+      { avatar: 6, name: 'Maya Thompson', role: 'Product Designer', status: 'Active', joined: '2024-02-10' },
+      { avatar: 21, name: 'Theo Bennett', role: 'Frontend Engineer', status: 'Active', joined: '2023-11-02' },
+      { avatar: 34, name: 'Chloe Martin', role: 'Support Lead', status: 'Away', joined: '2022-06-21' },
+      { avatar: 49, name: 'Noah Reyes', role: 'Marketing', status: 'Active', joined: '2024-05-14' },
+      { avatar: 66, name: 'Isla Fraser', role: 'Customer Success', status: 'Offline', joined: '2023-01-30' },
+    ];
+    Look.lkTable('#snug-table', {
+      dataSource: { data: snugTeam },
+      columns: [
+        { field: 'name', title: 'Name', template: (row) => '<div style="display:flex;align-items:center;gap:8px"><div class="lk-avatar lk-avatar--sm"><img src="https://i.pravatar.cc/64?img=' + row.avatar + '" alt=""></div><span>' + row.name + '</span></div>' },
+        { field: 'role', title: 'Role' },
+        { field: 'status', title: 'Status', template: (row) => '<span class="lk-badge' + (row.status === 'Active' ? ' lk-badge--positive' : row.status === 'Away' ? ' lk-badge--warning' : '') + '">' + row.status + '</span>' },
+        { field: 'joined', title: 'Joined' },
+      ],
+      sortable: true,
+      toolbar: ['search'],
+    });
+  </script>
+</body>
+</html>

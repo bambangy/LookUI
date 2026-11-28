@@ -1,0 +1,91 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// =============================================================================
+// LookUI — "Frosted" ready-made theme
+// =============================================================================
+// Inspired by the "Frosted Touch" trend (glassmorphism: translucent panels, soft
+// diffused shadows, soft lighting). Usage — one extra <link>, right after look.css:
+//
+//   <link rel="stylesheet" href="look.css">
+//   <link rel="stylesheet" href="lookui-theme-frosted.css">
+//
+// Scope stays the same as every ready-made theme: global color/radius tokens
+// (cascade into every component for free) + explicit overrides for .lk-btn/.lk-card
+// (the glass surfaces), so the rest of the library keeps working normally — inputs,
+// dropdowns, etc. still use solid, accessible borders/surfaces.
+// =============================================================================
+
+:root {
+  // --- Brand / state colors (soft blues, kept solid outside .lk-btn/.lk-card) ---
+  --lk-primary:          #6c8ef5;
+  --lk-primary-light:    #93aef8;
+  --lk-primary-dark:     #3f63d1;
+  --lk-primary-contrast: #ffffff;
+
+  --lk-secondary:          #8aa9c4;
+  --lk-secondary-light:    #aec3d8;
+  --lk-secondary-dark:     #5d7f9c;
+  --lk-secondary-contrast: #ffffff;
+
+  --lk-accent:          #5fc9d6;
+  --lk-accent-light:    #8ddce6;
+  --lk-accent-dark:     #2e9aa8;
+  --lk-accent-contrast: #0c2a2e;
+
+  --lk-positive:          #5db98a;
+  --lk-warning:          #e8ac4e;
+  --lk-negative:          #e2707f;
+  --lk-info:          #6fb4e8;
+
+  // --- Surfaces & text ---
+  --lk-bg:        #eef2fb;
+  --lk-bg-subtle: #e4ebf9;
+  --lk-surface:   #e0e9fa;
+
+  --lk-text:       #1f2a44;
+  --lk-text-muted: #5b6b8c;
+
+  --lk-border:        #c3d2ea;
+  --lk-border-strong: #a6bbdd;
+
+  --lk-radius:    1rem;
+  --lk-radius-lg: 1.25rem;
+
+  // Local-only tokens driving the glass surfaces below
+  --lk-theme-frosted-bg:     rgb(255 255 255 / 0.55);
+  --lk-theme-frosted-border: rgb(255 255 255 / 0.65);
+  --lk-theme-frosted-blur:   14px;
+}
+
+// --- Buttons & cards: translucent "glass" surfaces ---
+.lk-card {
+  background: var(--lk-theme-frosted-bg);
+  backdrop-filter: blur(var(--lk-theme-frosted-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--lk-theme-frosted-blur)) saturate(160%);
+  border: var(--lk-border-width) solid var(--lk-theme-frosted-border);
+  border-radius: var(--lk-radius-lg);
+  box-shadow: 0 8px 32px rgb(31 42 68 / 0.12);
+}
+
+.lk-btn {
+  border-radius: var(--lk-radius-full);
+  background-color: var(--lk-theme-frosted-bg);
+  backdrop-filter: blur(calc(var(--lk-theme-frosted-blur) / 2));
+  -webkit-backdrop-filter: blur(calc(var(--lk-theme-frosted-blur) / 2));
+  border: var(--lk-border-width) solid var(--lk-theme-frosted-border);
+  box-shadow: 0 4px 16px rgb(31 42 68 / 0.1);
+}
+
+.lk-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+  box-shadow: 0 6px 20px rgb(31 42 68 / 0.14);
+}
+
+.lk-btn--primary {
+  background-color: color-mix(in srgb, var(--lk-primary) 72%, transparent);
+  border-color: color-mix(in srgb, var(--lk-primary) 55%, white);
+  color: var(--lk-primary-contrast);
+}
+
+.lk-btn--primary:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--lk-primary-dark) 78%, transparent);
+}

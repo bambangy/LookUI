@@ -1,0 +1,96 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// =============================================================================
+// LookUI — "Stark" ready-made theme
+// =============================================================================
+// Inspired by the "Resonant Stark" trend (ultra-thin type, neutral fades, generous
+// negative space, subtle micro-interactions). Usage — one extra <link>, right after
+// look.css:
+//
+//   <link rel="stylesheet" href="look.css">
+//   <link rel="stylesheet" href="lookui-theme-stark.css">
+//
+// Unlike Candy/Frosted, this theme leans mostly on global typography/motion tokens
+// (every component gets lighter weights and calmer transitions for free) plus a
+// small .lk-btn/.lk-card override that trades the default hover "lift" for a quieter,
+// slower micro-interaction.
+// =============================================================================
+
+:root {
+  // --- Brand / state colors (soft charcoal-blue, muted) ---
+  --lk-primary:          #3c4656;
+  --lk-primary-light:    #5b6578;
+  --lk-primary-dark:     #242b36;
+  --lk-primary-contrast: #ffffff;
+
+  --lk-secondary:          #8d97a6;
+  --lk-secondary-light:    #aab2bd;
+  --lk-secondary-dark:     #646d79;
+  --lk-secondary-contrast: #ffffff;
+
+  --lk-accent:          #9aa3b0;
+  --lk-positive:        #5fae82;
+  --lk-warning:         #d9a441;
+  --lk-negative:        #c96a63;
+  --lk-info:            #6f93b3;
+
+  // --- Surfaces & text ---
+  --lk-bg:        #fbfbfc;
+  --lk-bg-subtle: #f3f4f6;
+  --lk-surface:   #eef0f3;
+
+  --lk-text:       #30343d;
+  --lk-text-muted: #8b919c;
+
+  --lk-border:        #e2e4e8;
+  --lk-border-strong: #c7cbd2;
+
+  // --- Tight, minimal radius (opposite of Candy/Snug's chunky rounding) ---
+  --lk-radius:    0.375rem;
+  --lk-radius-md: 0.5rem;
+  --lk-radius-lg: 0.5rem;
+
+  // --- Ultra-thin type scale ---
+  --lk-weight-light:     200;
+  --lk-weight-regular:   300;
+  --lk-weight-medium:    400;
+  --lk-weight-semibold:  500;
+  --lk-weight-bold:      600;
+
+  // --- Calmer motion: slower, no overshoot ---
+  --lk-duration-fast: 220ms;
+  --lk-duration-base: 340ms;
+}
+
+.lk-btn {
+  border-radius: var(--lk-radius);
+  font-weight: var(--lk-weight-medium);
+  border-color: var(--lk-border-strong);
+  box-shadow: none;
+  transition:
+    background-color var(--lk-duration-base) var(--lk-easing-out),
+    border-color     var(--lk-duration-base) var(--lk-easing-out),
+    box-shadow        var(--lk-duration-base) var(--lk-easing-out);
+}
+
+.lk-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+  transform: none;
+  box-shadow: inset 0 -2px 0 var(--lk-border-strong);
+  background-color: var(--lk-bg-subtle);
+}
+
+.lk-btn:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: none;
+  box-shadow: inset 0 -1px 0 var(--lk-border-strong);
+}
+
+.lk-btn--primary:hover:not(:disabled) {
+  background-color: var(--lk-primary-dark);
+  box-shadow: none;
+}
+
+.lk-card {
+  border-color: var(--lk-border);
+  border-radius: var(--lk-radius-lg);
+  box-shadow: none;
+}

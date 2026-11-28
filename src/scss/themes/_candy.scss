@@ -1,0 +1,119 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// =============================================================================
+// LookUI — "Candy" ready-made theme
+// =============================================================================
+// A free, ready-to-use LookUI theme: pastel brand colors, pill-shaped buttons and a
+// thick offset "sticker" border on buttons and cards, inspired by playful marketing-site UI.
+//
+// Usage — just one extra <link>, right after look.css. No class, no attribute, no JS:
+//
+//   <link rel="stylesheet" href="look.css">
+//   <link rel="stylesheet" href="lookui-theme-candy.css">
+//
+// It overrides the same --lk-* custom properties your own theme file would (see
+// docs/customize.html), so it composes the same way: load your own theme file after this
+// one to tweak individual keys further.
+//
+// Guide: https://bambangy.github.io/LookUI/docs/themes.html
+// =============================================================================
+
+:root {
+  // --- Brand / state colors (pastel; contrast tokens stay readable on each fill) ---
+  --lk-primary:          #ffd93d;
+  --lk-primary-light:    #ffe780;
+  --lk-primary-dark:     #f4c20d;
+  --lk-primary-contrast: #152238;
+
+  --lk-secondary:          #8ecae6;
+  --lk-secondary-light:    #bfe3f2;
+  --lk-secondary-dark:     #5fa8c9;
+  --lk-secondary-contrast: #152238;
+
+  --lk-accent:          #ff8a65;
+  --lk-accent-light:    #ffab91;
+  --lk-accent-dark:     #f4511e;
+  --lk-accent-contrast: #152238;
+
+  --lk-positive:          #7be495;
+  --lk-positive-light:    #a5edb8;
+  --lk-positive-dark:     #4caf6a;
+  --lk-positive-contrast: #152238;
+
+  --lk-warning:          #ffc857;
+  --lk-warning-light:    #ffd98a;
+  --lk-warning-dark:     #f2a900;
+  --lk-warning-contrast: #152238;
+
+  --lk-negative:          #ff6f6f;
+  --lk-negative-light:    #ff9d9d;
+  --lk-negative-dark:     #e04545;
+  --lk-negative-contrast: #ffffff;
+
+  --lk-info:          #4fc3f7;
+  --lk-info-light:    #81d4fa;
+  --lk-info-dark:     #0288d1;
+  --lk-info-contrast: #152238;
+
+  // --- Surfaces & text ---
+  --lk-bg:        #ffffff;
+  --lk-bg-subtle: #eef3fc;
+  --lk-surface:   #e4ecfb;
+
+  --lk-text:         #152238;
+  --lk-text-muted:   #5b6a8c;
+  --lk-text-on-dark: #eef3fc;
+
+  // --- "Ink" borders the sticker look is drawn in ---
+  --lk-border:        #152238;
+  --lk-border-strong: #152238;
+
+  // --- Rounder by default ---
+  --lk-radius:    1rem;
+  --lk-radius-md: 1.125rem;
+  --lk-radius-lg: 1.5rem;
+  --lk-radius-xl: 1.75rem;
+
+  // Local-only token: how thick the offset bottom border reads (not a core LookUI key,
+  // kept here so the thickness can be tuned in one place)
+  --lk-theme-candy-border: var(--lk-border-width-lg);
+}
+
+// --- Buttons: pill shape, solid navy border, thick offset bottom border ("sticker") ---
+.lk-btn {
+  border-radius: var(--lk-radius-full);
+  border-width: var(--lk-border-width-md);
+  border-color: var(--lk-border);
+  border-bottom-width: var(--lk-theme-candy-border);
+  font-weight: var(--lk-weight-bold);
+  box-shadow: none;
+}
+
+.lk-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+  box-shadow: none;
+}
+
+.lk-btn:active:not(:disabled):not([aria-disabled="true"]) {
+  border-bottom-width: var(--lk-border-width-md);
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+.lk-btn--secondary,
+.lk-btn--outline,
+.lk-btn--ghost {
+  background-color: var(--lk-bg);
+}
+
+// --- Cards: same thick offset navy border, rounder corners ---
+.lk-card {
+  border-width: var(--lk-border-width-md);
+  border-color: var(--lk-border);
+  border-bottom-width: var(--lk-theme-candy-border);
+  border-radius: var(--lk-radius-lg);
+  box-shadow: none;
+}
+
+.lk-card--primary {
+  border-color: var(--lk-primary-dark);
+}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Ready-made Themes</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192.png" />
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../dist/look.css" />
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    .theme-grid { display: grid; gap: var(--lk-space-6); grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr)); }
+    .theme-card { border: var(--lk-border-width) solid var(--lk-border); border-radius: var(--lk-radius-xl); overflow: hidden; background: var(--lk-bg); }
+    .theme-card__frame { display: block; width: 100%; height: 26rem; border: none; background: #fff; }
+    .theme-card__body { padding: var(--lk-space-5); }
+    .theme-card h3 { margin: 0 0 var(--lk-space-1); }
+    .theme-card p { margin: 0 0 var(--lk-space-4); color: var(--lk-text-muted); }
+  </style>
+</head>
+<body>
+
+<header class="demo-header">
+  <div class="demo-container">
+    <a href="index.html" class="demo-back">&larr; All Components</a>
+    <h1 style="font-size: var(--lk-text-2xl);">Ready-made Themes</h1>
+    <p style="opacity: 0.85;">Free, drop-in LookUI themes — one extra &lt;link&gt;, no class, attribute or JS</p>
+  </div>
+</header>
+
+<main class="demo-container" style="padding: var(--lk-space-9) var(--lk-space-4);">
+
+  <section class="demo-section">
+    <p class="demo-section__title">How it works</p>
+    <p style="margin-top: 0;">
+      Each theme below is a standalone stylesheet shipped with <code>@lookui/core</code> in <code>dist/</code>.
+      Load it right after <code>look.css</code> and it's active immediately — it overrides the same
+      <code>--lk-*</code> tokens your own <a href="customize.html">custom theme file</a> would, so the two compose
+      normally (load your own overrides after the theme's file to tweak individual keys).
+    </p>
+<pre style="margin:0; padding: var(--lk-space-4); border-radius: var(--lk-radius-lg); background: #263238; color: #eceff1; font-family: var(--lk-font-mono); font-size: var(--lk-text-sm); line-height: 1.6; overflow-x: auto;">&lt;link rel="stylesheet" href="node_modules/@lookui/core/dist/look.css"&gt;
+&lt;link rel="stylesheet" href="node_modules/@lookui/core/dist/lookui-theme-candy.css"&gt;   &lt;!-- that's it --&gt;</pre>
+    <p>Or from a CDN, pinned to a version:</p>
+<pre style="margin:0; padding: var(--lk-space-4); border-radius: var(--lk-radius-lg); background: #263238; color: #eceff1; font-family: var(--lk-font-mono); font-size: var(--lk-text-sm); line-height: 1.6; overflow-x: auto;">&lt;link rel="stylesheet" href="https://unpkg.com/@lookui/core@0.4.2/dist/look.min.css"&gt;
+&lt;link rel="stylesheet" href="https://unpkg.com/@lookui/core@0.4.2/dist/lookui-theme-candy.min.css"&gt;</pre>
+  </section>
+
+  <section class="demo-section">
+    <p class="demo-section__title">Themes</p>
+    <p style="margin-top: 0; color: var(--lk-text-muted);">
+      Inspired by current web design trends (see
+      <a href="https://www.vistaprint.com/hub/web-design-trends" target="_blank" rel="noopener">Vistaprint's web design trends roundup</a>).
+    </p>
+    <div class="theme-grid">
+      <div class="theme-card" id="theme-candy">
+        <iframe class="theme-card__frame" src="themes/candy.html" title="Candy theme live preview" loading="lazy"></iframe>
+        <div class="theme-card__body">
+          <h3>Candy</h3>
+          <p>Pastel brand colors, pill-shaped buttons, a thick offset "sticker" border on buttons and cards.</p>
+          <a class="lk-btn lk-btn--sm lk-btn--secondary" href="themes/candy.html" target="_blank" rel="noopener">Open full-page demo</a>
+          <a class="lk-btn lk-btn--sm lk-btn--primary" href="../dist/lookui-theme-candy.css" download>Download CSS</a>
+        </div>
+      </div>
+      <div class="theme-card" id="theme-frosted">
+        <iframe class="theme-card__frame" src="themes/frosted.html" title="Frosted theme live preview" loading="lazy"></iframe>
+        <div class="theme-card__body">
+          <h3>Frosted</h3>
+          <p>Glassmorphism — translucent blurred panels, soft diffused shadows. Inspired by "Frosted Touch."</p>
+          <a class="lk-btn lk-btn--sm lk-btn--secondary" href="themes/frosted.html" target="_blank" rel="noopener">Open full-page demo</a>
+          <a class="lk-btn lk-btn--sm lk-btn--primary" href="../dist/lookui-theme-frosted.css" download>Download CSS</a>
+        </div>
+      </div>
+      <div class="theme-card" id="theme-stark">
+        <iframe class="theme-card__frame" src="themes/stark.html" title="Stark theme live preview" loading="lazy"></iframe>
+        <div class="theme-card__body">
+          <h3>Stark</h3>
+          <p>Ultra-thin type, neutral fades, generous space, calm micro-interactions. Inspired by "Resonant Stark."</p>
+          <a class="lk-btn lk-btn--sm lk-btn--secondary" href="themes/stark.html" target="_blank" rel="noopener">Open full-page demo</a>
+          <a class="lk-btn lk-btn--sm lk-btn--primary" href="../dist/lookui-theme-stark.css" download>Download CSS</a>
+        </div>
+      </div>
+      <div class="theme-card" id="theme-skeuo">
+        <iframe class="theme-card__frame" src="themes/skeuo.html" title="Skeuo theme live preview" loading="lazy"></iframe>
+        <div class="theme-card__body">
+          <h3>Skeuo</h3>
+          <p>Soft raised surfaces, delicate dual shadows, lightly pressed buttons. Inspired by "Light Skeuomorphism."</p>
+          <a class="lk-btn lk-btn--sm lk-btn--secondary" href="themes/skeuo.html" target="_blank" rel="noopener">Open full-page demo</a>
+          <a class="lk-btn lk-btn--sm lk-btn--primary" href="../dist/lookui-theme-skeuo.css" download>Download CSS</a>
+        </div>
+      </div>
+      <div class="theme-card" id="theme-snug">
+        <iframe class="theme-card__frame" src="themes/snug.html" title="Snug theme live preview" loading="lazy"></iframe>
+        <div class="theme-card__body">
+          <h3>Snug</h3>
+          <p>Warm neutral backgrounds, muted pastel blocks, chunky rounded shapes. Inspired by "Snug Simple."</p>
+          <a class="lk-btn lk-btn--sm lk-btn--secondary" href="themes/snug.html" target="_blank" rel="noopener">Open full-page demo</a>
+          <a class="lk-btn lk-btn--sm lk-btn--primary" href="../dist/lookui-theme-snug.css" download>Download CSS</a>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top: var(--lk-space-6); color: var(--lk-text-muted);">More themes are on the way — this page grows as they ship, no breaking changes to how you include them.</p>
+  </section>
+
+</main>
+
+</body>
+</html>

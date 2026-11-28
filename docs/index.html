@@ -166,6 +166,7 @@ import { lkTextbox, lkDropdown, lkValidation, lkToast } from '@lookui/core';</pr
             <a href="events.html">Overridable events — before&lt;Action&gt; guards &rarr;</a>
             <a href="interactive-cookbook.html">Interactive cookbook — end-to-end recipes &rarr;</a>
             <a href="customize.html">Custom theme file — colors, spacing, sizes &rarr;</a>
+            <a href="themes.html">Ready-made themes — free drop-in skins like Candy &rarr;</a>
             <a href="datasource.html">lkDataSource — data, paging and remote transport &rarr;</a>
           </div>
         </div>
@@ -182,6 +183,73 @@ import { lkTextbox, lkDropdown, lkValidation, lkToast } from '@lookui/core';</pr
       <a href="interactive-cookbook.html" class="lk-btn lk-btn--primary">Open Cookbook</a>
     </div>
   </div>
+
+  <!-- Ready-made themes --------------------------------------------------------------- -->
+  <section style="margin-bottom: var(--lk-space-9);">
+    <p class="demo-section__title">Ready-made themes</p>
+    <h2 style="margin-top: 0; margin-bottom: var(--lk-space-2);">Pick a look — one extra &lt;link&gt;, nothing else</h2>
+    <p style="color: var(--lk-text-muted); margin-bottom: var(--lk-space-6); max-width: 60ch;">
+      Free, drop-in stylesheets shipped with the package. No class, attribute or JS required — load one right
+      after <code>look.css</code> and it's active. See <a href="themes.html">all themes &amp; how to include them &rarr;</a>.
+    </p>
+    <div class="theme-pick-grid">
+      <div class="lk-card theme-pick-card">
+        <span class="theme-pick-card__swatches">
+          <span style="background:#ffd93d"></span><span style="background:#8ecae6"></span><span style="background:#ff8a65"></span>
+        </span>
+        <strong>Candy</strong>
+        <span class="theme-pick-card__desc">Pastel colors, pill buttons, thick offset "sticker" border.</span>
+        <span class="theme-pick-card__links">
+          <a href="themes/candy.html" target="_blank" rel="noopener">View demo</a>
+          <a href="../dist/lookui-theme-candy.css" download>Get CSS</a>
+        </span>
+      </div>
+      <div class="lk-card theme-pick-card">
+        <span class="theme-pick-card__swatches">
+          <span style="background:#6c8ef5"></span><span style="background:#5fc9d6"></span><span style="background:#8aa9c4"></span>
+        </span>
+        <strong>Frosted</strong>
+        <span class="theme-pick-card__desc">Glassmorphism — translucent blurred panels, soft shadows.</span>
+        <span class="theme-pick-card__links">
+          <a href="themes/frosted.html" target="_blank" rel="noopener">View demo</a>
+          <a href="../dist/lookui-theme-frosted.css" download>Get CSS</a>
+        </span>
+      </div>
+      <div class="lk-card theme-pick-card">
+        <span class="theme-pick-card__swatches">
+          <span style="background:#3c4656"></span><span style="background:#8d97a6"></span><span style="background:#eef0f3"></span>
+        </span>
+        <strong>Stark</strong>
+        <span class="theme-pick-card__desc">Ultra-thin type, neutral fades, calm micro-interactions.</span>
+        <span class="theme-pick-card__links">
+          <a href="themes/stark.html" target="_blank" rel="noopener">View demo</a>
+          <a href="../dist/lookui-theme-stark.css" download>Get CSS</a>
+        </span>
+      </div>
+      <div class="lk-card theme-pick-card">
+        <span class="theme-pick-card__swatches">
+          <span style="background:#5b8def"></span><span style="background:#f2a65a"></span><span style="background:#eef1f5"></span>
+        </span>
+        <strong>Skeuo</strong>
+        <span class="theme-pick-card__desc">Soft raised surfaces, dual shadows, lightly pressed buttons.</span>
+        <span class="theme-pick-card__links">
+          <a href="themes/skeuo.html" target="_blank" rel="noopener">View demo</a>
+          <a href="../dist/lookui-theme-skeuo.css" download>Get CSS</a>
+        </span>
+      </div>
+      <div class="lk-card theme-pick-card">
+        <span class="theme-pick-card__swatches">
+          <span style="background:#d98c6b"></span><span style="background:#8fa998"></span><span style="background:#e7b65c"></span>
+        </span>
+        <strong>Snug</strong>
+        <span class="theme-pick-card__desc">Warm muted palette, chunky rounding, plain shadow elevation.</span>
+        <span class="theme-pick-card__links">
+          <a href="themes/snug.html" target="_blank" rel="noopener">View demo</a>
+          <a href="../dist/lookui-theme-snug.css" download>Get CSS</a>
+        </span>
+      </div>
+    </div>
+  </section>
 
   <!-- Find the right component --------------------------------------------------------- -->
   <section style="margin-bottom: var(--lk-space-9);">
@@ -234,7 +302,7 @@ import { lkTextbox, lkDropdown, lkValidation, lkToast } from '@lookui/core';</pr
         <h3>Going global &amp; on-brand</h3>
         <p>Ship one build that adapts to language, light/dark appearance, and your own design tokens.</p>
         <div class="usecase-card__links">
-          <a href="localization.html">Localization</a><a href="composable-theme.html">Theme</a><a href="customize.html">Custom theme</a><a href="tokens.html">Design tokens</a>
+          <a href="localization.html">Localization</a><a href="composable-theme.html">Theme</a><a href="customize.html">Custom theme</a><a href="themes.html">Ready-made themes</a><a href="tokens.html">Design tokens</a>
         </div>
       </div>
     </div>
@@ -359,6 +427,7 @@ import { lkTextbox, lkDropdown, lkValidation, lkToast } from '@lookui/core';</pr
     { name: 'Design Tokens', href: 'tokens.html', cat: 'Guides', desc: 'Color palette, typography, spacing, radius.', kw: 'css variables theme' },
     { name: 'Layout & Utilities', href: 'layout.html', cat: 'Guides', desc: 'Grid, flex, spacing, responsive utilities.', kw: 'css layout responsive' },
     { name: 'Custom Theme File', href: 'customize.html', cat: 'Guides', desc: 'Your own CSS file: replace colors, spacing, sizes · where to include it.', kw: 'branding customization override' },
+    { name: 'Ready-made Themes', href: 'themes.html', cat: 'Guides', desc: 'Free drop-in themes shipped with the package — one extra <link>, no class, attribute or JS. Starts with Candy.', kw: 'candy pastel sticker skin preset' },
     { name: 'Theming', href: 'theming.html', cat: 'Guides', desc: 'Runtime & build-time overrides, generated theme file.', kw: 'tokens scss variables' },
     { name: 'Localization', href: 'localization.html', cat: 'Guides', desc: 'Look.i18n — translate every label, placeholder and message, live locale switching.', kw: 'i18n translation language locale' },
     { name: 'Overridable events', href: 'events.html', cat: 'Guides', desc: 'before<Action> guards and lk:before-* DOM events — veto, delay or replace actions.', kw: 'guard cancel veto hook' },

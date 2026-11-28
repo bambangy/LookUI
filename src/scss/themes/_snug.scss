@@ -1,0 +1,74 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Bambang Yudhotomo — LookUI
+// =============================================================================
+// LookUI — "Snug" ready-made theme
+// =============================================================================
+// Inspired by the "Snug Simple" trend (soft neutral/warm backgrounds, muted pastel
+// color blocks, chunky rounded shapes, friendly simple UI). Usage — one extra
+// <link>, right after look.css:
+//
+//   <link rel="stylesheet" href="look.css">
+//   <link rel="stylesheet" href="lookui-theme-snug.css">
+//
+// Deliberately the "quiet" counterpart to Candy: same family of chunky rounded
+// shapes, but muted warm colors and plain soft-shadow elevation instead of
+// saturated brights and a thick offset "sticker" border.
+// =============================================================================
+
+:root {
+  // --- Brand / state colors (muted, warm) ---
+  --lk-primary:          #d98c6b;
+  --lk-primary-light:    #e7ac92;
+  --lk-primary-dark:     #b86944;
+  --lk-primary-contrast: #2c1d15;
+
+  --lk-secondary:          #8fa998;
+  --lk-secondary-light:    #aec3b4;
+  --lk-secondary-dark:     #6c8777;
+  --lk-secondary-contrast: #17241c;
+
+  --lk-accent:          #e7b65c;
+  --lk-accent-light:    #f0cd8c;
+  --lk-accent-dark:     #c8963c;
+  --lk-accent-contrast: #2c2210;
+
+  --lk-positive:        #7fae7c;
+  --lk-warning:         #e0a94f;
+  --lk-negative:        #d08177;
+  --lk-info:            #7fa0b0;
+
+  // --- Surfaces & text (warm neutrals, not cool greys) ---
+  --lk-bg:        #fbf4ec;
+  --lk-bg-subtle: #f3e9db;
+  --lk-surface:   #f3e9db;
+
+  --lk-text:       #3c2e26;
+  --lk-text-muted: #8a7a6c;
+
+  --lk-border:        #e4d4c0;
+  --lk-border-strong: #c9b49a;
+
+  // --- Chunky rounding ---
+  --lk-radius:    1.25rem;
+  --lk-radius-lg: 1.75rem;
+}
+
+.lk-btn {
+  border-radius: var(--lk-radius-full);
+  border-width: var(--lk-border-width-md);
+  border-color: transparent;
+  font-weight: var(--lk-weight-semibold);
+  box-shadow: var(--lk-shadow-sm);
+}
+
+.lk-btn--secondary,
+.lk-btn--outline,
+.lk-btn--ghost {
+  border-color: var(--lk-border-strong);
+}
+
+.lk-card {
+  border-radius: var(--lk-radius-lg);
+  border-color: var(--lk-border);
+  box-shadow: var(--lk-shadow);
+}

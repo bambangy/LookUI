@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookUI — Candy theme demo</title>
+  <link rel="stylesheet" href="../../dist/look.css" />
+  <link rel="stylesheet" href="../../dist/lookui-theme-candy.css" />
+  <style>
+    body { margin: 0; padding: var(--lk-space-6); background: var(--lk-bg-subtle); font-family: var(--lk-font-family); }
+    .demo-stack { display: grid; gap: var(--lk-space-5); max-width: 52rem; margin: 0 auto; }
+    .demo-row { display: flex; flex-wrap: wrap; gap: var(--lk-space-3); align-items: center; }
+    .demo-grid-2 { display: grid; gap: var(--lk-space-5); grid-template-columns: 1fr 1fr; }
+    @media (max-width: 760px) { .demo-grid-2 { grid-template-columns: 1fr; } }
+    .section-title { margin: 0 0 var(--lk-space-3); font-size: var(--lk-text-sm); color: var(--lk-text-muted); text-transform: uppercase; letter-spacing: var(--lk-tracking-wide); }
+    .lk-carousel__caption { margin: var(--lk-space-2) var(--lk-space-3); font-weight: var(--lk-weight-semibold); }
+  </style>
+</head>
+<body>
+  <div class="demo-stack">
+    <div class="demo-row">
+      <button class="lk-btn lk-btn--primary">Create My Free Kit</button>
+      <button class="lk-btn lk-btn--secondary">See Plans</button>
+      <button class="lk-btn lk-btn--outline">Outline</button>
+    </div>
+    <div class="demo-row">
+      <span class="lk-badge lk-badge--positive">New</span>
+      <span class="lk-chip lk-chip--primary">Chip</span>
+      <span class="lk-chip lk-chip--accent lk-chip--outline">Accent</span>
+    </div>
+
+    <div class="lk-card">
+      <p class="section-title" style="margin: var(--lk-space-4) var(--lk-space-5) 0;">Icons</p>
+      <div class="lk-card__body demo-row">
+        <span class="lk-icon lk-icon--user lk-icon--xl lk-icon--primary"></span>
+        <span class="lk-icon lk-icon--mail lk-icon--xl lk-icon--accent"></span>
+        <span class="lk-icon lk-icon--bell lk-icon--xl lk-icon--warning"></span>
+        <span class="lk-icon lk-icon--heart-fill lk-icon--xl lk-icon--negative"></span>
+        <span class="lk-icon lk-icon--star-fill lk-icon--xl lk-icon--primary"></span>
+        <span class="lk-icon lk-icon--shopping-cart lk-icon--xl lk-icon--positive"></span>
+        <span class="lk-icon lk-icon--calendar lk-icon--xl lk-icon--info"></span>
+        <span class="lk-icon lk-icon--settings lk-icon--xl lk-icon--muted"></span>
+      </div>
+    </div>
+
+    <div class="lk-card">
+      <div class="lk-card__media">
+        <img src="https://images.pexels.com/photos/325185/pexels-photo-325185.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="" style="height: 14rem; object-fit: cover;" />
+      </div>
+      <div class="lk-card__header">
+        <strong class="lk-card__title">60k+</strong>
+      </div>
+      <div class="lk-card__body">
+        Icons in the library. Cards and buttons pick up the Candy palette and sticker borders
+        automatically — this page is just <code>look.css</code> + <code>lookui-theme-candy.css</code>,
+        nothing else.
+      </div>
+    </div>
+
+    <div class="demo-grid-2">
+      <div class="lk-card lk-card--primary">
+        <div class="lk-card__body">
+          <strong>Primary card</strong>
+          <p style="margin: var(--lk-space-2) 0 0;">Color variants resolve through the same pastel tokens.</p>
+        </div>
+      </div>
+      <div class="lk-card">
+        <div class="lk-card__body">
+          <strong>Team online</strong>
+          <div class="lk-avatar-group" style="margin-top: var(--lk-space-3);">
+            <div class="lk-avatar"><img src="https://i.pravatar.cc/64?img=11" alt="" /></div>
+            <div class="lk-avatar"><img src="https://i.pravatar.cc/64?img=32" alt="" /></div>
+            <div class="lk-avatar"><img src="https://i.pravatar.cc/64?img=47" alt="" /></div>
+            <div class="lk-avatar">+2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lk-card">
+      <div class="lk-card__header"><strong class="lk-card__title">Sign up</strong></div>
+      <div class="lk-card__body">
+        <form id="candy-signup" novalidate style="display: grid; gap: var(--lk-space-4);">
+          <input id="candy-name" placeholder="Jane Doe" />
+          <input id="candy-email" placeholder="jane@example.com" />
+          <select id="candy-role"></select>
+          <div><button class="lk-btn lk-btn--primary" type="submit">Create My Free Kit</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="lk-card">
+      <div class="lk-card__header"><strong class="lk-card__title">Featured</strong></div>
+      <div class="lk-card__body" style="padding: 0;">
+        <div id="candy-carousel"></div>
+      </div>
+    </div>
+
+    <div class="lk-card">
+      <div class="lk-card__header"><strong class="lk-card__title">Team</strong></div>
+      <div class="lk-card__body" style="padding: 0;">
+        <div id="candy-table"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../dist/look.js"></script>
+  <script>
+    Look.lkCarousel('#candy-carousel', {
+      slides: [
+        { html: '<img src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="" style="width:100%;height:16rem;object-fit:cover;display:block;"><p class="lk-carousel__caption">Explore</p>' },
+        { html: '<img src="https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="" style="width:100%;height:16rem;object-fit:cover;display:block;"><p class="lk-carousel__caption">Create</p>' },
+        { html: '<img src="https://images.pexels.com/photos/2325446/pexels-photo-2325446.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="" style="width:100%;height:16rem;object-fit:cover;display:block;"><p class="lk-carousel__caption">Ship</p>' },
+      ],
+      loop: true,
+      autoplay: true,
+      interval: 3500,
+    });
+
+    const candyName = Look.lkTextbox('#candy-name', { label: 'Name', rules: ['required'], validate: true });
+    const candyEmail = Look.lkTextbox('#candy-email', { label: 'Email', rules: ['required', 'email'], validate: true });
+    const candyRole = Look.lkDropdown('#candy-role', {
+      label: 'Role', required: true,
+      items: [
+        { value: 'designer', label: 'Designer' },
+        { value: 'engineer', label: 'Engineer' },
+        { value: 'marketing', label: 'Marketing' },
+      ],
+    });
+    const candyForm = Look.lkValidation(candyName, candyEmail, candyRole);
+    document.getElementById('candy-signup').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (candyForm.validate().hasError) return;
+      Look.lkToast({ type: 'positive', title: 'Welcome!', message: candyName.value + ' signed up.' });
+    });
+
+    const candyTeam = [
+      { avatar: 11, name: 'Amara Chen', role: 'Product Designer', status: 'Active', joined: '2024-02-10' },
+      { avatar: 32, name: 'Diego Santos', role: 'Frontend Engineer', status: 'Active', joined: '2023-11-02' },
+      { avatar: 47, name: 'Priya Natarajan', role: 'Support Lead', status: 'Away', joined: '2022-06-21' },
+      { avatar: 5, name: 'Liam Connor', role: 'Marketing', status: 'Active', joined: '2024-05-14' },
+      { avatar: 68, name: 'Sofia Marin', role: 'Customer Success', status: 'Offline', joined: '2023-01-30' },
+    ];
+    Look.lkTable('#candy-table', {
+      dataSource: { data: candyTeam },
+      columns: [
+        { field: 'name', title: 'Name', template: (row) => '<div style="display:flex;align-items:center;gap:8px"><div class="lk-avatar lk-avatar--sm"><img src="https://i.pravatar.cc/64?img=' + row.avatar + '" alt=""></div><span>' + row.name + '</span></div>' },
+        { field: 'role', title: 'Role' },
+        { field: 'status', title: 'Status', template: (row) => '<span class="lk-badge' + (row.status === 'Active' ? ' lk-badge--positive' : row.status === 'Away' ? ' lk-badge--warning' : '') + '">' + row.status + '</span>' },
+        { field: 'joined', title: 'Joined' },
+      ],
+      sortable: true,
+      toolbar: ['search'],
+    });
+  </script>
+</body>
+</html>

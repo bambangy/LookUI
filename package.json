@@ -27,6 +27,7 @@
     },
     "./look.css": "./dist/look.css",
     "./look.min.css": "./dist/look.min.css",
+    "./theme/*": "./dist/lookui-theme-*",
     "./dist/*": "./dist/*",
     "./package.json": "./package.json"
   },
@@ -41,7 +42,7 @@
   ],
   "scripts": {
     "build:js": "rollup -c rollup.config.js",
-    "build:css": "sass src/scss/main.scss dist/look.raw.css --no-source-map && postcss dist/look.raw.css --config .postcssrc.cjs --no-map -o dist/look.css && rimraf dist/look.raw.css && node scripts/minify-css.js",
+    "build:css": "sass src/scss/main.scss dist/look.raw.css --no-source-map && postcss dist/look.raw.css --config .postcssrc.cjs --no-map -o dist/look.css && rimraf dist/look.raw.css && node scripts/minify-css.js && node scripts/build-themes.js",
     "build": "npm run build:js && npm run build:css",
     "dev": "rollup -c rollup.config.js --watch",
     "test": "vitest run",
